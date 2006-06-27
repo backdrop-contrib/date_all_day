@@ -1,0 +1,37 @@
+Installation instructions:
+
+1) Install the cck files from http://drupal.org/project/cck.
+
+1) IMPORTANT!! Remove the files date.module and date.install from the cck folder. 
+   The files in this module will replace them. If the cck files are not removed they
+   will be used instead of the date files in this project and none of the new
+   features will be available.
+   
+2) Upload the date files to a 'date' folder in the modules directory. You should end
+   up with a structure like: drupal/modules/date/date.module.
+
+3) If you already have cck data created, backup your files!! There is a database
+   change that may affect them.
+
+4) Go to admin/modules and enable the date module. Be sure to submit the page
+   even if the date module is already selected. That will update the path to the files.
+
+5) Go to update.php and select the option to update your database.
+   Select the latest update to the date module.
+   
+   Date module update #4 changes the database structure and updates any existing date data 
+   to the new structure. Update #4 has been written so it can be re-run, if necessary.
+   If you have used an earlier version of this module and have already processed update #4,
+   you should re-run it to ensure the database gets properly updated.
+   If in doubt, re-run update #4, it will do no harm, and it will ensure any existing
+   data is in the right format.
+   
+6) Go to admin/node/types to view cck content types. Add or select a content type.
+
+7) While viewing a cck content type, select the option to add a new field. Several
+   options for date fields should be visible.
+   
+8) If you already have date fields created from an earlier version, be sure to
+   edit each one and save your changes. There are new options available that need to be set.
+   
+

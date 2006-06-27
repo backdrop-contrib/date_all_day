@@ -1,0 +1,20 @@
+.container-inline-date .form-item, .container-inline-date .form-item input {
+  width: auto;
+}
+.container-inline-date .form-item {
+  float:left;
+}
+.container-inline-date .form-item input, .container-inline-date .form-item select {
+  margin-right:10px;
+}
+fieldset, #main .container-inline-date .description {
+  width:auto;
+  clear:both;
+  width:100%;
+}
+a.help, acronym {
+ cursor: help;
+ border-bottom: 1px dotted #080;
+ text-decoration:none;
+}
+

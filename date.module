@@ -1,0 +1,428 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Defines a date/time field type.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function date_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return t('Defines a date/time field type for the content module and a date API. <em>Note: Requires content.module.</em>');
+      break;
+    case 'admin/help#date':
+      return t('<p>The date module defines a date/time field type for the content module and a date API. '.
+        'Dates can use GMT, the site\'s timezone or a date-specific timezone and are converted to GMT and stored as either a Date (ISO 8601 YYYY-MM-DDTHH:MM:SS) or a Datestamp (a unix timestamp). When displayed, they are converted back to the desired timezone value and displayed using the desired display format. '.
+        'Display formats include numerous combinations of date parts, sequences, and separators, to accomodate international date formatting needs.</p>'.
+        '<dl>'.
+        '<dt>Text Field</dt><dd>The Text Field date widget uses the strtotime function to construct a date and will accept input allowed by the php <a href="http://www.php.net/manual/en/function.strtotime.php">strtotime function</a>. This allows the user to type a date in in many natural formats, like <strong>March 31, 1980</strong> or <strong>3/10/1980</strong> or in numeric formats like <strong>YYYY-MM-DD</strong>. '.
+        'The strtotime function will assume date shortcuts are in American format (MM/DD/YY), and it will not work for dates prior to 1970. '.
+        '</dd>'.
+        '<dt>Select List</dt><dd>The Select List date widget presents users with a drop-down list for each part of the date (year, month, day, hour, etc.). The whole selector is collapsed onto a single line using css (except for the timezone selector, if date-specific timezones are collected). The selector is highly configurable and will even handle years prior to 1900.</dd>'.
+        '<dt>Javascript Pop-up Calendar</dt><dd>The Javascript Pop-up Calendar is offered as an input alternative if the <a href="http://drupal.org/node/57285">jscalendar</a> module is installed. This widget can handle dates as early as 1900.'.
+        '</dl>');
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function date_field_info() {
+  return array(
+    'date' => array('label' => 'Date'),
+    'datestamp' => array('label' => 'Datestamp'),
+  );
+}
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function date_field_settings($op, $field) {
+
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  switch ($op) {
+  case 'form':
+      if (!module_exist('event')) {
+        include_once(drupal_get_path('module', 'date') .'/date_timezones.inc');
+      } else {
+        include_once(drupal_get_path('module', 'event') .'/event_timezones.inc');
+      }
+      $form = array();
+      // need a way to identify the correct system timezone from an array of timezones with the same offset
+      // save it as a system variable so it will default to the correct value after the first time it is set
+      // aligns with system setting 'date_default_timezone'
+      $form['field_timezone'] = array(
+        '#type' => 'select',
+        '#title' => t('Site timezone'),
+        '#default_value' => date_get_site_timezone(),
+        '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 0))),  
+        '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
+      );
+      $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'gmt';
+      $form['input']['tz_handling'] = array(
+        '#type' => 'select',
+        '#title' => t('Time zone handling'),
+        '#default_value' => $tz_handling,
+        '#options' => date_timezone_handling_options(),
+        '#description' => t('Select the timezone handling method to be used for this date field'),
+      );
+      return $form;
+
+    case 'validate':
+      date_set_site_timezone($field['field_timezone']);
+      break;
+
+    case 'save':
+      return array('field_timezone', 'tz_handling');
+
+    case 'database columns':
+      if ($field['type'] == 'date') {
+        return array(
+          'value' => array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE),
+          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE),
+        );
+      } else {
+        return array(
+          'value' => array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE),
+          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE),
+        );
+      }
+
+    // these operators are not going to be sufficient for views, need to come back and improve on them
+    case 'filter operators':
+      return array(
+        '=' => t('is equal to'),
+        '!=' => t('is not equal to'),
+        'LIKE' => t('matches the pattern'),
+      );
+  }
+}
+
+
+/**
+ * Implementation of hook_field().
+ */
+
+function date_field($op, &$node, $field, &$node_field, $teaser, $page) {
+  
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  
+  switch ($op) {
+    case 'view':
+      
+      foreach ($node_field as $delta => $item) {
+        $node_field[$delta]['view'] = date_field_view_item($field, $item, $node);
+      }
+      return theme('field', $node, $field, $node_field, $teaser, $page);
+      
+    case ('insert'):
+    case ('update'):
+      
+      /**
+       *  Rebuild $node_field with converted dates and timezones
+       * 
+       *  input text field dates will hold an array like:
+       *  [0] => Array (
+       *    [value] => 2006-04-06T02:00:00
+       *    [timezone] => US/Central
+            
+       *  input date selector dates will hold an array like:
+       *  [0] => Array (
+       *    [value] => Array (
+       *      [month] => 4
+       *      [day] => 05
+       *      [year] => 2006
+       *      [hour] => 1
+       *      [minute] => 12
+       *      [timezone] => US/Central
+       */
+
+      $add = array();
+      
+      foreach ($node_field as $delta => $item) {
+
+        $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+        
+        switch ($field['widget']['type']) {
+          case ('date_select'):
+            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+          case ('date_js'):
+            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+          default:
+            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+        }
+        
+        // replace $node_field values with the converted date and timezone values
+        if ($converted_date) {
+          $add[$delta]['value']    = $converted_date;
+          $add[$delta]['timezone'] = $timezone;
+        } 
+      }
+      $node_field = $add;
+      
+  }
+}
+
+/**
+ * Implementation of hook_field_view_item().
+ *
+ */
+function date_field_view_item($field, $node_field_item, $node = NULL) {
+  
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  
+  if (!isset($node_field_item['value'])) {
+    return '';
+  }
+  
+  if ($field['tz_handling'] == 'none') {
+    
+    // if no timezone handling was elected, create a date object with the database value
+    $date = date_make_date($node_field_item['value'], 'none', 'local', $field['type']);
+  
+  } else {
+    
+    // create a date object with a gmt timezone from the database value
+    $date = date_make_date($node_field_item['value'], 'GMT', 'db', $field['type']);
+    // convert the date object to the proper timezone, depending on the field's tz_handling value
+    date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $node_field_item['timezone']), 'local');
+  
+  }
+  
+  // display the date using the selected format
+  return date_show_date($date, $field['widget']['format_date'].' '.$field['widget']['format_time'], 'local', $field['widget']['format_zone']);
+
+}
+
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function date_widget_info() {
+  $info = array(
+    'date_select' => array(
+      'label' => t('Select List'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'date_text' => array(
+      'label' => t('Text Field with strtotime validation'),
+      'field types' => array('date', 'datestamp'),
+    ),
+  );
+  if (module_exist('jscalendar')) {
+    $info['date_js'] = array(
+       'label' => t('Text Field with javascript pop-up calendar'),
+       'field types' => array('date', 'datestamp'),
+     );
+  }
+  return $info;
+}
+
+
+/**
+ * Implementation of hook_widget_settings().
+ */
+function date_widget_settings($op, $widget) {
+  
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  switch ($op) {
+    case 'form':
+      
+      $form = array();
+      $form['input'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Input Options'),
+        );
+      $options = array(
+        'Y' => t('Year'),
+        'M' => t('Month'),
+        'D' => t('Day'),
+        'H' => t('Hour'),
+        'N' => t('Minute'),
+        'S' => t('Second'),
+        //'T' => t('Timezone'),
+        );
+      $form['input']['granularity'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Granularity'),
+        '#default_value' => $widget['granularity'] ? $widget['granularity'] : array('Y', 'M', 'D'),
+        '#options' => $options,
+        '#multiple' => 1,
+        );
+      $options = array(
+        0 => t('24 hour time'),
+        1 => t('12 hour time'),
+      );
+      $form['input']['ampm'] = array(
+        '#type' => 'radios',
+        '#title' => t('Time format'),
+        '#default_value' => $widget['ampm'] ? $widget['ampm'] : 0,
+        '#options' => $options,
+      );
+      if ($widget['type'] == 'date_select') {
+        $form['input']['increment'] = array(
+          '#type' => 'select',
+          '#title' => t('Increment'),
+          '#default_value' => $widget['increment'] ? $widget['increment'] : 1,
+          '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
+          '#description' => t('Increment the minute and second fields by this amount.'),
+        );
+      }
+
+      $form['view'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Display Options'),
+        '#description' => t('Choose the way the date parts should be displayed. Blank values will surpress the display of that part of the date.'),
+        );
+      $options = date_view_options('date', $tz_handling);
+      $form['view']['format_date'] = array(
+        '#type' => 'select',
+        '#title' => t('Date display'),
+        '#default_value' => $widget['format_date'] ? $widget['format_date'] : '',
+        '#options' => $options,
+      );
+      $options = date_view_options('time', $tz_handling);
+      $form['view']['format_time'] = array(
+        '#type' => 'select',
+        '#title' => t('Time display'),
+        '#default_value' => $widget['format_time'] ? $widget['format_time'] : '',
+        '#options' => $options,
+      );
+      $form['view']['format_zone'] = array(
+        '#type' => 'select',
+        '#title' => t('Zone display'),
+        '#default_value' => $widget['format_zone'] ? $widget['format_zone'] : '',
+        '#options' => date_append_zone_options(),
+      );
+
+      return $form;
+
+    case 'save':
+      return array('ampm', 'increment', 'granularity', 'format_date', 'format_time', 'format_zone');
+  }
+}
+
+/**
+ * Implementation of hook_widget().
+ */
+function date_widget($op, &$node, $field, &$node_field) {
+  
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  switch ($op) {
+    case 'form':
+      $form = array();
+      
+      $form[$field['field_name']] = array('#tree' => TRUE);
+
+      $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
+      
+      $function = 'date_widget_' . $field['widget']['type'];
+      $max = $field['multiple'] ? 2 + sizeof($node_field) : 0;
+      
+      foreach (range(0, $max) as $delta) {
+        
+        $granularity = date_granularity_array($field);
+        if ($tz_handling == 'date') array_push($granularity, 'T');
+        
+        $timezone = date_get_timezone($tz_handling, $node_field[$delta]['timezone']);
+
+        $params = array(
+          'label'        => $field['widget']['label'],
+          'value'        => $node_field[$delta]['value'],
+          'weight'       => $field['widget']['weight'],
+          'ampm'         => $field['widget']['ampm'],
+          'delta'        => $delta,
+          'granularity'  => $granularity,
+          'format'       => $field['type'],
+          'timezone_out' => $timezone,
+          'timezone_in'  => 'GMT',
+          'description'  => $field['widget']['description'],
+          );
+        $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
+
+        switch ($field['widget']['type']) {
+         
+          case ('date_select'):
+          
+            if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
+            if ($delta > 0) $params['blank_default'] = 1;
+            $params['increment'] = $field['widget']['increment'];
+
+            // use the api date selector form from date.inc to create the date selector form
+            $form[$field['field_name']][$delta]['value'] = date_select_input($params);
+            break;
+
+          default:
+
+            // use the api text input form from date.inc
+            if ($delta > 0) $params['blank_default'] = 1;
+            $params['jscalendar'] = $field['widget']['type'] == 'date_js' ? 1 : 0;
+            $form[$field['field_name']][$delta] = date_text_input($params);
+
+        }
+      }
+      
+      return $form;
+
+    case 'validate':
+      foreach ($node_field as $delta => $item) {
+        
+        // if multiple dates are allowed, need to adjust validation criteria on extra fields
+        // must allow for way to omit unused date fields, so dates with an empty 'year' field will not be validated or saved
+        $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
+        if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
+        $params['granularity'] = date_granularity_array($field);
+
+        switch ($field['widget']['type']) {
+          case ('date_select'):
+            $error = date_selector_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $params);
+            break;
+
+          case ('date_js'):
+            $error = date_jscalendar_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], date_granularity_array($field));
+            break;
+
+          default:
+            $error = date_text_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], date_granularity_array($field));
+            break;
+        }
+      }
+      return;
+  }
+}
+
+/**
+ * convoluted way of getting an array of items for granularity because
+ * of funky drupal method of storing checkbox values
+ * $field['granularity'] will contain an array like ('H' => 'H', 'M' => 0) 
+ * where the values turned on return their own names and the values turned off return a zero
+ * need to reconfigure this into a simple array of the turned on values 
+ */
+function date_granularity_array($field) {
+  foreach ($field['widget']['granularity'] as $item) {
+    if ($item) $granularity[] = $item;
+  }
+  return (array)$granularity;
+}
+function date_no_granularity_array($field) {
+  foreach ($field['widget']['granularity'] as $item) {
+    if (!$item) $granularity[] = $item;
+  }
+  return (array)$granularity;
+}
+
+
+
+
+

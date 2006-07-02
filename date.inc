@@ -69,7 +69,7 @@ if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
   // an example alternate path if the gallery2 program is installed (gallery2 uses adodb, too)
   //     strtolower($_SERVER["DOCUMENT_ROOT"]) .'/gallery2/lib/adodb/adodb-time.inc.php';
 
-  define('DATE_LIBRARY_FILE', strtolower($_SERVER["DOCUMENT_ROOT"]) .'/gallery2/lib/adodb/adodb-time.inc.php');
+  define('DATE_LIBRARY_FILE', drupal_get_path('module', 'date') .'/adodb-time.inc.php');
 
 } else {
 

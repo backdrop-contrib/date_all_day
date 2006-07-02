@@ -69,7 +69,7 @@ if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
   // an example alternate path if the gallery2 program is installed (gallery2 uses adodb, too)
   //     strtolower($_SERVER["DOCUMENT_ROOT"]) .'/gallery2/lib/adodb/adodb-time.inc.php';
 
-  define('DATE_LIBRARY_FILE', drupal_get_path('module', 'date') .'/adodb-time.inc.php');
+  define('DATE_LIBRARY_FILE', strtolower($_SERVER["DOCUMENT_ROOT"]) .'/gallery2/lib/adodb/adodb-time.inc.php');
 
 } else {
 
@@ -284,11 +284,11 @@ function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GM
 
     if ($date->local->timestamp && !$date->db->timestamp) {
       
-      date_set_date(&$date, $date->local->timestamp, $timezone_out, 'db', DATE_UNIX);
+      date_set_date($date, $date->local->timestamp, $timezone_out, 'db', DATE_UNIX);
     
     } elseif ($date->db->timestamp && !$date->local->timestamp) {
       
-      date_set_date(&$date, $date->db->timestamp, $timezone_out, 'local', DATE_UNIX);
+      date_set_date($date, $date->db->timestamp, $timezone_out, 'local', DATE_UNIX);
 
     }
 
@@ -314,7 +314,7 @@ function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GM
     $out_date = $date->local->timestamp - $offset;
 
   }
-  if ($out_date) date_set_date(&$date, $out_date, $timezone_out, $type, DATE_UNIX);
+  if ($out_date) date_set_date($date, $out_date, $timezone_out, $type, DATE_UNIX);
 
   return;
   
@@ -393,7 +393,7 @@ function date_show_date($date, $format_string, $type = 'local', $zone_display = 
   
   if ($type == 'db' || !$date->local->timestamp) {
     
-    return date_gmdate($format_string, $date->db->timestamp) . $append;
+    return date_date($format_string, $date->db->timestamp) . $append;
   
   } elseif ($date->local->timestamp) {
     
@@ -975,7 +975,7 @@ function date_selector_validate($value, $fieldname, $params = array()) {
   }
 
   // try to construct a date from the submitted values
-  if ($required && !date_selector_make_date($value, $type)) {
+  if ($required && !date_selector_make_dbdate($value, $type)) {
 
     form_set_error($fieldname, t('Date cannot be constructed using values %s.', array('%s' => implode(', ',$value))));
     return FALSE;
@@ -1440,5 +1440,4 @@ function date_test_suite() {
   }
   
 }
-
 

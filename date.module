@@ -72,6 +72,32 @@ function date_field_settings($op, $field) {
         '#options' => date_timezone_handling_options(),
         '#description' => t('Select the timezone handling method to be used for this date field'),
       );
+      $form['view'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Display Options'),
+        '#description' => t('Choose the way the date parts should be displayed. Blank values will surpress the display of that part of the date.'),
+        );
+      $options = date_view_options('date', $tz_handling);
+      $form['view']['format_date'] = array(
+        '#type' => 'select',
+        '#title' => t('Date display'),
+        '#default_value' => $field['format_date'] ? $field['format_date'] : '',
+        '#options' => $options,
+      );
+      $options = date_view_options('time', $tz_handling);
+      $form['view']['format_time'] = array(
+        '#type' => 'select',
+        '#title' => t('Time display'),
+        '#default_value' => $field['format_time'] ? $field['format_time'] : '',
+        '#options' => $options,
+      );
+      $form['view']['format_zone'] = array(
+        '#type' => 'select',
+        '#title' => t('Zone display'),
+        '#default_value' => $field['format_zone'] ? $field['format_zone'] : '',
+        '#options' => date_append_zone_options(),
+      );
+
       return $form;
 
     case 'validate':
@@ -79,7 +105,7 @@ function date_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('field_timezone', 'tz_handling');
+      return array('field_timezone', 'tz_handling', 'format_date', 'format_time', 'format_zone');
 
     case 'database columns':
       if ($field['type'] == 'date') {
@@ -176,7 +202,7 @@ function date_field($op, &$node, $field, &$node_field, $teaser, $page) {
  * Implementation of hook_field_view_item().
  *
  */
-function date_field_view_item($field, $node_field_item, $node = NULL) {
+function date_field_view_item($field, $node_field_item) {
   
   include_once(drupal_get_path('module', 'date') .'/date.inc');
   
@@ -199,7 +225,7 @@ function date_field_view_item($field, $node_field_item, $node = NULL) {
   }
   
   // display the date using the selected format
-  return date_show_date($date, $field['widget']['format_date'].' '.$field['widget']['format_time'], 'local', $field['widget']['format_zone']);
+  return date_show_date($date, $field['format_date'].' '.$field['format_time'], 'local', $field['format_zone']);
 
 }
 
@@ -279,36 +305,10 @@ function date_widget_settings($op, $widget) {
         );
       }
 
-      $form['view'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Display Options'),
-        '#description' => t('Choose the way the date parts should be displayed. Blank values will surpress the display of that part of the date.'),
-        );
-      $options = date_view_options('date', $tz_handling);
-      $form['view']['format_date'] = array(
-        '#type' => 'select',
-        '#title' => t('Date display'),
-        '#default_value' => $widget['format_date'] ? $widget['format_date'] : '',
-        '#options' => $options,
-      );
-      $options = date_view_options('time', $tz_handling);
-      $form['view']['format_time'] = array(
-        '#type' => 'select',
-        '#title' => t('Time display'),
-        '#default_value' => $widget['format_time'] ? $widget['format_time'] : '',
-        '#options' => $options,
-      );
-      $form['view']['format_zone'] = array(
-        '#type' => 'select',
-        '#title' => t('Zone display'),
-        '#default_value' => $widget['format_zone'] ? $widget['format_zone'] : '',
-        '#options' => date_append_zone_options(),
-      );
-
-      return $form;
+     return $form;
 
     case 'save':
-      return array('ampm', 'increment', 'granularity', 'format_date', 'format_time', 'format_zone');
+      return array('ampm', 'increment', 'granularity');
   }
 }
 
@@ -421,8 +421,5 @@ function date_no_granularity_array($field) {
   }
   return (array)$granularity;
 }
-
-
-
 
 

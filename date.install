@@ -106,7 +106,7 @@ function date_update_4() {
           content_alter_db_field(array(), array(), $field, $columns);
         }
         $id = $field['field_name']. '_value';
-        $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = CONCAT(SUBSTR($id,1,4), '-', SUBSTR($id,5,2), '-', SUBSTR($id,7)) WHERE SUBSTR($id, 5, 1) <> '-'");
+        $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = CONCAT(SUBSTRING($id,1,4), '-', SUBSTRING($id,5,2), '-', SUBSTRING($id,7)) WHERE SUBSTRING($id, 5, 1) <> '-'");
     }
   }
   db_query('DELETE FROM {cache}');

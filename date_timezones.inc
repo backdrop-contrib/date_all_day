@@ -109,7 +109,7 @@ function event_is_dst($region, $timestamp) {
       break;
     case 15: // Northern America (where applicable)
       // start of DST  (where applicable) (first Sunday in April 2 am local time)
-      $dststart = strtotime("1 week sunday GMT", strtotime("1 april $year GMT")) + 7200;
+      $dststart = strtotime("0 week sunday GMT", strtotime("1 april $year GMT")) + 7200;
       // end of DST (where applicable) (last Sunday in October 2 am local time)
       $dstend = strtotime("-1 week sunday GMT", strtotime("1 november $year GMT")) + 7200;
       break;

@@ -1,16 +1,22 @@
 .container-inline-date .form-item, .container-inline-date .form-item input {
   width: auto;
 }
-.container-inline-date .form-item {
+.container-inline-date .form-item, .date-date, .date-time, .date-timezone, .date-space {
   float:left;
 }
 .container-inline-date .form-item input, .container-inline-date .form-item select {
   margin-right:10px;
 }
 fieldset, #main .container-inline-date .description {
-  width:auto;
   clear:both;
-  width:100%;
+  width:auto;
+}
+.date-clearing {
+  height:1px;
+  line-height:1px;
+  clear:both;
+  margin:0;
+  padding:0;
 }
 a.help, acronym {
  cursor: help;

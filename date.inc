@@ -740,6 +740,10 @@ function date_select_input($params) {
   $form['#prefix'] = '<div class="container-inline-date">';
   $form['#suffix'] = '</div>';
   
+  $form['space0'] = array(
+    '#type' => 'markup',
+    '#value' => '<div class="date-date">',
+    );
   if (in_array('M',$granularity)) {
     $months_array = drupal_map_assoc(range(1, 12), 'map_month');
     if (!$required || in_array('mon', $opt_fields) || $blank_default) array_unshift($months_array, '');
@@ -773,7 +777,7 @@ function date_select_input($params) {
   }
   $form['space1'] = array(
     '#type' => 'markup',
-    '#value' => '<div class="form-item">&nbsp;&nbsp;</div>',
+    '#value' => '</div><div class="date-time">',
     );
   if (in_array('H',$granularity)) {
     $form['hours'] = array(
@@ -809,7 +813,7 @@ function date_select_input($params) {
     if (!$required || in_array('hours', $opt_fields) || $blank_default) array_unshift($options, '');
     $form['space2'] = array(
       '#type' => 'markup',
-      '#value' => '<div class="form-item">&nbsp;</div>',
+      '#value' => '<div class="date-space">&nbsp;</div>',
       );
     $form['ampm'] = array(
       '#type' => 'select',
@@ -819,6 +823,10 @@ function date_select_input($params) {
       '#title' => t('am/pm'),
       );
   }
+  $form['space3'] = array(
+    '#type' => 'markup',
+    '#value' => '</div>',
+    );
   if (in_array('T',$granularity)) {
     $form['timezone'] = array(
       '#type' => 'select',
@@ -826,6 +834,8 @@ function date_select_input($params) {
       '#options' => date_timezone_options(),
       '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
       '#title' => t('timezone'),
+      '#prefix' => '<div class="date-timezone">',
+      '#suffix' => '</div>',
       );
   } else {
     $form['timezone'] = array(
@@ -835,7 +845,7 @@ function date_select_input($params) {
   }
   $form[] = array(
     '#type' => 'markup',
-    '#value' => '<div class="form-item description"><div class="description">'.$description.'</div></div>',
+    '#value' => '<div class="date-clearing"> </div>'. ($description > '' ? '<div class="form-item description">'.$description.'</div>' : ''),
     );
 
   return $form;

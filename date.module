@@ -91,13 +91,18 @@ function date_field_settings($op, $field) {
         '#default_value' => $field['format_time'] ? $field['format_time'] : '',
         '#options' => $options,
       );
+      $form['view']['format_custom'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Custom date format'),
+        '#default_value' => $field['format_custom'] ? $field['format_custom'] : '',
+        '#description' => t('The custom format, if provided, will override the date and time display selected above. Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.'),
+        );
       $form['view']['format_zone'] = array(
         '#type' => 'select',
         '#title' => t('Zone display'),
         '#default_value' => $field['format_zone'] ? $field['format_zone'] : '',
         '#options' => date_append_zone_options(),
       );
-
       return $form;
 
     case 'validate':
@@ -105,7 +110,7 @@ function date_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('field_timezone', 'tz_handling', 'format_date', 'format_time', 'format_zone');
+      return array('field_timezone', 'tz_handling', 'format_date', 'format_time', 'format_zone', 'format_custom');
 
     case 'database columns':
       if ($field['type'] == 'date') {
@@ -229,7 +234,8 @@ function date_field_view_item($field, $node_field_item) {
   }
   
   // display the date using the selected format
-  return date_show_date($date, $field['format_date'].' '.$field['format_time'], 'local', $field['format_zone']);
+  $format = $field['format_custom'] > '' ? $field['format_custom'] : $field['format_date'].' '.$field['format_time'];
+  return date_show_date($date, $format, 'local', $field['format_zone']);
 
 }
 
@@ -300,49 +306,53 @@ function date_widget_settings($op, $widget) {
         '#options' => $options,
       );
       if ($widget['type'] == 'date_select') {
-        $form['input']['increment'] = array(
-          '#type' => 'select',
-          '#title' => t('Increment'),
-          '#default_value' => $widget['increment'] ? $widget['increment'] : 1,
-          '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
-          '#description' => t('Increment the minute and second fields by this amount.'),
-        );
         $form['select'] = array(
           '#type' => 'fieldset',
-          '#title' => t('Form options'),
-          '#description' => t('Type of form to use for each date part.'),
+          '#title' => t('Selection options'),
           );
         $form['select']['select_day'] = array(
           '#type' => 'select',
           '#title' => t('Days'),
           '#default_value' => $widget['select_day'] ? $widget['select_day'] : 0,
           '#options' => array(0 => t('text field'), 1 => t('select list')),
-        );
+          '#description' => t('Type of form to use for day selection.'),
+          );
         $form['select']['select_month'] = array(
           '#type' => 'select',
           '#title' => t('Months'),
           '#default_value' => $widget['select_month'] ? $widget['select_month'] : 0,
           '#options' => array(0 => t('text field'), 1 => t('select list')),
-        );
+          '#description' => t('Type of form to use for month selection.'),
+          );
         $form['select']['select_year'] = array(
           '#type' => 'select',
           '#title' => t('Years'),
           '#default_value' => $widget['select_year'] ? $widget['select_year'] : 0,
           '#options' => array(0 => t('text field'), 1 => t('select list')),
-        );
+          '#description' => t('Type of form to use for year selection.'),
+          );
         $form['select']['years_back'] = array(
           '#type' => 'textfield',
           '#title' => t('Years back'),
           '#default_value' => $widget['years_back'] ? $widget['years_back'] : 3,
           '#size' => 2,
           '#maxsize' => 2,
-        );   
+          '#description' => t('Number of years to go back when using a selection list.'),
+          );   
         $form['select']['years_forward'] = array(
           '#type' => 'textfield',
           '#title' => t('Years forward'),
           '#default_value' => $widget['years_forward'] ? $widget['years_forward'] : 3,
           '#size' => 2,
           '#maxsize' => 2,
+          '#description' => t('Number of years to go forward when using a selection list.'),
+          );
+        $form['select']['increment'] = array(
+          '#type' => 'select',
+          '#title' => t('Time increment'),
+          '#default_value' => $widget['increment'] ? $widget['increment'] : 1,
+          '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
+          '#description' => t('Increment the minute and second fields by this amount.'),
         );
       }
 

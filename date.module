@@ -307,12 +307,49 @@ function date_widget_settings($op, $widget) {
           '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
           '#description' => t('Increment the minute and second fields by this amount.'),
         );
+        $form['select'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Form options'),
+          '#description' => t('Type of form to use for each date part.'),
+          );
+        $form['select']['select_day'] = array(
+          '#type' => 'select',
+          '#title' => t('Days'),
+          '#default_value' => $widget['select_day'] ? $widget['select_day'] : 0,
+          '#options' => array(0 => t('text field'), 1 => t('select list')),
+        );
+        $form['select']['select_month'] = array(
+          '#type' => 'select',
+          '#title' => t('Months'),
+          '#default_value' => $widget['select_month'] ? $widget['select_month'] : 0,
+          '#options' => array(0 => t('text field'), 1 => t('select list')),
+        );
+        $form['select']['select_year'] = array(
+          '#type' => 'select',
+          '#title' => t('Years'),
+          '#default_value' => $widget['select_year'] ? $widget['select_year'] : 0,
+          '#options' => array(0 => t('text field'), 1 => t('select list')),
+        );
+        $form['select']['years_back'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Years back'),
+          '#default_value' => $widget['years_back'] ? $widget['years_back'] : 3,
+          '#size' => 2,
+          '#maxsize' => 2,
+        );   
+        $form['select']['years_forward'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Years forward'),
+          '#default_value' => $widget['years_forward'] ? $widget['years_forward'] : 3,
+          '#size' => 2,
+          '#maxsize' => 2,
+        );
       }
 
      return $form;
 
     case 'save':
-      return array('ampm', 'increment', 'granularity');
+      return array('ampm', 'increment', 'granularity', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
   }
 }
 
@@ -352,6 +389,11 @@ function date_widget($op, &$node, $field, &$node_field) {
           'timezone_out' => $timezone,
           'timezone_in'  => 'GMT',
           'description'  => $field['widget']['description'],
+          'select_day'    => $field['widget']['select_day'],
+          'select_month'  => $field['widget']['select_month'],
+          'select_year'   => $field['widget']['select_year'],
+          'years_back'    => $field['widget']['years_back'],
+          'years_forward' => $field['widget']['years_forward'],
           );
         $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
 

@@ -693,7 +693,12 @@ function date_select_input($params) {
   $timezone_in   = isset($params['timezone_in']) ? $params['timezone_in'] : 'GMT';
   $timezone_out  = isset($params['timezone_out']) ? $params['timezone_out'] : date_get_site_timezone();
   $description   = $params['description'];
-  
+  $select_month  = $params['select_month'];
+  $select_day    = $params['select_day'];
+  $select_year   = $params['select_year'];
+  $years_back    = $params['years_back'];
+  $years_forward = $params['years_forward'];
+
   if ($show_ampm) {
     $hours_format = t('h');
     for ($i = 0; $i <= 12; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
@@ -745,35 +750,59 @@ function date_select_input($params) {
     '#value' => '<div class="date-date">',
     );
   if (in_array('M',$granularity)) {
-    $months_array = drupal_map_assoc(range(1, 12), 'map_month');
-    if (!$required || in_array('mon', $opt_fields) || $blank_default) array_unshift($months_array, '');
     $form['mon'] = array(
-    '#type' => 'select',
     '#default_value' => $mon,
-    '#options' => $months_array,
     '#title' => t('month'),
     '#required' => ($required && !in_array('mon', $opt_fields)) ? $required : 0,
     );
+    if ($select_month) {
+      $months_array = drupal_map_assoc(range(1, 12), 'map_month');
+      if (!$required || in_array('mon', $opt_fields) || $blank_default) array_unshift($months_array, '');
+      $form['mon']['#type'] = 'select';
+      $form['mon']['#options'] = $months_array;
+    }
+    else {
+      $form['mon']['#type'] = 'textfield';
+      $form['mon']['#maxlength'] = 2;
+      $form['mon']['#size'] = 2;
+    }
   }
   if (in_array('D',$granularity)) {
     $form['mday'] = array(
-    '#type' => 'textfield',
     '#default_value' => $mday,
-    '#maxlength' => 2,
-    '#size' => 2,
     '#title' => t('day'),
     '#required' => ($required && !in_array('mday', $opt_fields)) ? $required : 0,
     );
+    if ($select_day) {
+      $days_array = drupal_map_assoc(range(1, 31));
+      if (!$required || in_array('mday', $opt_fields) || $blank_default) array_unshift($days_array, '');
+      $form['mday']['#type'] = 'select';
+      $form['mday']['#options'] = $days_array;
+    }
+    else {
+      $form['mday']['#type'] = 'textfield';
+      $form['mday']['#maxlength'] = 2;
+      $form['mday']['#size'] = 2;
+    }
   }
   if (in_array('Y',$granularity)) {
     $form['year'] = array(
-    '#type' => 'textfield',
     '#default_value' => $year,
-    '#maxlength' => 4,
-    '#size' => 4,
     '#title' => t('year'),
     '#required' => ($required && !in_array('year', $opt_fields)) ? $required : 0,
     );
+    if ($select_year) {
+      $years_array = drupal_map_assoc(range($year - $years_back, $year + $years_forward));
+      // array_unshift converts the assoc array to a numeric one, can't use it here
+      if (!$required || in_array('year', $opt_fields) || $blank_default) $years_array = array(0 => '') + $years_array;
+      $form['year']['#type'] = 'select';
+      $form['year']['#options'] = $years_array;
+    }
+    else {
+      $form['year']['#type'] = 'textfield';
+      $form['year']['#maxlength'] = 4;
+      $form['year']['#size'] = 4;
+    }
   }
   $form['space1'] = array(
     '#type' => 'markup',
@@ -847,7 +876,6 @@ function date_select_input($params) {
     '#type' => 'markup',
     '#value' => '<div class="date-clearing"> </div>'. ($description > '' ? '<div class="form-item description">'.$description.'</div>' : ''),
     );
-
   return $form;
 }
 
@@ -1638,5 +1666,3 @@ function date_test_suite() {
 
 // uncomment for debugging
 //date_test_suite();
-
-

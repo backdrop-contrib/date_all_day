@@ -156,54 +156,6 @@ function date_field($op, &$node, $field, &$node_field, $teaser, $page) {
       }
       return theme('field', $node, $field, $node_field, $teaser, $page);
       
-    case ('insert'):
-    case ('update'):
-      
-      /**
-       *  Rebuild $node_field with converted dates and timezones
-       * 
-       *  input text field dates will hold an array like:
-       *  [0] => Array (
-       *    [value] => 2006-04-06T02:00:00
-       *    [timezone] => US/Central
-            
-       *  input date selector dates will hold an array like:
-       *  [0] => Array (
-       *    [value] => Array (
-       *      [month] => 4
-       *      [day] => 05
-       *      [year] => 2006
-       *      [hour] => 1
-       *      [minute] => 12
-       *      [timezone] => US/Central
-       */
-
-      $add = array();
-      
-      foreach ($node_field as $delta => $item) {
-
-        $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-        
-        switch ($field['widget']['type']) {
-          case ('date_select'):
-            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
-            break;
-          case ('date_js'):
-            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
-            break;
-          default:
-            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
-            break;
-        }
-        
-        // replace $node_field values with the converted date and timezone values
-        if ($converted_date) {
-          $add[$delta]['value']    = $converted_date;
-          $add[$delta]['timezone'] = $timezone;
-        } 
-      }
-      $node_field = $add;
-      
   }
 }
 
@@ -430,6 +382,53 @@ function date_widget($op, &$node, $field, &$node_field) {
       }
       
       return $form;
+
+    case 'process form values':
+      /**
+       *  Rebuild $node_field with converted dates and timezones
+       * 
+       *  input text field dates will hold an array like:
+       *  [0] => Array (
+       *    [value] => 2006-04-06T02:00:00
+       *    [timezone] => US/Central
+
+       *  input date selector dates will hold an array like:
+       *  [0] => Array (
+       *    [value] => Array (
+       *      [month] => 4
+       *      [day] => 05
+       *      [year] => 2006
+       *      [hour] => 1
+       *      [minute] => 12
+       *      [timezone] => US/Central
+       */
+
+      $add = array();
+
+      foreach ($node_field as $delta => $item) {
+
+        $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+
+        switch ($field['widget']['type']) {
+          case ('date_select'):
+            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+          case ('date_js'):
+            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+          default:
+            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            break;
+        }
+
+        // replace $node_field values with the converted date and timezone values
+        if ($converted_date) {
+          $add[$delta]['value']    = $converted_date;
+          $add[$delta]['timezone'] = $timezone;
+        } 
+      }
+      $node_field = $add;
+      return;
 
     case 'validate':
       foreach ($node_field as $delta => $item) {

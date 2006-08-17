@@ -1,6 +1,5 @@
 <?php
 // $Id$
-
 /**
  * @file
  * Defines a date/time field type.
@@ -128,14 +127,18 @@ function date_field_settings($op, $field) {
     // these operators are not going to be sufficient for views, need to come back and improve on them
     case 'filter operators':
       return array(
-        '=' => t('is equal to'),
-        '!=' => t('is not equal to'),
-        '>' => t('greater than'),
-        '>=' => t('greater than or equal to'),
-        '<' => t('less than'),
-        '<=' => t('less than or equal to'),
-        'LIKE' => t('matches the pattern'),
-      );
+        'default' => array(
+          'operator' => array(
+            '=' => t('is equal to'),
+            '!=' => t('is not equal to'),
+            '>' => t('greater than'),
+            '>=' => t('greater than or equal to'),
+            '<' => t('less than'),
+            '<=' => t('less than or equal to'),
+            'LIKE' => t('matches the pattern'),
+            ),
+          ),
+        );
   }
 }
 
@@ -589,4 +592,3 @@ function date_views_argument_handler($op, &$query, $argtype, $arg = '') {
       return date_field_view_item($field, $item);
   }
 }
-

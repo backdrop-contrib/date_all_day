@@ -11,7 +11,7 @@
 function date_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      return t('Defines a date/time field type for the content module and a date API. <em>Note: Requires content.module.</em>');
+      return t('<strong>CCK:</strong> Defines a date/time field type for the content module and a date API. <em>Note: Requires content.module.</em>');
       break;
     case 'admin/help#date':
       return t('<p>The date module defines a date/time field type for the content module and a date API. '.
@@ -132,7 +132,7 @@ function date_field_settings($op, $field) {
       }
 
     // these operators are not going to be sufficient for views, need to come back and improve on them
-    case 'filter operators':
+    case 'filters':
       return array(
         'default' => array(
           'operator' => array(

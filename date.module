@@ -511,7 +511,7 @@ function date_views_arguments() {
   $field_types = _content_field_types();
   $arguments = array();
 
-  foreach (_content_fields() as $field) {
+  foreach (content_fields() as $field) {
     $db_info = content_database_info($field);
     switch ($field['type']) {
       case 'date':
@@ -562,7 +562,7 @@ function date_views_argument_handler($op, &$query, $argtype, $arg = '') {
     $granularity = 'day';
   }
   
-  $field = _content_fields($field_name);
+  $field = content_fields($field_name);
   $db_info = content_database_info($field);
   $main_column = reset($db_info['columns']);
   

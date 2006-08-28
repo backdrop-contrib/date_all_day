@@ -1606,6 +1606,78 @@ function date_time_options() {
     );
 }
 
+/**
+ *  Convert date() to strftime() format strings
+ * 
+ *  @param $format - a format string for date()
+ *  @return corresponding format string for strftime()
+ */
+function date_date2strftime($format) {
+  return strtr($format, date_date2strftime_replace());
+}
+
+/** 
+ *  Date() to strftime() replacement array
+ * 
+ *  Adjusted for differences between unix and windows strftime()
+ * 
+ *  Not all date formats have corresponding strftime formats
+ *  Trying for best match or blank for no match
+ */
+function date_date2strftime_replace() {
+  static $replace = array();
+
+  if (empty($replace)) {
+    if (stristr(PHP_OS, 'WIN')) {
+      $type = 'windows';
+    else {
+      $type = 'unix';
+    }
+
+    $replace = array(
+    'd' => '%d', // day of month, leading zero
+    'j' => ($type == 'unix' ? '%e' : '%#d'), // day of month, no leading zero
+    'F' => '%B', // full month name
+    'M' => '%b', // month abbreviation
+    'm' => '%m', // month number, leading zero
+    'n' => ($type == 'unix' ? '%m' : '%#m'), // month number, no leading zero
+    'Y' => '%Y', // year, 4 digit
+    'y' => '%y', // year, 2 digit
+    'l' => '%A', // full day name
+    'D' => '%a', // abbreviated day name
+    'w' => '%w', // dow, 0 for sunday
+    'N' => '%u', // dow, 7 for sunday
+    'H' => '%H', // 24 hour hour, leading zero
+    'h' => '%I', // 12 hour hour, leading zero
+    'G' => (type == 'unix' ? '%H' : '%#H'), // 24 hour hour, no leading zero
+    'g' => (type == 'unix' ? '%I' : '%#I'), // 12 hour hour, no leading zero
+    'i' => '%M', // minutes, leading zero
+    's' => '%S', // seconds, leading zero
+    'a' => '%p', // am/pm lowercase (strftime windows is only upppercase)
+    'A' => '%p', // am/pm capitalized (striftime unix is only lowercase)
+    'W' => '%V', // ISO week number of year, starting on first Monday
+    'o' => '%G', // ISO year that matches ISO week
+    'T' => '%Z', // server timezone name
+    'r' => ($type == 'unix' ? '%c' : '%#c'), // formatted complete date and time (Thu, 21 Dec 2000 16:01:07)
+
+    /* date formats with no good strftime match */
+    'z' => '', // day of year (0-365), strftime equivalent %j uses 1-365
+    'S' => '', // day of month ordinal like st, nd, rd
+    't' => '', // number of days in month, 28-31
+    'L' => '', // leap year, 0 or 1
+    'I' => '', // daylight savings time, 0 or 1
+    'B' => '', // Swatch internet time, 000-999
+    'e' => '', // server timezone identifier like US/Eastern
+    'O' => '', // server timezone to gmt offset (+0200)
+    'P' => '', // server timezone to gmt offset (+02:00)
+    'Z' => '', // server timezone to gmt offset in seconds
+    'U' => '', // seconds since Unix Epoch
+    'c' => '', // complete ISO date
+    );
+  }
+  return $replace;
+}
+
 function date_test_suite() {
 
   $isodates = array(

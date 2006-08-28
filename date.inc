@@ -1630,6 +1630,7 @@ function date_date2strftime_replace() {
   if (empty($replace)) {
     if (stristr(PHP_OS, 'WIN')) {
       $type = 'windows';
+    }
     else {
       $type = 'unix';
     }

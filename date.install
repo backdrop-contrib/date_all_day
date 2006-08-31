@@ -112,7 +112,3 @@ function date_update_4() {
   db_query('DELETE FROM {cache}');
   return $ret;
 }
-
-
-
-

@@ -5,6 +5,11 @@
  * Defines a date/time field type.
  */
 
+// moved views functions into their own file for better readability
+if (module_exist('views')) {
+  include_once(drupal_get_path('module', 'date') .'/date_views.inc');
+}
+
 /**
  * Implementation of hook_help().
  */
@@ -14,16 +19,18 @@ function date_help($section) {
       return t('<strong>CCK:</strong> Defines a date/time field type for the content module and a date API. <em>Note: Requires content.module.</em>');
       break;
     case 'admin/help#date':
-      return t('<p>The date module defines a date/time field type for the content module and a date API. '.
-        'Dates can use GMT, the site\'s timezone or a date-specific timezone and are converted to GMT and stored as either a Date (ISO 8601 YYYY-MM-DDTHH:MM:SS) or a Datestamp (a unix timestamp). When displayed, they are converted back to the desired timezone value and displayed using the desired display format. '.
-        'Display formats include numerous combinations of date parts, sequences, and separators, to accomodate international date formatting needs.</p>'.
-        '<dl>'.
-        '<dt>Text Field</dt><dd>The Text Field date widget uses the strtotime function to construct a date and will accept input allowed by the php <a href="http://www.php.net/manual/en/function.strtotime.php">strtotime function</a>. This allows the user to type a date in in many natural formats, like <strong>March 31, 1980</strong> or <strong>3/10/1980</strong> or in numeric formats like <strong>YYYY-MM-DD</strong>. '.
-        'The strtotime function will assume date shortcuts are in American format (MM/DD/YY), and it will not work for dates prior to 1970. '.
-        '</dd>'.
-        '<dt>Select List</dt><dd>The Select List date widget presents users with a drop-down list for each part of the date (year, month, day, hour, etc.). The whole selector is collapsed onto a single line using css (except for the timezone selector, if date-specific timezones are collected). The selector is highly configurable and will even handle years prior to 1900.</dd>'.
-        '<dt>Javascript Pop-up Calendar</dt><dd>The Javascript Pop-up Calendar is offered as an input alternative if the <a href="http://drupal.org/node/57285">jscalendar</a> module is installed. This widget can handle dates as early as 1900.'.
-        '</dl>');
+      $output = t('<h2>Date Module</h2><p>The date module defines a date/time field type for the content module and a date API. 
+        Dates can use GMT, the site\'s timezone or a date-specific timezone and are converted to GMT and stored as either a Date (ISO 8601 YYYY-MM-DDTHH:MM:SS) or a Datestamp (a unix timestamp). When displayed, they are converted back to the desired timezone value and displayed using the desired display format. 
+        Display formats include numerous combinations of date parts, sequences, and separators, to accomodate international date formatting needs.</p>
+        <dl>
+        <dt>Text Field</dt><dd>The Text Field date widget uses the strtotime function to construct a date and will accept input allowed by the php <a href="http://www.php.net/manual/en/function.strtotime.php">strtotime function</a>. This allows the user to type a date in in many natural formats, like <strong>March 31, 1980</strong> or <strong>3/10/1980</strong> or in numeric formats like <strong>YYYY-MM-DD</strong>. 
+        The strtotime function will assume date shortcuts are in American format (MM/DD/YY), and it will not work for dates prior to 1970. 
+        </dd>
+        <dt>Select List</dt><dd>The Select List date widget presents users with a drop-down list for each part of the date (year, month, day, hour, etc.). The whole selector is collapsed onto a single line using css (except for the timezone selector, if date-specific timezones are collected). The selector is highly configurable and will even handle years prior to 1900.</dd>
+        <dt>Javascript Pop-up Calendar</dt><dd>The Javascript Pop-up Calendar is offered as an input alternative if the <a href="http://drupal.org/node/57285">jscalendar</a> module is installed. This widget can handle dates as early as 1900.
+        </dl>');
+      $output .= date_views_help();
+      return $output;
       break;
   }
 }
@@ -131,21 +138,8 @@ function date_field_settings($op, $field) {
         );
       }
 
-    // these operators are not going to be sufficient for views, need to come back and improve on them
     case 'filters':
-      return array(
-        'default' => array(
-          'operator' => array(
-            '=' => t('is equal to'),
-            '!=' => t('is not equal to'),
-            '>' => t('greater than'),
-            '>=' => t('greater than or equal to'),
-            '<' => t('less than'),
-            '<=' => t('less than or equal to'),
-            'LIKE' => t('matches the pattern'),
-            ),
-          ),
-        );
+      return date_views_filters($field);
   }
 }
 
@@ -165,9 +159,6 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
         $items[$delta]['view'] = content_format($field, $item, 'default', $node);
       }
       return theme('field', $node, $field, $items, $teaser, $page);
-
-
-      
   }
 }
 
@@ -500,117 +491,4 @@ function date_no_granularity_array($field) {
     if (!$item) $granularity[] = $item;
   }
   return (array)$granularity;
-}
-
-/**
- * Implementation of hook_views_arguments().
- *
- * The date module defines custom arguments for more granular date filtering.
- */
-function date_views_arguments() {
-  $field_types = _content_field_types();
-  $arguments = array();
-
-  foreach (content_fields() as $field) {
-    $db_info = content_database_info($field);
-    switch ($field['type']) {
-      case 'date':
-        $main_column = reset($db_info['columns']);
-        $argument = array();
-        $argument['name'] = 'Date (by year): '. $field['widget']['label'] .' ('. $field['field_name'] .')';
-        $argument['handler'] = 'date_views_argument_handler';
-
-        $arguments['date-year: '. $field['field_name']] = $argument;
-
-        $argument = array();
-        $argument['name'] = 'Date (by month): '. $field['widget']['label'] .' ('. $field['field_name'] .')';
-        $argument['handler'] = 'date_views_argument_handler';
-
-        $arguments['date-month: '. $field['field_name']] = $argument;
-
-        $argument = array();
-        $argument['name'] = 'Date (by day): '. $field['widget']['label'] .' ('. $field['field_name'] .')';
-        $argument['handler'] = 'date_views_argument_handler';
-
-        $arguments['date-day: '. $field['field_name']] = $argument;
-        break;
-    }
-  }
-  return $arguments;
-}
-
-/**
- * Perform filtering by an argument for field data stored via content.module.
- */
-function date_views_argument_handler($op, &$query, $argtype, $arg = '') {
-  if ($op == 'filter') {
-    $type = $argtype['type'];
-  }
-  else {
-    $type = $argtype;
-  }
-  if (substr($type, 0, 9) == 'date-year') {
-    $field_name = substr($type, 11);
-    $granularity = 'year';
-  }
-  if (substr($type, 0, 10) == 'date-month') {
-    $field_name = substr($type, 12);
-    $granularity = 'month';
-  }
-  if (substr($type, 0, 8) == 'date-day') {
-    $field_name = substr($type, 10);
-    $granularity = 'day';
-  }
-  
-  $field = content_fields($field_name);
-  $db_info = content_database_info($field);
-  $main_column = reset($db_info['columns']);
-  
-  // The table name used here is the Views alias for the table, not the actual
-  // table name.
-  $table = 'node_data_'. $field['field_name'];  
-  
-  switch ($op) {
-    case 'summary':
-      $query->ensure_table($table);
-      $query->add_field($main_column['column'], $table);
-      switch ($granularity) {
-        case 'year':
-          return array(
-            'field' => 'SUBSTRING('. $table .'.'. $main_column['column'] .', 1, 4)',
-            'fieldname' => $main_column['column'] .'_year',
-          );
-
-        case 'month':
-          return array(
-            'field' => 'SUBSTRING('. $table .'.'. $main_column['column'] .', 1, 7)',
-            'fieldname' => $main_column['column'] .'_month',
-          );
-
-        case 'day':
-          return array(
-            'field' => 'SUBSTRING('. $table .'.'. $main_column['column'] .', 1, 10)',
-            'fieldname' => $main_column['column'] .'_day',
-          );
-      }
-      break;
-  
-    case 'sort':
-      break;
-  
-    case 'filter':
-      $query->ensure_table($table);
-      $query->add_where($table .'.'. $main_column['column'] .' LIKE \'%s%%\'', $arg);
-      break;
-  
-    case 'link':
-      $view_column_name = $main_column['column'] .'_'. $granularity;
-      $time = $query->$view_column_name;
- 
-      return l($time, $arg .'/'. $time, array(), NULL, NULL, FALSE, TRUE);
-  
-    case 'title':
-      $item = array(key($db_info['columns']) => $query);
-      return date_field_view_item($field, $item);
-  }
 }

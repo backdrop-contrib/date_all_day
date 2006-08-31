@@ -1679,63 +1679,137 @@ function date_date2strftime_replace() {
   return $replace;
 }
 
-function date_test_suite() {
+/**
+ *  Cross-database date SQL wrapper function
+ *  allows use of normalized native date functions in both mysql and postgres
+ *  designed to be extensible to other databases
+ * 
+ *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
+ *  @param $field - the name of the date field to be analyzed
+ *  @param $date_type - the type of date field being analyzed, int or iso
+ *  @param $offset - timezone offset in seconds, either a value or fieldname
+ *  @param $offset_op - the operation to perform on the offset, + or -
+ *  @return a SQL statement appropriate for the $db_type
+ * 
+ *  example:          date_sql('WEEK', 'MYFIELD', 'int', 'MYOFFSETFIELD', '+')
+ *  mysql returns:    WEEK(FROM_UNIXTIME(MYFIELD) + INTERVAL MYOFFSETFIELD SECOND, 3)
+ *  postgres returns: EXTRACT(WEEK FROM(TIMESTAMP(MYFIELD::ABSTIME::INT4) + INTERVAL MYOFFSETFIELD SECONDS))
+ */
+function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offset_op = '+') {
+  global $db_type;
 
-  $isodates = array(
-    '2006-08-14T14:15:15', // recent, with dst
-    '1980-01-05T18:30:15', // recent, no dst
-    '1970-01-01T00:00:00', // 1970
-    '1951-03-07T04:15:30', // pre-1970
-    );
-  $unixdates = array(
-    strtotime('2006-08-14 14:15:15'),  // recent, with dst
-    strtotime('1980-01-05 18:30:15'), // recent, no dst
-    0, // 1970
-    -593963070, // pre-1970
-    );
-
-  $timezone = 'US/Eastern';
-  
-  print '<h2>ISO</h2>';
-  $format = DATE_ISO;
-  foreach ($isodates as $val) {
-    print 'input local: '.$val.', timezone: '.$timezone .'<br>';
-    
-    print '<h2>CONVERSIONS</h2>';
-    print 'iso2unix: '.date_iso2unix($val).'<br>';
-    print 'iso2array: ';
-    print '<pre>';
-    print_r(date_iso2array($val));
-    print '</pre>';
-    
-    $date = date_make_date($val, $timezone, 'local', $format);
-    print 'db show_value: '. date_show_value($date, 'db', DATE_ISO) .'<br>';
-    print 'local show_date: '. date_show_date($date, DATE_STRING_ISO, 'local', '00:00') .'<br>';
-    print '<pre>';
-    print_r($date);
-    print '</pre>';
+  if ($date_type == 'NOW') {
+    // set up an initial value for now
+    $field = 'NOW()';
+  } 
+  elseif ($date_type == 'int' && $field) {
+    // convert integer field value to native date format
+    switch ($db_type) {
+     case ('mysql'):
+     case ('mysqli'):
+       $field = "FROM_UNIXTIME($field)";
+       break;
+     case ('postgres'):
+       $field = "TIMESTAMP($field::ABSTIME::INT4)";
+       break;
+     }
   }
-  print '<h2>UNIX</h2>';
-  $format = DATE_UNIX;
-  foreach ($unixdates as $val) {
-    print 'input local: '.$val.', timezone: '.$timezone .'<br>';
-    
-    print '<h2>CONVERSIONS</h2>';
-    print 'unix2iso: '.date_unix2iso($val).'<br>';
-    print 'unix2array: ';
-    print '<pre>';
-    print_r(date_unix2array($val));
-    print '</pre>';
-    
-    $date = date_make_date($val, $timezone, 'local', $format);
-    print 'db show_value: '. date_show_value($date, 'db', DATE_ISO) .'<br>';
-    print 'local show_date: '. date_show_date($date, DATE_STRING_ISO, 'local', '00:00') .'<br>';
-    print '<pre>';
-    print_r($date);
-    print '</pre>';
+  else {
+     // get rid of the 'T' in ISO dates to match native date field
+     $field = " REPLACE($field,'T',' ')";
   }
-  
+  // adjust date for timezone offset
+  if ($offset) {
+    switch ($db_type) {
+    case ('mysql'):
+    case ('mysqli'):
+      $field = "$field $offset_op INTERVAL $offset SECOND";
+      break;
+    case ('postgres'):
+      $field = "$field $offset_op INTERVAL $offset SECONDS";
+      break;
+    }
+  }
+  // return requested sql
+  // note there is no space after FROM to avoid db_rewrite problems
+  // see http://drupal.org/node/79904
+  switch ($result_type) {
+  case ('NOW'):
+  case ('DATE'):
+    return $field;
+  case ('YEAR'):
+    return "EXTRACT(YEAR FROM($field))";
+  case ('MONTH'):
+    return "EXTRACT(MONTH FROM($field))";
+  case ('DAY'):
+    return "EXTRACT(DAY FROM($field))";
+  case ('HOUR'):
+    return "EXTRACT(HOUR FROM($field))";
+  case ('MINUTE'):
+    return "EXTRACT(MINUTE FROM($field))";
+  case ('SECOND'):
+    return "EXTRACT(SECOND FROM($field))";
+  case ('WEEK'):  // ISO week number for date
+    switch ($db_type) {
+      case ('mysql'):
+      case ('mysqli'):
+        // WEEK using arg 3 in mysql should return the same value as postgres EXTRACT
+        return "WEEK($field, 3)";
+      case ('postgres'):
+        return "EXTRACT(WEEK FROM($field))";
+    }
+  case ('DOW'):
+    switch ($db_type) {
+      case ('mysql'):
+      case ('mysqli'):
+        // mysql returns 1 for Sunday through 7 for Saturday
+        // php date functions and postgres use 0 for Sunday and 6 for Saturday
+        return "INTEGER(DAYOFWEEK($field) - 1)";
+      case ('postgres'):
+        return "DOW($field)";
+    }
+  case ('DOY'):
+    switch ($db_type) {
+      case ('mysql'):
+      case ('mysqli'):
+        return "DAYOFYEAR($field)";
+      case ('postgres'):
+        return "DOY($field)";
+    }
+  }
 }
 
-// uncomment for debugging
-//date_test_suite();
+/**
+ *  A helper function to do cross-database concatation of date parts
+ * 
+ *  @param $array - an array of values to be concatonated in sql
+ *  @return - correct sql string for database type
+ */
+function date_sql_concat($array) {
+  global $db_type;
+
+  switch ($db_type) {
+    case ('mysql'):
+    case ('mysqli'):
+      return "CONCAT(". implode(",", $array) .")";
+    case ('postgres'):
+      return implode(" || ", $array);
+  }
+}
+
+/**
+ *  A helper function to do cross-database padding of date parts
+ * 
+ *  @param $str - a string to apply padding to
+ *  @param $size - the size the final string should be
+ *  @param $pad - the value to pad the string with
+ *  @param $side - the side of the string to pad
+ */
+function date_sql_pad($str, $size = 2, $pad = '0', $side = 'l') {
+  switch ($side) {
+  case ('r'):
+    return "RPAD($str, $size, '$pad')";
+  default:
+    return "LPAD($str, $size, '$pad')";
+  }
+}

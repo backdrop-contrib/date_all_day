@@ -58,6 +58,11 @@ function date_views_help() {
  */
 function date_views_arguments() {
    
+  // must create an argument with the name content: $field['field_name'] to override 
+  // the one created automatically for all fields by content.module (which will NOT work correctly)
+  // sending both to the same handler ultimately, using a wrapper function to identify
+  // whether the date is an iso or timestamp date
+  
   $field_types = _content_field_types();
   $arguments = array();
 
@@ -70,14 +75,13 @@ function date_views_arguments() {
       $argument['handler'] = 'date_views_argument_range_handler';
       $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD::YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
-      $arguments['content_date: '. $field['field_name']] = $argument;
+      $arguments['content: '. $field['field_name']] = $argument;
       break;
     
     case 'datestamp':
-      
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .t(' by date range: '). $field['widget']['label'] .' ('. $field['field_name'] .')';
-      $argument['handler'] = 'date_views_argument_range_handler';
+      $argument['handler'] = 'date_views_timestamp_argument_range_handler';
       $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD::YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
@@ -129,14 +133,16 @@ function date_views_arguments() {
  * grouped by the selected range, with a link to the complete query for each range
  * 
  */
-function date_views_argument_range_handler($op, &$query, $argtype, $arg = '') {
+function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
+  // this is just a wrapper function that sets the date type 
+  return date_views_argument_range_handler($op, $query, $argtype, $arg, 'int');
+}
+function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
-
+  
   include_once(drupal_get_path('module', 'date') .'/date.inc');
   
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
-  $type = explode('-', $name[0]);
-  $field_type = ($type[1] == 'date' ? 'iso' : 'int');
   $field_name = trim($name[1]);
   $field      = content_fields($field_name);
   $db_info    = content_database_info($field);
@@ -160,7 +166,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '') {
       
       // in the summary operation, the arg contains the selected option
       $groupby = $arg;
-
+      
       switch ($groupby) {
         case ('year'):
           $format = 'Y';
@@ -224,7 +230,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '') {
         $min_date = $range[0];
         $max_date = $range[1];
       }
-      elseif (stristr($arg, 'W')) {
+      elseif (stristr($arg, 'W') && !stristr($arg, '::')) {
         // for a specified week, get the min and max values
         $range = date_week_value($arg);
         $min_date = $range[0];
@@ -363,7 +369,6 @@ function date_plus_value($value) {
   elseif (stristr($range[1], 'Y')) {
     $count = intval(str_replace('Y', '', $range[1]));
     $max_date = intval(substr($min_date, 0, 4) + $count) . substr($min_date, 5, 15);
-    break;
   }
   $max_date = $max_unix ? date_unix2iso($max_unix) : $max_date;
   return array($min_date, $max_date);
@@ -381,4 +386,4 @@ function date_range_arg_options() {
     'week'  => t('summarize by week'), 
     'hour'  => t('summarize by hour')
     );
-)
+}

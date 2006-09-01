@@ -65,6 +65,14 @@ function date_views_arguments() {
     $db_info = content_database_info($field);
     switch ($field['type']) {
     case 'date':
+      $argument = array();
+      $argument['name'] = $field_types[$field['type']]['label'] .t(' by date range: '). $field['widget']['label'] .' ('. $field['field_name'] .')';
+      $argument['handler'] = 'date_views_argument_range_handler';
+      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD::YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
+      $argument['option'] = 'date_range_arg_options';
+      $arguments['content_date: '. $field['field_name']] = $argument;
+      break;
+    
     case 'datestamp':
       
       $argument = array();
@@ -128,7 +136,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '') {
   
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
   $type = explode('-', $name[0]);
-  $field_type = ($type[0] == 'date' ? 'iso' : 'int');
+  $field_type = ($type[1] == 'date' ? 'iso' : 'int');
   $field_name = trim($name[1]);
   $field      = content_fields($field_name);
   $db_info    = content_database_info($field);

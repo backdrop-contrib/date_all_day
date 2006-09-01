@@ -368,7 +368,7 @@ function date_plus_value($value) {
   }
   elseif (stristr($range[1], 'Y')) {
     $count = intval(str_replace('Y', '', $range[1]));
-    $max_date = intval(substr($min_date, 0, 4) + $count) . substr($min_date, 5, 15);
+    $max_date = intval(substr($min_date, 0, 4) + $count) . substr($min_date, 4, 15);
   }
   $max_date = $max_unix ? date_unix2iso($max_unix) : $max_date;
   return array($min_date, $max_date);

@@ -21,36 +21,40 @@ function date_views_filters($field) {
 
 function date_views_help() {
   return t('<h2>Date Views</h2>
+        <h3>Date Range Argument</h3>
         <p>
-        A flexible date range argument is available in views. 
-        The argument expects a value like 2006-01-01::2006-01-15, or 2006W24, or @1W.
-        The from and to dates in argument are ISO dates, but can be shortened and missing parts will be added. 
-        Omitted parts of ISO dates will be assumed to be the first possible (for the from date)
+        A flexible date range argument is provided in views. 
+        The date range argument is based on the ISO 8601 week, duration, and time interval standards. 
+        The argument expects a value like 2006-01-01T12:30:00--2006-01-15, or 2006-W24, or @P1W.
+        Separate from and to dates with a separator, a double hyphen (--). 
+        The from and to dates in argument are ISO dates, but parts can be omitted,  
+        and will be assumed to be the first possible (for the from date)
         or the last possible (for the to date) value in that time period. 
         The \'to\' portion of the argument can be eliminated if it is the same as the \'from\' portion. 
-        If the \'from\' portion is eliminated, the current date and time is assumed as the from date. 
+        Use @ instead of a date to substitute in the current date and time. 
         </p><p>
         Several shortcuts are available:
         </p><ul>
-        <li>Use @1H, @1D, @1W, @1M, @1Y to get next hour/day/week/month/year from now</li>
-        <li>Use date before @ sign to get next hour/day/week/month/year from that date</li>
-        <li>Use format like 2006W24 to find ISO week number 24 in year 2006</li>
+        <li>Use @P1H, @P1D, @P1W, @P1M, @P1Y to get next hour/day/week/month/year from now</li>
+        <li>Use date before P sign to get next hour/day/week/month/year from that date</li>
+        <li>Periods can be combined, i.e. P1Y2M4D sets a date range of 1 year, 2 months, and 4 days.</li>
+        <li>Use format like 2006-W24 to find ISO week number 24 in year 2006</li>
         </ul>
         <p>Examples of views date range arguments:</p>
         <table>
         <tr><th>Argument</th><th>Resulting Query Range</th></tr>
-        <tr><td>2006W24</td><td>24th ISO week in 2006</td></tr>
+        <tr><td>2006-W24</td><td>24th ISO week in 2006</td></tr>
         <tr><td>2006</td><td>the whole year of 2006</td></tr>
         <tr><td>2006-03</td><td>the whole month of Mar 2006</td></tr>
-        <tr><td>2006-02::2007-03</td><td>Feb 1 2006 to Mar 31 2006</td></tr>
-        <tr><td>2006-08-31T14::2006-08-31T16</td><td>the 14th to 16th hours of Aug 8 2006</td></tr>
-        <tr><td>::2006-12-31</td><td>NOW to 2006-12-31T23:59:59</td></tr>
-        <tr><td>@3H</td><td>NOW to three hours from now</td></tr>
-        <tr><td>@90D</td><td>NOW to 90 days from now</td></tr>
-        <tr><td>@1Y</td><td>NOW to one year from now</td></tr>
-        <tr><td>2006-03-05@1W</td><td>the week starting Mar 5 2006</td></tr>
-        <tr><td>2006-01@3M</td><td>3 months starting Jan 2006</td></tr>
-        </table>');
+        <tr><td>2006-02--2007-03-15</td><td>Feb 1 2006 to Mar 15 2006</td></tr>
+        <tr><td>2006-08-31T14:00:00P2H</td><td>the 14th to 16th hours of Aug 8 2006</td></tr>
+        <tr><td>@--2006-12-31</td><td>NOW to 2006-12-31T23:59:59</td></tr>
+        <tr><td>@P3H</td><td>NOW to three hours from now</td></tr>
+        <tr><td>@P1Y90D</td><td>NOW to 1 year and 90 days from now</td></tr>
+        <tr><td>2006-03-05P1W</td><td>the 1 week period starting Mar 5 2006</td></tr>
+        <tr><td>2006-01P3M</td><td>the 3 month period starting Jan 2006</td></tr>
+        </table><p>See <a href="http://en.wikipedia.org/wiki/ISO_8601">http://en.wikipedia.org/wiki/ISO_8601</a> 
+        for more information abou ISO dates, ISO weeks, and ISO duration and time intervals.');
 }
  
 /**
@@ -71,18 +75,18 @@ function date_views_arguments() {
     switch ($field['type']) {
     case 'date':
       $argument = array();
-      $argument['name'] = $field_types[$field['type']]['label'] .t(' by date range: '). $field['widget']['label'] .' ('. $field['field_name'] .')';
+      $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_argument_range_handler';
-      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD::YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
+      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
       break;
     
     case 'datestamp':
       $argument = array();
-      $argument['name'] = $field_types[$field['type']]['label'] .t(' by date range: '). $field['widget']['label'] .' ('. $field['field_name'] .')';
+      $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_timestamp_argument_range_handler';
-      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD::YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
+      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
       break;
@@ -95,36 +99,47 @@ function date_views_arguments() {
  * 
  * Flexible date range argument handler
  * 
- * Argument expects a value like 2006-01-01::2006-01-15, or 2006W24, or @1W
+ * Argument is based on ISO 8601 date duration and time interval standards
+ * 
+ * See http://en.wikipedia.org/wiki/ISO_8601#Week_dates for definitions of ISO weeks
+ * See http://en.wikipedia.org/wiki/ISO_8601#Duration for definitions of ISO duration and time interval
+ * 
+ * Argument expects a value like 2006-01-01--2006-01-15, or 2006-W24, or @P1W
+ * Separate from and to dates or date and period with a double hyphen (--)
  * 
  * From and to dates in argument are ISO dates, but can be shortened and missing parts will be added
  * Omitted parts of ISO dates will be assumed to be the first possible (for the from date)
  * or the last possible (for the to date) value in that time period
  * 
  * The 'to' portion of the argument can be eliminated if it is the same as the 'from' portion
- * If the 'from' portion is eliminated, the current date and time is assumed
+ * Use @ instead of a date to substitute in the current date and time.
  * 
  * Shortcuts are available:
  * 
- * Use @1H, @1D, @1W, @1M, @1Y to get next hour/day/week/month/year from now
- * Use date before @ sign to get next hour/day/week/month/year from that date
+ * Use periods (P1H, P1D, P1W, P1M, P1Y) to get next hour/day/week/month/year from now
+ * Use date before P sign to get next hour/day/week/month/year from that date
+ * The ISO standard calls for a separator (--) between a date and the P, 
+ * but the separator is optional between a start date and a period in this argument 
+ * to make the result easier to read.
  * 
- * Use format like 2006W24 to find ISO week number 24 in year 2006
+ * This module does not currently handle the option of using a period with an end date,
+ * only a start date followed by a period.
+ * 
+ * Use format like 2006-W24 to find ISO week number 24 in year 2006
  * 
  * Examples:
  * 
- * --------- ARGUMENT --------  >> -------- RESULTING QUERY RANGE --------
- * 2006W24                      >> 24th ISO week in 2006
- * 2006                         >> the whole year of 2006
- * 2006-03                      >> the whole month of Mar 2006
- * 2006-02::2007-03             >> Feb 1 2006 to Mar 31 2006
- * 2006-08-31T14::2006-08-31T16 >> the 14th to 16th hours of Aug 8 2006
- * ::2006-12-31                 >> NOW to 2006-12-31T23:59:59
- * @3H                          >> NOW to three hours from now
- * @90D                         >> NOW to 90 days from now
- * @1Y                          >> NOW to one year from now
- * 2006-03-05@1W                >> the week starting Mar 5 2006
- * 2006-01@3M                   >> 3 months starting Jan 2006
+ * --------- ARGUMENT --------    >> -------- RESULTING QUERY RANGE --------
+ * 2006-W24                       >> 24th ISO week in 2006
+ * 2006                           >> the whole year of 2006
+ * 2006-03                        >> the whole month of Mar 2006
+ * 2006-02--2007-03               >> Feb 1 2006 to Mar 31 2006
+ * 2006-08-31T14--2006-08-31T16   >> the 14th to 16th hours of Aug 8 2006
+ * @--2006-12-31                  >> NOW to 2006-12-31T23:59:59
+ * @P3H                           >> NOW to three hours from now
+ * @P1Y90D                        >> NOW to 1 year and 90 days from now
+ * 2006-03-05P1W                  >> the week starting Mar 5 2006
+ * 2006-01P3M                     >> 3 months starting Jan 2006
  * 
  * The groupby selector values are used only if a summary view of the argument is requested
  * possible values are by year, by month, by week, by day, and by hour
@@ -201,7 +216,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
         case ('week'):
           $format = 'F j Y (W)';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'W'", 
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-W'", 
               date_sql('WEEK', $table .'.'. $value, $field_type, $offset),
               ));
           break;
@@ -224,13 +239,13 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
 
     case 'filter':
       
-      if (stristr($arg, '@')) {
+      if (stristr($arg, 'P')) {
         // for a date plus value, get the min and max values
-        $range = date_plus_value($arg);
+        $range = date_plus_period($arg);
         $min_date = $range[0];
         $max_date = $range[1];
       }
-      elseif (stristr($arg, 'W') && !stristr($arg, '::')) {
+      elseif (stristr($arg, '-W') && !stristr($arg, '--')) {
         // for a specified week, get the min and max values
         $range = date_week_value($arg);
         $min_date = $range[0];
@@ -238,7 +253,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       }
       else {
         // for all other get the date range from the supplied argument
-        $range = (array) explode('::', $arg);
+        $range = (array) explode('--', $arg);
         $min_date = date_range_value($range[0], 'min');
         $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
       }
@@ -268,6 +283,7 @@ function date_range_value($value, $value_type = 'min') {
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
   $now   = date_date(DATE_STRING_ISO, time());
+  if (trim($value) == '@' || trim($value) == '') return $now;
 
   switch (strlen($value)) {
   case (4):
@@ -301,14 +317,14 @@ function date_range_value($value, $value_type = 'min') {
  *  based on ISO weeks, which start counting on the first Monday in a week that 
  *  has at least 4 days in the current year
  * 
- *  @value - an argument in the format 2006W20 (year + W + week number)
+ *  @value - an argument in the format 2006-W20 (year + -W + week number)
  *  @return an array of ISO dates representing the first and last day in the week
  */
 function date_week_value($value) {
   
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
-  $parts = explode('W', $value);
+  $parts = explode('-W', $value);
   $year = $parts[0];
   // subtract 1 from week number so we don't double-count the final week
   $weeks = intval($parts[1] - 1);
@@ -330,48 +346,69 @@ function date_week_value($value) {
 }
 
 /**
- *  Compute min and max dates for a @ value
+ *  Compute min and max dates for a P value
  * 
- *  @value = an argument in the format @1W (a date or no date + a count + a type
+ *  @value = an argument in the format (start date)P#(period type)
+ *     where (period type) can be Y (year), M (month), D (day), W (week), H (hour)
+ *     i.e. P1Y or P90D or P1Y3M2D4H
  *  @return an array of ISO dates representing the first and last day in the range
  */
-function date_plus_value($value) {
+function date_plus_period($value) {
   
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
-  // min date is whatever is to the left of the plus sign, defaults to current date
-  $range = explode('@', $value);
+  // min date is whatever is to the left of the period sign, defaults to current date
+  $value = str_replace('--P', 'P', $value);
+  $range = explode('P', $value);
   $min_date = date_range_value($range[0], 'min');
+
+  // create a date object to use for the max_date
+  $max_date = date_make_date($min_date, 'GMT', 'db', DATE_ISO);
   
-  // convert min date to unix to do date math
-  $min_unix = date_iso2unix($min_date);
-  
-  // for hour, day, and week add seconds to unix date 
-  // for month and year, manipulating iso date is easier
-  if (stristr($range[1], 'H')) {
-    $count    = intval(str_replace('H', '', $range[1]));
-    $max_unix = intval($min_unix + (3600 * $count) -1);
+  // iterate through the requested period, adding values as needed to the date object
+  $remaining = $range[1];
+  if ($years = strpos($remaining, 'Y')) {
+    $sub       = explode('Y', $remaining);
+    $remaining = $sub[1];
+    $count     = intval($sub[0]);
+    $max_iso   = intval(substr($max_date->db->iso, 0, 4) + $count) . substr($max_date->db->iso, 4, 15);
+    date_set_date($max_date, $max_iso, 'GMT', 'db', DATE_ISO, TRUE);
   }
-  elseif (stristr($range[1], 'D')) {
-    $count    = intval(str_replace('D', '', $range[1]));
-    $max_unix = intval($min_unix + (86400 * $count) -1);
+  if ($months = strpos($remaining, 'M')) {
+    $sub       = explode('M', $remaining);
+    $remaining = $sub[1];
+    $count     = intval($sub[0]);
+    $cur_mon   = intval(substr($max_date->db->iso, 6, 2));
+    $cur_year  = intval(substr($max_date->db->iso, 0, 4));
+    $max_iso   = (intval($cur_mon + $count) < 12 ? $cur_year : intval($cur_year + 1)) . '-'. sprintf('%02d', (intval($cur_mon + $count) < 12 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 12);
+    date_set_date($max_date, $max_iso, 'GMT', 'db', DATE_ISO, TRUE);
   }
-  elseif (stristr($range[1], 'W')) {
-    $count    = intval(str_replace('W', '', $range[1]));
-    $max_unix = intval($min_unix + (604800 * $count) -1);
+  if (stristr($range[1], 'W')) {
+    $sub       = explode('W', $remaining);
+    $remaining = $sub[1];
+    $count     = intval($sub[0]); 
+    $max_unix  = intval($max_date->db->timestamp + (604800 * $count));
+    date_set_date($max_date, $max_unix, 'GMT', 'db', DATE_UNIX, TRUE);
   }
-  elseif (stristr($range[1], 'M')) {
-    $count    = intval(str_replace('M', '', $range[1]));
-    $cur_mon  = intval(substr($min_date, 6, 2));
-    $cur_year = intval(substr($min_date, 0, 4));
-    $max_date = (intval($cur_mon + $count) < 12 ? $cur_year : intval($cur_year + 1)) . '-'. sprintf('%02d', (intval($cur_mon + $count) < 12 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 11);
+  if ($days = strpos($remaining, 'D')) {
+    $sub       = explode('D', $remaining);
+    $remaining = $sub[1];
+    $count     = intval($sub[0]); 
+    $max_unix  = intval($max_date->db->timestamp + (86400 * $count));
+    date_set_date($max_date, $max_unix, 'GMT', 'db', DATE_UNIX, TRUE);
   }
-  elseif (stristr($range[1], 'Y')) {
-    $count = intval(str_replace('Y', '', $range[1]));
-    $max_date = intval(substr($min_date, 0, 4) + $count) . substr($min_date, 4, 15);
+  if ($hours = strpos($remaining, 'H')) {
+    $sub       = explode('H', $remaining);
+    $remaining = $sub[1];
+    $count     = intval($sub[0]); 
+    $max_unix  = intval($max_date->db->timestamp + (3600 * $count));
+    date_set_date($max_date, $max_unix, 'GMT', 'db', DATE_UNIX, TRUE);
   }
-  $max_date = $max_unix ? date_unix2iso($max_unix) : $max_date;
-  return array($min_date, $max_date);
+  // slice 1 second off max date to stop it just before end of period
+  // needed because we are using <= as the operator
+  $date->db->unix = intval($max_date->db->timestamp - 1);
+  date_set_date($max_date, $date->db->unix, 'GMT', 'db', DATE_UNIX, TRUE);
+  return array($min_date, $max_date->db->iso);
 
 }
 

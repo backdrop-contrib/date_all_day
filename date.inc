@@ -214,7 +214,6 @@ function date_gmadj_zone($timestamp) {
  * 
  *  All creation, manipulation, and display of the date is done using this date object
  * 
- *  @param $date - the date object
  *  @param $value - the date/time value to set
  *  @param $timezone - 'GMT', 'none', or timezone name - the timezone of this value
  *  @param $type - db or local, the part of the date object to set
@@ -566,7 +565,7 @@ function date_timezone_options($limit = '') {
   include_once(DATE_TIMEZONES);
 
   if (!$limit) {
-    return drupal_map_assoc(event_zonelist());
+    $zonelist = drupal_map_assoc(event_zonelist());
 
   } else {
     $zones = event_get_timezones();
@@ -576,6 +575,7 @@ function date_timezone_options($limit = '') {
       }
     }
   }
+  $zonelist += array('GMT' => 'GMT');
   asort($zonelist);
   return $zonelist;
 
@@ -686,8 +686,8 @@ function date_select_input($params) {
   $increment     = isset($params['increment']) ? $params['increment'] : 1;
   $required      = isset($params['required']) ? $params['required'] : 1;
   $format        = isset($params['format']) ? $params['format'] : DATE_ISO;
+  $formats       = $params['formats'];
   $weight        = isset($params['weight']) ? $params['weight'] : 0;
-  $show_ampm     = isset($params['ampm']) ? $params['ampm'] : 0;
   $opt_fields    = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
   $blank_default = isset($params['blank_default']) ? $params['blank_default'] : 0;
   $timezone_in   = isset($params['timezone_in']) ? $params['timezone_in'] : 'GMT';
@@ -699,7 +699,7 @@ function date_select_input($params) {
   $years_back    = $params['years_back'];
   $years_forward = $params['years_forward'];
 
-  if ($show_ampm) {
+  if ($formats['input']['am_pm']) {
     $hours_format = t('h');
     for ($i = 0; $i <= 12; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
   } 
@@ -745,33 +745,12 @@ function date_select_input($params) {
   $form['#prefix'] = '<div class="container-inline-date">';
   $form['#suffix'] = '</div>';
   
-  $form['space0'] = array(
-    '#type' => 'markup',
-    '#value' => '<div class="date-date">',
-    );
-  if (in_array('M',$granularity)) {
-    $form['mon'] = array(
-    '#default_value' => $mon,
-    '#title' => t('month'),
-    '#required' => ($required && !in_array('mon', $opt_fields)) ? $required : 0,
-    );
-    if ($select_month) {
-      $months_array = drupal_map_assoc(range(1, 12), 'map_month');
-      if (!$required || in_array('mon', $opt_fields) || $blank_default) array_unshift($months_array, '');
-      $form['mon']['#type'] = 'select';
-      $form['mon']['#options'] = $months_array;
-    }
-    else {
-      $form['mon']['#type'] = 'textfield';
-      $form['mon']['#maxlength'] = 2;
-      $form['mon']['#size'] = 2;
-    }
-  }
   if (in_array('D',$granularity)) {
     $form['mday'] = array(
-    '#default_value' => $mday,
-    '#title' => t('day'),
-    '#required' => ($required && !in_array('mday', $opt_fields)) ? $required : 0,
+      '#default_value' => $mday,
+      '#title' => t('day'),
+      '#required' => ($required && !in_array('mday', $opt_fields)) ? $required : 0,
+      '#weight' => $formats['input']['select']['D'],
     );
     if ($select_day) {
       $days_array = drupal_map_assoc(range(1, 31));
@@ -785,11 +764,33 @@ function date_select_input($params) {
       $form['mday']['#size'] = 2;
     }
   }
+
+  if (in_array('M',$granularity)) {
+    $form['mon'] = array(
+      '#default_value' => $mon,
+      '#title' => t('month'),
+      '#required' => ($required && !in_array('mon', $opt_fields)) ? $required : 0,
+      '#weight' => $formats['input']['select']['M'],
+    );
+    if ($select_month) {
+      $months_array = drupal_map_assoc(range(1, 12), 'map_month');
+      if (!$required || in_array('mon', $opt_fields) || $blank_default) array_unshift($months_array, '');
+      $form['mon']['#type'] = 'select';
+      $form['mon']['#options'] = $months_array;
+    }
+    else {
+      $form['mon']['#type'] = 'textfield';
+      $form['mon']['#maxlength'] = 2;
+      $form['mon']['#size'] = 2;
+    }
+  }
+
   if (in_array('Y',$granularity)) {
     $form['year'] = array(
-    '#default_value' => $year,
-    '#title' => t('year'),
-    '#required' => ($required && !in_array('year', $opt_fields)) ? $required : 0,
+      '#default_value' => $year,
+      '#title' => t('year'),
+      '#required' => ($required && !in_array('year', $opt_fields)) ? $required : 0,
+      '#weight' => $formats['input']['select']['Y'],
     );
     if ($select_year) {
       $years_array = drupal_map_assoc(range($year - $years_back, $year + $years_forward));
@@ -804,58 +805,62 @@ function date_select_input($params) {
       $form['year']['#size'] = 4;
     }
   }
+
   $form['space1'] = array(
     '#type' => 'markup',
-    '#value' => '</div><div class="date-time">',
+    '#value' => ' <div class="date-space">&nbsp;</div>',
+    '#weight' => 3,
     );
+
   if (in_array('H',$granularity)) {
     $form['hours'] = array(
-    '#type' => 'select',
-    '#default_value' => $hours,
-    '#options' => $hours_array,
-    '#required' => ($required && !in_array('hours', $opt_fields)) ? $required : 0,
-    '#title' => t('hour'),
+      '#type' => 'select',
+      '#default_value' => $hours,
+      '#options' => $hours_array,
+      '#required' => ($required && !in_array('hours', $opt_fields)) ? $required : 0,
+      '#title' => t('hour'),
+      '#weight' => 4,
     );
   }
   if (in_array('N',$granularity)) {
     for ($i = 0; $i <= 59; $i += $increment) $minutes_array[$i] = $i < 10 ? "0$i" : $i;
     $form['minutes'] = array(
-    '#type' => 'select',
-    '#default_value' => $minutes,
-    '#options' => $minutes_array,
-    '#required' => ($required && !in_array('minutes', $opt_fields)) ? $required : 0,
-    '#title' => t('minute'),
+      '#type' => 'select',
+      '#default_value' => $minutes,
+      '#options' => $minutes_array,
+      '#required' => ($required && !in_array('minutes', $opt_fields)) ? $required : 0,
+      '#title' => t('minute'),
+      '#weight' => 5,
     );
   }
   if (in_array('S',$granularity)) {
     for ($i = 0; $i <= 59; $i += $increment) $seconds_array[$i] = $i < 10 ? "0$i" : $i;
     $form['seconds'] = array(
-    '#type' => 'select',
-    '#default_value' => $seconds,
-    '#options' => $seconds_array,
-    '#required' => ($required && !in_array('seconds', $opt_fields)) ? $required : 0,
-    '#title' => t('second'),
+      '#type' => 'select',
+      '#default_value' => $seconds,
+      '#options' => $seconds_array,
+      '#required' => ($required && !in_array('seconds', $opt_fields)) ? $required : 0,
+      '#title' => t('second'),
+      '#weight' => 6,
     );
   }
-  if ($show_ampm) {
+  if ($formats['input']['am_pm']) {
     $options = array('am' => t('am'), 'pm' => t('pm'));
     if (!$required || in_array('hours', $opt_fields) || $blank_default) array_unshift($options, '');
     $form['space2'] = array(
       '#type' => 'markup',
       '#value' => '<div class="date-space">&nbsp;</div>',
-      );
+      '#weight' => 7,
+    );
     $form['ampm'] = array(
       '#type' => 'select',
       '#default_value' => $ampm,
       '#options' => $options,
       '#required' => ($required && !in_array('hours', $opt_fields)) ? $required : 0,
       '#title' => t('am/pm'),
-      );
-  }
-  $form['space3'] = array(
-    '#type' => 'markup',
-    '#value' => '</div>',
+      '#weight' => 8,
     );
+  }
   if (in_array('T',$granularity)) {
     $form['timezone'] = array(
       '#type' => 'select',
@@ -865,17 +870,18 @@ function date_select_input($params) {
       '#title' => t('timezone'),
       '#prefix' => '<div class="date-timezone">',
       '#suffix' => '</div>',
-      );
+      '#weight' => 10,
+    );
   } else {
     $form['timezone'] = array(
       '#type' => 'hidden',
       '#value' => $timezone_out,
-      );
+    );
   }
   $form[] = array(
     '#type' => 'markup',
     '#value' => '<div class="date-clearing"> </div>'. ($description > '' ? '<div class="form-item description">'.$description.'</div>' : ''),
-    );
+  );
   return $form;
 }
 
@@ -901,7 +907,7 @@ function date_select_input($params) {
  *    jscalendar = 1 use if available, 0 do not use
  */
 function date_text_input($params) {
-
+  
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
   $delta         = isset($params['delta']) ? $params['delta'] : 0;
@@ -909,11 +915,11 @@ function date_text_input($params) {
   $granularity   = is_array($params['granularity']) ? $params['granularity'] : array('M', 'D', 'Y');
   $required      = isset($params['required']) ? $params['required'] : 1;
   $format        = isset($params['format']) ? $params['format'] : DATE_ISO;
+  $formats       = $params['formats'];
   $weight        = isset($params['weight']) ? $params['weight'] : 0;
   $timezone_in   = isset($params['timezone_in']) ? $params['timezone_in'] : 'GMT';
   $timezone_out  = isset($params['timezone_out']) ? $params['timezone_out'] : date_get_site_timezone();
   $description   = $params['description'];
-  $show_ampm     = isset($params['ampm']) ? $params['ampm'] : 0;
   $jscalendar    = $params['jscalendar'] ? 1 : 0;
   $blank_default = isset($params['blank_default']) ? $params['blank_default'] : 0;
   
@@ -941,7 +947,8 @@ function date_text_input($params) {
   
   // get the local iso version of the database value
   $value = date_show_value($date, 'local', DATE_ISO);
-          
+  //$value = date_show_value($date, 'local', DATE_UNIX);
+  
   // if date-specific timezone handling was selected, provide a way for the user to enter the timezone
   if (in_array('T', $granularity)) {
     $form['#type'] = 'fieldset';
@@ -951,9 +958,10 @@ function date_text_input($params) {
     $form['value'] = array(
       '#type' => 'textfield',
       '#title' => t('date'),
+      //'#default_value' => gmdate($formats['input']['text'], $value),
       '#default_value' => $value,
       '#required' => ($delta == 0) ? $required : 0,
-      );
+    );
     if (in_array('T',$granularity)) {
       $form['timezone'] = array(
         '#title' => t('timezone'),
@@ -962,18 +970,18 @@ function date_text_input($params) {
         '#options' => date_timezone_options(),
         '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
         '#title' => t('timezone'),
-        );
+      );
     } else {
       $form['timezone'] = array(
         '#type' => 'hidden',
         '#value' => $timezone_out,
-        );
+      );
     }
 
     $form[] = array(
       '#type' => 'markup',
       '#value' => '<div class="form-item"><div class="description">'.$description.'</div></div>',
-      );
+    );
 
   } else {
 
@@ -981,25 +989,26 @@ function date_text_input($params) {
     $form['value'] = array(
       '#type' => 'textfield',
       '#title' => $label,
+      //'#default_value' => gmdate($formats['input']['text'], $value),
       '#default_value' => $value,
       '#required' => ($delta == 0) ? $required : 0,
       '#description' => $description,
       '#weight' => $weight,
     );
+    $form['format'] = $formats['input']['text'];
   }
 
   // if the jscalendar is used for input, add some attributes to be passed to the js
   // also need to adjust the date format slightly to accomodate the js capability
 
   if ($jscalendar && module_exist('jscalendar')) {
-            
     $form['value']['#default_value'] = date_iso2jscalendar($value, $granularity);
-    $form['value']['#attributes']    = array('class' => 'jscalendar');
+    $form['value']['#attributes'] = array('class' => 'jscalendar');
     $form['value']['#jscalendar_ifFormat']  = '%Y-%m-%d ' . (date_has_time($granularity) ? '%H:%M:%S' : '');
-    $form['value']['#jscalendar_showsTime']  = date_has_time($granularity) ? TRUE : FALSE;
-    $form['value']['#jscalendar_timeFormat'] = $show_ampm ? '12' : '24';
+    //$form['value']['#jscalendar_ifFormat'] = $formats['input']['jscal'];
+    $form['value']['#jscalendar_showsTime'] = date_has_time($granularity) ? 'true' : 'false';
+    $form['value']['#jscalendar_timeFormat'] = $formats['input']['am_pm'] ? '12' : '24';
   }
-  
   return $form;
 }
 
@@ -1019,7 +1028,7 @@ function date_selector_make_dbdate($array, $format = DATE_ISO, $timezone_in = 'G
   
   // try to construct a date from the submitted values
   $date = date_make_date();
-
+  
   if ($format == DATE_UNIX) {
     
     if (date_set_date($date, date_array2unix($array), $timezone_in, 'local', $format)) {
@@ -1164,7 +1173,7 @@ function date_jscalendar_validate($value, $fieldname, $format, $granularity = ar
  *  Validation for text input
  */
 function date_text_validate($value, $fieldname, $format, $granularity = array('M', 'D', 'Y')) {
-
+  
   switch ($format) {
     case (DATE_UNIX):
       if (!$value = date_text2unix($value)) {
@@ -1178,6 +1187,7 @@ function date_text_validate($value, $fieldname, $format, $granularity = array('M
         return FALSE;
       }
   }
+  
   return TRUE;
 }
 
@@ -1394,10 +1404,10 @@ function date_text2iso($text) {
   
   // if date supplied in iso format, use it
   if (date_preg($text) && date_part_is_valid(date_iso_year($text), 'year')) return $text;
-
+  
   // if not iso date, try strtotime conversion
   $iso = date_gmdate(DATE_STRING_ISO, strtotime($text));
-
+  
   if (date_part_is_valid(date_iso_year($iso), 'year')) {
     
     return $iso;
@@ -1410,11 +1420,11 @@ function date_text2iso($text) {
 }
 
 function date_text2unix($text) {
-
+  
   if ($iso = date_text2iso($text)) {
-
+    
     if ($unix = date_iso2unix($iso)) {
-
+      
       return $unix;
 
     }
@@ -1531,6 +1541,38 @@ function date_has_time($granularity) {
 }
 
 /**
+ *  Function to create an option list for input formats
+ *
+ *  @return array of date format strings
+ *    with a key of the format string and a value of the current date displayed in that format
+ *
+ */
+function date_input_options() {
+  $formats = array(
+    'Y-m-d H:i' => 'Y-m-d H:i:s',
+    'm/d/Y - H:i' => 'm/d/Y - H:i:s',
+    'd/m/Y - H:i' => 'd/m/Y - H:i:s',
+    'Y/m/d - H:i' => 'Y/m/d - H:i:s',
+    'd.m.Y - H:i' => 'd.m.Y - H:i:s',
+    'm/d/Y - g:ia' => 'm/d/Y - g:i:sa',
+    'd/m/Y - g:ia' => 'd/m/Y - g:i:sa',
+    'Y/m/d - g:ia' => 'Y/m/d - g:i:sa',
+    'M j Y - H:i' => 'M j Y - H:i:s',
+    'j M Y - H:i' => 'j M Y - H:i:s',
+    'Y M j - H:i' => 'Y M j - H:i:s',
+    'M j Y - g:ia' => 'M j Y - g:i:sa',
+    'j M Y - g:ia' => 'j M Y - g:i:sa',
+    'Y M j - g:ia' => 'Y M j - g:i:sa'
+  );
+  $options = array();
+  $options['site-wide'] = t('default') .' ('. format_date(time(), 'custom', $formats[variable_get('date_format_short', 'm/d/Y - H:i')]) . ')';
+  foreach (array_values($formats) as $f) {
+    $options[$f] = format_date(time(), 'custom', $f);
+  }
+  return $options;
+}
+
+/**
  *  Function to create an option list that will display various date and time formats
  * 
  *  @param $type - 'date', 'time', or 'both'
@@ -1545,7 +1587,7 @@ function date_has_time($granularity) {
  *    with a key of the format string and a value of the illustration date displayed in that format
  * 
  */
-function date_view_options($type = 'date', $tz_handling = 'site', $illustration_date = NULL) {
+function date_output_options($type = 'date', $tz_handling = 'site', $illustration_date = NULL) {
 
   $illustration_date = $illustration_date ? $illustration_date : date_gmdate('Y', time()) .'-08-01T14:05:10';
   
@@ -1606,6 +1648,132 @@ function date_time_options() {
     );
 }
 
+function date_formats($format, $granularity) {
+
+  //split date part and time part
+  preg_match("/([djDlzwWmnFMYy].*[djDlzwWmnFMYy])/", $format, $matches, PREG_OFFSET_CAPTURE);
+  $format_date = $matches[1][0];
+  $format_date_pos = $matches[1][1];
+  preg_match("/([gGhHisaA].*[gGhHisaA])/", $format, $matches, PREG_OFFSET_CAPTURE);
+  $format_time = $matches[1][0];
+  $format_time_pos = $matches[1][1];
+  $format_separator = substr($format, $format_date_pos + strlen($format_date), $format_time_pos - ($format_date_pos + strlen($format_date)));
+
+  $jscal_format_date = $jscal_format_time = array();
+  $text_format_date = $text_format_time = array();
+  $select_format_date = array();
+  $weight_index = 0;
+
+  $format_to_jscalendar = array(
+    'd' => '%d', 'j' => '%e', 'D' => '%a', 'l' => '%A', 'z' => '%j', 'w' => '%w',
+    'W' => '%U',
+    'm' => '%m', 'n' => '%m', 'F' => '%B', 'M' => '%b',
+    'Y' => '%Y', 'y' => '%y',
+    'g' => '%l', 'G' => '%k', 'h' => '%I', 'H' => '%H',
+    'i' => '%M',
+    's' => '%S',
+    'a' => '%P', 'A' => '%p',
+  );
+  foreach (preg_split('//', $format_date, -1, PREG_SPLIT_NO_EMPTY) as $c) {
+    switch ($c) {
+      case 'd':
+      case 'j':
+        if (in_array('D',$granularity)) {
+          $jscal_format_date[] = $format_to_jscalendar[$c];
+          $text_format_date[] = $c;
+          $select_format_date['D'] = $weight_index++;
+        }
+        break;
+
+      case 'F':
+      case 'M':
+      case 'm':
+      case 'n':
+        if (in_array('M',$granularity)) {
+          $jscal_format_date[] = $format_to_jscalendar[$c];
+          $text_format_date[] = $c;
+          $select_format_date['M'] = $weight_index++;
+        }
+        break;
+
+      case 'Y':
+      case 'y':
+        if (in_array('Y',$granularity)) {
+          $jscal_format_date[] = $format_to_jscalendar[$c];
+          $text_format_date[] = $c;
+          $select_format_date['Y'] = $weight_index++;
+        }
+        break;
+
+      default:
+        if (!preg_match('/[a-zA-Z]/', $c) && !isset($date_separator)) {
+          $date_separator = $c;
+        }
+        break;
+    }
+  }
+
+  if (date_has_time($granularity)) {
+    foreach (preg_split('//', $format_time, -1, PREG_SPLIT_NO_EMPTY) as $c) {
+      switch ($c) {
+        case 'g':
+        case 'G':
+        case 'h':
+        case 'H':
+          if (in_array('H',$granularity)) {
+            $jscal_format_time[] = $format_to_jscalendar[$c];
+            $text_format_time[] = $c;
+          }
+          break;
+
+        case 'i':
+          if (in_array('N',$granularity)) {
+            $jscal_format_time[] = $format_to_jscalendar[$c];
+            $text_format_time[] = $c;
+          }
+          break;
+
+        case 's':
+          if (in_array('S',$granularity)) {
+            $jscal_format_time[] = $format_to_jscalendar[$c];
+            $text_format_time[] = $c;
+          }
+          break;
+
+        case 'a':
+        case 'A':
+          if (date_has_time($granularity)) {
+            $jscal_format_time[] = $format_to_jscalendar[$c];
+            $text_format_time[] = $c;
+            $am_pm = true;
+          }
+          break;
+
+        default:
+          if (!preg_match('/[a-zA-Z]/', $c) & !isset($time_separator)) {
+            $time_separator = $c;
+          }
+          break;
+      }
+    }
+  }
+
+  // we store the current site-wide value, in order to be able to detect its changes
+  if ($format == 'site-wide') {
+    $formats['input']['site-wide'] = $format;
+  }
+
+  $formats['input']['jscal'] = implode($date_separator, $jscal_format_date);
+  $formats['input']['jscal'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $jscal_format_time) : '';
+
+  $formats['input']['text'] = implode($date_separator, $text_format_date);
+  $formats['input']['text'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $text_format_time) : '';
+
+  $formats['input']['select'] = $select_format_date;
+  $formats['input']['am_pm'] = $am_pm;
+
+  return $formats;
+}
 /**
  *  Convert date() to strftime() format strings
  * 

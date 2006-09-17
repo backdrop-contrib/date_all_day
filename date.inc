@@ -997,7 +997,6 @@ function date_text_input($params) {
       '#description' => $description,
       '#weight' => $weight,
     );
-    $form['format'] = $formats['input']['text'];
   }
 
   // if the jscalendar is used for input, add some attributes to be passed to the js

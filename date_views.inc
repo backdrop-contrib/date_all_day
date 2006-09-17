@@ -3,22 +3,6 @@
 /**
  * Views field filters
  */
-function date_views_filters($field) {
-  return array(
-   'default' => array(
-     'operator' => array(
-       '=' => t('is equal to'),
-       '!=' => t('is not equal to'),
-       '>' => t('greater than'),
-       '>=' => t('greater than or equal to'),
-       '<' => t('less than'),
-       '<=' => t('less than or equal to'),
-       'LIKE' => t('matches the pattern'),
-       ),
-     ),
-   );
-}
-
 function date_views_help() {
   return t('<h2>Date Views</h2>
         <h3>Date Range Argument</h3>
@@ -57,6 +41,80 @@ function date_views_help() {
         for more information abou ISO dates, ISO weeks, and ISO duration and time intervals.');
 }
  
+function date_views_filters($field) {
+  
+  switch ($field['type']) {
+    case ('date'):
+      $handler = 'date_views_filter_handler';
+      break;
+    case ('datestamp'):
+      $handler = 'date_views_timestamp_filter_handler';
+      break;
+  }
+  return array(
+   'default' => array(
+     'operator' => array(
+       '=' => t('is equal to'),
+       '<>' => t('is not equal to'),
+       '>' => t('greater than'),
+       '>=' => t('greater than or equal to'),
+       '<' => t('less than'),
+       '<=' => t('less than or equal to'),
+       ),
+     'value' => views_handler_filter_date_value_form(),
+     'option' => 'string',
+     'handler' => $handler,
+     'extra' => array('field' => $field),
+     'help' => t('This filter allows events to be filtered by their  date. Enter dates in the format: CCYY-MM-DD HH:MM:SS. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.'),
+     ),
+   );
+}
+
+/**
+ *  Handler for date filter. 
+ */
+
+function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
+  // this is just a wrapper function that sets the date type 
+  return date_views_filter_handler($op, $filter, $filterinfo, &$query, 'int');
+}
+function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  if (empty($filter['value'])) return;
+
+  $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_jscalendar2iso($filter['value'])) ."'";
+  $field   = $filterinfo['extra']['field'];
+  $db_info = content_database_info($field);
+  $value   = $db_info['columns']['value']['column'];
+  $table   = 'node_data_'. $field['field_name']; // uses views alias table name
+  $offset = date_views_offset($field);
+
+  $query->ensure_table($table);
+  $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) . $filter['operator'] . $date);
+
+}
+
+/**
+ *  Return field or value for a timezone offset
+ *  TODO - this needs work, date-specific timezone handling will not work right in views now
+ *  views needs a field in the database that has the right offset that can be joined into the view
+ *  probably will need to alter the table to add another column to store offset
+ */
+function date_views_offset($field) {
+  switch ($field['tz_handling']) {
+  case ('date'):
+  case ('site'):
+    $offset = variable_get('date_default_timezone', 0);
+    break;
+  default:
+    $offset = '';
+    break;
+  }
+  return $offset;
+}
+
+
 /**
  * Implementation of hook_views_arguments().
  */
@@ -165,16 +223,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   $timezone   = $db_info['columns']['timezone']['column'];
   $table      = 'node_data_'. $field['field_name']; // uses views alias table name
   
-  // this needs work, date-specific timezone handling will not work right in views now
-  switch ($field['tz_handling']) {
-  case ('date'):
-  case ('site'):
-    $offset = variable_get('date_default_timezone', 0);
-    break;
-  default:
-    $offset = '';
-    break;
-  }
+  $offset = date_views_offset($field['tz_handling']);
   
   switch ($op) {
     case 'summary':
@@ -260,7 +309,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       
       $query->ensure_table($table);
       $query->add_field($value, $table);
-      $query->add_field($timezone, $table);
+      //$query->add_field($timezone, $table);
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $min_date) ."'");
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $max_date) ."'");
       break;

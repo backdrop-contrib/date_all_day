@@ -948,8 +948,7 @@ function date_text_input($params) {
   }
   
   // get the local iso version of the database value
-  $value = date_show_value($date, 'local', DATE_ISO);
-  //$value = date_show_value($date, 'local', DATE_UNIX);
+  $value = date_iso2custom(date_show_value($date, 'local'), $formats['input']['text']);
   
   // if date-specific timezone handling was selected, provide a way for the user to enter the timezone
   if (in_array('T', $granularity)) {
@@ -960,7 +959,6 @@ function date_text_input($params) {
     $form['value'] = array(
       '#type' => 'textfield',
       '#title' => t('date'),
-      //'#default_value' => gmdate($formats['input']['text'], $value),
       '#default_value' => $value,
       '#required' => ($delta == 0) ? $required : 0,
     );
@@ -991,7 +989,6 @@ function date_text_input($params) {
     $form['value'] = array(
       '#type' => 'textfield',
       '#title' => $label,
-      //'#default_value' => gmdate($formats['input']['text'], $value),
       '#default_value' => $value,
       '#required' => ($delta == 0) ? $required : 0,
       '#description' => $description,
@@ -1003,10 +1000,8 @@ function date_text_input($params) {
   // also need to adjust the date format slightly to accomodate the js capability
 
   if ($jscalendar && module_exist('jscalendar')) {
-    $form['value']['#default_value'] = date_iso2jscalendar($value, $granularity);
     $form['value']['#attributes'] = array('class' => 'jscalendar');
-    $form['value']['#jscalendar_ifFormat']  = '%Y-%m-%d ' . (date_has_time($granularity) ? '%H:%M:%S' : '');
-    //$form['value']['#jscalendar_ifFormat'] = $formats['input']['jscal'];
+    $form['value']['#jscalendar_ifFormat'] = $formats['input']['jscal'];
     $form['value']['#jscalendar_showsTime'] = date_has_time($granularity) ? 'true' : 'false';
     $form['value']['#jscalendar_timeFormat'] = $formats['input']['am_pm'] ? '12' : '24';
   }
@@ -1017,12 +1012,12 @@ function date_text_input($params) {
  *  Construct a value to save to the database from the date selector
  * 
  *  @param $array - an array of date parts collected by the date selector
- *  @param $format - DATE_UNIX or DATE_ISO
+ *  @param $type - DATE_UNIX or DATE_ISO
  *  @param $timezone_in - timezone of supplied value
  *  @param $granularity = an array of date parts to be selected, like array('Y','M','D'), default is M, D, Y
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
-function date_selector_make_dbdate($array, $format = DATE_ISO, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
+function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
   
   // adjust back to 24 hours time if 12 hours input was collected
   if ($array['ampm'] == 'pm' && $array['hours'] < 12) $array['hours'] += 12;
@@ -1030,18 +1025,18 @@ function date_selector_make_dbdate($array, $format = DATE_ISO, $timezone_in = 'G
   // try to construct a date from the submitted values
   $date = date_make_date();
   
-  if ($format == DATE_UNIX) {
+  if ($type == DATE_UNIX) {
     
-    if (date_set_date($date, date_array2unix($array), $timezone_in, 'local', $format)) {
+    if (date_set_date($date, date_array2unix($array), $timezone_in, 'local', $type)) {
       
-      return date_show_value($date, 'db', $format);
+      return date_show_value($date, 'db', $type);
 
     }
-  } elseif ($format == DATE_ISO) {
+  } elseif ($type == DATE_ISO) {
     
-    if (date_set_date($date, date_array2iso($array), $timezone_in, 'local', $format)) {
+    if (date_set_date($date, date_array2iso($array), $timezone_in, 'local', $type)) {
       
-      return date_show_value($date, 'db', $format);
+      return date_show_value($date, 'db', $type);
 
     }
   }
@@ -1053,27 +1048,28 @@ function date_selector_make_dbdate($array, $format = DATE_ISO, $timezone_in = 'G
  *  Construct a value to save to the database from jscalendar input
  * 
  *  @param $value - a text value created by js_calendar
- *  @param $format - DATE_UNIX or DATE_ISO
+ *  @param $type - DATE_UNIX or DATE_ISO
+ *  @param $format - a string containing the format the field is using (date() format)
  *  @param $timezone_in - timezone of supplied value
  *  @param  $granularity = an array of date parts to be selected, like array('Y','M','D'), default is M, D, Y
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
-function date_jscalendar_make_dbdate($value, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
+function date_jscalendar_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
   
-  switch($format) {
+  switch($type) {
     case (DATE_UNIX):
-      $value = date_jscalendar2unix($value, $granularity);
+      $value = date_custom2unix($value, $format);
       break;
     case (DATE_ISO):
-      $value = date_jscalendar2iso($value, $granularity);
+      $value = date_custom2iso($value, $format);
       break;
   }
 
   if ($value) {
 
-    if ($date = date_make_date($value, $timezone_in, 'local', $format)) {
+    if ($date = date_make_date($value, $timezone_in, 'local', $type)) {
 
-      return date_show_value($date, 'db', $format);
+      return date_show_value($date, 'db', $type);
 
     }
   }
@@ -1084,25 +1080,26 @@ function date_jscalendar_make_dbdate($value, $format, $timezone_in = 'GMT', $gra
  *  Construct a value to save to the database from text input
  * 
  *  @param $value - string date value, could be iso format or text for strtotime conversion
- *  @param $format - DATE_UNIX or DATE_ISO
+ *  @param $type - DATE_UNIX or DATE_ISO
+ *  @param $format - a string containing the format the field is using (date() format)
  *  @param $timezone_in - timezone of supplied value
  *  @param  $granularity = an array of date parts to be selected, like array('Y','M','D'), default is M, D, Y
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
-function date_text_make_dbdate($value, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
+function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
     
-  switch ($format) {
+  switch ($type) {
     case (DATE_UNIX):
-      $value = date_text2unix($value);
+      $value = date_text2unix($value, $format);
       break;
     case (DATE_ISO):
-      $value = date_text2iso($value);
+      $value = date_text2iso($value, $format);
       break;
   }
   
   if ($value) {
-    if ($date = date_make_date($value, $timezone_in, 'local', $format)) {
-      return date_show_value($date, 'db', $format);
+    if ($date = date_make_date($value, $timezone_in, 'local', $type)) {
+      return date_show_value($date, 'db', $type);
     }
   }
   return FALSE;
@@ -1151,17 +1148,17 @@ function date_selector_validate($value, $fieldname, $params = array()) {
 /**
  *  Validation for jscalendar input
  */
-function date_jscalendar_validate($value, $fieldname, $format, $granularity = array('M', 'D', 'Y')) {
+function date_jscalendar_validate($value, $fieldname, $type, $format, $granularity = array('M', 'D', 'Y')) {
   
-  switch ($format) {
+  switch ($type) {
     case (DATE_UNIX):
-      if (!date_jscalendar2unix($value, $granularity)) {
+      if (!date_custom2unix($value, $format)) {
         form_set_error($fieldname, t('The text \'%s\' is not a valid date.', array('%s' => $value)));
         return FALSE;
       }
       break;
     case (DATE_ISO):
-      if (!date_jscalendar2iso($value, $granularity)) {
+      if (!date_custom2iso($value, $format)) {
         form_set_error($fieldname, t('The text \'%s\' is not a valid date.', array('%s' => $value)));
         return FALSE;
       }
@@ -1173,22 +1170,21 @@ function date_jscalendar_validate($value, $fieldname, $format, $granularity = ar
 /**
  *  Validation for text input
  */
-function date_text_validate($value, $fieldname, $format, $granularity = array('M', 'D', 'Y')) {
+function date_text_validate($value, $fieldname, $type, $format, $granularity = array('M', 'D', 'Y')) {
   
-  switch ($format) {
+  switch ($type) {
     case (DATE_UNIX):
-      if (!$value = date_text2unix($value)) {
+      if (!$value = date_text2unix($value, $format)) {
         form_set_error($fieldname, t('The text \'%s\' is not a valid date.', array('%s' => $value)));
         return FALSE;
       }
 
     case (DATE_ISO):
-      if (!$value = date_text2iso($value)) {
+      if (!$value = date_text2iso($value, $format)) {
         form_set_error($fieldname, t('The text \'%s\' is not a valid date.', array('%s' => $value)));
         return FALSE;
       }
   }
-  
   return TRUE;
 }
 
@@ -1324,74 +1320,220 @@ function date_iso2unix($iso) {
 
 }
 
-/**
- *  The JS calendar needs a date in a format like MM-DD-YY HH:MM:SS
- *  Replace the 'T' in the iso date, also cut off the time string if no time is desired
- */
-function date_iso2jscalendar($iso, $granularity = array('M', 'D', 'Y')) {
-  
-  if (!date_preg($iso)) return 'ERROR';
-  
-  if (date_has_time($granularity)) {
+function date_iso2custom($iso, $format) {
+  $array = date_iso2array($iso);
+  $month_short = array(
+    "January" => "Jan", "February" => "Feb", "March" => "Mar", "April" => "Apr",
+    "May" => "May", "June" => "Jun", "July" => "Jul", "August" => "Aug",
+    "September" => "Sep", "October" => "Oct", "November" => "Nov", "December" => "Dec"
+  );
+  $day_short = array(
+    "Monday" => "Mon", "Tuesday" => "Tue", "Wednesday" => "Wed", "Thursday" => "Thu",
+    "Friday" => "Fri", "Saturday" => "Sat", "Sunday" => "Sun"
+  );
+  $repl = array(
+    "d" => str_pad($array['mday'], 2, "0", STR_PAD_LEFT),
+    "D" => t($day_short[$array['weekday']]),
+    "j" => $array['mday'],
+    "l" => t($array['weekday']),
+    "N" => '',
+    "S" => '',
+    "w" => '',
+    "z" => '',
+    "W" => '',
+    "F" => t($array['month']),
+    "m" => str_pad($array['mon'], 2, "0", STR_PAD_LEFT),
+    "M" => t($month_short[$array['month']]),
+    "n" => $array['mon'],
+    "t" => '',
+    "L" => '',
+    "o" => '',
+    "Y" => str_pad($array['year'], 4, "0", STR_PAD_LEFT),
+    "y" => substr(str_pad($array['year'], 4, "0", STR_PAD_LEFT), 2, 2),
+    "a" => ($array['hours'] >= 12) ? 'pm' : 'am',
+    "A" => ($array['hours'] >= 12) ? 'PM' : 'AM',
+    "B" => '',
+    "g" => ($array['hours'] > 12) ? $array['hours'] - 12 : $array['hours'],
+    "G" => $array['hours'],
+    "h" => str_pad(($array['hours'] > 12) ? $array['hours'] - 12 : $array['hours'], 2, "0", STR_PAD_LEFT),
+    "H" => str_pad($array['hours'], 2, "0", STR_PAD_LEFT),
+    "i" => str_pad($array['minutes'], 2, "0", STR_PAD_LEFT),
+    "s" => str_pad($array['seconds'], 2, "0", STR_PAD_LEFT),
+    "e" => '',
+    "I" => '',
+    "O" => '',
+    "P" => '',
+    "T" => '',
+    "z" => '',
+    "c" => '',
+    "r" => '',
+    "U" => ''
+  );
 
-    return str_replace('T', ' ', $iso);
-
-  } else {
-
-    return substr($iso, 0, 10);
-
+  $repl["\\\\"] = "\\";
+  foreach ($repl as $key => $value) {
+    $repl["\\".$key] = $key;
   }
+  return strtr($format, $repl);
 }
 
-function date_unix2jscalendar($unix, $granularity = array('M', 'D', 'Y')) {
+function date_custom2iso($date, $format) {
+  $array = array(
+    "d" => "\\d{1,2}", // we allow 1 to be tolerant - maybe we shouldn't ?
+    "D" => "\\w{3}",
+    "j" => "\\d{1,2}",
+    "l" => "\\w*",
+    "N" => "\\d",
+    "S" => "\\w{2}",
+    "w" => "\\d",
+    "z" => "\\d{1,3}",
+    "W" => "\\d{1,2}",
+    "F" => "\\w*",
+    "m" => "\\d{2}",
+    "M" => "\\w{3}",
+    "n" => "\\d{1,2}",
+    "t" => "\\d{2}",
+    "L" => "\\d",
+    "o" => "\\d{4}",
+    "Y" => "\\d{4}",
+    "y" => "\\d{2}",
+    "a" => "am|pm",
+    "A" => "AM|PM",
+    "B" => "\\d{3}",
+    "g" => "\\d{1,2}",
+    "G" => "\\d{1,2}",
+    "h" => "\\d{1,2}", // we allow 1 to be tolerant - maybe we shouldn't ?
+    "H" => "\\d{1,2}", // we allow 1 to be tolerant - maybe we shouldn't ?
+    "i" => "\\d{2}",
+    "s" => "\\d{2}",
+    "e" => "\\w*",
+    "I" => "\\d",
+    "O" => "[+-]?\\d{4}",
+    "P" => "[+-]?\\d{2}\\:\\d{2}",
+    "T" => "\\w*",
+    "z" => "[+-]?\\d*",
+    "c" => "*",
+    "r" => "*",
+    "U" => "\\d*"
+  );
 
-  if ($iso = date_unix2iso($unix)) {
+  foreach ($array as $key => $value) {
+    $patterns[] = "`(^|[^\\\\\\\\])".$key."`"; // the letter with no preceding '\'
+    $repl1[] = '${1}(.)';                  // a single character
+    $repl2[] = '${1}('. $value .')';       // the
+  }
+  $patterns[] = "`\\\\\\\\([".implode(array_keys($array))."])`";
+  $repl1[] = '${1}';
+  $repl2[] = '${1}';
 
-    if ($iso = date_iso2jscalendar($iso, $granularity = array('M', 'D', 'Y'))) {
+  $format_regexp = preg_quote($format);
+  // extract letters
+  $regex1 = preg_replace($patterns, $repl1, $format_regexp,1);
+  preg_match('`^'.$regex1.'$`', stripslashes($format), $letters);
+  array_shift($letters);
+  // extract values
+  $regex2 = preg_replace($patterns, $repl2, $format_regexp,1);
+  preg_match('`^'.$regex2.'$`', $date, $values);
+  array_shift($values);
 
-      return $iso;
+  // if we did not find all the values for the patterns in the format, abort
+  if (count($letters) != count($values)) {
+    return 'ERROR';
+  }
+
+  $final_date['hours']   = "00";
+  $final_date['minutes'] = "00";
+  $final_date['seconds'] = "00";
+  $final_date['mon']     = "00";
+  $final_date['mday']    = "00";
+  $final_date['year']    = "0000";
+
+  foreach($letters as $i => $letter) {
+    $value = $values[$i];
+
+    switch($letter) {
+      case 'd':
+      case 'j':
+        $final_date['mday'] = str_pad($value, 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 'm':
+        $final_date['mon'] = str_pad($value, 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 'F':
+        $array_month_long = array(
+          t('January') => 1, t('February') => 2, t('March') => 3, t('April') => 4,
+          t('May') => 5, t('June') => 6, t('July') => 7, t('August') => 8,
+          t('September') => 9, t('October') => 10,  t('November') => 11, t('December') => 12
+        );
+        $final_date['mon'] = str_pad($array_month_long[$value], 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 'M':
+        $array_month = array(
+          t('Jan') => 1, t('Feb') => 2, t('Mar') => 3, t('Apr') => 4,
+          t('May') => 5, t('Jun') => 6, t('Jul') => 7, t('Aug') => 8,
+          t('Sep') => 9, t('Oct') => 10, t('Nov') => 11, t('Dec') => 12
+        );
+        $final_date['mon'] = str_pad($array_month[$value], 2, "0", STR_PAD_LEFT);;
+        break;
+
+      case 'Y':
+      case 'y':
+        $year = str_pad($value, 2, "0", STR_PAD_LEFT);
+        // if no century, we add the current one ("06" => "2006")
+        $final_date['year'] = str_pad($year, 4, substr(date("Y"), 0, 2), STR_PAD_LEFT);
+        break;
+
+      case 'a':
+      case 'A':
+        $am_pm = strtolower($value);
+        break;
+
+      case 'g':
+      case 'h':
+      case 'G':
+      case 'H':
+        $final_date['hours'] = str_pad($value, 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 'i':
+        $final_date['minutes'] = str_pad($value, 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 's':
+        $final_date['seconds'] = str_pad($value, 2, "0", STR_PAD_LEFT);
+        break;
+
+      case 'U':
+        // TODO ?
+        break;
 
     }
   }
-  return 'ERROR';
+
+  // TODO : add some validation ? day in [1..31], etc...
+
+  switch ($am_pm) {
+    case 'am':
+      if ($final_date['hours'] == "12") {
+        $final_date['hours'] = "00";
+      }
+      break;
+    case 'pm':
+      if ($final_date['hours'] != "12") {
+        $final_date['hours'] += 12;
+      }
+      break;
+  }
+  return date_array2iso($final_date);
 }
 
-/**
- *  When saving the JS calendar date to the database, put the 'T' back in
- *  and append a blank time string if time is not required
- */
-function date_jscalendar2iso($text, $granularity = array('M', 'D', 'Y')) {
 
-  if (strstr($text, ' ')) {
-
-     $iso = str_replace(' ', 'T', $text);
-
-  } elseif ($text > '') {
-
-     $iso = $text .'T00:00:00';
-
-  } else {
-
-     return 'ERROR';
-  }
-  
-  if (date_preg($iso)) {
-    
-    return $iso;
-
-  } else {
-
-    return 'ERROR';
-
-  }
-}
-
-function date_jscalendar2unix($text, $granularity = array('M', 'D', 'Y')) {
-  
-  if ($iso = date_jscalendar2iso($text, $granularity = array('M', 'D', 'Y'))) {
-    
+function date_custom2unix($date, $format) {
+  if ($iso = date_custom2iso($date, $format)) {
     if ($unix = date_iso2unix($iso)) {
-      
       return $unix;
     }
   }
@@ -1401,12 +1543,20 @@ function date_jscalendar2unix($text, $granularity = array('M', 'D', 'Y')) {
 /**
  *  Use stringtotime function to create an iso date out of text
  */
-function date_text2iso($text) {
+function date_text2iso($text, $format) {
   
   // if date supplied in iso format, use it
+  // TODO : there's probably better to do...
+  // (do we _want_ to enter ISO formats ? if so we should have it in the input format settings)
   if (date_preg($text) && date_part_is_valid(date_iso_year($text), 'year')) return $text;
-  
-  // if not iso date, try strtotime conversion
+
+  // if not iso date, try to parse in the given format
+  $custom = date_custom2iso($text, $format);
+  if ($custom !== 'ERROR') {
+    return $custom;
+  }
+
+  // if custom parsing failed, try strtotime conversion
   $iso = date_gmdate(DATE_STRING_ISO, strtotime($text));
   
   if (date_part_is_valid(date_iso_year($iso), 'year')) {
@@ -1420,9 +1570,9 @@ function date_text2iso($text) {
   }
 }
 
-function date_text2unix($text) {
+function date_text2unix($text, $format) {
   
-  if ($iso = date_text2iso($text)) {
+  if ($iso = date_text2iso($text, $format)) {
     
     if ($unix = date_iso2unix($iso)) {
       
@@ -1744,8 +1894,8 @@ function date_formats($format, $granularity) {
         case 'a':
         case 'A':
           if (date_has_time($granularity)) {
-            $jscal_format_time[] = $format_to_jscalendar[$c];
-            $text_format_time[] = $c;
+            $jscal_format_ampm = $format_to_jscalendar[$c];
+            $text_format_ampm = $c;
             $am_pm = true;
           }
           break;
@@ -1763,18 +1913,19 @@ function date_formats($format, $granularity) {
   if ($format == 'site-wide') {
     $formats['input']['site-wide'] = $format;
   }
-
+    
   $formats['input']['jscal'] = implode($date_separator, $jscal_format_date);
-  $formats['input']['jscal'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $jscal_format_time) : '';
+  $formats['input']['jscal'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $jscal_format_time)  . $jscal_format_ampm : '';
 
   $formats['input']['text'] = implode($date_separator, $text_format_date);
-  $formats['input']['text'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $text_format_time) : '';
+  $formats['input']['text'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $text_format_time)  . $text_format_ampm : '';
 
   $formats['input']['select'] = $select_format_date;
   $formats['input']['am_pm'] = $am_pm;
-
+  
   return $formats;
 }
+
 /**
  *  Convert date() to strftime() format strings
  * 

@@ -409,6 +409,7 @@ function date_widget($op, &$node, $field, &$items) {
        *      [timezone] => US/Central
        */
 
+      $formats = date_get_formats($field);
       $add = array();
 
       foreach ($items as $delta => $item) {
@@ -417,13 +418,13 @@ function date_widget($op, &$node, $field, &$items) {
 
         switch ($field['widget']['type']) {
           case ('date_select'):
-            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
           case ('date_js'):
-            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field), $item['format']);
+            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
           default:
-            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field), $item['format']);
+            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
         }
 
@@ -437,6 +438,8 @@ function date_widget($op, &$node, $field, &$items) {
       return;
 
     case 'validate':
+      $formats = date_get_formats($field);
+
       foreach ($items as $delta => $item) {
         
         // if multiple dates are allowed, need to adjust validation criteria on extra fields
@@ -451,11 +454,11 @@ function date_widget($op, &$node, $field, &$items) {
             break;
 
           case ('date_js'):
-            $error = date_jscalendar_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], date_granularity_array($field));
+            $error = date_jscalendar_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
             break;
 
           default:
-            $error = date_text_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], date_granularity_array($field));
+            $error = date_text_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
             break;
         }
       }

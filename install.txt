@@ -8,7 +8,8 @@ Installation instructions:
    features will be available.
    
 2) Upload the date files to a 'date' folder in the modules directory. You should end
-   up with a structure like: drupal/modules/date/date.module.
+   up with a structure like: drupal/modules/date/date.module. You can also place it
+   inside the cck folder. Either location will work.
 
 3) If you already have cck data created, backup your files!! There is a database
    change that may affect them.
@@ -30,6 +31,11 @@ Installation instructions:
 
 7) While viewing a cck content type, select the option to add a new field. Several
    options for date fields should be visible.
+   
+   ** NOTE ** many people have reported problems viewing newly installed cck fields. If
+   you have installed the module and it is not showing up in your field list, manually
+   clear the cache table or just pull up an existing field and save it to force the cache
+   to update.
    
 8) If you already have date fields created from an earlier version, be sure to
    edit each one and save your changes. There are new options available that need to be set.

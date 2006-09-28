@@ -418,13 +418,13 @@ function date_widget($op, &$node, $field, &$items) {
 
         switch ($field['widget']['type']) {
           case ('date_select'):
-            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+            $converted_date = date_selector_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
           case ('date_js'):
-            $converted_date = date_jscalendar_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+            $converted_date = date_jscalendar_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
           default:
-            $converted_date = date_text_make_dbdate($item['value'], $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+            $converted_date = date_text_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
             break;
         }
 
@@ -450,15 +450,15 @@ function date_widget($op, &$node, $field, &$items) {
 
         switch ($field['widget']['type']) {
           case ('date_select'):
-            $error = date_selector_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $params);
+            $error = date_selector_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $params);
             break;
 
           case ('date_js'):
-            $error = date_jscalendar_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
+            $error = date_jscalendar_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
             break;
 
           default:
-            $error = date_text_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
+            $error = date_text_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
             break;
         }
       }
@@ -492,12 +492,12 @@ function date_field_formatter($field, $item, $formatter, $node) {
   if ($field['tz_handling'] == 'none') {
     
     // if no timezone handling was elected, create a date object with the database value
-    $date = date_make_date($item['value'], 'none', 'local', $field['type']);
+    $date = date_make_date(trim($item['value']), 'none', 'local', $field['type']);
   
   } else {
     
     // create a date object with a gmt timezone from the database value
-    $date = date_make_date($item['value'], 'GMT', 'db', $field['type']);
+    $date = date_make_date(trim($item['value']), 'GMT', 'db', $field['type']);
     // convert the date object to the proper timezone, depending on the field's tz_handling value
     date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
   

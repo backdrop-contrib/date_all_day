@@ -16,14 +16,7 @@ function date_views_help() {
         or the last possible (for the to date) value in that time period. 
         The \'to\' portion of the argument can be eliminated if it is the same as the \'from\' portion. 
         Use @ instead of a date to substitute in the current date and time. 
-        </p><p>
-        Several shortcuts are available:
-        </p><ul>
-        <li>Use @P1H, @P1D, @P1W, @P1M, @P1Y to get next hour/day/week/month/year from now</li>
-        <li>Use date before P sign to get next hour/day/week/month/year from that date</li>
-        <li>Periods can be combined, i.e. P1Y2M4D sets a date range of 1 year, 2 months, and 4 days.</li>
-        <li>Use format like 2006-W24 to find ISO week number 24 in year 2006</li>
-        </ul>
+        </p>
         <p>Examples of views date range arguments:</p>
         <table>
         <tr><th>Argument</th><th>Resulting Query Range</th></tr>
@@ -37,8 +30,29 @@ function date_views_help() {
         <tr><td>@P1Y90D</td><td>NOW to 1 year and 90 days from now</td></tr>
         <tr><td>2006-03-05P1W</td><td>the 1 week period starting Mar 5 2006</td></tr>
         <tr><td>2006-01P3M</td><td>the 3 month period starting Jan 2006</td></tr>
-        </table><p>See <a href="http://en.wikipedia.org/wiki/ISO_8601">http://en.wikipedia.org/wiki/ISO_8601</a> 
-        for more information abou ISO dates, ISO weeks, and ISO duration and time intervals.');
+        </table>
+        <h3>Date Browser</h3>
+        <p>A Date Browser plugin is available to add back/next navigation links to a view that uses the 
+        date range argument. Also adds "week of XXX", "month of XXX" headings to views and blocks  
+        and defaults blocks and views w/out arguments to current period to start paging.
+        </p>
+        <p>To use the Date Browser:</p>
+        <ul>
+        <li>Create a view, and enable the Date: date range argument for the date field you want
+        to page on. Set the argument option to year, month, day, week, or hour, depending 
+        on the increment you want the browser to use as a period.</li>
+        <li>Do not add any other arguments to the view. Filters are fine, though.</li>
+        <li>In the page section of the view, select the option to display the view as Date: Date Browser. 
+        (instead of teaser or table). Make sure display as a page is checked, and provide a url.</li>
+        <li>Be sure to put something in "empty text" for the page. This is what will be displayed
+        if you navigate to a period that has no results.</li>
+        <li>Go to the view url. When no date is selected, the view will automatically display the
+        current period (year, month, day, week, or hour), with back/next links to page through
+        data by the selected period.</li>
+        <li>You can also choose to use the Date Browser for block views. That will default the block
+        view to display the current period, and provide a link to the full view.</li>
+        <li>The page, navigation, label, and block displays are themed, and can be customized by overriding
+        the provided themes.</li>');
 }
  
 function date_views_filters($field) {
@@ -76,15 +90,17 @@ function date_views_filters($field) {
 
 function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
   // this is just a wrapper function that sets the date type 
-  return date_views_filter_handler($op, $filter, $filterinfo, &$query, 'int');
+  return date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
 function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
   if (empty($filter['value'])) return;
 
-  $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_jscalendar2iso($filter['value'])) ."'";
   $field   = $filterinfo['extra']['field'];
+  $formats = date_get_formats($field);
+  $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
+
   $db_info = content_database_info($field);
   $value   = $db_info['columns']['value']['column'];
   $table   = 'node_data_'. $field['field_name']; // uses views alias table name
@@ -172,32 +188,11 @@ function date_views_arguments() {
  * The 'to' portion of the argument can be eliminated if it is the same as the 'from' portion
  * Use @ instead of a date to substitute in the current date and time.
  * 
- * Shortcuts are available:
- * 
  * Use periods (P1H, P1D, P1W, P1M, P1Y) to get next hour/day/week/month/year from now
  * Use date before P sign to get next hour/day/week/month/year from that date
- * The ISO standard calls for a separator (--) between a date and the P, 
- * but the separator is optional between a start date and a period in this argument 
- * to make the result easier to read.
  * 
  * This module does not currently handle the option of using a period with an end date,
  * only a start date followed by a period.
- * 
- * Use format like 2006-W24 to find ISO week number 24 in year 2006
- * 
- * Examples:
- * 
- * --------- ARGUMENT --------    >> -------- RESULTING QUERY RANGE --------
- * 2006-W24                       >> 24th ISO week in 2006
- * 2006                           >> the whole year of 2006
- * 2006-03                        >> the whole month of Mar 2006
- * 2006-02--2007-03               >> Feb 1 2006 to Mar 31 2006
- * 2006-08-31T14--2006-08-31T16   >> the 14th to 16th hours of Aug 8 2006
- * @--2006-12-31                  >> NOW to 2006-12-31T23:59:59
- * @P3H                           >> NOW to three hours from now
- * @P1Y90D                        >> NOW to 1 year and 90 days from now
- * 2006-03-05P1W                  >> the week starting Mar 5 2006
- * 2006-01P3M                     >> 3 months starting Jan 2006
  * 
  * The groupby selector values are used only if a summary view of the argument is requested
  * possible values are by year, by month, by week, by day, and by hour
@@ -287,31 +282,12 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       break;
 
     case 'filter':
-      
-      if (stristr($arg, 'P')) {
-        // for a date plus value, get the min and max values
-        $range = date_plus_period($arg);
-        $min_date = $range[0];
-        $max_date = $range[1];
-      }
-      elseif (stristr($arg, '-W') && !stristr($arg, '--')) {
-        // for a specified week, get the min and max values
-        $range = date_week_value($arg);
-        $min_date = $range[0];
-        $max_date = $range[1];
-      }
-      else {
-        // for all other get the date range from the supplied argument
-        $range = (array) explode('--', $arg);
-        $min_date = date_range_value($range[0], 'min');
-        $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
-      }
-      
+      $range = date_views_date_range($arg);
       $query->ensure_table($table);
       $query->add_field($value, $table);
       //$query->add_field($timezone, $table);
-      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $min_date) ."'");
-      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $max_date) ."'");
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       break;
   
     case 'title':
@@ -320,6 +296,27 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   }
 }
 
+function date_views_date_range($arg) {
+  if (stristr($arg, 'P')) {
+    // for a date plus value, get the min and max values
+    $range = date_plus_period($arg);
+    $min_date = $range[0];
+    $max_date = $range[1];
+  }
+  elseif (stristr($arg, '-W') && !stristr($arg, '--')) {
+    // for a specified week, get the min and max values
+    $range = date_week_value($arg);
+    $min_date = $range[0];
+    $max_date = $range[1];
+  }
+  else {
+    // for all other get the date range from the supplied argument
+    $range = (array) explode('--', $arg);
+    $min_date = date_range_value($range[0], 'min');
+    $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
+  }
+  return array($min_date, $max_date);
+}
 /**
  *  Validate and pad date range argument element
  * 
@@ -472,4 +469,304 @@ function date_range_arg_options() {
     'week'  => t('summarize by week'), 
     'hour'  => t('summarize by hour')
     );
+}
+
+//============================== Date Browser ================================//
+
+/**
+ * Works only with views that use the date range argument
+ * Adds this/next period navigation links to a date argument range view
+ * Adds 'week of XXX', 'month of XXX' headings to views and blocks
+ * Defaults blocks and views w/out arguments to current period to start paging
+ * Choose period increments by selecting the option value of date range argument
+ *  (year, month, week, day, hour)
+ */
+
+/**
+ * Implementation of hook_views_style_plugins()
+ */
+function date_views_style_plugins() {
+
+  $items = array();
+  $items['date_views_browser'] = array(
+    'name' => t('Date: Date Browser'),
+    'theme' => 'date_views_browser_full_view',
+    'summary_theme' => 'date_views_browser_summary_view',
+    'needs_fields' => true,
+    'needs_table_header' => true,
+  );
+  return $items;
+}
+/**
+ * Implementation of hook_views_pre_view()
+ */
+function date_views_pre_view($view, $items) {
+  $date_views_browser_views = date_views_browser_get_views();
+  if (in_array($view->name, array_keys($date_views_browser_views))) {
+    // make sure the navigation link gets added to empty pages
+    if (sizeof($items) == 0 && $view->build_type == 'page') {
+      $period = $date_views_browser_views[$view->name]->options;
+      return date_views_browser_navigation($view, $period);  
+    }
+  }
+}
+
+/**
+ *  Implementation of hook_views_query()
+ *  Used to make sure view defaults to current date if no date selected
+ */
+function date_views_query_alter(&$query, &$view) {
+  $date_views_browser_views = date_views_browser_get_views();
+  if (in_array($view->name, array_keys($date_views_browser_views))) {
+    if (sizeof($query->groupby) > 0) {
+      // if no argument specified, add the current date range to the query
+      // presence of groupby value indicates that argument is missing and query is performing a summary
+      $path = explode('/', $view->url);
+      $pos = sizeof($path);
+      if ($view->build_type == 'block' || arg($pos) == '') {
+        $arg = NULL;
+      }
+      else {
+        $arg = arg($pos);
+      }
+      $arg        = date_views_browser_period_arg($arg, $view->argument[0]['options']);
+      $name       = explode(':', $view->argument[0]['type']);
+      $field_name = trim($name[1]);
+      $field      = content_fields($field_name);
+      $db_info    = content_database_info($field);
+      $value      = $db_info['columns']['value']['column'];
+      $timezone   = $db_info['columns']['timezone']['column'];
+      $table      = 'node_data_'. $field['field_name']; // uses views alias table name
+      $offset     = date_views_offset($field['tz_handling']);
+      $range      = date_views_date_range($arg);
+      $query->ensure_table($table);
+      $query->add_field('nid', 'node');
+      $query->add_field($value, $table);
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
+    }
+    
+  }
+}
+/**
+ * Find all the views that qualify for date browser treatment
+ */
+function date_views_browser_get_views($refresh = FALSE) {
+  static $date_views_browser_views;
+  
+  if (!isset($date_views_browser_views) || $refresh) {
+    $date_views_browser_views = array();
+    $arguments = date_views_arguments();
+    $argument_list = "'". implode("','", array_keys($arguments)) ."'";
+    $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type='date_views_browser'");
+    while ($view = db_fetch_object($result)) {
+      $date_views_browser_views[$view->name] = $view;
+    }
+  }
+  return $date_views_browser_views;
+}
+/**
+ *  Make sure available views are refreshed when views are changed
+ */
+function date_form_alter($form_id, $form) {
+  if ($form_id == 'views_edit_view') {
+    date_views_browser_get_views(TRUE);
+  }
+}
+/**
+ *  Return the correct period for the date range argument
+ */
+function date_views_browser_period($period = 'month') {
+  switch ($period) {
+  case ('year'):
+    return 'P1Y';
+  case ('week'):
+    return 'P1W';
+  case ('day'):
+    return 'P1D';
+  case ('hour'):
+    return 'P1H';
+  default:
+    return 'P1M';
+  }
+}
+/**
+ *  Format an argument for the date range
+ */
+function date_views_browser_period_arg($arg = NULL, $period = 'month') {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  switch ($period) {
+  case ('week'):
+    return date_gmdate('Y-m-d', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+  case ('year'):
+    return date_gmdate('Y', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+  case ('day'):
+    return date_gmdate('Y-m-d', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+  case ('hour'):
+    return date_gmdate('Y-m-d\TH', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+  default:
+    return date_gmdate('Y-m', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+  }
+}
+/**
+ *  Return label for current date range
+ */
+function date_views_browser_period_label($arg = NULL, $period = 'month') {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  // use the m/d/Y part of the preferred short date format
+  if ($period != 'hour') {
+    $format = array_shift(explode(' ', variable_get('date_format_short', 'm/d/Y - H:i')));
+  }
+  else {
+    $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
+  }
+  return theme('date_views_browser_period_label', $period, date_gmdate($format, date_views_browser_period_start_stamp($arg, $period)));
+}
+/**
+ *  Find the timestamp for the beginning of the period of the analyzed date arg
+ */
+function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  
+  // get the range of dates
+  $range = date_views_date_range($arg);
+  $stamp = date_iso2unix($range[0]);
+
+  // if a date range has already been determined, return the beginning of that range
+  if ($arg) return $stamp;
+  
+  // if no range is yet set, find the beginning of the appropriate period
+  switch ($period) {
+  case ('week'):
+    $dow = date_gmdate('w', $stamp);
+    if ($dow >= 6) $adj = (86400 * 7);
+    $start = intval($stamp - intval($dow * 86400) + $adj);
+    break;
+  case ('year'):
+    $year = date_gmdate('Y', $stamp);
+    $start = date_gmmktime(array('year' => $year, 'mon' => 1, 'mday' => 1));
+    break;
+  case ('day'):
+    $year  = date_gmdate('Y', $stamp);
+    $month = date_gmdate('n', $stamp);
+    $day   = date_gmdate('j', $stamp);
+    $start = date_gmmktime(array('year' => $year, 'mon' => $month, 'mday' => $day, 'hours' => 1));
+    break;
+  case ('hour'):
+    $year  = date_gmdate('Y', $stamp);
+    $month = date_gmdate('n', $stamp);
+    $day   = date_gmdate('j', $stamp);
+    $hour  = date_gmdate('H', $stamp);
+    $start = date_gmmktime(array('year' => $year, 'mon' => $month, 'mday' => $day, 'hours' => $hour, 'minutes' => 1));
+    break;
+  default:
+    $year  = date_gmdate('Y', $stamp);
+    $month = date_gmdate('n', $stamp);
+    $start = date_gmmktime(array('year' => $year, 'mon' => $month, 'mday' => 1));
+    break;
+  }
+  return $start;
+}
+/**
+ *  Navigation links for the full view
+ */
+function date_views_browser_navigation($view, $period) {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
+  $path = explode('/', $view->url);
+  $pos = sizeof($path);
+  if (arg($pos) == '') {
+    $arg = NULL;
+  } 
+  else {
+    $arg = arg($pos);
+  }
+  $range = date_views_date_range($arg);
+  $stamp = date_views_browser_period_start_stamp($arg, $period);
+
+  switch ($period) {
+  case ('week'):
+    $prev_date = date_gmdate('Y-m-d', intval($stamp - 604799));
+    $next_date = date_gmdate('Y-m-d', intval($stamp + 604801));
+    break;
+  case ('year'):
+    $prev_date = intval(substr($range[0], 0, 4) - 1);
+    $next_date = intval(substr($range[1], 0, 4) + 1);
+    break;
+  case ('day'):
+    $prev_date = date_gmdate('Y-m-d', intval($stamp - 86399));
+    $next_date = date_gmdate('Y-m-d', intval($stamp + 86401));
+    break;
+  case ('hour'):
+    $prev_date = date_gmdate('Y-m-d\TH', intval($stamp - 3599));
+    $next_date = date_gmdate('Y-m-d\TH', intval($stamp + 3601));
+    break;
+  default:
+    $year  = intval(substr($range[0], 0, 4));
+    $month = intval(substr($range[1], 5, 2));
+    $prev_date = ($month > 1 ? $year : intval($year - 1)) .'-'. ($month > 1 ? intval($month - 1) : 12);
+    $next_date = ($month > 11 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? intval($month + 1) : 1);
+    break;
+  }
+  $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);
+  $next = $view->url .'/'. $next_date . date_views_browser_period($period);
+  $label = date_views_browser_period_label($arg, $period);
+  return theme('date_views_browser_navigation', $label, $period, $prev, $next);
+}
+
+//============================== THEMES ================================//
+
+/**
+ *  Theme for the current period label name
+ */
+function theme_date_views_browser_period_label($period, $date) {
+  return t('%period of %date', array('%period' => ucwords($period), '%date' => $date));
+}
+/**
+ *  Theme for page navigation
+ */
+function theme_date_views_browser_navigation($label, $period, $prev, $next) {
+  theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+  $output  = '<div class="book-navigation date-browser-navigation">';
+  $output .= '<div class="page-links">';
+  $output .= l(t('‹ prev %period  ', array('%period' => $period)), $prev, array('class' => 'page-previous'));
+  $output .= '<h3 class="date-browser-label"><span class="page-up">'. $label .'</span></h3>';
+  $output .= l(t('  next %period  ›', array('%period' => $period)), $next, array('class' => 'page-next'));
+  $output .= '</div></div>';
+  return $output;
+}
+/**
+ * Display a summary version of a view.
+ */
+function theme_date_views_browser_summary_view($view, $type, $level, $nodes, $args) {
+  return theme('date_views_browser_full_view', $view, $nodes, $type);
+}
+/**
+ *  View, themed so it can be overridden
+ * 
+ *  $display options are views_view_list, views_view_table, views_view_teasers, views_view_nodes
+ */
+function theme_date_views_browser_full_view($view, $nodes, $type) {
+  
+  $teasers = true;
+  $links   = true;
+  theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+  
+  $date_views_browser_views = date_views_browser_get_views();
+  $period = $date_views_browser_views[$view->name]->options;
+  switch ($type) {
+    case ('block'):
+      if ($view->url) $url = $view->url . '/'. $arg;
+      $output  .= '<h5 class="date-browser-block-label">'. l(date_views_browser_period_label(NULL, $period), $url) .'</h5>';
+      $display = 'views_view_table';
+      break;
+    default:
+      $output  .= date_views_browser_navigation($view, $period);
+      $display = 'views_view_teasers';
+      break;
+  }
+  $output .= theme($display, $view, $nodes, $type, $teasers, $links);
+
+  return $output;
 }

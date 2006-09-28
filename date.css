@@ -19,8 +19,12 @@ fieldset, #main .container-inline-date .description {
   padding:0;
 }
 a.help, acronym {
- cursor: help;
- border-bottom: 1px dotted #080;
- text-decoration:none;
+  cursor: help;
+  border-bottom: 1px dotted #080;
+  text-decoration:none;
 }
+.date-browser-label {
+  display:inline;
+}
+
 

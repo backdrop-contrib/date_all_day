@@ -757,9 +757,10 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
   $period = $date_views_browser_views[$view->name]->options;
   switch ($type) {
     case ('block'):
+      $arg = date_views_browser_period_arg(NULL, $view->argument[0]['options']);
       if ($view->url) $url = $view->url . '/'. $arg;
       $output  .= '<h5 class="date-browser-block-label">'. l(date_views_browser_period_label(NULL, $period), $url) .'</h5>';
-      $display = 'views_view_table';
+      $display = 'views_view_list';
       break;
     default:
       $output  .= date_views_browser_navigation($view, $period);

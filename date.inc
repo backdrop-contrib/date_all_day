@@ -883,6 +883,7 @@ function date_select_input($params) {
   $form[] = array(
     '#type' => 'markup',
     '#value' => '<div class="date-clearing"> </div>'. ($description > '' ? '<div class="form-item description">'.$description.'</div>' : ''),
+    '#weight' => 11,
   );
   return $form;
 }

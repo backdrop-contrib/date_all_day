@@ -1,0 +1,3 @@
+; $Id$
+name = Date
+description = Defines a date/time field type and a date api.

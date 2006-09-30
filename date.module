@@ -418,7 +418,7 @@ function date_widget($op, &$node, $field, &$items) {
 
         switch ($field['widget']['type']) {
           case ('date_select'):
-            $converted_date = date_selector_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+            $converted_date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
             break;
           case ('date_js'):
             $converted_date = date_jscalendar_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
@@ -450,7 +450,7 @@ function date_widget($op, &$node, $field, &$items) {
 
         switch ($field['widget']['type']) {
           case ('date_select'):
-            $error = date_selector_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $params);
+            $error = date_selector_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $params);
             break;
 
           case ('date_js'):

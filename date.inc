@@ -602,9 +602,7 @@ function date_set_site_timezone($val) {
  *  Get system variable setting for site default timezone
  */
 function date_get_site_timezone() {
-
-  return variable_get('date_default_timezone_name', 'GMT');
-
+  return variable_get('date_default_timezone_name', '');
 }
 
 /**
@@ -744,8 +742,7 @@ function date_select_input($params) {
   $form['#type']   = 'fieldset';
   $form['#title']  = t($label) . $title;
   $form['#weight'] = intval($weight);
-  $form['#prefix'] = '<div class="container-inline-date">';
-  $form['#suffix'] = '</div>';
+  $form['#attributes'] = array('class' => 'container-inline-date');
   
   if (in_array('D',$granularity)) {
     $form['mday'] = array(
@@ -807,13 +804,6 @@ function date_select_input($params) {
       $form['year']['#size'] = 4;
     }
   }
-
-  $form['space1'] = array(
-    '#type' => 'markup',
-    '#value' => ' <div class="date-space">&nbsp;</div>',
-    '#weight' => 3,
-    );
-
   if (in_array('H',$granularity)) {
     $form['hours'] = array(
       '#type' => 'select',
@@ -849,11 +839,6 @@ function date_select_input($params) {
   if ($formats['input']['am_pm']) {
     $options = array('am' => t('am'), 'pm' => t('pm'));
     if (!$required || in_array('hours', $opt_fields) || $blank_default) array_unshift($options, '');
-    $form['space2'] = array(
-      '#type' => 'markup',
-      '#value' => '<div class="date-space">&nbsp;</div>',
-      '#weight' => 7,
-    );
     $form['ampm'] = array(
       '#type' => 'select',
       '#default_value' => $ampm,
@@ -870,8 +855,6 @@ function date_select_input($params) {
       '#options' => date_timezone_options(),
       '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
       '#title' => t('timezone'),
-      '#prefix' => '<div class="date-timezone">',
-      '#suffix' => '</div>',
       '#weight' => 10,
     );
   } else {
@@ -882,7 +865,7 @@ function date_select_input($params) {
   }
   $form[] = array(
     '#type' => 'markup',
-    '#value' => '<div class="date-clearing"> </div>'. ($description > '' ? '<div class="form-item description">'.$description.'</div>' : ''),
+    '#value' =>  ($description > '' ? '<br class="clear" /><div class="form-item"><div class="description">'.$description.'</div></div>' : ''),
     '#weight' => 11,
   );
   return $form;
@@ -956,7 +939,8 @@ function date_text_input($params) {
     $form['#type'] = 'fieldset';
     $form['#title'] = $label;
     $form['#weight'] = $weight;
-            
+    $form['#attributes'] = array('class' => 'container-inline-date');            
+    
     $form['value'] = array(
       '#type' => 'textfield',
       '#title' => t('date'),
@@ -981,7 +965,7 @@ function date_text_input($params) {
 
     $form[] = array(
       '#type' => 'markup',
-      '#value' => '<div class="form-item"><div class="description">'.$description.'</div></div>',
+      '#value' => '<br class="clear" /><div class="form-item"><div class="description">'.$description.'</div></div>',
     );
 
   } else {
@@ -1731,8 +1715,7 @@ function date_input_options() {
 /**
  *  Function to create an option list that will display various date and time formats
  * 
- *  @param $type - 'date', 'time', or 'both'
- *  @param $tz_handling - default is 'site'
+  *  @param $tz_handling - default is 'site'
  *  @param $illustration_date - an iso date to use for illustration of the date options
  *    default date for illustration: August 1 YYYY 2:05:10 PM
  *      - single digit months and days to see leading zeros
@@ -1743,34 +1726,22 @@ function date_input_options() {
  *    with a key of the format string and a value of the illustration date displayed in that format
  * 
  */
-function date_output_options($type = 'date', $tz_handling = 'site', $illustration_date = NULL) {
+function date_output_options($tz_handling = 'site', $illustration_date = NULL) {
 
   $illustration_date = $illustration_date ? $illustration_date : date_gmdate('Y', time()) .'-08-01T14:05:10';
-  
-  switch ($type) {
-  case ('date'):
-    $options = date_date_options();
-    break;
-   
-  case ('time'): 
-    $options = date_time_options();
-    break;
-
-  default:
-    $options = date_date_options() + date_time_options();
-    break;
-  }
-
   $date = date_make_date($illustration_date, date_get_timezone($tz_handling), 'local', DATE_ISO);
-
+  
+  $dates = date_date_options();
+  $times = date_time_options();
+  $options = array();
   $view = array();
 
-  foreach ($options as $opt) {
-
-    $view[$opt] = date_show_date($date, $opt);
-
+  foreach ($dates as $date_string) {
+    foreach ($times as $time_string) {
+      $opt = trim(strstr($date_string, 'd') || strstr($date_string, 'j') || strstr($date_string, 'l') ? $date_string .' '. $time_string : $date_string);
+      $view[$opt] = date_show_date($date, $opt);
+    }
   }
-
   return $view;
 }
 
@@ -1787,7 +1758,7 @@ function date_date_options() {
     'D, m/d/Y', 'D, d/m/Y', 'D, Y/m/d', 
     'D, m.d.Y', 'D, d.m.Y', 'D, Y.m.d', 
     'D, m-d-Y', 'D, d-m-Y', 'D, Y-m-d', 
-    'F j, Y', 'j F, Y', 'Y, F j', 'F j, Y', 'j F Y',
+    'F j', 'M j', 'F j, Y', 'j F, Y', 'Y, F j', 'F j, Y', 'j F Y',
     'Y, F j', 'l, F j, Y', 'l, j F, Y', 'l, Y,  F j', 'l, F j, Y', 'l, j F Y', 'l, Y,  F j',
     );
 }

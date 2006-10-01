@@ -75,7 +75,7 @@ function date_views_filters($field) {
        '<' => t('less than'),
        '<=' => t('less than or equal to'),
        ),
-     'value' => views_handler_filter_date_value_form(),
+     'value' => date_views_handler_filter_date_value_form($field),
      'option' => 'string',
      'handler' => $handler,
      'extra' => array('field' => $field),
@@ -109,6 +109,24 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $query->ensure_table($table);
   $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) . $filter['operator'] . $date);
 
+}
+
+/**
+ * Provide a form gadget for dates.
+ */
+function date_views_handler_filter_date_value_form($field) {
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  
+  $formats = date_get_formats($field);
+  $format  = $formats['input']['jscal'] ? $formats['input']['jscal'] : '';
+  $form = array(
+    '#type' => 'textfield',
+    '#attributes' => array('class' => 'jscalendar'),
+    '#jscalendar_ifFormat' => $format,
+    '#jscalendar_showsTime' => date_has_time($field['granularity']) ? 'true' : 'false',
+    '#jscalendar_timeFormat' => $formats['input']['am_pm'] ? '12' : '24',
+  );
+  return $form;
 }
 
 /**
@@ -727,13 +745,14 @@ function theme_date_views_browser_period_label($period, $date) {
  *  Theme for page navigation
  */
 function theme_date_views_browser_navigation($label, $period, $prev, $next) {
-  theme_add_style(drupal_get_path('module', 'date') .'/date.css');
-  $output  = '<div class="book-navigation date-browser-navigation">';
-  $output .= '<div class="page-links">';
-  $output .= l(t('‹ prev %period  ', array('%period' => $period)), $prev, array('class' => 'page-previous'));
-  $output .= '<h3 class="date-browser-label"><span class="page-up">'. $label .'</span></h3>';
-  $output .= l(t('  next %period  ›', array('%period' => $period)), $next, array('class' => 'page-next'));
-  $output .= '</div></div>';
+    theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+    $output  = '<div class="book-navigation date-browser-navigation">';
+    $output .= '<div class="page-links">';
+    $output .= l(t('‹ prev %period  ', array('%period' => $period)), $prev, array('class' => 'page-previous'));
+    $output .= '<h3 class="date-browser-label"><span class="page-up">'. $label .'</span></h3>';
+    $output .= l(t('  next %period  ›', array('%period' => $period)), $next, array('class' => 'page-next'));
+    $output .= '</div></div>';
+    return $output;
   return $output;
 }
 /**

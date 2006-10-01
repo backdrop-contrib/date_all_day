@@ -78,65 +78,57 @@ function date_field_settings($op, $field) {
         include_once(drupal_get_path('module', 'event') .'/event_timezones.inc');
       }
       $form = array();
-      // need a way to identify the correct system timezone from an array of timezones with the same offset
-      // save it as a system variable so it will default to the correct value after the first time it is set
-      // aligns with system setting 'date_default_timezone'
-      $form['field_timezone'] = array(
-        '#type' => 'select',
-        '#title' => t('Site timezone'),
-        '#default_value' => date_get_site_timezone(),
-        '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 0))),  
-        '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
-      );
       $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'gmt';
-      $form['tz_handling'] = array(
-        '#type' => 'select',
-        '#title' => t('Time zone handling'),
-        '#default_value' => $tz_handling,
-        '#options' => date_timezone_handling_options(),
-        '#description' => t('Select the timezone handling method to be used for this date field'),
-      );
       $form['input'] = array(
         '#type' => 'fieldset',
         '#title' => t('Input options'),
-        '#description' => t('Note : the specified format will be adapted to the chosen <b>granularity</b> .'),
       );
-
-      $form['input']['input_format'] = array(
+      $options = array(
+        'Y' => t('Year'),
+        'M' => t('Month'),
+        'D' => t('Day'),
+        'H' => t('Hour'),
+        'N' => t('Minute'),
+        'S' => t('Second'),
+        //'T' => t('Timezone'),
+        );
+      $form['input']['granularity'] = array(
         '#type' => 'select',
-        '#title' => t('Input format'),
-        '#default_value' => $field['input_format'] ? $field['input_format'] : 'site_format',
-        '#options' => date_input_options(),
-        '#description' => t('The \'default\' value uses the \'short date format\' defined in %settings', array('%settings' => l("admin/settings", "admin/settings"))),
-      );
+        '#title' => t('Granularity'),
+        '#default_value' => $field['granularity'] ? $field['granularity'] : array('Y', 'M', 'D'),
+        '#options' => $options,
+        '#multiple' => 1,
+        '#description' => t('Set the date elements to be collected on input (at least a year is required).'),
+        );
       $form['input']['advanced'] = array(
         '#type' => 'fieldset',
         '#title' => t('Advanced input options'),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         );
+      $form['input']['advanced']['input_format'] = array(
+        '#type' => 'select',
+        '#title' => t('Input format'),
+        '#default_value' => $field['input_format'] ? $field['input_format'] : 'site_format',
+        '#options' => date_input_options(),
+        '#description' => t('The specified format will be adapted to the chosen <b>granularity</b>. The \'default\' value uses the \'short date format\' defined in %settings', array('%settings' => l("admin/settings", "admin/settings"))),
+      );
       $form['input']['advanced']['input_format_custom'] = array(
         '#type' => 'textfield',
         '#title' => t('Custom input format'),
         '#default_value' => $field['input_format_custom'] ? $field['input_format_custom'] : '',
-        '#description' => t('The custom format, if provided, will override the input format selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.'),
+        '#description' => t('The custom format, if provided, will override the input format selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, that is handled separately.'),
       );
       $form['output'] = array(
         '#type' => 'fieldset',
-        '#title' => t('Output Options'),
-        '#description' => t('Choose the way the date parts should be displayed. Blank values will surpress the display of that part of the date.'),
+        '#title' => t('Display Options'),
+        '#description' => t('Choose the way the date should be displayed.'),
         );
       $form['output']['output_format_date'] = array(
         '#type' => 'select',
         '#title' => t('Date display'),
-        '#default_value' => $field['output_format_date'] ? $field['output_format_date'] : '',
-        '#options' => date_output_options('date', $tz_handling),
-      );
-      $form['output']['output_format_time'] = array(
-        '#type' => 'select',
-        '#title' => t('Time display'),
-        '#default_value' => $field['output_format_time'] ? $field['output_format_time'] : '',
-        '#options' => date_output_options('time', $tz_handling),
+        '#default_value' => $field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'),
+        '#options' => date_output_options($tz_handling),
       );
       $form['output']['format_zone'] = array(
         '#type' => 'select',
@@ -154,17 +146,46 @@ function date_field_settings($op, $field) {
         '#type' => 'textfield',
         '#title' => t('Custom date format'),
         '#default_value' => $field['output_format_custom'] ? $field['output_format_custom'] : '',
-        '#description' => t('The custom format, if provided, will override the date and time display selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.'),
+        '#description' => t('The custom format, if provided, will override the date display selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.'),
       );
-
+      $form['timezone'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Timezone options'),
+      );
+      $form['timezone']['tz_handling'] = array(
+        '#type' => 'select',
+        '#title' => t('Time zone handling'),
+        '#default_value' => $tz_handling,
+        '#options' => date_timezone_handling_options(),
+        '#description' => t('Select the timezone handling method to be used for this date field'),
+      );
+      $form['timezone']['advanced'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Advanced timezone options'),
+        '#collapsible' => TRUE,
+        '#collapsed' => (date_get_site_timezone() ? TRUE : FALSE),
+        );
+      // need a way to identify the correct system timezone from an array of timezones with the same offset
+      // save it as a system variable so it will default to the correct value after the first time it is set
+      // aligns with system setting 'date_default_timezone'
+      $form['timezone']['advanced']['field_timezone'] = array(
+        '#type' => 'select',
+        '#title' => t('Site timezone'),
+        '#default_value' => date_get_site_timezone(),
+        '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 0))),  
+        '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
+      );
       return $form;
 
     case 'validate':
       date_set_site_timezone($field['field_timezone']);
+      if ($field['granularity']['Y'] != 'Y') {
+        form_set_error($field['field_name'], t('Input granularity must include a year.'));
+      }
       break;
 
     case 'save':
-      return array('field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'output_format_date', 'output_format_time', 'format_zone', 'output_format_custom');
+      return array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'output_format_date', 'format_zone', 'output_format_custom');
 
     case 'database columns':
       if ($field['type'] == 'date') {
@@ -239,35 +260,14 @@ function date_widget_settings($op, $widget) {
 
   switch ($op) {
     case 'form':
-      
         $form = array();
-        $form['input'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Input Options'),
-          );
-        $options = array(
-          'Y' => t('Year'),
-          'M' => t('Month'),
-          'D' => t('Day'),
-          'H' => t('Hour'),
-          'N' => t('Minute'),
-          'S' => t('Second'),
-          //'T' => t('Timezone'),
-          );
-        $form['input']['granularity'] = array(
-          '#type' => 'checkboxes',
-          '#title' => t('Granularity'),
-          '#default_value' => $widget['granularity'] ? $widget['granularity'] : array('Y', 'M', 'D'),
-          '#options' => $options,
-          '#multiple' => 1,
-          );
         if ($widget['type'] == 'date_select') {
           $form['input']['advanced'] = array(
-              '#type' => 'fieldset',
-              '#title' => t('Advanced select options'),
-              '#collapsible' => TRUE,
-              '#collapsed' => TRUE,
-              );
+            '#type' => 'fieldset',
+            '#title' => t('Advanced select options'),
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            );
           $form['input']['advanced']['select_day'] = array(
             '#type' => 'select',
             '#title' => t('Days'),
@@ -317,7 +317,7 @@ function date_widget_settings($op, $widget) {
 
     case 'save':
       cache_clear_all('date_formats:'. $widget['field_name'] .':'.$widget['type_name']);
-      return array('increment', 'granularity', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
+      return array('increment', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
   }
 }
 
@@ -503,7 +503,7 @@ function date_field_formatter($field, $item, $formatter, $node) {
   
   }
   // display the date using the selected format
-  $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : $field['output_format_date'].' '.$field['output_format_time'];
+  $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : $field['output_format_date'];
   return date_show_date($date, $format, 'local', $field['format_zone']);
 
 }
@@ -515,7 +515,10 @@ function date_field_formatter($field, $item, $formatter, $node) {
  * need to reconfigure this into a simple array of the turned on values 
  */
 function date_granularity_array($field) {
-  return array_values(array_filter($field['widget']['granularity']));
+  if (!is_array($field) || !is_array($field['granularity'])) {
+    $field['granularity'] = drupal_map_assoc(array('Y', 'M', 'D'));
+  }
+  return array_values(array_filter($field['granularity']));
 }
 
 function date_get_formats($field) {

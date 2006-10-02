@@ -9,6 +9,13 @@ if (module_exist('views')) {
   include_once(drupal_get_path('module', 'date') .'/date_views.inc');
 }
 
+function date_menu($may_cache) {
+  global $user;
+  if (variable_get('date_version', '') < 5 && $user->uid == 1) {
+    drupal_set_message(t('You are using a version of the date module that needs a database update. Back up your database, edit each field (there are new settings) and update each field to make sure it is set up correctly, then go to %link and run the update.', array('%link' => l('update.php', 'update.php'))));
+  }
+}
+
 /**
  * Implementation of hook_help().
  */
@@ -188,17 +195,7 @@ function date_field_settings($op, $field) {
       return array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'output_format_date', 'format_zone', 'output_format_custom');
 
     case 'database columns':
-      if ($field['type'] == 'date') {
-        return array(
-          'value' => array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE),
-          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE),
-        );
-      } else {
-        return array(
-          'value' => array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE),
-          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE),
-        );
-      }
+      return date_columns($field);
 
     case 'filters':
       return date_views_filters($field);  
@@ -353,8 +350,8 @@ function date_widget($op, &$node, $field, &$items) {
           'delta'        => $delta,
           'granularity'  => $granularity,
           'format'       => $field['type'],
-          'timezone_out' => $timezone,
-          'timezone_in'  => 'GMT',
+          'timezone_out' => ($items[$delta]['value'] && $params['required'] ? $timezone : ''),
+          'timezone_in'  => ($items[$delta]['value'] && $params['required'] ? 'GMT' : ''),
           'description'  => $field['widget']['description'],
           'select_day'    => $field['widget']['select_day'],
           'select_month'  => $field['widget']['select_month'],
@@ -370,7 +367,7 @@ function date_widget($op, &$node, $field, &$items) {
           case ('date_select'):
           
             if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
-            if ($delta > 0) $params['blank_default'] = 1;
+            if ($delta > 0 || (!$params['required'] && $params['value'] == '')) $params['blank_default'] = 1;
             $params['increment'] = $field['widget']['increment'];
 
             // use the api date selector form from date.inc to create the date selector form
@@ -382,6 +379,7 @@ function date_widget($op, &$node, $field, &$items) {
             // use the api text input form from date.inc
             if ($delta > 0) $params['blank_default'] = 1;
             $params['jscalendar'] = $field['widget']['type'] == 'date_js' ? 1 : 0;
+            if ($delta > 0 || (!$params['required'] && $params['value'] == '')) $params['blank_default'] = 1;
             $form[$field['field_name']][$delta] = date_text_input($params);
 
         }
@@ -429,10 +427,8 @@ function date_widget($op, &$node, $field, &$items) {
         }
 
         // replace $items values with the converted date and timezone values
-        if ($converted_date) {
-          $add[$delta]['value']    = $converted_date;
-          $add[$delta]['timezone'] = $timezone;
-        } 
+        $add[$delta]['value']    = $converted_date;
+        $add[$delta]['timezone'] = $timezone;
       }
       $items = $add;
       return;
@@ -454,11 +450,11 @@ function date_widget($op, &$node, $field, &$items) {
             break;
 
           case ('date_js'):
-            $error = date_jscalendar_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
+            $error = date_jscalendar_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
             break;
 
           default:
-            $error = date_text_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], date_granularity_array($field));
+            $error = date_text_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
             break;
         }
       }
@@ -483,12 +479,12 @@ function date_field_formatter_info() {
  */
 function date_field_formatter($field, $item, $formatter, $node) {
   
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
-  
-  if (!isset($item['value'])) {
+  if (empty($item['value'])) {
     return '';
   }
   
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+
   if ($field['tz_handling'] == 'none') {
     
     // if no timezone handling was elected, create a date object with the database value
@@ -548,4 +544,51 @@ function date_set_formats($field) {
   cache_set('date_formats:'. $field['field_name'] .':'.$field['type_name'], serialize($formats));
 
   return $formats;
+}
+
+/**
+ *  A function that makes it possible to get column structure for various versions
+ *  useful for updating and to make sure columns match user's version
+ */
+function date_columns($field, $version = '') {
+
+  $version = $version ? $version : variable_get('date_version', 4);
+
+  if ($version < 5) {
+    if ($field['type'] == 'date') {
+      $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE);
+    } elseif ($field['type'] == 'datestamp') {
+      $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE);
+    }
+    $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE);
+  }
+  else {
+    // version 5 adds in timezone offsets and potential for empty (null) values for non-required fields
+    if ($field['type'] == 'date') {
+      if ($field['required']) {
+        $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE);
+      }
+      else {
+        $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'sortable' => TRUE);
+      }
+    } elseif ($field['type'] == 'datestamp') {
+      if ($field['required']) {
+        $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE);
+      }
+      else {
+        $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'sortable' => TRUE);
+      }
+    }
+    if ($field['tz_handling'] == 'date' && ($field['type'] == 'date' || $field['type'] == 'datestamp')) {
+      if ($field['required']) {
+        $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE);
+        $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE);
+      }
+      else {
+        $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'sortable' => TRUE);
+        $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
+      }
+    }
+  }
+  return $db_columns;
 }

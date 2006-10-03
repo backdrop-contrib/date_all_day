@@ -219,8 +219,8 @@ function date_update_6() {
         $date = date_make_date($field_part['value'], 'GMT', 'db', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
         date_convert_timezone($date, 'GMT', $field_part['timezone'], 'local');
         $add[$delta]['value']    = $field_part['value'];
-        $add[$delta]['timezone'] = $field_part['timezone'];
-        $add[$delta]['offset']   = $field['required'] ? $date->local->offset : ($date->local->offset ? $date->local->offset : NULL);
+        $add[$delta]['timezone'] = $field['required'] || $field_part['value'] ? $field_part['timezone'] : NULL;
+        $add[$delta]['offset']   = $field['required'] || $field_part['value'] ? $date->local->offset : NULL;
       }
       $node->$field['field_name'] = $add;
       node_save($node);

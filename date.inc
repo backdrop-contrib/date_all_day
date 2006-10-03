@@ -1033,7 +1033,7 @@ function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT
     
     if (date_set_date($date, date_array2iso($array), $timezone_in, 'local', $type)) {
       
-      return date_show_value($date, 'db', $type);
+      return $date;
 
     }
   }
@@ -1070,7 +1070,7 @@ function date_jscalendar_make_dbdate($value, $type, $format, $timezone_in = 'GMT
 
     if ($date = date_make_date($value, $timezone_in, 'local', $type)) {
 
-      return date_show_value($date, 'db', $type);
+      return $date;
 
     }
   }
@@ -1104,7 +1104,7 @@ function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $gr
   
   if ($value) {
     if ($date = date_make_date($value, $timezone_in, 'local', $type)) {
-      return date_show_value($date, 'db', $type);
+      return $date;
     }
   }
   return FALSE;

@@ -730,7 +730,7 @@ function date_views_browser_navigation($view, $period) {
   $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);
   $next = $view->url .'/'. $next_date . date_views_browser_period($period);
   $label = date_views_browser_period_label($arg, $period);
-  return theme('date_views_browser_navigation', $label, $period, $prev, $next);
+  return theme('date_views_browser_navigation', $label, $period, $prev, $next, $view);
 }
 
 //============================== THEMES ================================//
@@ -744,7 +744,7 @@ function theme_date_views_browser_period_label($period, $date) {
 /**
  *  Theme for page navigation
  */
-function theme_date_views_browser_navigation($label, $period, $prev, $next) {
+function theme_date_views_browser_navigation($label, $period, $prev, $next, $view) {
     theme_add_style(drupal_get_path('module', 'date') .'/date.css');
     $output  = '<div class="book-navigation date-browser-navigation">';
     $output .= '<div class="page-links">';

@@ -1,6 +1,5 @@
 <?php
 // $Id$
-
 /**
  * Implementation of hook_install().
  */
@@ -115,7 +114,6 @@ function date_update_4() {
 
 // adds in potential for empty dates by allowing date and timezone values to be null
 // add column for timezone offset -- needed for views integration with dates that have date-specific zones
-// a conditional update, can be rerun if changes didn't get made properly previously
 
 function date_update_5() {
   $ret = array();
@@ -125,44 +123,53 @@ function date_update_5() {
   include_once(drupal_get_path('module', 'date') .'/date.module');
 
   $fields = content_fields();
-  
-  $updated = FALSE;
-
   foreach ($fields as $field) {
     
     $db_info = content_database_info($field);
+    $table = $db_info['table'];
+    $columns_v4 = date_columns($field, 4);
+    $columns_v5 = date_columns($field, 5);
+
+    // update the table columns and their default values
     if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
       $db_info = content_database_info($field);
-      content_alter_db_field($field, date_columns($field, 4), $field, date_columns($field, 5));
-      $id = $field['field_name']. '_value';
-      $tz_id = $field['field_name']. '_timezone';
+      content_alter_db_field($field, $columns_v4, $field, $columns_v5);
+      $id     = $field['field_name']. '_value';
+      $tz_id  = $field['field_name']. '_timezone';
+      $offset = $field['field_name']. '_offset';
     }
+    // reset not required values that were previously set to the default to null
+    // using a range of values because timezone conversions might have altered the default by up to 24 hours
     switch ($field['type']) {
-      // reset values that were previously set to the default to null
-      // using a range of values because timezone conversions might have altered the default by up to 24 hours
       case 'date':
-        if (!$field['required'] && ($db_info['columns']['value']['default'] == "'0001-01-01T00:00:00'" || $db_info['columns']['value']['not null'])) {
-          $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = NULL, $tz_id = NULL WHERE $id <= '0001-01-01T23:59:59'");
-          $updated = TRUE;
+        if (!$field['required'] && ($columns_v4['value']['default'] == "'0001-01-01T00:00:00'" || $columns_v4['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {$table} SET $id = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {$table} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
         }
         break;
       case 'datestamp':
-        if (!$field['required'] && ($db_info['columns']['value']['default'] == 0 || $db_info['columns']['value']['not null'])) {
-          $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = NULL, $tz_id = NULL WHERE $id > -86399 AND $id <= 86399");
-          $updated = TRUE;
+        if (!$field['required'] && ($columns_v4['value']['default'] == 0 || $columns_v4['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {$table} SET $id = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {$table} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
         }
         break;
     }
   }
-  if ($updated) {
-    drupal_set_message(t('Date module fields were updated to allow empty (NULL) values. Existing date fields with default values were reset to NULL.'));
-    db_query('DELETE FROM {cache}');
-    variable_set('date_version', 5);
-  }
+  drupal_set_message(t('Date module fields were updated to allow empty (NULL) values. Existing date fields with default values were reset to NULL.'));
+  db_query('DELETE FROM {cache}');
+  variable_set('date_version', 5);
   return $ret;
 }
 
-// update existing timezone fields to include offset values
+// update existing date-specific timezone fields with their offset values
 // a conditional update, can be rerun if changes didn't get made properly previously
 
 function date_update_6() {

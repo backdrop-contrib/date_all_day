@@ -131,37 +131,29 @@ function date_field_settings($op, $field) {
         '#type' => 'textfield',
         '#title' => t('Custom input format'),
         '#default_value' => $field['input_format_custom'] ? $field['input_format_custom'] : '',
-        '#description' => t('The custom format, if provided, will override the input format selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, that is handled separately.'),
+        '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
       );
       $form['output'] = array(
         '#type' => 'fieldset',
         '#title' => t('Display Options'),
         '#description' => t('Choose the way the date should be displayed.'),
         );
-      $form['output']['output_format_date'] = array(
-        '#type' => 'select',
-        '#title' => t('Date display'),
-        '#default_value' => $field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'),
-        '#options' => date_output_options($tz_handling),
-      );
-      $form['output']['format_zone'] = array(
-        '#type' => 'select',
-        '#title' => t('Zone display'),
-        '#default_value' => $field['format_zone'] ? $field['format_zone'] : '',
-        '#options' => date_append_zone_options(),
-      );
+      
+      $default_formatter = date_formatter_setup_form($field, 0);
+      $form['output'][] = $default_formatter;
+
       $form['output']['advanced'] = array(
         '#type' => 'fieldset',
         '#title' => t('Advanced display options'),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
+        '#description' => t('Define alternate formatting for the date display. Options other than the default are made available to views and themes. Possible formats are default, long, medium, and short.'),
       );
-      $form['output']['advanced']['output_format_custom'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Custom date format'),
-        '#default_value' => $field['output_format_custom'] ? $field['output_format_custom'] : '',
-        '#description' => t('The custom format, if provided, will override the date display selected above. Create a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.'),
-      );
+
+      for ($i = 1; $i <= 3; $i++) {
+        $form['output']['advanced'][$i] = date_formatter_setup_form($field, $i);
+      }
+      
       $form['timezone'] = array(
         '#type' => 'fieldset',
         '#title' => t('Timezone options'),
@@ -189,7 +181,10 @@ function date_field_settings($op, $field) {
         '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 0))),  
         '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
       );
+      $form['#suffix'] = t('<div class="form-item"><div class="description">* The custom format, if provided, will override the selected date display. Define a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.</div></div>');
+  
       return $form;
+
 
     case 'validate':
       date_set_site_timezone($field['field_timezone']);
@@ -199,7 +194,28 @@ function date_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'output_format_date', 'format_zone', 'output_format_custom');
+
+      $options = array('granularity', 'field_timezone', 'tz_handling', 'input_format');
+      for ($i = 0; $i <= 3; $i++) {
+        switch ($i) {
+        case (1):
+          $name = 'long';
+          break;
+        case (2):
+          $name = 'medium';
+          break;
+        case (3):
+          $name = 'short';
+          break;
+        default:
+          $name = 'default';
+        }
+        $append = ($i > 0 ? '_'. $name : '');
+        $options[] = 'output_format_date'. $append;
+        $options[] = 'output_format_zone'. $append;
+        $options[] = 'output_format_custom'. $append;
+      }
+      return $options;
 
     case 'database columns':
       return date_columns($field);
@@ -209,6 +225,56 @@ function date_field_settings($op, $field) {
   }
 }
 
+/**
+ *  A form to create a date formatter option
+ */
+function date_formatter_setup_form($field, $delta) {
+  switch ($delta) {
+  case (1):
+    $name = 'long';
+    $label = t('Long');
+    $default = variable_get('date_format_long',  'l, F j, Y - H:i');
+    break;
+  case (2):
+    $name = 'medium';
+    $label = t('Medium');
+    $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
+    break;
+  case (3):
+    $name = 'short';
+    $label = t('Short');
+    $default = variable_get('date_format_short', 'm/d/Y - H:i');
+    break;
+  default:
+    $name = 'default';
+    $label = t('Default');
+    $default = variable_get('date_format_short', 'm/d/Y - H:i');
+  }
+  $append = ($delta > 0 ? '_'. $name : '');
+  $form = array(
+    '#type' => 'fieldset',
+    '#title' => $label,
+    );
+  $form['output_format_date' . $append] = array(
+    '#type' => 'select',
+    '#title' => t('Date display'),
+    '#default_value' => $field['output_format_date'. $append] ? $field['output_format_date'. $append] : $default,
+    '#options' => date_output_options($tz_handling),
+    '#multiple' => false,
+  );
+  $form['output_format_zone' . $append] = array(
+    '#type' => 'select',
+    '#title' => t('Zone display'),
+    '#default_value' => $field['format_zone'. $append] ? $field['format_zone'. $append] : '',
+    '#options' => date_append_zone_options(),
+  );
+  $form['output_format_custom' . $append] = array(
+    '#type' => 'textfield',
+    '#title' => t('*Custom date format'),
+    '#default_value' => $field['output_format_custom' . $append] ? $field['output_format_custom'. $append] : '',
+  );
+  return $form;
+}
 
 /**
  * Implementation of hook_field().
@@ -481,6 +547,18 @@ function date_field_formatter_info() {
       'label' => t('Default'),
       'field types' => array('date', 'datestamp'),
     ),
+    'long' => array(
+      'label' => t('Long'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'medium' => array(
+      'label' => t('Medium'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'short' => array(
+      'label' => t('Short'),
+      'field types' => array('date', 'datestamp'),
+    ),
   );
 }
 
@@ -495,6 +573,21 @@ function date_field_formatter($field, $item, $formatter, $node) {
   
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
+  switch (strtolower($formatter)) {
+    case ('long'):
+      $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : $field['output_format_date_long'];
+      break;
+    case ('medium'):
+      $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : $field['output_format_date_medium'];
+      break;
+    case ('short'):
+      $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : $field['output_format_date_short'];
+      break;
+    default:
+      $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : $field['output_format_date'];
+      break;
+  }
+  
   if ($field['tz_handling'] == 'none') {
     
     // if no timezone handling was elected, create a date object with the database value
@@ -509,7 +602,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
   
   }
   // display the date using the selected format
-  $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : $field['output_format_date'];
   return date_show_date($date, $format, 'local', $field['format_zone']);
 
 }

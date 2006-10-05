@@ -1741,7 +1741,7 @@ function date_input_options() {
 /**
  *  Function to create an option list that will display various date and time formats
  * 
-  *  @param $tz_handling - default is 'site'
+ *  @param $tz_handling - default is 'site'
  *  @param $illustration_date - an iso date to use for illustration of the date options
  *    default date for illustration: August 1 YYYY 2:05:10 PM
  *      - single digit months and days to see leading zeros
@@ -1757,48 +1757,28 @@ function date_output_options($tz_handling = 'site', $illustration_date = NULL) {
   $illustration_date = $illustration_date ? $illustration_date : date_gmdate('Y', time()) .'-08-01T14:05:10';
   $date = date_make_date($illustration_date, date_get_timezone($tz_handling), 'local', DATE_ISO);
   
-  $dates = date_date_options();
-  $times = date_time_options();
-  $options = array();
+    // from system module, possible date formats
+  $dateshort = array('Y-m-d H:i','m/d/Y - H:i', 'd/m/Y - H:i', 'Y/m/d - H:i',
+           'd.m.Y - H:i', 'm/d/Y - g:ia', 'd/m/Y - g:ia', 'Y/m/d - g:ia',
+           'M j Y - H:i', 'j M Y - H:i', 'Y M j - H:i',
+           'M j Y - g:ia', 'j M Y - g:ia', 'Y M j - g:ia');
+  $datemedium = array('D, Y-m-d H:i', 'D, m/d/Y - H:i', 'D, d/m/Y - H:i',
+          'D, Y/m/d - H:i', 'F j, Y - H:i', 'j F, Y - H:i', 'Y, F j - H:i',
+          'D, m/d/Y - g:ia', 'D, d/m/Y - g:ia', 'D, Y/m/d - g:ia',
+          'F j, Y - g:ia', 'j F Y - g:ia', 'Y, F j - g:ia', 'j. F Y - G:i');
+  $datelong = array('l, F j, Y - H:i', 'l, j F, Y - H:i', 'l, Y,  F j - H:i',
+        'l, F j, Y - g:ia', 'l, j F Y - g:ia', 'l, Y,  F j - g:ia', 'l, j. F Y - G:i');
+  $datestrings = array_merge($dateshort, $datemedium, $datelong);
+  
   $view = array();
-
-  foreach ($dates as $date_string) {
-    foreach ($times as $time_string) {
-      $opt = trim(strstr($date_string, 'd') || strstr($date_string, 'j') || strstr($date_string, 'l') ? $date_string .' '. $time_string : $date_string);
-      $view[$opt] = date_show_date($date, $opt);
-    }
+  foreach ($datestrings as $datestring) {
+    $parts = explode(' - ', $datestring);
+    // create an option that shows date only without time
+    $view[trim($parts[0])] = date_show_date($date, trim($parts[0]));
+    $view[$datestring] = date_show_date($date, $datestring);
   }
+  asort($view);
   return $view;
-}
-
-/**
- *  Options for date view formats
- */
-function date_date_options() {
-  return array(
-    ' ', 'Y', 'M', 'F', 'Y M', 'M Y', 'Y F', 'F Y', 
-    'Y/m/d', 'm/d/Y', 'd/m/Y', 'Y/m/d', 
-    'Y.m.d', 'm.d.Y', 'd.m.Y', 'Y.m.d', 
-    'Y-m-d', 'm-d-Y', 'd-m-Y', 'Y-m-d', 
-    'M j Y', 'j M Y', 'Y M j',
-    'D, m/d/Y', 'D, d/m/Y', 'D, Y/m/d', 
-    'D, m.d.Y', 'D, d.m.Y', 'D, Y.m.d', 
-    'D, m-d-Y', 'D, d-m-Y', 'D, Y-m-d', 
-    'F j', 'M j', 'F j, Y', 'j F, Y', 'Y, F j', 'F j, Y', 'j F Y',
-    'Y, F j', 'l, F j, Y', 'l, j F, Y', 'l, Y,  F j', 'l, F j, Y', 'l, j F Y', 'l, Y,  F j',
-    );
-}
-
-/**
- * Options for time view formats
- */
-function date_time_options() {
-  return array(
-    ' ',
-    'H:i',
-    'h:i a',
-    'h:i A',
-    );
 }
 
 function date_formats($format, $granularity) {

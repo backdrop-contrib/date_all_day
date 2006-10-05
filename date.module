@@ -575,16 +575,16 @@ function date_field_formatter($field, $item, $formatter, $node) {
 
   switch (strtolower($formatter)) {
     case ('long'):
-      $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : $field['output_format_date_long'];
+      $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : ($field['output_format_date_long'] ? $field['output_format_date_long'] : variable_get('date_format_long',  'l, F j, Y - H:i'));
       break;
     case ('medium'):
-      $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : $field['output_format_date_medium'];
+      $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : ($field['output_format_date_medium'] ? $field['output_format_date_medium'] : variable_get('date_format_medium',  'D, m/d/Y - H:i'));
       break;
     case ('short'):
-      $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : $field['output_format_date_short'];
+      $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : ($field['output_format_date_short'] ? $field['output_format_date_short'] : variable_get('date_format_short', 'm/d/Y - H:i'));
       break;
     default:
-      $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : $field['output_format_date'];
+      $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
       break;
   }
   
@@ -605,7 +605,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
   return date_show_date($date, $format, 'local', $field['format_zone']);
 
 }
-
 
 /**
  * $field['granularity'] will contain an array like ('H' => 'H', 'M' => 0) 

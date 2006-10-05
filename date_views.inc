@@ -287,7 +287,6 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       
       $query->ensure_table($table);
       $query->add_field($value, $table);
-      $query->add_field($timezone, $table);
       return $fieldinfo;
       break;
 
@@ -303,7 +302,6 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       $range = date_views_date_range($arg);
       $query->ensure_table($table);
       $query->add_field($value, $table);
-      //$query->add_field($timezone, $table);
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       break;
@@ -552,15 +550,15 @@ function date_views_query_alter(&$query, &$view) {
       $field      = content_fields($field_name);
       $db_info    = content_database_info($field);
       $value      = $db_info['columns']['value']['column'];
-      $timezone   = $db_info['columns']['timezone']['column'];
       $table      = 'node_data_'. $field['field_name']; // uses views alias table name
       $offset     = date_views_offset($field['tz_handling']);
-      $range      = date_views_date_range($arg);
-      $query->ensure_table($table);
-      $query->add_field('nid', 'node');
-      $query->add_field($value, $table);
-      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
-      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
+      if ($range      = date_views_date_range($arg)) {
+        $query->ensure_table($table);
+        $query->add_field('nid', 'node');
+        $query->add_field($value, $table);
+        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
+        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
+      }
     }
     
   }
@@ -629,16 +627,7 @@ function date_views_browser_period_arg($arg = NULL, $period = 'month') {
  *  Return label for current date range
  */
 function date_views_browser_period_label($arg = NULL, $period = 'month') {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
-
-  // use the m/d/Y part of the preferred short date format
-  if ($period != 'hour') {
-    $format = array_shift(explode(' ', variable_get('date_format_short', 'm/d/Y - H:i')));
-  }
-  else {
-    $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
-  }
-  return theme('date_views_browser_period_label', $period, date_gmdate($format, date_views_browser_period_start_stamp($arg, $period)));
+  return theme('date_views_browser_period_label', $period, date_views_browser_period_start_stamp($arg, $period));
 }
 /**
  *  Find the timestamp for the beginning of the period of the analyzed date arg
@@ -740,7 +729,15 @@ function date_views_browser_navigation($view, $period) {
  *  Theme for the current period label name
  */
 function theme_date_views_browser_period_label($period, $date) {
-  return t('%period of %date', array('%period' => ucwords($period), '%date' => $date));
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  // use the m/d/Y part of the preferred short date format
+  if ($period != 'hour') {
+    $format = array_shift(explode(' ', variable_get('date_format_short', 'm/d/Y - H:i')));
+  }
+  else {
+    $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
+  }
+  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_gmdate($format, $date)));
 }
 /**
  *  Theme for page navigation
@@ -764,8 +761,7 @@ function theme_date_views_browser_summary_view($view, $type, $level, $nodes, $ar
 }
 /**
  *  View, themed so it can be overridden
- * 
- *  $display options are views_view_list, views_view_table, views_view_teasers, views_view_nodes
+ *  $display -- views_view_list, views_view_table, views_view_teasers, views_view_nodes
  */
 function theme_date_views_browser_full_view($view, $nodes, $type) {
   

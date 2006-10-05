@@ -442,9 +442,9 @@ function date_plus_period($value) {
     $sub       = explode('M', $remaining);
     $remaining = $sub[1];
     $count     = intval($sub[0]);
-    $cur_mon   = intval(substr($max_date->db->iso, 6, 2));
+    $cur_mon   = intval(substr($max_date->db->iso, 5, 2));
     $cur_year  = intval(substr($max_date->db->iso, 0, 4));
-    $max_iso   = (intval($cur_mon + $count) < 12 ? $cur_year : intval($cur_year + 1)) . '-'. sprintf('%02d', (intval($cur_mon + $count) < 12 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 12);
+    $max_iso   = (intval($cur_mon + $count) < 13 ? $cur_year : intval($cur_year + 1)) . '-'. sprintf('%02d', (intval($cur_mon + $count) < 13 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 12);
     date_set_date($max_date, $max_iso, 'GMT', 'db', DATE_ISO, TRUE);
   }
   if (stristr($range[1], 'W')) {
@@ -536,17 +536,17 @@ function date_views_pre_view($view, $items) {
 function date_views_query_alter(&$query, &$view) {
   $date_views_browser_views = date_views_browser_get_views();
   if (in_array($view->name, array_keys($date_views_browser_views))) {
-    if (sizeof($query->groupby) > 0) {
+    $path = explode('/', $view->url);
+    $pos = sizeof($path);
+    if ($view->build_type == 'block' || arg($pos) == '') {
+      $arg = NULL;
+    }
+    else {
+      $arg = arg($pos);
+    }
+    if ($arg == NULL) {
       // if no argument specified, add the current date range to the query
       // presence of groupby value indicates that argument is missing and query is performing a summary
-      $path = explode('/', $view->url);
-      $pos = sizeof($path);
-      if ($view->build_type == 'block' || arg($pos) == '') {
-        $arg = NULL;
-      }
-      else {
-        $arg = arg($pos);
-      }
       $arg        = date_views_browser_period_arg($arg, $view->argument[0]['options']);
       $name       = explode(':', $view->argument[0]['type']);
       $field_name = trim($name[1]);
@@ -709,8 +709,10 @@ function date_views_browser_navigation($view, $period) {
     $next_date = date_gmdate('Y-m-d', intval($stamp + 604801));
     break;
   case ('year'):
-    $prev_date = intval(substr($range[0], 0, 4) - 1);
-    $next_date = intval(substr($range[1], 0, 4) + 1);
+    $year  = intval(substr($range[0], 0, 4));
+    $month = intval(substr($range[0], 5, 2));
+    $prev_date = $month < 2 ? intval($year - 1) : $year;
+    $next_date = $month > 11 ? intval($year + 1) : $year;
     break;
   case ('day'):
     $prev_date = date_gmdate('Y-m-d', intval($stamp - 86399));
@@ -722,9 +724,9 @@ function date_views_browser_navigation($view, $period) {
     break;
   default:
     $year  = intval(substr($range[0], 0, 4));
-    $month = intval(substr($range[1], 5, 2));
+    $month = intval(substr($range[0], 5, 2));
     $prev_date = ($month > 1 ? $year : intval($year - 1)) .'-'. ($month > 1 ? intval($month - 1) : 12);
-    $next_date = ($month > 11 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? intval($month + 1) : 1);
+    $next_date = ($month < 12 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? intval($month + 1) : 1);
     break;
   }
   $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);

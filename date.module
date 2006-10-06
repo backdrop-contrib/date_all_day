@@ -291,9 +291,6 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
         $items[$delta]['view'] = content_format($field, $item, 'default', $node);
       }
       return theme('field', $node, $field, $items, $teaser, $page);
-
-
-      
   }
 }
 
@@ -559,6 +556,18 @@ function date_field_formatter_info() {
       'label' => t('Short'),
       'field types' => array('date', 'datestamp'),
     ),
+    'iso' => array(
+      'label' => t('ISO'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'feed' => array(
+      'label' => t('Feed'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'ical' => array(
+      'label' => t('iCal'),
+      'field types' => array('date', 'datestamp'),
+    ),
   );
 }
 
@@ -573,36 +582,58 @@ function date_field_formatter($field, $item, $formatter, $node) {
   
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
+  $format_db_type = 'local';
+
   switch (strtolower($formatter)) {
     case ('long'):
       $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : ($field['output_format_date_long'] ? $field['output_format_date_long'] : variable_get('date_format_long',  'l, F j, Y - H:i'));
+      $format_zone = $field['output_format_zone_long'];
       break;
     case ('medium'):
       $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : ($field['output_format_date_medium'] ? $field['output_format_date_medium'] : variable_get('date_format_medium',  'D, m/d/Y - H:i'));
+      $format_zone = $field['output_format_zone_medium'];
       break;
     case ('short'):
       $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : ($field['output_format_date_short'] ? $field['output_format_date_short'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format_zone = $field['output_format_zone_short'];
+      break;
+    case ('iso'):
+      $format = DATE_STRING_ISO;
+      $format_zone = '00:00';
+      break;
+    case ('feed'):
+      $format = 'D, j M Y H:i:s';
+      $format_zone = '0000';
+      break;
+    case ('ical'):
+      // for ical, send the db value with Z appended to indicate it is the gmt value
+      $format = 'Ymd\THis';
+      $format_zone = '';
+      $append = 'Z';
+      $format_db_type = 'db';
       break;
     default:
       $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format_zone = $field['output_format_zone'];
       break;
   }
   
   if ($field['tz_handling'] == 'none') {
-    
+
     // if no timezone handling was elected, create a date object with the database value
     $date = date_make_date(trim($item['value']), 'none', 'local', $field['type']);
-  
+
   } else {
-    
+
     // create a date object with a gmt timezone from the database value
     $date = date_make_date(trim($item['value']), 'GMT', 'db', $field['type']);
     // convert the date object to the proper timezone, depending on the field's tz_handling value
     date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
-  
+
   }
+
   // display the date using the selected format
-  return date_show_date($date, $format, 'local', $field['format_zone']);
+  return date_show_date($date, $format, $format_db_type, $format_zone) . $append;
 
 }
 

@@ -713,8 +713,8 @@ function date_views_browser_navigation($view, $period) {
   default:
     $year  = intval(substr($range[0], 0, 4));
     $month = intval(substr($range[0], 5, 2));
-    $prev_date = ($month > 1 ? $year : intval($year - 1)) .'-'. ($month > 1 ? intval($month - 1) : 12);
-    $next_date = ($month < 12 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? intval($month + 1) : 1);
+    $prev_date = ($month > 1 ? $year : intval($year - 1)) .'-'. ($month > 1 ? sprintf('%02d', intval($month - 1)) : '12');
+    $next_date = ($month < 12 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? sprintf('%02d', intval($month + 1)) : '01');
     break;
   }
   $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);

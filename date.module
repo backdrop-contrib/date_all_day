@@ -338,21 +338,21 @@ function date_widget_settings($op, $widget) {
           $form['input']['advanced']['select_day'] = array(
             '#type' => 'select',
             '#title' => t('Days'),
-            '#default_value' => $widget['select_day'] ? $widget['select_day'] : 1,
+            '#default_value' => $widget['select_day'] ? $widget['select_day'] : 0,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for day selection.'),
             );
           $form['input']['advanced']['select_month'] = array(
             '#type' => 'select',
             '#title' => t('Months'),
-            '#default_value' => $widget['select_month'] ? $widget['select_month'] : 1,
+            '#default_value' => $widget['select_month'] ? $widget['select_month'] : 0,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for month selection.'),
             );
           $form['input']['advanced']['select_year'] = array(
             '#type' => 'select',
             '#title' => t('Years'),
-            '#default_value' => $widget['select_year'] ? $widget['select_year'] : 1,
+            '#default_value' => $widget['select_year'] ? $widget['select_year'] : 0,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for year selection.'),
             );

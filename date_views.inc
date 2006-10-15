@@ -60,27 +60,74 @@ function date_views_filters($field) {
   switch ($field['type']) {
     case ('date'):
       $handler = 'date_views_filter_handler';
+      $ymd_handler = 'date_views_handler_filter_ymd';
       break;
     case ('datestamp'):
       $handler = 'date_views_timestamp_filter_handler';
+      $ymd_handler = 'date_views_timestamp_handler_filter_ymd';
       break;
   }
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  
+  $formats = date_get_formats($field);
+  $format  = $formats['input']['desc'];
+  
+  // use this to default to current time
+  $current = array('' => '<all>', 'now' => t('now'));
+  $months  = ($current + drupal_map_assoc(range(1, 12), 'map_month'));
+  $days    = ($current + drupal_map_assoc(range(1, 31)));
+
+  $operator = array(
+        '=' => t('is equal to'),
+        '<>' => t('is not equal to'),
+        '>' => t('greater than'),
+        '>=' => t('greater than or equal to'),
+        '<' => t('less than'),
+        '<=' => t('less than or equal to'),
+        );
+
   return array(
-   'default' => array(
-     'operator' => array(
-       '=' => t('is equal to'),
-       '<>' => t('is not equal to'),
-       '>' => t('greater than'),
-       '>=' => t('greater than or equal to'),
-       '<' => t('less than'),
-       '<=' => t('less than or equal to'),
-       ),
-     'value' => date_views_handler_filter_date_value_form($field),
-     'option' => 'string',
-     'handler' => $handler,
-     'extra' => array('field' => $field),
-     'help' => t('This filter allows events to be filtered by their  date. Enter dates in the format: CCYY-MM-DD HH:MM:SS. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.'),
-     ),
+    'default' => array(
+      'name' => t('Date'),
+      'operator' => $operator,
+      'value' => date_views_handler_filter_date_value_form($field),
+      'option' => 'string',
+      'handler' => $handler,
+      'type' => 'DATE',
+      'extra' => array('field' => $field),
+      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: '. $format .'. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.'),
+      ),
+    'year' => array(
+      'name' => t('Year'),
+      'operator' => $operator,
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'YEAR',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by year. Enter \'now\' to use the current year.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
+    'month' => array(
+      'name' => t('Month'),
+      'operator' => $operator,
+      'list' => $months,
+      'list-type' => 'select',
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'MONTH',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by month. Enter \'now\' to use the current month.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
+    'day' => array(
+      'name' => t('Day'),
+      'operator' => $operator,
+      'list' => $days,
+      'list-type' => 'select',
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'DAY',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
    );
 }
 
@@ -93,21 +140,27 @@ function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query)
   return date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
 function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
-
+  
   if (empty($filter['value'])) return;
 
+  include_once(drupal_get_path('module', 'date') .'/date.inc');
   $field   = $filterinfo['extra']['field'];
   $formats = date_get_formats($field);
-  $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
-
   $db_info = content_database_info($field);
   $value   = $db_info['columns']['value']['column'];
   $table   = 'node_data_'. $field['field_name']; // uses views alias table name
-  $offset = date_views_offset($field);
-
+  $offset  = intval(date_views_offset($field) + intval($filter['options']));
+  
+  switch ($filterinfo['type']) {
+    case ('DATE'):
+      $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
+      break;
+    default:
+      $date = $filter['value'] == 'now' ? date_sql($filterinfo['type'], "NOW()", $field_type, '') : $filter['value'];
+      break;
+  }
   $query->ensure_table($table);
-  $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) . $filter['operator'] . $date);
+  $query->add_where(date_sql($filterinfo['type'], $table .'.'. $value, $field_type, $offset) . $filter['operator'] . $date);
 
 }
 
@@ -148,7 +201,6 @@ function date_views_offset($field) {
   return $offset;
 }
 
-
 /**
  * Implementation of hook_views_arguments().
  */
@@ -184,6 +236,7 @@ function date_views_arguments() {
       break;
     }
   }
+
   return $arguments;
 }
 

@@ -37,7 +37,7 @@ define('DATE_STRING_ISO', "Y-m-d\TH:i:s");
  *  if event is not enabled, use a copy of that file, stored as date_timezones.inc
  *  this large file will be included only when needed to reduce overhead
  */
-if (!module_exist('event')) {
+if (!module_exists('event')) {
   define('DATE_TIMEZONES', drupal_get_path('module', 'date') .'/date_timezones.inc');
 } else {
   define('DATE_TIMEZONES', drupal_get_path('module', 'event') .'/event_timezones.inc');

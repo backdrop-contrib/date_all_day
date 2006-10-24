@@ -796,7 +796,7 @@ function theme_date_views_browser_period_label($period, $date) {
  *  Theme for page navigation
  */
 function theme_date_views_browser_navigation($label, $period, $prev, $next, $view) {
-    theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+    drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
     $output  = '<div class="book-navigation date-browser-navigation">';
     $output .= '<div class="page-links">';
     $output .= l(t('‹ prev %period  ', array('%period' => $period)), $prev, array('class' => 'page-previous'));
@@ -820,7 +820,7 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
   
   $teasers = true;
   $links   = true;
-  theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
   
   $date_views_browser_views = date_views_browser_get_views();
   $period = $date_views_browser_views[$view->name]->options;

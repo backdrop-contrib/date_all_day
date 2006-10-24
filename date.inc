@@ -685,7 +685,7 @@ function date_get_timezone($handling, $timezone = '') {
  */
 function date_select_input($params) {
   
-  theme_add_style(drupal_get_path('module', 'date') .'/date.css');
+  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
   
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
@@ -996,7 +996,7 @@ function date_text_input($params) {
   // if the jscalendar is used for input, add some attributes to be passed to the js
   // also need to adjust the date format slightly to accomodate the js capability
 
-  if ($jscalendar && module_exist('jscalendar')) {
+  if ($jscalendar && module_exists('jscalendar')) {
     $form['value']['#attributes'] = array('class' => 'jscalendar');
     $form['value']['#jscalendar_ifFormat'] = $formats['input']['jscal'];
     $form['value']['#jscalendar_showsTime'] = date_has_time($granularity) ? 'true' : 'false';

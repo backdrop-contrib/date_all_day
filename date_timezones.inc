@@ -2,7 +2,7 @@
 //$Id$
 // a copy of event_timezones.inc to be used when the event module is not enabled
 
-//if (module_exist('event')) return;
+//if (module_exists('event')) return;
 /**
  * Check if time is in Daylight Savings Time
  * 

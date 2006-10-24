@@ -5,7 +5,7 @@
  * Defines a date/time field type.
  */
 // moved views functions into their own file for better readability
-if (module_exist('views')) {
+if (module_exists('views')) {
   include_once(drupal_get_path('module', 'date') .'/date_views.inc');
 }
 
@@ -86,7 +86,7 @@ function date_field_settings($op, $field) {
 
   switch ($op) {
   case 'form':
-      if (!module_exist('event')) {
+      if (!module_exists('event')) {
         include_once(drupal_get_path('module', 'date') .'/date_timezones.inc');
       } else {
         include_once(drupal_get_path('module', 'event') .'/event_timezones.inc');
@@ -308,7 +308,7 @@ function date_widget_info() {
       'field types' => array('date', 'datestamp'),
     ),
   );
-  if (module_exist('jscalendar')) {
+  if (module_exists('jscalendar')) {
     $info['date_js'] = array(
        'label' => t('Text Field with javascript pop-up calendar'),
        'field types' => array('date', 'datestamp'),

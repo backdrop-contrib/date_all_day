@@ -369,7 +369,7 @@ function date_widget_settings($op, $widget) {
         return $form;
 
     case 'save':
-      cache_clear_all('date_formats:'. $widget['field_name'] .':'.$widget['type_name']);
+      cache_clear_all('date_formats:'. $widget['field_name'] .':'.$widget['type_name'], 'cache');
       return array('increment', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
   }
 }
@@ -636,7 +636,7 @@ function date_granularity_array($field) {
 }
 
 function date_get_formats($field) {
-  if ($cached = cache_get('date_formats:'. $field['field_name'] .':'.$field['type_name'])) {
+  if ($cached = cache_get('date_formats:'. $field['field_name'] .':'.$field['type_name'], 'cache')) {
     $formats = unserialize($cached->data);
 
     // are we up-to-date with current site-wide format ?
@@ -659,8 +659,7 @@ function date_set_formats($field) {
   $granularity = date_granularity_array($field);
   
   $formats = date_formats($format, $granularity);
-  cache_set('date_formats:'. $field['field_name'] .':'.$field['type_name'], serialize($formats));
-
+  cache_set('date_formats:'. $field['field_name'] .':'.$field['type_name'], 'cache', serialize($formats), CACHE_PERMANENT);
   return $formats;
 }
 

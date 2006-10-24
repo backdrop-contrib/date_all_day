@@ -9,20 +9,6 @@ if (module_exists('views')) {
   include_once(drupal_get_path('module', 'date') .'/date_views.inc');
 }
 
-function date_menu($may_cache) {
-  global $user;
-
-  if ($user->uid == 1) {
-    $content_version = db_result(db_query("SELECT schema_version FROM {system} WHERE filename LIKE '%content.module'"));
-    if ($content_version < 8) {
-      drupal_set_message(t('Your version of the content module is not up to date. Update the content module and test that all fields are working correctly before updating the date module.'));
-    }
-    elseif (variable_get('date_version', '') < 5) {
-      drupal_set_message(t('You are using a version of the date module that needs a database update. Back up your database, edit each field (there are new settings) and update each field to make sure it is set up correctly, then go to %link and run the update.', array('%link' => l('update.php', 'update.php'))));
-    }
-  }
-}
-
 /**
  * Implementation of hook_help().
  */

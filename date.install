@@ -179,12 +179,6 @@ function date_update_5() {
 function date_update_6() {
   $ret = array();
 
-  $content_version = db_result(db_query("SELECT schema_version FROM {system} WHERE filename LIKE '%content.module'"));
-  if ($content_version < 8) {
-    drupal_set_message(t('Your version of the content module is not up to date. Update that module before attempting to update the date module.'));
-    return $ret;
-  }
-
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
 

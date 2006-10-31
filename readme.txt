@@ -14,7 +14,8 @@ That object is then passed to all other functions that need it.
 * optional incusion of adodb date library extends the valid date range from year 100 to year 3000, 
 without the library it is the usual 1970 to 2038. To keep overhead to a minimum, the library is only 
 included when used. If you don't want/need adodb time handling, just remove the file and native 
-php date handling will be used instead.
+php date handling will be used instead. Download this file from 
+http://php.weblogs.com/adodb_date_time_library
 
 * timezone handling options include using gmt, the site timezone, a date-specific timezone 
 (selected when the date is edited), or no timezone handling. The last option will store and 

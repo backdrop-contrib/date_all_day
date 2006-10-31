@@ -117,11 +117,7 @@ function date_update_4() {
 
 function date_update_5() {
   $ret = array();
-  $content_version = db_result(db_query("SELECT schema_version FROM {system} WHERE filename LIKE '%content.module'"));
-  if ($content_version < 8) {
-    drupal_set_message(t('Your version of the content module is not up to date. Update that module before attempting to update the date module.'));
-    return $ret;
-  }
+  
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
   include_once(drupal_get_path('module', 'date') .'/date.module');
@@ -135,7 +131,7 @@ function date_update_5() {
     $columns_v5 = date_columns($field, 5);
 
     // update the table columns and their default values
-    if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+    if (($field['type'] == 'date' || $field['type'] == 'datestamp') && variable_get('date_version', 4) < 5) {
       $db_info = content_database_info($field);
       content_alter_db_field($field, $columns_v4, $field, $columns_v5);
       $id     = $field['field_name']. '_value';

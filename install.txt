@@ -11,6 +11,11 @@ Installation instructions:
    up with a structure like: drupal/modules/date/date.module. You can also place it
    inside the cck folder. Either location will work.
 
+   * Optional * Download the adodb date library from http://php.weblogs.com/adodb_date_time_library
+   and add it to the folder. If included, it will allow you to use dates from
+   the year 100 to the year 3000. Without it, most date handling is limited to
+   1970 to 2038.
+   
 3) If you already have cck data created, backup your files!! There is a database
    change that may affect them.
 
@@ -19,13 +24,6 @@ Installation instructions:
 
 5) Go to update.php and select the option to update your database.
    Select the latest update to the date module.
-   
-   Date module update #4 changes the database structure and updates any existing date data 
-   to the new structure. Update #4 has been written so it can be re-run, if necessary.
-   If you have used an earlier version of this module and have already processed update #4,
-   you should re-run it to ensure the database gets properly updated.
-   If in doubt, re-run update #4, it will do no harm, and it will ensure any existing
-   data is in the right format.
    
 6) Go to admin/node/types to view cck content types. Add or select a content type.
 

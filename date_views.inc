@@ -799,9 +799,9 @@ function theme_date_views_browser_navigation($label, $period, $prev, $next, $vie
     drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
     $output  = '<div class="book-navigation date-browser-navigation">';
     $output .= '<div class="page-links">';
-    $output .= l(t('‹ prev %period  ', array('%period' => $period)), $prev, array('class' => 'page-previous'));
+    $output .= l(t('‹ prev !period  ', array('!period' => $period)), $prev, array('class' => 'page-previous'));
     $output .= '<h3 class="date-browser-label"><span class="page-up">'. $label .'</span></h3>';
-    $output .= l(t('  next %period  ›', array('%period' => $period)), $next, array('class' => 'page-next'));
+    $output .= l(t('  next !period  ›', array('!period' => $period)), $next, array('class' => 'page-next'));
     $output .= '</div></div>';
     return $output;
   return $output;

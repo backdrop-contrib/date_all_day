@@ -47,7 +47,9 @@ function date_help($section) {
           <dt>Select List</dt><dd>The Select List date widget presents users with a drop-down list or textfield for each part of the date (year, month, day, hour, etc.). The whole selector is collapsed onto a single line using css (except for the timezone selector, if date-specific timezones are collected). The selector is highly configurable and will even handle years prior to 1900.</dd>
           <dt>Javascript Pop-up Calendar</dt><dd>The Javascript Pop-up Calendar is offered as an input alternative if the <a href="http://drupal.org/node/57285">jscalendar</a> module is installed. This widget can handle dates as early as 1900.
           </dl>');
-        $output .= date_views_help();
+        if (module_exists('views') {
+          $output .= date_views_help();
+        }
         return $output;
       break;
   }
@@ -466,30 +468,44 @@ function date_widget($op, &$node, $field, &$items) {
       $formats = date_get_formats($field);
       $add = array();
 
-      foreach ($items as $delta => $item) {
-
-        $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-
-        switch ($field['widget']['type']) {
-          case ('date_select'):
-            $date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
-            break;
-          case ('date_js'):
-            $date = date_jscalendar_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-            break;
-          default:
-            $date = date_text_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-            break;
-        }
-
-        // replace $items values with the converted date, timezone, and offset values
-        $add[$delta]['value']    = date_show_value($date, 'db', $field['type']);
-        if ($field['tz_handling'] == 'date') {
-          $add[$delta]['timezone'] = ($add[$delta]['value'] || $field['required']) ? $timezone : NULL;
-          $add[$delta]['offset']   = ($add[$delta]['value'] || $field['required']) ? $date->local->offset : NULL;
+      
+      // Don't save empty fields.
+      if ($field['multiple']) {
+        foreach ($items as $delta => $item) {
+          if (!$item['value']) {
+            unset($items[$delta]);
+          }
         }
       }
-      $items = $add;
+      
+      foreach ($items as $delta => $item) {
+
+        if ($items[$delta]) {
+        
+          $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+
+          switch ($field['widget']['type']) {
+            case ('date_select'):
+              $date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
+              break;
+            case ('date_js'):
+              $date = date_jscalendar_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+              break;
+            default:
+              $date = date_text_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+              break;
+          }
+
+          // replace $items values with the converted date, timezone, and offset values
+          $add[$delta]['value']    = date_show_value($date, 'db', $field['type']);
+          if ($field['tz_handling'] == 'date') {
+            $add[$delta]['timezone'] = ($add[$delta]['value'] || $field['required']) ? $timezone : NULL;
+            $add[$delta]['offset']   = ($add[$delta]['value'] || $field['required']) ? $date->local->offset : NULL;
+          }
+        }
+      }
+        
+      if ($add) $items = $add;
       return;
 
     case 'validate':
@@ -518,6 +534,7 @@ function date_widget($op, &$node, $field, &$items) {
         }
       }
       return;
+
   }
 }
 

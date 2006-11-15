@@ -626,6 +626,9 @@ function date_views_browser_get_views($refresh = FALSE) {
     $date_views_browser_views = array();
     $arguments = date_views_arguments();
     $argument_list = "'". implode("','", array_keys($arguments)) ."'";
+    if (!$argument_list) {
+      return array();
+    }
     $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type='date_views_browser'");
     while ($view = db_fetch_object($result)) {
       $date_views_browser_views[$view->name] = $view;

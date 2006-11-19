@@ -690,7 +690,6 @@ function date_select_input($params) {
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
   $delta         = isset($params['delta']) ? $params['delta'] : 0;
-  $title         =  ($delta > 0) ? (' '.$delta) : '';
   $granularity   = is_array($params['granularity']) ? $params['granularity'] : array('M', 'D', 'Y');
   $increment     = isset($params['increment']) ? $params['increment'] : 1;
   $required      = isset($params['required']) ? $params['required'] : 1;
@@ -750,7 +749,7 @@ function date_select_input($params) {
   
   // create the form values
   $form['#type']   = 'fieldset';
-  $form['#title']  = t($label) . $title;
+  $form['#title']  = $label;
   $form['#weight'] = intval($weight);
   $form['#attributes'] = array('class' => 'container-inline-date');
   
@@ -908,7 +907,6 @@ function date_text_input($params) {
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
   $delta         = isset($params['delta']) ? $params['delta'] : 0;
-  $title         =  ($delta > 0) ? (' '.$delta) : '';
   $granularity   = is_array($params['granularity']) ? $params['granularity'] : array('M', 'D', 'Y');
   $required      = isset($params['required']) ? $params['required'] : 1;
   $blank_default = isset($params['blank_default']) ? $params['blank_default'] : 0;
@@ -1337,27 +1335,27 @@ function date_iso2custom($iso, $format) {
 
   $array = date_iso2array($iso);
   $month_short = array(
-    "January" => "Jan", "February" => "Feb", "March" => "Mar", "April" => "Apr",
-    "May" => "May", "June" => "Jun", "July" => "Jul", "August" => "Aug",
-    "September" => "Sep", "October" => "Oct", "November" => "Nov", "December" => "Dec"
+    "January" => t("Jan"), "February" => t("Feb"), "March" => t("Mar"), "April" => t("Apr"),
+    "May" => t("May"), "June" => t("Jun"), "July" => t("Jul"), "August" => t("Aug"),
+    "September" => t("Sep"), "October" => t("Oct"), "November" => t("Nov"), "December" => t("Dec")
   );
   $day_short = array(
-    "Monday" => "Mon", "Tuesday" => "Tue", "Wednesday" => "Wed", "Thursday" => "Thu",
-    "Friday" => "Fri", "Saturday" => "Sat", "Sunday" => "Sun"
+    "Monday" => t("Mon"), "Tuesday" => t("Tue"), "Wednesday" => t("Wed"), "Thursday" => t("Thu"),
+    "Friday" => t("Fri"), "Saturday" => t("Sat"), "Sunday" => t("Sun")
   );
   $repl = array(
     "d" => str_pad($array['mday'], 2, "0", STR_PAD_LEFT),
-    "D" => t($day_short[$array['weekday']]),
+    "D" => $day_short[$array['weekday']],
     "j" => $array['mday'],
-    "l" => t($array['weekday']),
+    "l" => $array['weekday'],
     "N" => '',
     "S" => '',
     "w" => '',
     "z" => '',
     "W" => '',
-    "F" => t($array['month']),
+    "F" => $array['month'],
     "m" => str_pad($array['mon'], 2, "0", STR_PAD_LEFT),
-    "M" => t($month_short[$array['month']]),
+    "M" => $month_short[$array['month']],
     "n" => $array['mon'],
     "t" => '',
     "L" => '',

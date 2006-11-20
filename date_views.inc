@@ -95,7 +95,7 @@ function date_views_filters($field) {
       'handler' => $handler,
       'type' => 'DATE',
       'extra' => array('field' => $field),
-      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: '. $format .'. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.'),
+      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
       ),
     'year' => array(
       'name' => t('Year'),
@@ -704,6 +704,10 @@ function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
     $dow = date_gmdate('w', $stamp);
     if ($dow >= 6) $adj = (86400 * 7);
     $start = intval($stamp - intval($dow * 86400) + $adj);
+    // if site preference is to start week on other than a Sunday, go back a week and move up to correct day
+    if (variable_get('date_first_day', 0)) {
+      $start += (-604800) + (variable_get('date_first_day', 0) * 86400);
+    }
     break;
   case ('year'):
     $year = date_gmdate('Y', $stamp);

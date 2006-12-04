@@ -176,7 +176,7 @@ function date_field_settings($op, $field) {
 
     case 'validate':
       date_set_site_timezone($field['field_timezone']);
-      if ($field['granularity']['Y'] != 'Y') {
+      if (!in_array('Y', $field['granularity'])) {
         form_set_error($field['field_name'], t('Input granularity must include a year.'));
       }
       break;

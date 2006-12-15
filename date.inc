@@ -1024,7 +1024,7 @@ function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT
     
     if (date_set_date($date, date_array2unix($array), $timezone_in, 'local', $type)) {
       
-      return date_show_value($date, 'db', $type);
+      return $date;
 
     }
   } elseif ($type == DATE_ISO) {

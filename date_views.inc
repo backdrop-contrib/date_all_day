@@ -601,11 +601,12 @@ function date_views_query_alter(&$query, &$view) {
       $name       = explode(':', $view->argument[0]['type']);
       $field_name = trim($name[1]);
       $field      = content_fields($field_name);
+      $field_type = $field['type'] == 'datestamp' ? 'int' : 'iso';
       $db_info    = content_database_info($field);
       $value      = $db_info['columns']['value']['column'];
       $table      = 'node_data_'. $field['field_name']; // uses views alias table name
       $offset     = date_views_offset($field['tz_handling']);
-      if ($range      = date_views_date_range($arg)) {
+      if ($range  = date_views_date_range($arg)) {
         $query->ensure_table($table);
         $query->add_field('nid', 'node');
         $query->add_field($value, $table);

@@ -99,7 +99,8 @@ function date_field_settings($op, $field) {
         '#title' => t('Granularity'),
         '#default_value' => $field['granularity'] ? $field['granularity'] : array('Y', 'M', 'D'),
         '#options' => $options,
-        '#multiple' => 1,
+        '#multiple' => TRUE,
+        '#size' => min(count($options), 6),
         '#description' => t('Set the date elements to be collected on input (at least a year is required).'),
         );
       $form['input']['advanced'] = array(
@@ -326,21 +327,21 @@ function date_widget_settings($op, $widget) {
           $form['input']['advanced']['select_day'] = array(
             '#type' => 'select',
             '#title' => t('Days'),
-            '#default_value' => $widget['select_day'] ? $widget['select_day'] : 0,
+            '#default_value' => isset($widget['select_day']) ? $widget['select_day'] : 1,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for day selection.'),
             );
           $form['input']['advanced']['select_month'] = array(
             '#type' => 'select',
             '#title' => t('Months'),
-            '#default_value' => $widget['select_month'] ? $widget['select_month'] : 0,
+            '#default_value' => isset($widget['select_month']) ? $widget['select_month'] : 1,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for month selection.'),
             );
           $form['input']['advanced']['select_year'] = array(
             '#type' => 'select',
             '#title' => t('Years'),
-            '#default_value' => $widget['select_year'] ? $widget['select_year'] : 0,
+            '#default_value' => isset($widget['select_year']) ? $widget['select_year'] : 1,
             '#options' => array(0 => t('text field'), 1 => t('select list')),
             '#description' => t('Type of form to use for year selection.'),
             );

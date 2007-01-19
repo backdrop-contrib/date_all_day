@@ -1124,26 +1124,22 @@ function date_selector_validate($value, $fieldname, $params = array()) {
   if ($value['ampm'] == 'pm' && $value['hours'] < 12) $value['hours'] += 12;
   
   // check for invalid numbers in fields that were submitted using textfields
-  if ($required && !in_array($value['year'], $opt_fields)) {
-
+  if (($required || $value['year']) && !in_array($value['year'], $opt_fields)) {
     if (!date_part_is_valid($value['year'], 'year')) form_set_error($fieldname, t('year must be a number between %min and %max.', array('%min' => DATE_MIN_YEAR, '%max' => DATE_MAX_YEAR)));
-
   }
-  
-  if ($required && !in_array($value['mday'], $opt_fields)) {
-
+  if (($required || $value['mon']) && !in_array($value['mon'], $opt_fields)) {
+    if (!date_part_is_valid($value['mon'], 'mon')) form_set_error($fieldname, t('month must be a number between 1 and 12.'));
+  }
+  if (($required || $value['mday']) && !in_array($value['mday'], $opt_fields)) {
     if (!date_part_is_valid($value['mday'], 'day')) form_set_error($fieldname, t('day must be a number between 1 and 31.'));
-
   }
 
   // try to construct a date from the submitted values
   if ($required && !date_selector_make_dbdate($value, $type)) {
-
     form_set_error($fieldname, t('Date cannot be constructed using values %s.', array('%s' => implode(', ',$value))));
     return FALSE;
 
   } else {
-
     return TRUE;
   }
 }

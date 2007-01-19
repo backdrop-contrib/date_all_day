@@ -472,7 +472,7 @@ function date_widget($op, &$node, $field, &$items) {
       // Don't save empty fields.
       if ($field['multiple']) {
         foreach ($items as $delta => $item) {
-          if (!$item['value'] && ($delta > 0 || !$field['required'])) {
+          if (!$item['value']['year'] && ($delta > 0 || !$field['required'])) {
             unset($items[$delta]);
           }
         }

@@ -95,7 +95,7 @@ function date_views_filters($field) {
       'handler' => $handler,
       'type' => 'DATE',
       'extra' => array('field' => $field),
-      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
+      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: !format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('!format' => $format)),
       ),
     'year' => array(
       'name' => t('Year'),
@@ -221,7 +221,7 @@ function date_views_arguments() {
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_argument_range_handler';
-      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
+      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
       break;
@@ -230,7 +230,7 @@ function date_views_arguments() {
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_timestamp_argument_range_handler';
-      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See %link for other examples.", array('%link' => l(t('help'), 'admin/help/date')));
+      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
       break;
@@ -707,7 +707,7 @@ function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
     $start = intval($stamp - intval($dow * 86400) + $adj);
     // if site preference is to start week on other than a Sunday, go back a week and move up to correct day
     if (variable_get('date_first_day', 0)) {
-      $start += (-604800) + (variable_get('date_first_day', 0) * 86400);
+      $start += intval(variable_get('date_first_day', 0) * 86400);
     }
     break;
   case ('year'):
@@ -798,7 +798,7 @@ function theme_date_views_browser_period_label($period, $date) {
   else {
     $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
   }
-  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_gmdate($format, $date)));
+  return t('!period of !date', array('!period' => ucwords($period), '!date' => date_gmdate($format, $date)));
 }
 /**
  *  Theme for page navigation

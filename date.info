@@ -1,6 +1,6 @@
 ; $Id$
 name = Date
 description = Defines a date/time field type and a date api.
-version = 1.0
+version = "$Name$"
 dependencies = content
 package = CCK

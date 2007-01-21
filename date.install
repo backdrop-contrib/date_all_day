@@ -3,6 +3,8 @@
 /**
  * Implementation of hook_install().
  */
+variable_set('date_version', drupal_get_installed_schema_version('date'));
+
 function date_install() {
 }
 
@@ -117,7 +119,6 @@ function date_update_4() {
 
 function date_update_5() {
   $ret = array();
-  
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
   include_once(drupal_get_path('module', 'date') .'/date.module');
@@ -127,8 +128,15 @@ function date_update_5() {
     
     $db_info = content_database_info($field);
     $table = $db_info['table'];
-    $columns_v4 = date_columns($field, 4);
-    $columns_v5 = date_columns($field, 5);
+    
+    if ($field['type'] == 'date') {
+      $columns_v4['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE);
+    } elseif ($field['type'] == 'datestamp') {
+      $columns_v4['value'] = array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE);
+    }
+    $columns_v4['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'", 'sortable' => TRUE);
+
+    $columns_v5 = date_columns($field);
 
     // update the table columns and their default values
     if (($field['type'] == 'date' || $field['type'] == 'datestamp') && variable_get('date_version', 4) < 5) {
@@ -169,9 +177,10 @@ function date_update_5() {
   return $ret;
 }
 
-// update existing date-specific timezone fields with their offset values
-// a conditional update, can be rerun if changes didn't get made properly previously
-
+/**
+ * Update existing date-specific timezone fields with their offset values
+ * a conditional update, can be rerun if changes didn't get made properly previously
+ */
 function date_update_6() {
   $ret = array();
 
@@ -243,4 +252,70 @@ function date_update_6() {
       return array('#finished' => 1);
     }
   }
+}
+
+/**
+ *  Update 7
+ * 
+ *  Force all columns to allow NULL values to simplify the module.
+ *  Previously only non-required fields allowed NULL values.
+ */
+function date_update_7() {
+  $ret = array();
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+
+  $fields = content_fields();
+  foreach ($fields as $field) {
+    $db_info = content_database_info($field);
+    if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+      $table = $db_info['table'];
+
+      // start with the new column patterns.
+      $columns_start = date_columns($field);
+      $columns_end = date_columns($field);
+
+      // alter the start column values to invalid values to force the new columns to be reset.
+      $columns_start['value']['not null'] = TRUE;
+      $columns_start['value']['default'] = 0;
+      $columns_start['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'sortable' => TRUE);
+      $columns_start['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'sortable' => TRUE);
+      unset($columns_start['value2']);
+       
+      $db_info = content_database_info($field);
+      content_alter_db_field($field, $columns_start, $field, $columns_end);
+      $id     = $field['field_name']. '_value';
+      $tz_id  = $field['field_name']. '_timezone';
+      $offset = $field['field_name']. '_offset';
+      
+      // Make sure default values in the new NULL columns get set to NULL.
+
+      switch ($field['type']) {
+      case 'date':
+        if (($columns_start['value']['default'] == "'0001-01-01T00:00:00'" || $columns_start['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+        }
+        break;
+      case 'datestamp':
+        if (($columns_start['value']['default'] == 0 || $columns_start['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+        }
+        break;
+      }
+    }
+  }
+  drupal_set_message(t('All date module fields were updated to allow empty (NULL) values. Existing date fields with default values were reset to NULL.'));
+  db_query('DELETE FROM {cache}');
+  return $ret;
 }

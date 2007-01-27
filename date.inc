@@ -1,5 +1,6 @@
 <?php
 //$Id$
+
 /**
  * @file
  * Date/time API functions
@@ -22,7 +23,7 @@
  *    print date_show_value($date, 'db', DATE_ISO);  // the iso db value
  *
  *  display the date object and all its parts:
- *    print_r($date);  
+ *    print_r($date);
  */
 
 // add here to define additional date types
@@ -32,7 +33,7 @@ define('DATE_STRING_ISO', "Y-m-d\TH:i:s");
 
 /**
  *  identify the file to be used for timezone information
- * 
+ *
  *  use the event_timezones.inc file for timezone conversion
  *  if event is not enabled, use a copy of that file, stored as date_timezones.inc
  *  this large file will be included only when needed to reduce overhead
@@ -47,11 +48,11 @@ if (!module_exists('event')) {
 /**
  *  Set up optional adodb date library to handle dates outside the normal php range
  *  Could be extended later for other date libraries
- * 
+ *
  *  adodb date library instructions:
  *    get the file adodb-time.inc.php from http://phplens.com/phpeverywhere/adodb_date_library
  *    put it in the same folder with date.module
- * 
+ *
  *  external library will be used if available, otherwise api will use standard php date handling functions
  */
 if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
@@ -63,7 +64,7 @@ if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
   // if there is another program loading adodb-time.inc.php in another directory after this file has run
   // there will be php errors stating that the functions have already been declared
   // to fix this, alter the path to the file below to point to the path used by the program that uses the file last
-  // 
+  //
   // the standard path to this file
   //     drupal_get_path('module', 'date') .'/adodb-time.inc.php';
   // an example alternate path if the gallery2 program is installed (gallery2 uses adodb, too)
@@ -85,10 +86,10 @@ if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
 
 /**
  *  Date wrapper functions
- * 
+ *
  *  will use external library if available, otherwise native php date functions
  *  currently set up for adodb date library, could be extended to include other date libraries
- * 
+ *
  *  @param $array - array parameters are in the format created by getdate()
  *  prefix functions with @ to surpress ugly windows error messages for dates outside valid range
  */
@@ -172,7 +173,7 @@ function date_strftime($format, $timestamp = FALSE) {
     return @adodb_strftime($format, $timestamp);
   default:
     return @strftime($format, $timestamp);
- }  
+ }
 }
 function date_gmstrftime($format, $timestamp = FALSE) {
   date_load_library();
@@ -211,9 +212,9 @@ function date_gmadj_zone($timestamp) {
 
 /**
  *  Function to create a date object
- * 
+ *
  *  All creation, manipulation, and display of the date is done using this date object
- * 
+ *
  *  @param $value - the date/time value to set
  *  @param $timezone - 'GMT', 'none', or timezone name - the timezone of this value
  *  @param $type - db or local, the part of the date object to set
@@ -221,7 +222,7 @@ function date_gmadj_zone($timestamp) {
  *  @return - the date object
  */
 function date_make_date($value = '', $timezone = 'GMT', $type = 'db', $format = DATE_ISO) {
-  
+
   $date                   = new StdClass();
   $date->db               = new StdClass();
   $date->db->timestamp    = NULL;
@@ -238,14 +239,14 @@ function date_make_date($value = '', $timezone = 'GMT', $type = 'db', $format = 
 
   // if initialized with a date, go ahead and set that date up
   date_set_date($date, $value, $timezone, $type, $format);
-  
+
   return $date;
 
 }
 
 /**
  *  Function to set local and db date parts in the date object
- * 
+ *
  *  @param $date - the date object
  *  @param $value - the date/time value to set
  *  @param $timezone - 'GMT', 'none', or timezone name - the timezone of this value
@@ -257,7 +258,7 @@ function date_make_date($value = '', $timezone = 'GMT', $type = 'db', $format = 
  *  @param $reset - force a reset of the provided value even if it already exists
  */
 function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format = DATE_ISO, $reset = FALSE, $display_errors = FALSE) {
-  
+
   if (trim($value) == '') {
     // make new blank date
     $date = date_make_date();
@@ -270,7 +271,7 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
   $error = array();
 
   if ($format == DATE_UNIX) {
-    
+
     $date->$type->timestamp = $value;
 
     $parts = date_unix2array($value);
@@ -286,9 +287,9 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
     } else {
       $date->$type->iso = $iso;
     }
-  
+
   } elseif ($format == DATE_ISO) {
-    
+
     $date->$type->iso = $value;
 
     $parts = date_iso2array($value);
@@ -297,34 +298,34 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
     } else {
       $date->$type->parts = $parts;
     }
-    
+
     $unix = date_iso2unix($value);
     if ($unix === 'ERROR') {
       $error[] = 'iso2unix';
     } else {
       $date->$type->timestamp = $unix;
     }
-    
+
   } else {
 
     $error[] = $format;
 
   }
-  
+
   if (!$error && $type == 'local' && (!$date->db->iso || $reset)) {
-    
+
     $date->local->timezone = $timezone;
 
     // if the local value was submitted, go ahead and compute the db part of the date
     date_convert_timezone($date, $date->local->timezone, 'GMT', 'db');
 
   } elseif (!$error && $type == 'db' && $date->local->iso && (!$date->local->iso || $reset)) {
-      
-    // compute local value if the db value was submitted 
+
+    // compute local value if the db value was submitted
     // and the local value has not been created and there is a local timezone
     date_convert_timezone($date, 'GMT', $date->local->timezone, 'local');
   }
-  
+
   if ($error) {
     // if unable to set date to this value, revert to previous date settings and show error message
     $date = $old_date;
@@ -333,43 +334,43 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
     }
     return FALSE;
   }
-  
+
   return TRUE;
 
 }
 
 /**
  *  Timezone conversion function
- * 
+ *
  *  @param $date - the date object
  *  @param $timezone_in - 'none', 'GMT', or timezone name in format 'US/Central'
  *  @param $timezone_out - 'none', 'GMT', or timezone name in format 'US/Central'
  *  @param $type - 'db' or 'local', the part of the date object to be created
- * 
+ *
  */
 function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GMT', $type = 'db') {
-  
+
   $fromtype = $type == 'db' ? 'local' : 'db';
-  
+
   // skip timezone conversion if no timezone conversion was desired
   // set the local and db parts of the date object to be the same and return
   if ($timezone_in == 'none' || $timezone_out == 'none' || empty($date->$fromtype->parts[0])) {
-    
+
     if (($date->local->iso || $date->local->iso == 0) && !$date->db->iso) {
-      
+
       date_set_date($date, $date->local->iso, $timezone_out, 'db', DATE_ISO);
-    
+
     } elseif (($date->db->iso || $date->db->iso == 0) && !$date->local->iso) {
-      
+
       date_set_date($date, $date->db->iso, $timezone_out, 'local', DATE_ISO);
 
     }
 
     return;
   }
-  
+
   if ($type == 'local') {
-    
+
     $date->local->timezone = $timezone_out;
 
     // attempt conversion only when there is available data to use
@@ -377,7 +378,7 @@ function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GM
 
     // see if an offset applies, and adjust date accordingly
     if ($offset = date_offset(date_gmgetdate($date->db->timestamp), $date->local->timezone)) {
-      
+
       $out_date = $date->db->timestamp + $offset;
       date_set_date($date, $out_date, $timezone_out, $type, DATE_UNIX);
       $date->local->offset = $offset;
@@ -393,7 +394,7 @@ function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GM
 
     // attempt conversion only when there is available data to use
     if ((!$date->local->iso && !$date->local->iso == 0) || !$date->local->timezone) return;
-    
+
     // see if an offset applies, and adjust date accordingly
     if ($offset   = date_offset(date_gmgetdate($date->local->timestamp), $date->local->timezone)) {
 
@@ -403,27 +404,27 @@ function date_convert_timezone(&$date, $timezone_in = 'GMT', $timezone_out = 'GM
 
     // no offset, just set other part of date object to same value
     } else {
-      
+
       date_set_date($date, $date->local->iso, $timezone_out, $type, DATE_ISO);
       $date->local->offset = 0;
     }
 
   }
-  
+
   return;
-  
+
 }
 
 /**
  *  A function to calculate offset using timezone.inc file
- * 
+ *
  *  @param  $date_parts - an array of date parts in the format created by getdate()
  *  @param  $timezone - the timezone to use
  *  @return $offset - the offset of $timezone from GMT on the $date_parts date
  */
 function date_offset($date_parts, $timezone = 'GMT') {
-  
-  include_once(DATE_TIMEZONES);  
+
+  include_once(DATE_TIMEZONES);
 
   // no adjustment needed for gmt dates
   if ($timezone == 'GMT') return 0;
@@ -438,9 +439,9 @@ function date_offset($date_parts, $timezone = 'GMT') {
     // fudge offset for dates prior to 1970 by finding the offset in 1971
     $date_parts['year'] = 1971;
     $timestamp = date_array2unix($date_parts);
-  
+
   } else {
-    
+
     $timestamp = $date_parts[0];
 
   }
@@ -451,34 +452,34 @@ function date_offset($date_parts, $timezone = 'GMT') {
 
 /**
  *  A function to display the database value for the date object
- * 
+ *
  *  @param $date - the date object
  *  @param $format - DATE_UNIX or DATE_ISO, the type of value to display
  *  @param $type - 'db' or 'local', the date value to display
  */
 function date_show_value($date, $type = 'db', $format = DATE_ISO) {
-  
+
   if ($format == DATE_UNIX) {
-    
+
     return $date->$type->timestamp;
-  
+
   } else {
-    
+
     return $date->$type->iso;
-  
+
   }
 }
 
 /**
  *  A function to display formatted output for the date object
- * 
+ *
  *  @param $date - the date object
  *  @param $format_string - the format string to be used for the display
  *  @param $type - 'local' or 'db', the date value to be displayed
  *  @param $zone_display - '', '0000', '00:00', 'name' - type of timezone display to append
  */
 function date_show_date($date, $format_string, $type = 'local', $zone_display = '') {
-  
+
   if ($zone_display) {
 
     $append = date_append_zone($date, $zone_display);
@@ -487,27 +488,27 @@ function date_show_date($date, $format_string, $type = 'local', $zone_display = 
 
   // using gmdate so php won't try to adjust value for server timezone
   // needed because date object has already made necessary timezone adjustments
-  
+
   if ($type == 'db' || (!$date->local->timestamp && $date->local->timestamp != 0)) {
-    
+
     return date_gmdate($format_string, date_fuzzy_stamp($date->db)) . $append;
-  
+
   } elseif ($date->local->timestamp || $date->local->timestamp == 0) {
-    
+
     return date_gmdate($format_string, date_fuzzy_stamp($date->local)) . $append;
-  
-  } 
+
+  }
 }
 
 /**
  *  Create a valid timestamp that can be used for date formatting
- *  even if only partial date info is available, 
+ *  even if only partial date info is available,
  *  i.e. for an iso date with month and year only
  */
 function date_fuzzy_stamp($datetype) {
 
   if ($datetype->timestamp) {
-    
+
     return $datetype->timestamp;
 
   } else {
@@ -520,19 +521,19 @@ function date_fuzzy_stamp($datetype) {
       'minutes' => ($datetype->parts['minutes'] ? $datetype->parts['minutes'] : 0),
       'seconds' => ($datetype->parts['seconds'] ? $datetype->parts['seconds'] : 0),
       ));
-  
+
   }
-  
+
 }
 
 /**
  *  A function to append the zone offset or name to a display
- * 
- *  Alternative to timezone identifiers in format string 
+ *
+ *  Alternative to timezone identifiers in format string
  *  needed because format string tz identification may display server zone rather than site or date zone
  *  no option for zone abbreviation (i.e. EST) because zone abbreviations
  *  are not unique, nor are they available in the timezone.inc data
- * 
+ *
  *  @param $type - the type of display desired
  *      - '0000' will display zone offset like -0500
  *      - '00:00' will display zone offset like -05:00
@@ -545,7 +546,7 @@ function date_append_zone($date, $type = '') {
   $offset  = intval($date->local->timestamp - $date->db->timestamp);
   $hours   = intval($offset / 3600);
   $minutes = intval(($offset / 60) - ($hours * 60));
-  
+
   switch (trim($type)) {
   case ('0000'):
     return ' '. sprintf('%+05d', $hours * 100);
@@ -567,12 +568,12 @@ function date_append_zone_options() {
 
 /**
  *  Time zone option list
- * 
+ *
  *  @return array of timezone ids (i.e. US/Eastern, US/Central)
  *  @param  $limit - an optional offset value, to limit the results to timezones that match that offset
  */
 function date_timezone_options($limit = '') {
-  
+
   include_once(DATE_TIMEZONES);
   $zonelist = array();
   if (!$limit) {
@@ -618,10 +619,10 @@ function date_get_site_timezone() {
  *  Timezone handling options
  *  omitting user option for now because we only know the user's offset at best, not their timezone
  *  come back later and enable this option if there is a way to collect and save user timezones
- * 
+ *
  *  the 'none' option will do no timezone conversions and will store and display dates exactly as entered
  *  useful in locales or situations where timezone conversions are not working reliably,
- *  for dates with no times, for historical dates where timezones are irrelevant, 
+ *  for dates with no times, for historical dates where timezones are irrelevant,
  *  or anytime conversion is unnecessary or undesirable
  */
 function date_timezone_handling_options() {
@@ -639,7 +640,7 @@ function date_timezone_handling_options() {
  *  Function to figure out which timezone applies to a date and select it
  */
 function date_get_timezone($handling, $timezone = '') {
-  
+
   switch ($handling) {
     case ('site'):
       $timezone_out = date_get_site_timezone();
@@ -662,7 +663,7 @@ function date_get_timezone($handling, $timezone = '') {
 
 /**
  *  Flexible Date/Time Drop-Down Selector
- * 
+ *
  *  $params = an array of values, including
  *    label = the label for the date group, default is 'Date'
  *    value = the date/time to be processed, default is the current date and time
@@ -684,9 +685,9 @@ function date_get_timezone($handling, $timezone = '') {
  *    description = text to be used as a description for the fieldset
  */
 function date_select_input($params) {
-  
+
   drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
-  
+
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
   $delta         = isset($params['delta']) ? $params['delta'] : 0;
@@ -710,12 +711,12 @@ function date_select_input($params) {
   if ($formats['input']['am_pm']) {
     $hours_format = t('h');
     for ($i = 0; $i <= 12; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
-  } 
+  }
   else {
     $hours_format = t('H');
     for ($i = 0; $i <= 23; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
   }
-  
+
   // create a date object with the desired date
   $date = date_make_date();
 
@@ -723,7 +724,7 @@ function date_select_input($params) {
     date_set_date($date, $params['value'], $timezone_in, 'db', $format);
     date_convert_timezone($date, $timezone_in, $timezone_out, 'local');
   }
-  
+
   // find current date
   switch ($format) {
     case (DATE_UNIX):
@@ -736,7 +737,7 @@ function date_select_input($params) {
   if (!$blank_default && $params['value'] == '') {
     date_set_date($date, $now, $timezone_out, 'local', $format);
   }
-  
+
   if (!$blank_default || $params['value'] > '') {
     $year    = date_show_date($date, 'Y');
     $mon     = date_show_date($date, 'm');
@@ -745,8 +746,8 @@ function date_select_input($params) {
     $minutes = (string)date_show_date($date, 'i');
     $seconds = (string)date_show_date($date, 's');
     $ampm    = strtolower(date_show_date($date, 'a'));
-  } 
-  
+  }
+
   // create the form values
   $form['#title']  = $label;
   $form['#weight'] = intval($weight);
@@ -868,7 +869,7 @@ function date_select_input($params) {
 
 /**
  *  Text date input form, with optional jscalendar popup
- * 
+ *
  *  $params = an array of values, including
  *    label = the label for the date group, default is 'Date'
  *    value = the date/time to be processed, default is the current date and time
@@ -888,7 +889,7 @@ function date_select_input($params) {
  *    jscalendar = 1 use if available, 0 do not use
  */
 function date_text_input($params) {
-  
+
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');
   $delta         = isset($params['delta']) ? $params['delta'] : 0;
@@ -902,11 +903,16 @@ function date_text_input($params) {
   $timezone_out  = isset($params['timezone_out']) ? $params['timezone_out'] : (!$blank_default || $params['value'] ? date_get_site_timezone() : '');
   $description   = $params['description'];
   $jscalendar    = $params['jscalendar'] ? 1 : 0;
+<<<<<<< date.inc
+
+
+=======
   $opt_fields    = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
   $field_name    = $params['field_name'] ? $params['field_name'] : 'value';
 
+>>>>>>> 1.30
   // create a new date object and convert it to the right timezone
-          
+
   // create a date object with the desired date
   $date = date_make_date();
 
@@ -914,7 +920,7 @@ function date_text_input($params) {
     date_set_date($date, $params['value'], $timezone_in, 'db', $format);
     date_convert_timezone($date, $timezone_in, $timezone_out, 'local');
   }
-  
+
   // if required and no date provided, use current date
   if ($required && !$blank_default && $params['value'] == '') {
     switch ($format) {
@@ -926,10 +932,41 @@ function date_text_input($params) {
     }
     date_set_date($date, $now, $timezone_out, 'local', $format);
   }
-  
+
   // get the local iso version of the database value
   $value = date_iso2custom(date_show_value($date, 'local'), $formats['input']['text']);
-  
+<<<<<<< date.inc
+
+  // if date-specific timezone handling was selected, provide a way for the user to enter the timezone
+  if (in_array('T', $granularity)) {
+    $form['#type'] = 'fieldset';
+    $form['#title'] = $label;
+    $form['#weight'] = $weight;
+    $form['#attributes'] = array('class' => 'container-inline-date');
+
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t('date'),
+      '#default_value' => $value,
+      '#required' => ($delta == 0) ? $required : 0,
+    );
+    if (in_array('T',$granularity)) {
+      $form['timezone'] = array(
+        '#title' => t('timezone'),
+        '#type' => 'select',
+        '#default_value' => $timezone_out ? $timezone_out : (!$blank_default ? 'GMT' : ''),
+        '#options' => $required ? date_timezone_options() : array('' => '') + date_timezone_options(),
+        '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
+        '#title' => t('timezone'),
+      );
+    } else {
+      $form['timezone'] = array(
+        '#type' => 'hidden',
+        '#value' => $timezone_out,
+      );
+    }
+=======
+
   // date-specific timezone not requested, just get date
   $form[$field_name] = array(
     '#type' => 'textfield',
@@ -939,9 +976,10 @@ function date_text_input($params) {
     '#description' => $description,
     '#weight' => $weight,
   );
-  
+
   // if the jscalendar is used for input, add some attributes to be passed to the js
   // also need to adjust the date format slightly to accomodate the js capability
+>>>>>>> 1.30
 
   if ($jscalendar && module_exists('jscalendar')) {
     $form[$field_name]['#attributes'] = array('class' => 'jscalendar');
@@ -958,7 +996,7 @@ function date_text_input($params) {
 
 /**
  *  Timezone input form
- * 
+ *
  *  $params = an array of values, including
  *    timezone_in  = the timezone of the date/time value to be processed, default is GMT
  *    timezone_out = the timezone to be used when displaying the date, default is date site timezone, if set, or GMT
@@ -997,7 +1035,7 @@ function date_timezone_input($params) {
 
 /**
  *  Construct a value to save to the database from the date selector
- * 
+ *
  *  @param $array - an array of date parts collected by the date selector
  *  @param $type - DATE_UNIX or DATE_ISO
  *  @param $timezone_in - timezone of supplied value
@@ -1005,24 +1043,24 @@ function date_timezone_input($params) {
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
 function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
-  
+
   // adjust back to 24 hours time if 12 hours input was collected
   if ($array['ampm'] == 'pm' && $array['hours'] < 12) $array['hours'] += 12;
-  
+
   // try to construct a date from the submitted values
   $date = date_make_date();
-  
+
   if ($type == DATE_UNIX) {
-    
+
     if (date_set_date($date, date_array2unix($array), $timezone_in, 'local', $type)) {
-      
+
       return $date;
 
     }
   } elseif ($type == DATE_ISO) {
-    
+
     if (date_set_date($date, date_array2iso($array), $timezone_in, 'local', $type)) {
-      
+
       return $date;
 
     }
@@ -1033,7 +1071,7 @@ function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT
 
 /**
  *  Construct a value to save to the database from jscalendar input
- * 
+ *
  *  @param $value - a text value created by js_calendar
  *  @param $type - DATE_UNIX or DATE_ISO
  *  @param $format - a string containing the format the field is using (date() format)
@@ -1042,7 +1080,7 @@ function date_selector_make_dbdate($array, $type = DATE_ISO, $timezone_in = 'GMT
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
 function date_jscalendar_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
-  
+
   $value = trim($value);
 
   if ($value == '') return NULL;
@@ -1069,7 +1107,7 @@ function date_jscalendar_make_dbdate($value, $type, $format, $timezone_in = 'GMT
 
 /**
  *  Construct a value to save to the database from text input
- * 
+ *
  *  @param $value - string date value, could be iso format or text for strtotime conversion
  *  @param $type - DATE_UNIX or DATE_ISO
  *  @param $format - a string containing the format the field is using (date() format)
@@ -1078,7 +1116,7 @@ function date_jscalendar_make_dbdate($value, $type, $format, $timezone_in = 'GMT
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  */
 function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $granularity = array('M', 'D', 'Y')) {
-    
+
   $value = trim($value);
 
   if ($value == '') return NULL;
@@ -1091,7 +1129,7 @@ function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $gr
       $value = date_text2iso($value, $format);
       break;
   }
-  
+
   if ($value) {
     if ($date = date_make_date($value, $timezone_in, 'local', $type)) {
       return $date;
@@ -1107,22 +1145,28 @@ function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $gr
  *    opt_fields = an array of fields that need not be filled out, default is empty array
  */
 function date_selector_validate($value, $fieldname, $params = array()) {
-  
+
   $type       = $params['type'] > '' ? $params['type'] : DATE_ISO;
   $required   = isset($params['required']) ? $params['required'] : 1;
   $opt_fields = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
   $granularity = $params['granularity'] ? $params['granularity'] : array('M', 'D', 'Y');
 
   if ($value['ampm'] == 'pm' && $value['hours'] < 12) $value['hours'] += 12;
-  
+
   // check for invalid numbers in fields that were submitted using textfields
   if (($required || $value['year']) && !in_array($value['year'], $opt_fields)) {
     if (!date_part_is_valid($value['year'], 'year')) form_set_error($fieldname, t('year must be a number between %min and %max.', array('%min' => DATE_MIN_YEAR, '%max' => DATE_MAX_YEAR)));
   }
+<<<<<<< date.inc
+
+  if ($required && !in_array($value['mday'], $opt_fields)) {
+
+=======
   if (($required || $value['mon']) && !in_array($value['mon'], $opt_fields)) {
     if (!date_part_is_valid($value['mon'], 'mon')) form_set_error($fieldname, t('month must be a number between 1 and 12.'));
   }
   if (($required || $value['mday']) && !in_array($value['mday'], $opt_fields)) {
+>>>>>>> 1.30
     if (!date_part_is_valid($value['mday'], 'day')) form_set_error($fieldname, t('day must be a number between 1 and 31.'));
   }
 
@@ -1140,10 +1184,10 @@ function date_selector_validate($value, $fieldname, $params = array()) {
  *  Validation for jscalendar input
  */
 function date_jscalendar_validate($value, $fieldname, $type, $format, $required, $granularity = array('M', 'D', 'Y')) {
-  
+
   $value = trim($value);
   if (!$required && $value == '') return TRUE;
-  
+
   switch ($type) {
     case (DATE_UNIX):
       if (!date_custom2unix($value, $format)) {
@@ -1165,10 +1209,10 @@ function date_jscalendar_validate($value, $fieldname, $type, $format, $required,
  *  Validation for text input
  */
 function date_text_validate($value, $fieldname, $type, $format, $required, $granularity = array('M', 'D', 'Y')) {
-  
+
   $value = trim($value);
   if (!$required && $value == '') return TRUE;
-  
+
   switch ($type) {
     case (DATE_UNIX):
       if (!$value = date_text2unix($value, $format)) {
@@ -1193,20 +1237,20 @@ function date_text_validate($value, $fieldname, $type, $format, $required, $gran
  *  return false for anything that can't produce a valid year
  *  iso date may have a year only or year and month only
  *  unix dates must have at least a year month and day
- * 
+ *
  *  these function return 'ERROR' instead of FALSE because of
  *  problems distinguishing between a valid 0 value and a FALSE value
- * 
+ *
  */
 function date_array2iso($array) {
-  
+
   if (!date_is_valid($array, 'array')) return 'ERROR';
-  
-  return  sprintf("%04d",intval($array['year'])) . 
-    '-'. sprintf("%02d",intval($array['mon'])) .  
-    '-'. sprintf("%02d",intval($array['mday'])) . 
-    'T'. sprintf("%02d",intval($array['hours'])) . 
-    ':'. sprintf("%02d",intval($array['minutes'])) . 
+
+  return  sprintf("%04d",intval($array['year'])) .
+    '-'. sprintf("%02d",intval($array['mon'])) .
+    '-'. sprintf("%02d",intval($array['mday'])) .
+    'T'. sprintf("%02d",intval($array['hours'])) .
+    ':'. sprintf("%02d",intval($array['minutes'])) .
     ':'. sprintf("%02d",intval($array['seconds']));
 }
 
@@ -1225,25 +1269,25 @@ function date_array2unix($array) {
 }
 
 function date_iso2array($iso) {
-  
+
   if (!date_preg($iso)) return 'ERROR';
-  
+
   if (!date_is_valid($iso, DATE_ISO)) return 'ERROR';
 
   // a unix date requires a year, month, and day
   if (date_iso_year($iso) && date_iso_mon($iso) && date_iso_day($iso)) {
 
     $unix = date_iso2unix($iso);
-  
+
     if ($unix === 'ERROR') {
-    
+
       return 'ERROR';
 
     } else {
-    
+
       return date_unix2array($unix);
     }
-  
+
   // an iso date is valid even without a month and/or a day
   } elseif (date_iso_year($iso)) {
 
@@ -1262,13 +1306,13 @@ function date_iso2array($iso) {
       return 'ERROR';
 
   }
-  
+
 }
 
 function date_unix2array($unix) {
 
   if (!date_is_valid($unix, DATE_UNIX)) return 'ERROR';
-  
+
   // using gmgetdate instead of getdate so no server timezone adjustment is made
   return date_gmgetdate($unix);
 
@@ -1284,29 +1328,29 @@ function date_unix2iso($unix) {
 }
 
 function date_iso2unix($iso) {
-  
+
   if (!date_preg($iso)) return 'ERROR';
-  
+
   if (!date_is_valid($iso, DATE_ISO)) return 'ERROR';
-  
+
   // a unix date requires a year, month, and day
   if (date_iso_year($iso) && date_iso_mon($iso) && date_iso_day($iso)) {
-  
+
     $array = array(
-      'hours' => date_iso_hours($iso), 
-      'minutes' => date_iso_minutes($iso), 
-      'seconds' => date_iso_seconds($iso), 
-      'mon' => date_iso_mon($iso), 
-      'mday' => date_iso_day($iso), 
+      'hours' => date_iso_hours($iso),
+      'minutes' => date_iso_minutes($iso),
+      'seconds' => date_iso_seconds($iso),
+      'mon' => date_iso_mon($iso),
+      'mday' => date_iso_day($iso),
       'year' => date_iso_year($iso)
       );
-  
+
     // using gmmktime instead of mktime so no server timezone adjustment is made
     $unix = date_gmmktime($array);
-  
+
     // php versions earlier than 5.1 return -1 for a false response, convert that to 'ERROR'
     if ($unix == -1) return 'ERROR';
-  
+
     return $unix;
 
   } else {
@@ -1544,7 +1588,7 @@ function date_custom2unix($date, $format) {
  *  Use stringtotime function to create an iso date out of text
  */
 function date_text2iso($text, $format) {
-  
+
   // if date supplied in iso format, use it
   // TODO : there's probably better to do...
   // (do we _want_ to enter ISO formats ? if so we should have it in the input format settings)
@@ -1558,9 +1602,9 @@ function date_text2iso($text, $format) {
 
   // if custom parsing failed, try strtotime conversion
   $iso = date_gmdate(DATE_STRING_ISO, strtotime($text));
-  
+
   if (date_part_is_valid(date_iso_year($iso), 'year')) {
-    
+
     return $iso;
 
   } else {
@@ -1571,11 +1615,11 @@ function date_text2iso($text, $format) {
 }
 
 function date_text2unix($text, $format) {
-  
+
   if ($iso = date_text2iso($text, $format)) {
-    
+
     if ($unix = date_iso2unix($iso)) {
-      
+
       return $unix;
 
     }
@@ -1623,7 +1667,7 @@ function date_unix_seconds($unix) {
 
 /**
  *  Functions to test the validity of various date parts
- * 
+ *
  *  @param $format could be 'array', DATE_UNIX, or DATE_ISO
  */
 function date_is_valid($value, $format) {
@@ -1645,14 +1689,14 @@ function date_is_valid($value, $format) {
 
 /**
  *  Function to test validity of specific date part
- * 
+ *
  *  @param $value - the value to test
  *  @param $part - the type of date part provided, coult be 'year', 'mon', or 'mday'
  *  @parma $min either 0 or 1, use to set min for mon and mday
  *      can be 0 for iso dates, set to 1 for unix timestamps that require a complete date
  */
 function date_part_is_valid($value, $part, $min = 0) {
-  
+
   switch ($part) {
   case ('year'):
     if ($value < DATE_MIN_YEAR || $value > DATE_MAX_YEAR) return FALSE;
@@ -1726,23 +1770,23 @@ function date_input_options() {
 
 /**
  *  Function to create an option list that will display various date and time formats
- * 
+ *
  *  @param $tz_handling - default is 'site'
  *  @param $illustration_date - an iso date to use for illustration of the date options
  *    default date for illustration: August 1 YYYY 2:05:10 PM
  *      - single digit months and days to see leading zeros
  *      - a month number different than the day number to see month and day positions
  *      - an afternoon time to illustrate 24 hours vs am/pm formats
- * 
+ *
  *  @return array of date format strings for all date_date_options() and/or date_time_options()
  *    with a key of the format string and a value of the illustration date displayed in that format
- * 
+ *
  */
 function date_output_options($tz_handling = 'site', $illustration_date = NULL) {
 
   $illustration_date = $illustration_date ? $illustration_date : date_gmdate('Y', time()) .'-08-01T14:05:10';
   $date = date_make_date($illustration_date, date_get_timezone($tz_handling), 'local', DATE_ISO);
-  
+
     // from system module, possible date formats
   $dateshort = array('Y-m-d H:i','m/d/Y - H:i', 'd/m/Y - H:i', 'Y/m/d - H:i',
            'd.m.Y - H:i', 'm/d/Y - g:ia', 'd/m/Y - g:ia', 'Y/m/d - g:ia',
@@ -1755,7 +1799,7 @@ function date_output_options($tz_handling = 'site', $illustration_date = NULL) {
   $datelong = array('l, F j, Y - H:i', 'l, j F, Y - H:i', 'l, Y,  F j - H:i',
         'l, F j, Y - g:ia', 'l, j F Y - g:ia', 'l, Y,  F j - g:ia', 'l, j. F Y - G:i');
   $datestrings = array_merge($dateshort, $datemedium, $datelong);
-  
+
   $view = array();
   foreach ($datestrings as $datestring) {
     $parts = explode(' - ', $datestring);
@@ -1896,7 +1940,7 @@ function date_formats($format, $granularity) {
   if ($format == 'site-wide') {
     $formats['input']['site-wide'] = $format;
   }
-    
+
   $formats['input']['jscal'] = implode($date_separator, $jscal_format_date);
   $formats['input']['jscal'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $jscal_format_time)  . $jscal_format_ampm : '';
 
@@ -1908,13 +1952,13 @@ function date_formats($format, $granularity) {
 
   $formats['input']['desc']  = implode($date_separator, $desc_date);
   $formats['input']['desc'] .= date_has_time($granularity) ? $format_separator . implode($time_separator, $desc_time) : '';
-  
+
   return $formats;
 }
 
 /**
  *  Convert date() to strftime() format strings
- * 
+ *
  *  @param $format - a format string for date()
  *  @return corresponding format string for strftime()
  */
@@ -1922,11 +1966,11 @@ function date_date2strftime($format) {
   return strtr($format, date_date2strftime_replace());
 }
 
-/** 
+/**
  *  Date() to strftime() replacement array
- * 
+ *
  *  Adjusted for differences between unix and windows strftime()
- * 
+ *
  *  Not all date formats have corresponding strftime formats
  *  Trying for best match or blank for no match
  */
@@ -1989,14 +2033,14 @@ function date_date2strftime_replace() {
  *  Cross-database date SQL wrapper function
  *  allows use of normalized native date functions in both mysql and postgres
  *  designed to be extensible to other databases
- * 
+ *
  *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
  *  @param $field - the name of the date field to be analyzed
  *  @param $date_type - the type of date field being analyzed, int or iso
  *  @param $offset - timezone offset in seconds, either a value or fieldname
  *  @param $offset_op - the operation to perform on the offset, + or -
  *  @return a SQL statement appropriate for the $db_type
- * 
+ *
  *  example:          date_sql('WEEK', 'MYFIELD', 'int', 'MYOFFSETFIELD', '+')
  *  mysql returns:    WEEK(FROM_UNIXTIME(MYFIELD) + INTERVAL MYOFFSETFIELD SECOND, 3)
  *  postgres returns: EXTRACT(WEEK FROM(TIMESTAMP(MYFIELD::ABSTIME::INT4) + INTERVAL MYOFFSETFIELD SECONDS))
@@ -2007,7 +2051,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
   if ($date_type == 'NOW') {
     // set up an initial value for now
     $field = 'NOW()';
-  } 
+  }
   elseif ($date_type == 'int' && $field) {
     // convert integer field value to native date format
     switch ($db_type) {
@@ -2087,7 +2131,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
 
 /**
  *  A helper function to do cross-database concatation of date parts
- * 
+ *
  *  @param $array - an array of values to be concatonated in sql
  *  @return - correct sql string for database type
  */
@@ -2105,7 +2149,7 @@ function date_sql_concat($array) {
 
 /**
  *  A helper function to do cross-database padding of date parts
- * 
+ *
  *  @param $str - a string to apply padding to
  *  @param $size - the size the final string should be
  *  @param $pad - the value to pad the string with
@@ -2126,10 +2170,10 @@ function date_sql_pad($str, $size = 2, $pad = '0', $side = 'l') {
 
 /**
  *  Date selector form
- * 
+ *
  *  $form contains the whole date selector form.
  *  Make any changes needed, render it, and return the result.
- * 
+ *
  */
 function theme_date_form_select($form) {
   $form['#type']   = 'fieldset';
@@ -2138,7 +2182,7 @@ function theme_date_form_select($form) {
 
 /**
  *  Date selector description
- * 
+ *
  *  $form contains the description added to the date selector.
  *  Make any changes needed, render it, and return the result.
  */
@@ -2152,7 +2196,7 @@ function theme_date_form_select_description($form) {
 
 /**
  *  Text input form
- * 
+ *
  *  $form contains a text input form.
  *  Make any changes needed, render it, and return the result.
  */
@@ -2162,7 +2206,7 @@ function theme_date_form_text($form) {
 
 /**
  *  jsCalendar input form
- * 
+ *
  *  $form contains a jscalendar input form.
  *  Make any changes needed, render it, and return the result.
  */
@@ -2172,7 +2216,7 @@ function theme_date_form_jscalendar($form) {
 
 /**
  *  Timezone input form
- * 
+ *
  *  $form contains a timzone input form.
  *  Make any changes needed, render it, and return the result.
  */

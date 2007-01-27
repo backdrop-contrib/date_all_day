@@ -8,17 +8,17 @@ fieldset.container-inline-date .form-item input, fieldset.container-inline-date 
 ** this will be on drupal 5.0 so we can get rid of the styling below when the module is updated
 */
 fieldset.container-inline-date:after {
-  content: "."; 
-  display: block; 
-  height: 0; 
-  clear: both; 
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
   visibility: hidden;
  }
- 
+
 fieldset.container-inline-date {
   display: inline-block;
  }
- 
+
 /* Hides from IE-mac \*/
 * html fieldset.container-inline-date {
   height: 1%;

@@ -1,5 +1,6 @@
 <?php
 // $Id$
+
 /**
  * Implementation of hook_install().
  */
@@ -119,16 +120,20 @@ function date_update_4() {
 
 function date_update_5() {
   $ret = array();
+<<<<<<< date.install
+
+=======
+>>>>>>> 1.15
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
   include_once(drupal_get_path('module', 'date') .'/date.module');
 
   $fields = content_fields();
   foreach ($fields as $field) {
-    
+
     $db_info = content_database_info($field);
     $table = $db_info['table'];
-    
+
     if ($field['type'] == 'date') {
       $columns_v4['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE);
     } elseif ($field['type'] == 'datestamp') {
@@ -188,7 +193,7 @@ function date_update_6() {
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
 
   $fields = content_fields();
-  
+
   // See if being called for the first time
   if (!isset($_SESSION['date_update_5'])) {
     // find all tables that have date-specific timezone handling
@@ -256,7 +261,7 @@ function date_update_6() {
 
 /**
  *  Update 7
- * 
+ *
  *  Force all columns to allow NULL values to simplify the module.
  *  Previously only non-required fields allowed NULL values.
  */
@@ -282,13 +287,13 @@ function date_update_7() {
       $columns_start['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'sortable' => TRUE);
       $columns_start['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'sortable' => TRUE);
       unset($columns_start['value2']);
-       
+
       $db_info = content_database_info($field);
       content_alter_db_field($field, $columns_start, $field, $columns_end);
       $id     = $field['field_name']. '_value';
       $tz_id  = $field['field_name']. '_timezone';
       $offset = $field['field_name']. '_offset';
-      
+
       // Make sure default values in the new NULL columns get set to NULL.
 
       switch ($field['type']) {

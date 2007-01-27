@@ -1,6 +1,5 @@
 <?php
 // $Id$
-
 /**
  * @file
  * Defines a date/time field type.
@@ -194,11 +193,7 @@ function date_field_settings($op, $field) {
         '#type' => 'select',
         '#title' => t('Site timezone'),
         '#default_value' => date_get_site_timezone(),
-<<<<<<< date.module
-        '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 0))),
-=======
         '#options' => drupal_map_assoc(date_timezone_options(variable_get('date_default_timezone', 'GMT'))),
->>>>>>> 1.39
         '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
       );
       $form['#suffix'] = t('<div class="form-item"><div class="description">* The custom format, if provided, will override the selected date display. Define a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.</div></div>');
@@ -302,9 +297,6 @@ function date_formatter_setup_form($field, $delta) {
  */
 
 function date_field($op, &$node, $field, &$items, $teaser, $page) {
-<<<<<<< date.module
-
-=======
   if ($field['todate']) {
     $process = array('value', 'value2');
   }
@@ -312,22 +304,12 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
     $process = array('value');
   }
 
->>>>>>> 1.39
   include_once(drupal_get_path('module', 'date') .'/date.inc');
-<<<<<<< date.module
-
-=======
->>>>>>> 1.39
   switch ($op) {
-<<<<<<< date.module
-    case 'view':
-
-=======
 
     case 'validate':
       $formats = date_get_formats($field);
 
->>>>>>> 1.39
       foreach ($items as $delta => $item) {
 
         // if multiple dates are allowed, need to adjust validation criteria on extra fields
@@ -338,36 +320,12 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
         foreach ($process as $processed) {
           $error_field = $field['field_name'] .']['. $delta .']['. $processed;
-          switch ($field['widget']['type']) {
-            case ('date_select'):
-              $error = date_selector_validate($item[$processed], $error_field, $params);
-              if ($processed == 'value' && $field['todate'] && !$item['value']['year'] && $items[$delta]['value2']['year']) {
-                form_set_error($error_field, t("A 'From' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || $items[$delta]['value']['year']) && !$item['value2']['year'] ) {
-                form_set_error($error_field, t("A 'To' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              break;
-
-            case ('date_js'):
-              $error = date_jscalendar_validate(trim($item[$processed]), $error_field, $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
-              if ($processed == 'value' && $field['todate'] && !$item['value'] && $items[$delta]['value2']) {
-                form_set_error($error_field, t("A 'From' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || $items[$delta]['value']) && !$item['value2'] ) {
-                form_set_error($error_field, t("A 'To' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              break;
-
-            default:
-              $error = date_text_validate(trim($item[$processed]), $error_field, $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
-              if ($processed == 'value' && $field['todate'] && !$item['value'] && $items[$delta]['value2']) {
-                form_set_error($error_field, t("A 'From' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || $items[$delta]['value']) && !$item['value2'] ) {
-                form_set_error($error_field, t("A 'To' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
-              }
-              break;
+          $error = date_text_validate(trim($item[$processed]), $error_field, $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
+          if ($processed == 'value' && $field['todate'] && !$item['value']['year'] && $items[$delta]['value2']['year']) {
+            form_set_error($error_field, t("A 'From' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
+          }
+          if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || $items[$delta]['value']['year']) && !$item['value2']['year'] ) {
+            form_set_error($error_field, t("A 'To' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
           }
         }
       }
@@ -487,10 +445,6 @@ function date_widget($op, &$node, $field, &$items) {
   switch ($op) {
     case 'form':
       $form = array();
-<<<<<<< date.module
-
-      $form[$field['field_name']] = array('#tree' => TRUE);
-=======
       $form[$field['field_name']]['#tree'] = TRUE;
       $form[$field['field_name']]['#theme'] = 'date_form_fieldgroup';
 
@@ -498,16 +452,10 @@ function date_widget($op, &$node, $field, &$items) {
       if ($field['multiple'] || $field['fromto']) {
         $form[$field['field_name']]['#title'] = $field['widget']['label'];
       }
->>>>>>> 1.39
 
       $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
 
       $function = 'date_widget_' . $field['widget']['type'];
-<<<<<<< date.module
-      $max = $field['multiple'] ? 2 + sizeof($items) : 0;
-
-=======
->>>>>>> 1.39
       foreach (range(0, $max) as $delta) {
 
         $granularity = date_granularity_array($field);
@@ -588,12 +536,8 @@ function date_widget($op, &$node, $field, &$items) {
         $form[$field['field_name']][$delta]['#title'] = $field['widget']['label'];
         $form[$field['field_name']][$delta]['#delta'] = $delta;
       }
-<<<<<<< date.module
-
-=======
       $form += date_timezone_input($params);
 
->>>>>>> 1.39
       return $form;
 
     case 'process form values':
@@ -631,21 +575,6 @@ function date_widget($op, &$node, $field, &$items) {
 
       foreach ($items as $delta => $item) {
         if ($items[$delta]) {
-<<<<<<< date.module
-
-          $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-
-          switch ($field['widget']['type']) {
-            case ('date_select'):
-              $date = date_selector_make_dbdate($item['value'], $field['type'], $timezone, date_granularity_array($field));
-              break;
-            case ('date_js'):
-              $date = date_jscalendar_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-              break;
-            default:
-              $date = date_text_make_dbdate(trim($item['value']), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-              break;
-=======
           foreach ($process as $processed) {
             $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
             switch ($field['widget']['type']) {
@@ -662,7 +591,6 @@ function date_widget($op, &$node, $field, &$items) {
 
             // replace $items values with the converted date, timezone, and offset values
             $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
->>>>>>> 1.39
           }
           if ($field['tz_handling'] == 'date') {
             $add[$delta]['timezone'] = ($add[$delta]['value'] || $field['required']) ? $timezone : NULL;
@@ -670,44 +598,9 @@ function date_widget($op, &$node, $field, &$items) {
           }
         }
       }
-<<<<<<< date.module
 
-=======
-
->>>>>>> 1.39
       if ($add) $items = $add;
       return;
-<<<<<<< date.module
-
-    case 'validate':
-      $formats = date_get_formats($field);
-
-      foreach ($items as $delta => $item) {
-
-        // if multiple dates are allowed, need to adjust validation criteria on extra fields
-        // must allow for way to omit unused date fields, so dates with an empty 'year' field will not be validated or saved
-        $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
-        if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
-        $params['granularity'] = date_granularity_array($field);
-
-        switch ($field['widget']['type']) {
-          case ('date_select'):
-            $error = date_selector_validate($item['value'], $field['field_name'] .']['. $delta . '][value', $params);
-            break;
-
-          case ('date_js'):
-            $error = date_jscalendar_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
-            break;
-
-          default:
-            $error = date_text_validate(trim($item['value']), $field['field_name'] .']['. $delta . '][value', $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
-            break;
-        }
-      }
-      return;
-
-=======
->>>>>>> 1.39
   }
 }
 
@@ -755,9 +648,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
   if (empty($item['value'])) {
     return '';
   }
-<<<<<<< date.module
-
-=======
   if ($field['todate']) {
     $process = array('value', 'value2');
   }
@@ -765,7 +655,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
     $process = array('value');
   }
 
->>>>>>> 1.39
   include_once(drupal_get_path('module', 'date') .'/date.inc');
 
   $format_db_type = 'local';
@@ -803,26 +692,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
       $format_zone = $field['output_format_zone'];
       break;
   }
-<<<<<<< date.module
-
-  if ($field['tz_handling'] == 'none') {
-
-    // if no timezone handling was elected, create a date object with the database value
-    $date = date_make_date(trim($item['value']), 'none', 'local', $field['type']);
-
-  } else {
-
-    // create a date object with a gmt timezone from the database value
-    $date = date_make_date(trim($item['value']), 'GMT', 'db', $field['type']);
-    // convert the date object to the proper timezone, depending on the field's tz_handling value
-    date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
-
-  }
-
-  // display the date using the selected format
-  return date_show_date($date, $format, $format_db_type, $format_zone) . $append;
-
-=======
   $dates = array();
   foreach ($process as $processed) {
     if ($field['tz_handling'] == 'none') {
@@ -840,7 +709,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
   }
 
   return theme('date_display_combination', $field, $dates[0], $dates[1]);
->>>>>>> 1.39
 }
 
 /**

@@ -1,6 +1,5 @@
 <?php
 //$Id$
-
 /**
  * @file
  * Date/time API functions
@@ -709,11 +708,11 @@ function date_select_input($params) {
   $years_forward = $params['years_forward'];
 
   if ($formats['input']['am_pm']) {
-    $hours_format = t('h');
+    $hours_format = 'g';
     for ($i = 0; $i <= 12; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
   }
   else {
-    $hours_format = t('H');
+    $hours_format = 'G';
     for ($i = 0; $i <= 23; $i++) $hours_array[$i] = $i < 10 ? "0$i" : $i;
   }
 
@@ -740,8 +739,8 @@ function date_select_input($params) {
 
   if (!$blank_default || $params['value'] > '') {
     $year    = date_show_date($date, 'Y');
-    $mon     = date_show_date($date, 'm');
-    $mday    = date_show_date($date, 'd');
+    $mon     = date_show_date($date, 'n');
+    $mday    = date_show_date($date, 'j');
     $hours   = date_show_date($date, $hours_format);
     $minutes = (string)date_show_date($date, 'i');
     $seconds = (string)date_show_date($date, 's');
@@ -903,14 +902,9 @@ function date_text_input($params) {
   $timezone_out  = isset($params['timezone_out']) ? $params['timezone_out'] : (!$blank_default || $params['value'] ? date_get_site_timezone() : '');
   $description   = $params['description'];
   $jscalendar    = $params['jscalendar'] ? 1 : 0;
-<<<<<<< date.inc
-
-
-=======
   $opt_fields    = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
   $field_name    = $params['field_name'] ? $params['field_name'] : 'value';
 
->>>>>>> 1.30
   // create a new date object and convert it to the right timezone
 
   // create a date object with the desired date
@@ -935,37 +929,6 @@ function date_text_input($params) {
 
   // get the local iso version of the database value
   $value = date_iso2custom(date_show_value($date, 'local'), $formats['input']['text']);
-<<<<<<< date.inc
-
-  // if date-specific timezone handling was selected, provide a way for the user to enter the timezone
-  if (in_array('T', $granularity)) {
-    $form['#type'] = 'fieldset';
-    $form['#title'] = $label;
-    $form['#weight'] = $weight;
-    $form['#attributes'] = array('class' => 'container-inline-date');
-
-    $form['value'] = array(
-      '#type' => 'textfield',
-      '#title' => t('date'),
-      '#default_value' => $value,
-      '#required' => ($delta == 0) ? $required : 0,
-    );
-    if (in_array('T',$granularity)) {
-      $form['timezone'] = array(
-        '#title' => t('timezone'),
-        '#type' => 'select',
-        '#default_value' => $timezone_out ? $timezone_out : (!$blank_default ? 'GMT' : ''),
-        '#options' => $required ? date_timezone_options() : array('' => '') + date_timezone_options(),
-        '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
-        '#title' => t('timezone'),
-      );
-    } else {
-      $form['timezone'] = array(
-        '#type' => 'hidden',
-        '#value' => $timezone_out,
-      );
-    }
-=======
 
   // date-specific timezone not requested, just get date
   $form[$field_name] = array(
@@ -979,7 +942,6 @@ function date_text_input($params) {
 
   // if the jscalendar is used for input, add some attributes to be passed to the js
   // also need to adjust the date format slightly to accomodate the js capability
->>>>>>> 1.30
 
   if ($jscalendar && module_exists('jscalendar')) {
     $form[$field_name]['#attributes'] = array('class' => 'jscalendar');
@@ -1145,7 +1107,6 @@ function date_text_make_dbdate($value, $type, $format, $timezone_in = 'GMT', $gr
  *    opt_fields = an array of fields that need not be filled out, default is empty array
  */
 function date_selector_validate($value, $fieldname, $params = array()) {
-
   $type       = $params['type'] > '' ? $params['type'] : DATE_ISO;
   $required   = isset($params['required']) ? $params['required'] : 1;
   $opt_fields = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
@@ -1157,16 +1118,10 @@ function date_selector_validate($value, $fieldname, $params = array()) {
   if (($required || $value['year']) && !in_array($value['year'], $opt_fields)) {
     if (!date_part_is_valid($value['year'], 'year')) form_set_error($fieldname, t('year must be a number between %min and %max.', array('%min' => DATE_MIN_YEAR, '%max' => DATE_MAX_YEAR)));
   }
-<<<<<<< date.inc
-
-  if ($required && !in_array($value['mday'], $opt_fields)) {
-
-=======
   if (($required || $value['mon']) && !in_array($value['mon'], $opt_fields)) {
     if (!date_part_is_valid($value['mon'], 'mon')) form_set_error($fieldname, t('month must be a number between 1 and 12.'));
   }
   if (($required || $value['mday']) && !in_array($value['mday'], $opt_fields)) {
->>>>>>> 1.30
     if (!date_part_is_valid($value['mday'], 'day')) form_set_error($fieldname, t('day must be a number between 1 and 31.'));
   }
 

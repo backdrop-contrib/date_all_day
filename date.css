@@ -33,3 +33,13 @@ fieldset.container-inline-date .jscalendar-icon {
   text-indent: 0;
 }
 
+/* styles for display of dates in nodes */
+span.date-display-single {
+}
+span.date-display-start {
+}
+span.date-display-separator {
+}
+span.date-display-end {
+}
+

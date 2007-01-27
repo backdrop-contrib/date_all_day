@@ -1,5 +1,6 @@
 <?php
 //$Id$
+
 /**
  * @file
  * Date/time API functions

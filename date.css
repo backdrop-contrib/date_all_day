@@ -41,5 +41,8 @@ span.date-display-start {
 span.date-display-separator {
 }
 span.date-display-end {
+  display:block;
+  clear:left;
+  margin-left:20px;
 }
 

@@ -211,7 +211,7 @@ function date_field_settings($op, $field) {
 
     case 'save':
 
-      $options = array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'todate');
+      $options = array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'todate');
       for ($i = 0; $i <= 3; $i++) {
         switch ($i) {
         case (1):
@@ -668,7 +668,7 @@ function date_field_formatter_info() {
  * Implementation of hook_field_formatter().
  */
 function date_field_formatter($field, $item, $formatter, $node) {
-
+  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
   if (empty($item['value'])) {
     return '';
   }
@@ -828,6 +828,7 @@ function theme_date_form_fieldgroup($form) {
  *  Put them into a collapsed fieldset.
  */
 function theme_date_form_empty($contents, $title) {
+  if (empty($contents)) return '';
   $fieldset = array(
     '#title' => t('More'),
     '#collapsible' => TRUE,

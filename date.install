@@ -289,8 +289,10 @@ function date_update_7() {
       // alter the start column values to invalid values to force the new columns to be reset.
       $columns_start['value']['not null'] = TRUE;
       $columns_start['value']['default'] = 0;
-      $columns_start['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'sortable' => TRUE);
-      $columns_start['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'sortable' => TRUE);
+      if ($field['tz_handling'] == 'date') {
+        $columns_start['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'sortable' => TRUE);
+        $columns_start['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'sortable' => TRUE);
+      }
       unset($columns_start['value2']);
 
       $db_info = content_database_info($field);

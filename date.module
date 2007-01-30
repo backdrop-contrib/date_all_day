@@ -367,7 +367,7 @@ function date_widget_settings($op, $widget) {
 
   switch ($op) {
     case 'callbacks':
-      return array('default_value' => TRUE);
+      return array('default value' => CONTENT_CALLBACK_CUSTOM);
 
     case 'form':
         $form = array();
@@ -509,6 +509,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $params['label'] = t('To:');
               $params['value'] = $items[$delta]['value2'];
               $params['required'] = $field['todate'] == 'required' && ($field['value'] || $field['required']) ? TRUE : FALSE;
+              if (!$params['required'] && empty($params['value'])) $params['blank_default'] = 1;
               $form[$field['field_name']][$delta]['value2'] = date_select_input($params);
               $form[$field['field_name']][$delta]['value2']['#weight'] += .1;
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']['year']) && empty($items[$delta]['value2']['year']) ? TRUE : FALSE;
@@ -531,6 +532,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $params['label'] = t('To:');
               $params['field_name'] = 'value2';
               $params['required'] = $field['todate'] == 'required'  && ($field['value'] || $field['required']) ? TRUE : FALSE;
+              if (!$params['required'] && empty($delta['value2'])) $params['blank_default'] = 1;
               $form[$field['field_name']][$delta] += date_text_input($params);
               $form[$field['field_name']][$delta]['value2']['#weight'] += .1;
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']) && empty($items[$delta]['value2']) ? TRUE : FALSE;
@@ -584,29 +586,34 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       foreach ($items as $delta => $item) {
         if ($items[$delta]) {
           foreach ($process as $processed) {
-            $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-            switch ($field['widget']['type']) {
-              case ('date_select'):
-                $date = date_selector_make_dbdate($item[$processed], $field['type'], $timezone, date_granularity_array($field));
-                break;
-              case ('date_js'):
-                $date = date_jscalendar_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-                break;
-              default:
-                $date = date_text_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-                break;
+            if ($processed == 'value2' && $field['todate'] != 'required' && (empty($item['value2']) || empty($item['value2']['year']) || $item['value2']['year'] == 0)) {
+               // Skip empty 'to' date values.
+               $add[$delta]['value2'] = NULL;
             }
+            else {
+              $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+              switch ($field['widget']['type']) {
+                case ('date_select'):
+                  $date = date_selector_make_dbdate($item[$processed], $field['type'], $timezone, date_granularity_array($field));
+                  break;
+                case ('date_js'):
+                  $date = date_jscalendar_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+                  break;
+                default:
+                  $date = date_text_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+                  break;
+              }
 
-            // replace $items values with the converted date, timezone, and offset values
-            $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
-          }
-          if ($field['tz_handling'] == 'date') {
-            $add[$delta]['timezone'] = ($add[$delta]['value'] || $field['required']) ? $timezone : NULL;
-            $add[$delta]['offset']   = ($add[$delta]['value'] || $field['required']) ? $date->local->offset : NULL;
+              // replace $items values with the converted date, timezone, and offset values
+              $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
+            }
+            if ($field['tz_handling'] == 'date') {
+              $add[$delta]['timezone'] = ($add[$delta]['value'] || $field['required']) ? $timezone : NULL;
+              $add[$delta]['offset']   = ($add[$delta]['value'] || $field['required']) ? $date->local->offset : NULL;
+            }
           }
         }
       }
-
       if ($add) $items = $add;
       return;
   }
@@ -625,7 +632,15 @@ function date_default_value($node, $field, $items, $delta) {
   else {
     $default_date = NULL;
   }
-  return array(0 => array('value' => $default_date, 'value2' => $default_date));
+  if ($field['todate'] == 'required') {
+    return array(0 => array('value' => $default_date, 'value2' => $default_date));
+  }
+  elseif ($field['todate'] == 'optional') {
+    return array(0 => array('value' => $default_date, 'value2' => NULL));
+  }
+  else {
+    return array(0 => array('value' => $default_date));
+  }
 }
 
 /**

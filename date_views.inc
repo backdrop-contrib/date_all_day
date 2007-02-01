@@ -96,7 +96,7 @@ function date_views_filters($field) {
       'handler' => $handler,
       'type' => 'DATE',
       'extra' => array('field' => $field),
-      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: !format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('!format' => $format)),
+      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
       ),
     'year' => array(
       'name' => t('Year'),
@@ -149,8 +149,8 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $formats = date_get_formats($field);
   $db_info = content_database_info($field);
   $value   = $db_info['columns']['value']['column'];
-  $table   = $db_info['table'];
-  $offset  = intval(date_views_offset($field) + intval($filter['options']));
+  $table   = 'node_data_'. $field['field_name'];
+  $offset  = intval(date_views_offset($field) - intval($filter['options']));
 
   switch ($filterinfo['type']) {
     case ('DATE'):
@@ -161,7 +161,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
       break;
   }
   $query->ensure_table($table);
-  $query->add_where(date_sql($filterinfo['type'], $table .'.'. $value, $field_type, $offset) . $filter['operator'] . $date);
+  $query->add_where(date_sql($filterinfo['type'], $table .".". $value, $field_type, $offset) . $filter['operator'] . $date);
 
 }
 
@@ -288,7 +288,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   $db_info    = content_database_info($field);
   $value      = $db_info['columns']['value']['column'];
   $timezone   = $db_info['columns']['timezone']['column'];
-  $table      = $db_info['table'];
+  $table      = 'node_data_'. $field['field_name'];
 
   $offset = date_views_offset($field['tz_handling']);
 
@@ -605,7 +605,7 @@ function date_views_query_alter(&$query, &$view) {
       $field_type = $field['type'] == 'datestamp' ? 'int' : 'iso';
       $db_info    = content_database_info($field);
       $value      = $db_info['columns']['value']['column'];
-      $table      = $db_info['table'];
+      $table      = 'node_data_'. $field['field_name'];
       $offset     = date_views_offset($field['tz_handling']);
       if ($range  = date_views_date_range($arg)) {
         $query->ensure_table($table);
@@ -799,7 +799,7 @@ function theme_date_views_browser_period_label($period, $date) {
   else {
     $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
   }
-  return t('!period of !date', array('!period' => ucwords($period), '!date' => date_gmdate($format, $date)));
+  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_gmdate($format, $date)));
 }
 /**
  *  Theme for page navigation

@@ -490,6 +490,10 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
         $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
         $params['formats'] = date_get_formats($field);
 
+        if ($field['todate'] != 'required' && $items[$delta]['value2'] == $items[$delta]['value']) {
+          unset($items[$delta]['value2']);
+        }
+
         switch ($field['widget']['type']) {
 
           case ('date_select'):
@@ -586,9 +590,9 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       foreach ($items as $delta => $item) {
         if ($items[$delta]) {
           foreach ($process as $processed) {
-            if ($processed == 'value2' && $field['todate'] != 'required' && (empty($item['value2']) || empty($item['value2']['year']) || $item['value2']['year'] == 0)) {
-               // Skip empty 'to' date values.
-               $add[$delta]['value2'] = NULL;
+            if ($processed == 'value2' && (empty($item['value2']) || empty($item['value2']['year']))) {
+               // Handle empty 'to' date values.
+               $add[$delta]['value2'] = $add[$delta]['value'];
             }
             else {
               $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);

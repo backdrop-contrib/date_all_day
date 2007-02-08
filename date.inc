@@ -192,6 +192,10 @@ function date_gmstrftime($format, $timestamp = FALSE) {
  *  needed for ability to accomodate timezones other than server zone
  */
 function date_adj_zone($timestamp) {
+  // No timezone adjustment for very old dates.
+  if ($timestamp < 86400) {
+    return $timestamp;
+  }
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):
@@ -201,6 +205,10 @@ function date_adj_zone($timestamp) {
   }
 }
 function date_gmadj_zone($timestamp) {
+  // No timezone adjustment for very old dates.
+  if ($timestamp < 86400) {
+    return $timestamp;
+  }
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):

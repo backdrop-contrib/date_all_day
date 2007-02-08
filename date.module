@@ -508,9 +508,9 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']['year']) ? TRUE : FALSE;
             }
             else {
-              $params['label'] = t('From:');
+              $params['label'] = t('From');
               $form[$field['field_name']][$delta]['value'] = date_select_input($params);
-              $params['label'] = t('To:');
+              $params['label'] = t('To');
               $params['value'] = $items[$delta]['value2'];
               $params['required'] = $field['todate'] == 'required' && ($field['value'] || $field['required']) ? TRUE : FALSE;
               if (!$params['required'] && empty($params['value'])) $params['blank_default'] = 1;
@@ -530,11 +530,12 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']) ? TRUE : FALSE;
             }
             else {
-              $params['label'] = t('From:');
+              $params['label'] = t('From');
               $params['field_name'] = 'value';
               $form[$field['field_name']][$delta] = date_text_input($params);
-              $params['label'] = t('To:');
+              $params['label'] = t('To');
               $params['field_name'] = 'value2';
+              $params['value'] = $items[$delta]['value2'];
               $params['required'] = $field['todate'] == 'required'  && ($field['value'] || $field['required']) ? TRUE : FALSE;
               if (!$params['required'] && empty($delta['value2'])) $params['blank_default'] = 1;
               $form[$field['field_name']][$delta] += date_text_input($params);
@@ -590,7 +591,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       foreach ($items as $delta => $item) {
         if ($items[$delta]) {
           foreach ($process as $processed) {
-            if ($processed == 'value2' && (empty($item['value2']) || empty($item['value2']['year']))) {
+            if ($processed == 'value2' && empty($item['value2']) && empty($item['value2']['year'])) {
                // Handle empty 'to' date values.
                $add[$delta]['value2'] = $add[$delta]['value'];
             }
@@ -619,7 +620,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
         }
       }
       if ($add) $items = $add;
-      return;
+      return $items;
   }
 }
 

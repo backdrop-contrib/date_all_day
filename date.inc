@@ -1902,7 +1902,7 @@ function date_formats($format, $granularity) {
   }
 
   // we store the current site-wide value, in order to be able to detect its changes
-  if ($format == 'site-wide') {
+  if ($format == 'site-wide' || $format == variable_get('date_format_short', 'm/d/Y - H:i')) {
     $formats['input']['site-wide'] = $format;
   }
 

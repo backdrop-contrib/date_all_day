@@ -205,9 +205,11 @@ function date_field_settings($op, $field) {
     case 'validate':
       date_set_site_timezone($field['field_timezone']);
       if (!in_array('Y', $field['granularity'])) {
-        form_set_error($field['field_name'], t('Input granularity must include a year.'));
+        form_set_error('granularity', t('Input granularity must include a year.'));
       }
-      break;
+      if ($field['tz_handling'] != 'none' && !in_array('H', array_filter($field['granularity']))) {
+        form_set_error('tz_handling', t('Dates without hours granularity must not use any timezone handling.'));
+      }
 
     case 'save':
 
@@ -738,7 +740,7 @@ function date_field_formatter($field, $item, $formatter, $node) {
   }
   $dates = array();
   foreach ($process as $processed) {
-    if ($field['tz_handling'] == 'none') {
+    if ($field['tz_handling'] == 'none' || !in_array('H', date_granularity_array($field))) {
       // if no timezone handling was elected, create a date object with the database value
       $date = date_make_date(trim($item[$processed]), 'none', 'local', $field['type']);
     } else {

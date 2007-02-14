@@ -321,17 +321,24 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
   }
 
   if (!$error && $type == 'local' && (!$date->db->iso || $reset)) {
-
-    $date->local->timezone = $timezone;
-
-    // if the local value was submitted, go ahead and compute the db part of the date
-    date_convert_timezone($date, $date->local->timezone, 'GMT', 'db');
+    if (!date_no_conversion($date)) {
+      $date->local->timezone = $timezone;
+      // if the local value was submitted, go ahead and compute the db part of the date
+      date_convert_timezone($date, $date->local->timezone, 'GMT', 'db');
+    }
+    else {
+      $date->db = $date->local;
+    }
 
   } elseif (!$error && $type == 'db' && $date->local->iso && (!$date->local->iso || $reset)) {
-
-    // compute local value if the db value was submitted
-    // and the local value has not been created and there is a local timezone
-    date_convert_timezone($date, 'GMT', $date->local->timezone, 'local');
+    if (!date_no_conversion($date)) {
+      // compute local value if the db value was submitted
+      // and the local value has not been created and there is a local timezone
+      date_convert_timezone($date, 'GMT', $date->local->timezone, 'local');
+    }
+    else {
+      $date->local = $date->db;
+    }
   }
 
   if ($error) {
@@ -345,6 +352,28 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
 
   return TRUE;
 
+}
+
+/**
+ *  Function to identify dates that must never have timezone conversion.
+ *
+ * @param object $date
+ * @return true or false
+ */
+function date_no_conversion($date) {
+  if (isset($date->local->parts) && $date->local->parts['hours'] == 0 && $date->local->parts['minutes'] == 0 && $date->local->parts['seconds'] == 0) {
+    return TRUE;
+  }
+  elseif (isset($date->db->parts) && $date->db->parts['hours'] == 0 && $date->db->parts['minutes'] == 0 && $date->db->parts['seconds'] == 0) {
+    return TRUE;
+  }
+  elseif (isset($date->local->parts['year']) && $date->local->parts['year'] < 1970) {
+    return TRUE;
+  }
+  elseif (isset($date->db->parts['year']) && $date->db->parts['year'] < 1970) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
@@ -1565,7 +1594,7 @@ function date_text2iso($text, $format) {
   }
 
   // if custom parsing failed, try strtotime conversion
-  $iso = date_gmdate(DATE_STRING_ISO, strtotime($text));
+  $iso = date_gmdate(DATE_STRING_ISO, strtotime($text .'UTC'));
 
   if (date_part_is_valid(date_iso_year($iso), 'year')) {
 

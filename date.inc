@@ -518,24 +518,51 @@ function date_show_value($date, $type = 'db', $format = DATE_ISO) {
 function date_show_date($date, $format_string, $type = 'local', $zone_display = '') {
 
   if ($zone_display) {
-
     $append = date_append_zone($date, $zone_display);
-
   }
-
-  // using gmdate so php won't try to adjust value for server timezone
-  // needed because date object has already made necessary timezone adjustments
-
   if ($type == 'db' || (!$date->local->timestamp && $date->local->timestamp != 0)) {
-
-    return date_gmdate($format_string, date_fuzzy_stamp($date->db)) . $append;
+    return date_format_date($format_string, date_fuzzy_stamp($date->db)) . $append;
 
   } elseif ($date->local->timestamp || $date->local->timestamp == 0) {
-
-    return date_gmdate($format_string, date_fuzzy_stamp($date->local)) . $append;
-
+    return date_format_date($format_string, date_fuzzy_stamp($date->local)) . $append;
   }
 }
+
+/**
+ * Format date
+ *
+ * Translate month and day text in date formats.
+ * Using gmdate so php won't try to adjust value for server timezone.
+ * Needed because date object has already made necessary timezone adjustments.
+ *
+ * Similar to core format_date function but will work on old, pre-1970 dates
+ * if adodb library is available.
+ */
+function date_format_date($format, $timestamp) {
+
+  $max = strlen($format);
+  $date = '';
+  for ($i = 0; $i < $max; $i++) {
+    $c = $format[$i];
+    if (strpos('AaDFlM', $c) !== FALSE) {
+      $date .= t(date_gmdate($c, $timestamp));
+    }
+    else if (strpos('BdgGhHiIjLmnsStTUwWYyz', $c) !== FALSE) {
+      $date .= date_gmdate($c, $timestamp);
+    }
+    else if ($c == 'r') {
+      $date .= date_format_date($timestamp, 'D, d M Y H:i:s');
+    }
+    else if ($c == '\\') {
+      $date .= $format[++$i];
+    }
+    else {
+      $date .= $c;
+    }
+  }
+  return $date;
+}
+
 
 /**
  *  Create a valid timestamp that can be used for date formatting

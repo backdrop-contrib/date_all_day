@@ -309,31 +309,45 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
   include_once(drupal_get_path('module', 'date') .'/date.inc');
   switch ($op) {
-
     case 'validate':
       $formats = date_get_formats($field);
-
       foreach ($items as $delta => $item) {
-
-        // if multiple dates are allowed, need to adjust validation criteria on extra fields
-        // must allow for way to omit unused date fields, so dates with an empty 'year' field will not be validated or saved
-        $params['required'] = ($field['required'] && $delta == 0) ? 1 : 0;
-        if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
-        $params['granularity'] = date_granularity_array($field);
-
-        foreach ($process as $processed) {
-          $error_field = $field['field_name'] .']['. $delta .']['. $processed;
-          $error = date_text_validate(trim($item[$processed]), $error_field, $field['type'], $formats['input']['text'], $params['required'], date_granularity_array($field));
-          if ($processed == 'value' && $field['todate'] && !$item['value']['year'] && $items[$delta]['value2']['year']) {
+         foreach ($process as $processed) {
+           $error_field = $field['field_name'] .']['. $delta .']['. $processed;
+           if ($processed == 'value' && $field['todate'] && !$item['value']['year'] && $items[$delta]['value2']['year']) {
             form_set_error($error_field, t("A 'From' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
           }
           if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || $items[$delta]['value']['year']) && !$item['value2']['year'] ) {
             form_set_error($error_field, t("A 'To' date is required for the %delta value of %field", array('%delta', intval($delta + 1), '%field', $field['field_name'])));
           }
+
+          if ($item[$processed] || date_is_required($field, $processed, $delta, $item['value'], $item['value2'])) {
+            $date = date_make_date($item[$processed], $field['timezone'], 'db', $field['type']);
+            if (!$date->db->parts['year']) {
+              form_set_error($error_field, t('%name %delta %column is not a valid date.', array(
+                '%name' => $field['widget']['label'],
+                '%delta' => $field['multiple'] ? $delta : '',
+                '%column' => ($processed == 'value2' ? t('To') : (sizeof($process) == 2 ? t('From') : '')))
+                ));
+            }
+          }
         }
       }
       return;
   }
+}
+
+/**
+ * Logic for telling when a field value is required.
+ */
+function date_is_required($field, $column, $delta, $value1, $value2) {
+  if ($column == 'value2' && ($field['todate'] == 'required' && ($value1 || $delta == 0))) {
+    return TRUE;
+  }
+  elseif ($column == 'value' && ($field['required'] || $delta == 0)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
@@ -514,7 +528,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $form[$field['field_name']][$delta]['value'] = date_select_input($params);
               $params['label'] = t('To');
               $params['value'] = $items[$delta]['value2'];
-              $params['required'] = $field['todate'] == 'required' && ($field['value'] || $field['required']) ? TRUE : FALSE;
+              $params['required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
               if (!$params['required'] && empty($params['value'])) $params['blank_default'] = 1;
               $form[$field['field_name']][$delta]['value2'] = date_select_input($params);
               $form[$field['field_name']][$delta]['value2']['#weight'] += .1;
@@ -538,7 +552,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $params['label'] = t('To');
               $params['field_name'] = 'value2';
               $params['value'] = $items[$delta]['value2'];
-              $params['required'] = $field['todate'] == 'required'  && ($field['value'] || $field['required']) ? TRUE : FALSE;
+              $params['required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
               if (!$params['required'] && empty($delta['value2'])) $params['blank_default'] = 1;
               $form[$field['field_name']][$delta] += date_text_input($params);
               $form[$field['field_name']][$delta]['value2']['#weight'] += .1;
@@ -593,7 +607,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       foreach ($items as $delta => $item) {
         if ($items[$delta]) {
           foreach ($process as $processed) {
-            if ($processed == 'value2' && empty($item['value2']) || ($item['value2'] && empty($item['value2']['year']))) {
+            if ($processed == 'value2' && (empty($item['value2']) && empty($item['value2']['year']))) {
                // Handle empty 'to' date values.
                $add[$delta]['value2'] = $add[$delta]['value'];
             }

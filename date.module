@@ -566,9 +566,10 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
         // Add other info to the form that the themes will need.
         $form[$field['field_name']][$delta]['#title'] = $field['widget']['label'];
         $form[$field['field_name']][$delta]['#delta'] = $delta;
-      }
-      $form += date_timezone_input($params);
 
+        $form[$field['field_name']][$delta]['timezone'] = date_timezone_input($params);
+
+      }
       return $form;
 
     case 'process form values':

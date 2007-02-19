@@ -344,7 +344,7 @@ function date_is_required($field, $column, $delta, $value1, $value2) {
   if ($column == 'value2' && ($field['todate'] == 'required' && ($value1 || $delta == 0))) {
     return TRUE;
   }
-  elseif ($column == 'value' && ($field['required'] || $delta == 0)) {
+  elseif ($column == 'value' && ($field['required'] && $delta == 0)) {
     return TRUE;
   }
   return FALSE;

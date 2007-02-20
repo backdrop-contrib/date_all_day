@@ -111,9 +111,11 @@ function date_getdate($timestamp) {
  *  We need a gmgetdate function, which does not exist
  *  because the getdate function creates an array where date parts and timestamp don't match
  *  getdate date parts are timezone-adjusted to the server zone and timestamp is not
- *  we need an array where date parts match the timestamp
+ *  we need an array where date parts match the timestamp.
+ *  Check for empty timestamps to make sure empty values don't display as 1/1/1970.
  */
 function date_gmgetdate($timestamp) {
+  if (!$timestamp) return '';
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):
@@ -128,6 +130,7 @@ function date_gmgetdate($timestamp) {
   }
 }
 function date_date($format, $timestamp = FALSE) {
+  if (!$timestamp) return '';
   date_load_library();
   switch (DATE_LIBRARY) {
   case ('ADODB'):
@@ -137,6 +140,7 @@ function date_date($format, $timestamp = FALSE) {
   }
 }
 function date_gmdate($format, $timestamp = FALSE) {
+  if (!$timestamp) return '';
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):
@@ -168,6 +172,7 @@ function date_gmmktime($array) {
   }
 }
 function date_strftime($format, $timestamp = FALSE) {
+  if (!$timestamp) return '';
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):
@@ -177,6 +182,7 @@ function date_strftime($format, $timestamp = FALSE) {
  }
 }
 function date_gmstrftime($format, $timestamp = FALSE) {
+  if (!$timestamp) return '';
   date_load_library();
   switch (DATE_LIBRARY) {
     case ('ADODB'):
@@ -276,20 +282,20 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
 
   // store the starting value of the date object in case there are errors
   $old_date = $date;
-
   $error = array();
+  if (trim($value) === 'ERROR') {
+  	$error[] = 'value';
+  }
 
-  if ($format == DATE_UNIX) {
+  if (!$error && $format == DATE_UNIX) {
 
     $date->$type->timestamp = $value;
-
     $parts = date_unix2array($value);
     if ($parts === 'ERROR') {
       $error[] = 'unix2array';
     } else {
       $date->$type->parts = $parts;
     }
-
     $iso = date_unix2iso($value);
     if ($iso === 'ERROR') {
       $error[] = 'unix2iso';
@@ -297,17 +303,15 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
       $date->$type->iso = $iso;
     }
 
-  } elseif ($format == DATE_ISO) {
+  } elseif (!$error && $format == DATE_ISO) {
 
     $date->$type->iso = $value;
-
     $parts = date_iso2array($value);
     if ($parts === 'ERROR') {
       $error[] = 'iso2array';
     } else {
       $date->$type->parts = $parts;
     }
-
     $unix = date_iso2unix($value);
     if ($unix === 'ERROR') {
       $error[] = 'iso2unix';
@@ -316,9 +320,7 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
     }
 
   } else {
-
     $error[] = $format;
-
   }
 
   if (!$error && $type == 'local' && (!$date->db->iso || $reset)) {
@@ -350,9 +352,7 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
     }
     return FALSE;
   }
-
   return TRUE;
-
 }
 
 /**
@@ -1033,6 +1033,7 @@ function date_text_input($params) {
  *       Y => year, M => month, D => day, H => hours, N => minutes, S => seconds, T => timezone
  *    required = 1 if the field must contain a valid date, default is 1
  *    blank_default = 1 to show an empty date field with blank values, 0 to fill with current date, default is 0
+ *    weight = the form weight
  */
 function date_timezone_input($params) {
   // set the variables
@@ -1042,14 +1043,15 @@ function date_timezone_input($params) {
   $timezone_out  = isset($params['timezone_out']) ? $params['timezone_out'] : (!$blank_default || $params['value'] ? date_get_site_timezone() : '');
   $opt_fields    = is_array($params['opt_fields']) ? $params['opt_fields'] : array();
   $granularity   = is_array($params['granularity']) ? $params['granularity'] : array('M', 'D', 'Y');
+  $weight        = $params['weight'];
+  $label         = $params['label'] ? $params['label'] . ' ' : '';
   if (in_array('T',$granularity)) {
     $form['timezone'] = array(
-      '#title' => t('timezone'),
+      '#title' =>  $label . t('timezone'),
       '#type' => 'select',
       '#default_value' => $timezone_out ? $timezone_out : (!$blank_default ? 'GMT' : ''),
       '#options' => $required ? date_timezone_options() : array('' => '') + date_timezone_options(),
       '#required' => ($required && !in_array('timezone', $opt_fields)) ? $required : 0,
-      '#title' => t('timezone'),
       );
   } else {
     $form['timezone'] = array(
@@ -1058,6 +1060,7 @@ function date_timezone_input($params) {
     );
   }
   $form['#theme'] = 'date_form_timezone';
+  $form['#weight'] = $weight;
   return $form;
 }
 
@@ -1692,7 +1695,6 @@ function date_unix_seconds($unix) {
  *  @param $format could be 'array', DATE_UNIX, or DATE_ISO
  */
 function date_is_valid($value, $format) {
-
   switch ($format) {
   case ('array'):
     if (!date_part_is_valid($value['year'], 'year') || !date_part_is_valid($value['mon'], 'mon') || !date_part_is_valid($value['mday'], 'mday')) return FALSE;

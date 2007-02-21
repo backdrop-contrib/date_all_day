@@ -150,7 +150,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $db_info = content_database_info($field);
   $value   = $db_info['columns']['value']['column'];
   $table   = 'node_data_'. $field['field_name'];
-  $offset  = intval(date_views_offset($field) - intval($filter['options']));
+  $offset = date_views_offset($field) ." - ". intval($filter['options']);
 
   switch ($filterinfo['type']) {
     case ('DATE'):
@@ -184,14 +184,13 @@ function date_views_handler_filter_date_value_form($field) {
 }
 
 /**
- *  Return field or value for a timezone offset
- *  TODO - this needs work, date-specific timezone handling will not work right in views now
- *  views needs a field in the database that has the right offset that can be joined into the view
- *  probably will need to alter the table to add another column to store offset
+ *  Return field or value for a timezone offset.
  */
 function date_views_offset($field) {
   switch ($field['tz_handling']) {
   case ('date'):
+    $offset = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_offset';
+    break;
   case ('site'):
     $offset = variable_get('date_default_timezone', 0);
     break;
@@ -290,7 +289,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   $timezone   = $db_info['columns']['timezone']['column'];
   $table      = 'node_data_'. $field['field_name'];
 
-  $offset = date_views_offset($field['tz_handling']);
+  $offset = date_views_offset($field);
 
   switch ($op) {
     case 'summary':
@@ -606,7 +605,7 @@ function date_views_query_alter(&$query, &$view) {
       $db_info    = content_database_info($field);
       $value      = $db_info['columns']['value']['column'];
       $table      = 'node_data_'. $field['field_name'];
-      $offset     = date_views_offset($field['tz_handling']);
+      $offset     = date_views_offset($field);
       if ($range  = date_views_date_range($arg)) {
         $query->ensure_table($table);
         $query->add_field('nid', 'node');

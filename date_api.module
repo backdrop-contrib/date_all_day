@@ -1,0 +1,10 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * A module that will make the date API available to other modules with no dependencies on CCK.
+ * To use it, install the module, then add the following code wherever date api functions are needed:
+ *
+ * include_once(drupal_get_path('date_api') .'/date.inc');
+ */

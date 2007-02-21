@@ -90,15 +90,12 @@ function date_field_info() {
  */
 function date_field_settings($op, $field) {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   switch ($op) {
   case 'form':
-      if (!module_exists('event')) {
-        include_once(drupal_get_path('module', 'date') .'/date_timezones.inc');
-      } else {
-        include_once(drupal_get_path('module', 'event') .'/event_timezones.inc');
-      }
+      include_once(DATE_TIMEZONES .'/date_timezones.inc');
+
       $form = array();
       $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
       $form['input'] = array(
@@ -307,7 +304,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
   else {
     $process = array('value');
   }
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   switch ($op) {
     case 'validate':
       $formats = date_get_formats($field);
@@ -380,7 +377,7 @@ function date_widget_info() {
  */
 function date_widget_settings($op, $widget) {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   switch ($op) {
     case 'callbacks':
@@ -453,7 +450,7 @@ function date_widget_settings($op, $widget) {
  */
 function date_widget($op, &$node, $field, &$items, $delta = NULL) {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   if ($field['todate']) {
     $process = array('value', 'value2');
@@ -659,7 +656,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
  * @todo expand on this in the future
  */
 function date_default_value($node, $field, $items, $delta) {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   if ($field['required']) {
     $default_date = $field['type'] == 'datestamp' ? time() : date_unix2iso(time());
   }
@@ -717,7 +714,7 @@ function date_field_formatter_info() {
  * Implementation of hook_field_formatter().
  */
 function date_field_formatter($field, $item, $formatter, $node) {
-  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
+  drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
   if (empty($item['value'])) {
     return '';
   }
@@ -728,7 +725,7 @@ function date_field_formatter($field, $item, $formatter, $node) {
     $process = array('value');
   }
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $format_db_type = 'local';
 

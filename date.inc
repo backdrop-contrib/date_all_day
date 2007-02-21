@@ -30,6 +30,7 @@
 define('DATE_ISO',  'date');
 define('DATE_UNIX', 'datestamp');
 define('DATE_STRING_ISO', "Y-m-d\TH:i:s");
+define('DATE_API_PATH', drupal_get_path('module', 'date_api'));
 
 /**
  *  identify the file to be used for timezone information
@@ -39,7 +40,7 @@ define('DATE_STRING_ISO', "Y-m-d\TH:i:s");
  *  this large file will be included only when needed to reduce overhead
  */
 if (!module_exists('event')) {
-  define('DATE_TIMEZONES', drupal_get_path('module', 'date') .'/date_timezones.inc');
+  define('DATE_TIMEZONES', DATE_API .'/date_timezones.inc');
 } else {
   define('DATE_TIMEZONES', drupal_get_path('module', 'event') .'/event_timezones.inc');
 }
@@ -55,7 +56,7 @@ if (!module_exists('event')) {
  *
  *  external library will be used if available, otherwise api will use standard php date handling functions
  */
-if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
+if (file_exists(DATE_API .'/adodb-time.inc.php')) {
 
   define('DATE_LIBRARY',  'ADODB');
   define('DATE_MAX_YEAR', 3000);
@@ -66,11 +67,11 @@ if (file_exists(drupal_get_path('module', 'date') .'/adodb-time.inc.php')) {
   // to fix this, alter the path to the file below to point to the path used by the program that uses the file last
   //
   // the standard path to this file
-  //     drupal_get_path('module', 'date') .'/adodb-time.inc.php';
+  //     DATE_API .'/adodb-time.inc.php';
   // an example alternate path if the gallery2 program is installed (gallery2 uses adodb, too)
   //     strtolower($_SERVER["DOCUMENT_ROOT"]) .'/gallery2/lib/adodb/adodb-time.inc.php';
 
-  define('DATE_LIBRARY_FILE', drupal_get_path('module', 'date') .'/adodb-time.inc.php');
+  define('DATE_LIBRARY_FILE', DATE_API .'/adodb-time.inc.php');
 
 } else {
 
@@ -751,7 +752,7 @@ function date_get_timezone($handling, $timezone = '') {
  */
 function date_select_input($params) {
 
-  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
+  drupal_add_css(DATE_API .'/date.css');
 
   // set the variables
   $label         = $params['label'] ? $params['label'] : t('Date');

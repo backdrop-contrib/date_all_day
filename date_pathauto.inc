@@ -13,7 +13,7 @@
  * as a component of paths.
  */
 function date_pathauto_node($op, $node = NULL) {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   switch ($op) {
     case 'placeholders':
       $placeholders = array();

@@ -68,7 +68,7 @@ function date_views_filters($field) {
       $ymd_handler = 'date_views_timestamp_handler_filter_ymd';
       break;
   }
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $formats = date_get_formats($field);
   $format  = $formats['input']['desc'];
@@ -144,7 +144,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
 
   if (empty($filter['value'])) return;
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   $field   = $filterinfo['extra']['field'];
   $formats = date_get_formats($field);
   $db_info = content_database_info($field);
@@ -169,7 +169,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
  * Provide a form gadget for dates.
  */
 function date_views_handler_filter_date_value_form($field) {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $formats = date_get_formats($field);
   $format  = $formats['input']['jscal'] ? $formats['input']['jscal'] : '';
@@ -280,7 +280,7 @@ function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $ar
 function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
   $field_name = trim($name[1]);
@@ -396,7 +396,7 @@ function date_views_date_range($arg) {
  */
 function date_range_value($value, $value_type = 'min') {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $now   = date_date(DATE_STRING_ISO, time());
   if (trim($value) == '@' || trim($value) == '') return $now;
@@ -438,7 +438,7 @@ function date_range_value($value, $value_type = 'min') {
  */
 function date_week_value($value) {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $parts = explode('-W', $value);
   $year = $parts[0];
@@ -471,7 +471,7 @@ function date_week_value($value) {
  */
 function date_plus_period($value) {
 
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   // min date is whatever is to the left of the period sign, defaults to current date
   $value = str_replace('--P', 'P', $value);
@@ -667,7 +667,7 @@ function date_views_browser_period($period = 'month') {
  *  Format an argument for the date range
  */
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   switch ($period) {
   case ('week'):
     return date_gmdate('Y-m-d', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
@@ -691,7 +691,7 @@ function date_views_browser_period_label($arg = NULL, $period = 'month') {
  *  Find the timestamp for the beginning of the period of the analyzed date arg
  */
 function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   // get the range of dates
   $range = date_views_date_range($arg);
@@ -740,7 +740,7 @@ function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
  *  Navigation links for the full view
  */
 function date_views_browser_navigation($view, $period) {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $path = explode('/', $view->url);
   $pos = sizeof($path);
@@ -791,7 +791,7 @@ function date_views_browser_navigation($view, $period) {
  *  Theme for the current period label name
  */
 function theme_date_views_browser_period_label($period, $date) {
-  include_once(drupal_get_path('module', 'date') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   // use the m/d/Y part of the preferred short date format
   if ($period != 'hour') {
     $format = array_shift(explode(' ', variable_get('date_format_short', 'm/d/Y - H:i')));
@@ -805,7 +805,7 @@ function theme_date_views_browser_period_label($period, $date) {
  *  Theme for page navigation
  */
 function theme_date_views_browser_navigation($label, $period, $prev, $next, $view) {
-    drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
+    drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
     $output  = '<div class="book-navigation date-browser-navigation">';
     $output .= '<div class="page-links">';
     $output .= l(t('‹ prev !period  ', array('!period' => $period)), $prev, array('class' => 'page-previous'));
@@ -829,7 +829,7 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
 
   $teasers = true;
   $links   = true;
-  drupal_add_css(drupal_get_path('module', 'date') .'/date.css');
+  drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
 
   $date_views_browser_views = date_views_browser_get_views();
   $period = $date_views_browser_views[$view->name]->options;

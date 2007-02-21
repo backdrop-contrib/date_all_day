@@ -59,7 +59,7 @@ function date_field_settings($op, $field) {
 
   switch ($op) {
   case 'form':
-      include_once(DATE_TIMEZONES .'/date_timezones.inc');
+      include_once(DATE_TIMEZONES);
 
       $form = array();
       $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';

@@ -35,7 +35,7 @@ function date_views_filters($field) {
         '<=' => t('less than or equal to'),
         );
 
-  return array(
+  $filters = array(
     'default' => array(
       'name' => t('Date'),
       'operator' => $operator,
@@ -77,50 +77,56 @@ function date_views_filters($field) {
       'extra' => array('field' => $field),
       'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
       ),
+    );
 
-     // Differentiate from and to dates with a prefix that is not likely to ever be used normally.
-    'to|default' => array(
-      'name' => t('To Date'),
-      'operator' => $operator,
-      'value' => date_views_handler_filter_date_value_form($field),
-      'option' => 'string',
-      'handler' => $handler,
-      'type' => 'DATE',
-      'extra' => array('field' => $field),
-      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
-      ),
-    'to|year' => array(
-      'name' => t('to Year'),
-      'operator' => $operator,
-      'handler' => $handler,
-      'option' => 'string',
-      'type' => 'YEAR',
-      'extra' => array('field' => $field),
-      'help' => t('Filter by year. Enter \'now\' to use the current year.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
-      ),
-    'to|month' => array(
-      'name' => t('To Month'),
-      'operator' => $operator,
-      'list' => $months,
-      'list-type' => 'select',
-      'handler' => $handler,
-      'option' => 'string',
-      'type' => 'MONTH',
-      'extra' => array('field' => $field),
-      'help' => t('Filter by month. Enter \'now\' to use the current month.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
-      ),
-    'to|day' => array(
-      'name' => t('To Day'),
-      'operator' => $operator,
-      'list' => $days,
-      'list-type' => 'select',
-      'handler' => $handler,
-      'option' => 'string',
-      'type' => 'DAY',
-      'extra' => array('field' => $field),
-      'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
-      ),
-   );
+    // Differentiate from and to dates with a prefix that is not likely to ever be used normally.
+    if ($field['todate']) {
+      $filters2 = array(
+        'to|default' => array(
+          'name' => t('To Date'),
+          'operator' => $operator,
+          'value' => date_views_handler_filter_date_value_form($field),
+          'option' => 'string',
+          'handler' => $handler,
+          'type' => 'DATE',
+          'extra' => array('field' => $field),
+          'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
+          ),
+        'to|year' => array(
+          'name' => t('To Year'),
+          'operator' => $operator,
+          'handler' => $handler,
+          'option' => 'string',
+          'type' => 'YEAR',
+          'extra' => array('field' => $field),
+          'help' => t('Filter by year. Enter \'now\' to use the current year.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+          ),
+        'to|month' => array(
+          'name' => t('To Month'),
+          'operator' => $operator,
+          'list' => $months,
+          'list-type' => 'select',
+          'handler' => $handler,
+          'option' => 'string',
+          'type' => 'MONTH',
+          'extra' => array('field' => $field),
+          'help' => t('Filter by month. Enter \'now\' to use the current month.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+          ),
+        'to|day' => array(
+          'name' => t('To Day'),
+          'operator' => $operator,
+          'list' => $days,
+          'list-type' => 'select',
+          'handler' => $handler,
+          'option' => 'string',
+          'type' => 'DAY',
+          'extra' => array('field' => $field),
+          'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+          ),
+       );
+       $filters += $filters2;
+    }
+    return $filters;
 }
 
 /**

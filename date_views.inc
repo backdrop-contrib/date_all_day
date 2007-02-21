@@ -77,6 +77,49 @@ function date_views_filters($field) {
       'extra' => array('field' => $field),
       'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
       ),
+
+     // Differentiate from and to dates with a prefix that is not likely to ever be used normally.
+    'to|default' => array(
+      'name' => t('To Date'),
+      'operator' => $operator,
+      'value' => date_views_handler_filter_date_value_form($field),
+      'option' => 'string',
+      'handler' => $handler,
+      'type' => 'DATE',
+      'extra' => array('field' => $field),
+      'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
+      ),
+    'to|year' => array(
+      'name' => t('to Year'),
+      'operator' => $operator,
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'YEAR',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by year. Enter \'now\' to use the current year.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
+    'to|month' => array(
+      'name' => t('To Month'),
+      'operator' => $operator,
+      'list' => $months,
+      'list-type' => 'select',
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'MONTH',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by month. Enter \'now\' to use the current month.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
+    'to|day' => array(
+      'name' => t('To Day'),
+      'operator' => $operator,
+      'list' => $days,
+      'list-type' => 'select',
+      'handler' => $handler,
+      'option' => 'string',
+      'type' => 'DAY',
+      'extra' => array('field' => $field),
+      'help' => t('Filter by day. Enter \'now\' to use the current day.  You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. '),
+      ),
    );
 }
 
@@ -92,24 +135,34 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
 
   if (empty($filter['value'])) return;
 
+  $totype = $filterinfo['type'];
+  $type = substr($totype, 0, 3) == 'to|' ? substr($totype, 3) : $totype;
+  if ($totype == $type) {
+    $value = $filter['value'];
+  }
+  else {
+    $value = $filter['value2'];
+  }
+
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+
   $field   = $filterinfo['extra']['field'];
   $formats = date_get_formats($field);
   $db_info = content_database_info($field);
   $value   = $db_info['columns']['value']['column'];
   $table   = 'node_data_'. $field['field_name'];
-  $offset = date_views_offset($field) ." - ". intval($filter['options']);
+  $offset  = date_views_offset($field) . ($filter['options'] ? " - ". intval($filter['options']) : '');
 
   switch ($filterinfo['type']) {
     case ('DATE'):
-      $date    = $filter['value'] == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
+      $date    = $value == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
       break;
     default:
-      $date = $filter['value'] == 'now' ? date_sql($filterinfo['type'], "NOW()", $field_type, '') : $filter['value'];
+      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, '') : $value;
       break;
   }
   $query->ensure_table($table);
-  $query->add_where(date_sql($filterinfo['type'], $table .".". $value, $field_type, $offset) . $filter['operator'] . $date);
+  $query->add_where(date_sql($type, $table .".". $value, $field_type, $offset) . $filter['operator'] . $date);
 
 }
 
@@ -167,20 +220,38 @@ function date_views_arguments() {
     switch ($field['type']) {
     case 'date':
       $argument = array();
-      $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
+      $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_argument_range_handler';
       $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
+
+      if ($field['todate']) {
+        $argument = array();
+        $argument['name'] = $field_types[$field['type']]['label'] .t(': To '). $field['widget']['label'] .' ('. $field['field_name'] .')';
+        $argument['handler'] = 'date_views_argument_range_handler';
+        $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
+        $argument['option'] = 'date_range_arg_options';
+        $arguments['content: to|'. $field['field_name']] = $argument;
+      }
       break;
 
     case 'datestamp':
       $argument = array();
-      $argument['name'] = $field_types[$field['type']]['label'] .' '. $field['widget']['label'] .' ('. $field['field_name'] .')';
+      $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_timestamp_argument_range_handler';
       $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
       $argument['option'] = 'date_range_arg_options';
       $arguments['content: '. $field['field_name']] = $argument;
+
+      if ($field['todate']) {
+        $argument = array();
+        $argument['name'] = $field_types[$field['type']]['label'] .t(': To '). $field['widget']['label'] .' ('. $field['field_name'] .')';
+        $argument['handler'] = 'date_views_timestamp_argument_range_handler';
+        $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
+        $argument['option'] = 'date_range_arg_options';
+        $arguments['content: to|'. $field['field_name']] = $argument;
+      }
       break;
     }
   }
@@ -230,10 +301,18 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
-  $field_name = trim($name[1]);
+  $tofield_name = trim($name[1]);
+  $field_name = substr($tofield_name, 0, 3) == 'to|' ? substr($tofield_name, 3) : $tofield_name;
+  if ($field_name == $tofield_name) {
+    $value = 'value';
+  }
+  else {
+    $value = 'value2';
+  }
+
   $field      = content_fields($field_name);
   $db_info    = content_database_info($field);
-  $value      = $db_info['columns']['value']['column'];
+  $value      = $db_info['columns'][$value]['column'];
   $timezone   = $db_info['columns']['timezone']['column'];
   $table      = 'node_data_'. $field['field_name'];
 

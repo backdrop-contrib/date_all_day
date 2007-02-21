@@ -2056,14 +2056,58 @@ function date_date2strftime_replace() {
 }
 
 /**
+ *  Server timezone adjustment.
+ *
+ *  Used to compute default timezone adjustment made by SQL server
+ *  so server adjustment can be removed and replaced with correct timezone
+ *  adjustment values.
+ *
+ *  @return amount in seconds that server adjusts for timezone.
+ */
+function date_server_zone_adj() {
+  static $server_zone_adj;
+  if (!isset($server_zone_adj)) {
+    switch ($db_type) {
+      case ('mysql'):
+      case ('mysqli'):
+        // Newest MYSQL versions allow us to set the server to GMT to eliminate adjustments.
+        if ($GLOBALS['db_type'] == 'mysqli' || version_compare(mysql_get_server_info(), '4.1.3', '>=')) {
+          db_query("SET @@session.time_zone = '+00:00'");
+          $server_zone_adj = 0;
+        }
+        // In 4.1.1+ we can use difference between NOW() and UTC_TIMESTAMP().
+        elseif (version_compare(mysql_get_server_info(), '4.1.1', '>=')) {
+          $server_zone_adj = db_result(db_query("SELECT NOW() - UTC_TIMESTAMP()"));
+        }
+        // There is no MYSQL query to produce the adjustment amount in older
+        // MYSQL versions, so estimate it using the php timezone adjustment.
+        else {
+          $server_zone_adj = date('Z');
+        }
+        break;
+      case ('postgres'):
+        // The TIMEZONE function returns the timezone adjustment in seconds.
+        $server_zone_adj = db_result(db_query("TIMEZONE"));
+        break;
+    }
+    // If no value got set by this point,
+    // fall back to using php timezone adjustment as an estimate.
+    if (!isset($server_zone_adj)) {
+      $server_zone_adj = date('Z');
+    }
+  }
+  return $server_zone_adj;
+}
+
+/**
  *  Cross-database date SQL wrapper function
- *  allows use of normalized native date functions in both mysql and postgres
- *  designed to be extensible to other databases
+ *  allows use of normalized native date functions in both mysql and postgres.
+ *  Designed to be extensible to other databases.
  *
  *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
  *  @param $field - the name of the date field to be analyzed
  *  @param $date_type - the type of date field being analyzed, int or iso
- *  @param $offset - timezone offset in seconds, either a value or fieldname
+ *  @param $offset - timezone offset in seconds, can be either a value or fieldname
  *  @param $offset_op - the operation to perform on the offset, + or -
  *  @return a SQL statement appropriate for the $db_type
  *
@@ -2074,38 +2118,50 @@ function date_date2strftime_replace() {
 function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offset_op = '+') {
   global $db_type;
 
-  // Make sure later MYSQL versions make no timezone conversions.
-  if (in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
-    static $already_set = false;
-    if (!$already_set) {
-      if ($GLOBALS['db_type'] == 'mysqli' || version_compare(mysql_get_server_info(), '4.1.3', '>=')) {
-        db_query("SET @@session.time_zone = '+00:00'");
-      }
-      $already_set = true;
-    }
-  }
-
-  if ($date_type == 'NOW') {
-    // set up an initial value for now
-    $field = 'NOW()';
-  }
-  elseif ($date_type == 'int' && $field) {
-    // convert integer field value to native date format
+  // NOW() is timezone-adjusted by OS, adjust only for the server adj,
+  // correct offset will get added back in later step.
+  if ($date_type == 'NOW' || $field == 'NOW()') {
     switch ($db_type) {
-     case ('mysql'):
-     case ('mysqli'):
-       $field = "FROM_UNIXTIME($field)";
-       break;
-     case ('postgres'):
-       $field = "TIMESTAMP($field::ABSTIME::INT4)";
-       break;
+      case ('mysql'):
+      case ('mysqli'):
+        if (date_server_zone_adj()) {
+          $field = "(NOW() - INTERVAL (". date_server_zone_adj() ." SECOND)";
+        }
+        break;
+      case ('postgres'):
+        if (date_server_zone_adj()) {
+          $field = "(NOW() - INTERVAL (". date_server_zone_adj() ." SECONDS)";
+        }
+        break;
      }
   }
-  elseif ($field != 'NOW()') {
-     // get rid of the 'T' in ISO dates to match native date field
-     $field = " REPLACE($field,'T',' ')";
+  // Convert integer field value to native date format.
+  // Since FROM_UNIXTIME() and TIMESTAMP() are timezone adjusted,
+  // remove server adj, correct offset will get added back in later step.
+  elseif ($date_type == 'int' && $field) {
+    switch ($db_type) {
+      case ('mysql'):
+      case ('mysqli'):
+        if (date_server_zone_adj()) {
+          $field = "($field - INTERVAL ". date_server_zone_adj() ." SECOND)";
+        }
+        $field = "FROM_UNIXTIME($field)";
+        break;
+      case ('postgres'):
+        if (date_server_zone_adj()) {
+          $field = "($field - INTERVAL ". date_server_zone_adj() ." SECONDS)";
+        }
+        $field = "TIMESTAMP($field::ABSTIME::INT4)";
+        break;
+    }
   }
-  // adjust date for timezone offset
+  // Get rid of the 'T' in ISO dates to match native date field.
+  // This makes it possible to use SQL date functions on the value.
+  elseif ($date_type == 'iso' && $field) {
+    $field = " REPLACE($field,'T',' ')";
+  }
+
+  // Now apply requested offset to the adjusted query field.
   if ($offset) {
     switch ($db_type) {
     case ('mysql'):
@@ -2117,9 +2173,9 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       break;
     }
   }
-  // return requested sql
-  // note there is no space after FROM to avoid db_rewrite problems
-  // see http://drupal.org/node/79904
+  // Return requested sql.
+  // Note there is no space after FROM to avoid db_rewrite problems
+  // see http://drupal.org/node/79904.
   switch ($result_type) {
   case ('NOW'):
   case ('DATE'):

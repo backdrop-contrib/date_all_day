@@ -121,10 +121,11 @@ function date_gmgetdate($timestamp) {
   switch (DATE_LIBRARY) {
     case ('ADODB'):
       // Must use the private function to force it to GMT.
-      $array    = _adodb_getdate(date_adj_zone($timestamp), FALSE, TRUE);
+      $array    = _adodb_getdate($timestamp, FALSE, TRUE);
       $array[0] = $timestamp;
       return $array;
     default:
+      // The date_adj_zone function corrects for timezone adjustment getdate will add.
       $array    = getdate(date_adj_zone($timestamp));
       $array[0] = $timestamp;
       return $array;

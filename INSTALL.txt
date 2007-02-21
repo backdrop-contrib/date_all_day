@@ -22,3 +22,5 @@ Installation instructions:
    
 6) If you already have date fields created from an earlier version, be sure to
    edit each one and save your changes. There may be new options available that need to be set.
+
+Documentation is available at http://drupal.org/node/92460.

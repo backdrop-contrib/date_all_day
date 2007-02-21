@@ -4,58 +4,6 @@
 /**
  * Views field filters
  */
-function date_views_help() {
-  return t('<h2>Date Views</h2>
-        <h3>Date Range Argument</h3>
-        <p>
-        A flexible date range argument is provided in views.
-        The date range argument is based on the ISO 8601 week, duration, and time interval standards.
-        The argument expects a value like 2006-01-01T12:30:00--2006-01-15, or 2006-W24, or @P1W.
-        Separate from and to dates with a separator, a double hyphen (--).
-        The from and to dates in argument are ISO dates, but parts can be omitted,
-        and will be assumed to be the first possible (for the from date)
-        or the last possible (for the to date) value in that time period.
-        The \'to\' portion of the argument can be eliminated if it is the same as the \'from\' portion.
-        Use @ instead of a date to substitute in the current date and time.
-        </p>
-        <p>Examples of views date range arguments:</p>
-        <table>
-        <tr><th>Argument</th><th>Resulting Query Range</th></tr>
-        <tr><td>2006-W24</td><td>24th ISO week in 2006</td></tr>
-        <tr><td>2006</td><td>the whole year of 2006</td></tr>
-        <tr><td>2006-03</td><td>the whole month of Mar 2006</td></tr>
-        <tr><td>2006-02--2007-03-15</td><td>Feb 1 2006 to Mar 15 2006</td></tr>
-        <tr><td>2006-08-31T14:00:00P2H</td><td>the 14th to 16th hours of Aug 8 2006</td></tr>
-        <tr><td>@--2006-12-31</td><td>NOW to 2006-12-31T23:59:59</td></tr>
-        <tr><td>@P3H</td><td>NOW to three hours from now</td></tr>
-        <tr><td>@P1Y90D</td><td>NOW to 1 year and 90 days from now</td></tr>
-        <tr><td>2006-03-05P1W</td><td>the 1 week period starting Mar 5 2006</td></tr>
-        <tr><td>2006-01P3M</td><td>the 3 month period starting Jan 2006</td></tr>
-        </table>
-        <h3>Date Browser</h3>
-        <p>A Date Browser plugin is available to add back/next navigation links to a view that uses the
-        date range argument. Also adds "week of XXX", "month of XXX" headings to views and blocks
-        and defaults blocks and views w/out arguments to current period to start paging.
-        </p>
-        <p>To use the Date Browser:</p>
-        <ul>
-        <li>Create a view, and enable the Date: date range argument for the date field you want
-        to page on. Set the argument option to year, month, day, week, or hour, depending
-        on the increment you want the browser to use as a period.</li>
-        <li>Do not add any other arguments to the view. Filters are fine, though.</li>
-        <li>In the page section of the view, select the option to display the view as Date: Date Browser.
-        (instead of teaser or table). Make sure display as a page is checked, and provide a url.</li>
-        <li>Be sure to put something in "empty text" for the page. This is what will be displayed
-        if you navigate to a period that has no results.</li>
-        <li>Go to the view url. When no date is selected, the view will automatically display the
-        current period (year, month, day, week, or hour), with back/next links to page through
-        data by the selected period.</li>
-        <li>You can also choose to use the Date Browser for block views. That will default the block
-        view to display the current period, and provide a link to the full view.</li>
-        <li>The page, navigation, label, and block displays are themed, and can be customized by overriding
-        the provided themes.</li>');
-}
-
 function date_views_filters($field) {
 
   switch ($field['type']) {

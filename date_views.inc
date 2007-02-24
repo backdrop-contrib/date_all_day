@@ -145,9 +145,11 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $type = substr($totype, 0, 3) == 'to|' ? substr($totype, 3) : $totype;
   if ($totype == $type) {
     $value = $filter['value'];
+    $column = 'value';
   }
   else {
     $value = $filter['value2'];
+    $column = 'value2';
   }
 
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
@@ -155,20 +157,27 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $field   = $filterinfo['extra']['field'];
   $formats = date_get_formats($field);
   $db_info = content_database_info($field);
-  $value   = $db_info['columns']['value']['column'];
   $table   = 'node_data_'. $field['field_name'];
+  $table_field   = $db_info['columns'][$column]['column'];
+
+  // The correct offset is the timezone offset for the site or field, if any
+  // adjusted by any value added in the filter options field.
   $offset  = date_views_offset($field) . ($filter['options'] ? " - ". intval($filter['options']) : '');
 
+  // When using NOW(), must adjust out the server zone adj which may not match
+  // the offset we really want, and add back the right offset.
+  // This will be necessary any time the server timezone does not match the site or date zone
+  // because the server is going to adjust the value of NOW() for the server timezone.
   switch ($filterinfo['type']) {
     case ('DATE'):
-      $date    = $value == 'now' ? "NOW()" : "'". str_replace('T', ' ', date_custom2iso($filter['value'], $formats['input']['text'])) ."'";
+      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, $offset) : "'". str_replace('T', ' ', date_custom2iso($value, $formats['input']['text'])) ."'";
       break;
     default:
-      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, '') : $value;
+      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, $offset) : $value;
       break;
   }
   $query->ensure_table($table);
-  $query->add_where(date_sql($type, $table .".". $value, $field_type, $offset) . $filter['operator'] . $date);
+  $query->add_where(date_sql($type, $table .".". $table_field, $field_type, $offset) .' '. $filter['operator'] .' '. $date);
 
 }
 

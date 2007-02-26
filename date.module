@@ -26,6 +26,13 @@ function date_init() {
     if (module_exists('pathauto')) {
       include_once('./'. drupal_get_path('module', 'date') .'/date_pathauto.inc');
     }
+    // TODO this can be removed later. Added to ease transition to new schema that requires Date API.
+    // Needed because non-existant functions will cause fatal error that prevents ability to get back
+    // to module installation page.
+    if (!module_exists('date_api')) {
+      module_disable(array('date'));
+      drupal_set_message(t('Date API module is not installed. Date module was disabled.'));
+    }
   }
 }
 

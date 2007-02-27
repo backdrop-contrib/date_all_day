@@ -729,6 +729,7 @@ function date_field_formatter($field, $item, $formatter, $node) {
       $format_zone = '';
       $append = 'Z';
       $format_db_type = 'db';
+      $field['tz_handling'] == 'none';
       break;
     default:
       $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
@@ -736,9 +737,11 @@ function date_field_formatter($field, $item, $formatter, $node) {
       break;
   }
   $dates = array();
+  $dates['formatter'] = $formatter;
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
-      $dates[] = NULL;
+      $dates[$processed]['formatted'] = NULL;
+      $dates[$processed]['object'] = NULL;
     }
     else {
       // create a date object with a gmt timezone from the database value
@@ -750,10 +753,11 @@ function date_field_formatter($field, $item, $formatter, $node) {
         date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
       }
       // display the date using the selected format
-      $dates[] = date_show_date($date, $format, $format_db_type, $format_zone) . $append;
+      $dates[$processed]['formatted'] = date_show_date($date, $format, $format_db_type, $format_zone) . $append;
+      $dates[$processed]['object'] = $date;
     }
   }
-  return theme('date_display_combination', $field, $dates[0], $dates[1]);
+  return theme('date_display_combination', $field, $dates, $node);
 }
 
 /**
@@ -874,9 +878,72 @@ function theme_date_form_combination($form) {
 }
 
 /**
- *  Theme from/to date combination in the view,
+ *  Theme from/to date combination in the view.
+ *
+ *  @param $field = the field settings
+ *  @param $node = node information, this is not always available and not
+ *     always the full node, it depends on what value was provided to the formatter.
+ *  @param $dates - an array of date information like:
+ *     $dates['formatter'] = 'default';
+ *     $dates['value']['formatted'] = 'February 15, 2007 2:00 pm';
+ *     $dates['value']['object'] = the date object for 'value';
+ *     $dates['value2']['formatted'] = 'February 15, 2007 6:00 pm';
+ *     $dates['value2']['object'] = the date object for 'value2';
+ *
+ *  Each date object looks like:
+ *       date [object] => stdClass Object (
+ *         [db] => stdClass Object (  // the value stored in the database
+ *           [timestamp] => 1171569600
+ *           [iso] => 2007-02-15T20:00:00
+ *           [parts] => Array (
+ *             [seconds] => 0
+ *             [minutes] => 0
+ *             [hours] => 20
+ *             [mday] => 15
+ *             [wday] => 4
+ *             [mon] => 2
+ *             [year] => 2007
+ *             [yday] => 45
+ *             [weekday] => Thursday
+ *             [month] => February
+ *             [0] => 1171569600
+ *           )
+ *         )
+ *         [local] => stdClass Object (  // the local representation of that value
+ *           [timestamp] => 1171548000
+ *           [iso] => 2007-02-15T14:00:00
+ *           [parts] => Array (
+ *             [seconds] => 0
+ *             [minutes] => 0
+ *             [hours] => 14
+ *             [mday] => 15
+ *             [wday] => 4
+ *             [mon] => 2
+ *             [year] => 2007
+ *             [yday] => 45
+ *             [weekday] => Thursday
+ *             [month] => February
+ *             [0] => 1171548000
+ *           )
+ *           [timezone] => US/Central
+ *           [offset] => -21600
+ *         )
+ *      )
  */
-function theme_date_display_combination($field, $date1, $date2 = NULL) {
+function theme_date_display_combination($field, $dates, $node = NULL) {
+  // Add a wrapper for anyone using the older version of this theme from a custom module or theme.
+  // This is just to ease the transition, the wrapper will be removed later.
+  if (!is_array($dates)) {
+    $date1 = $dates;
+    $date2 = $node;
+  }
+  // This is the way it should really work, get the formatted dates,
+  // or optionally use values from $dates['value']['object'] and
+  // $dates['value2']['object'] to display the date differently.
+  else {
+    $date1 = $dates['value']['formatted'];
+    $date2 = $dates['value2']['formatted'];
+  }
   if ($date1 == $date2 || empty($date2)) {
     return '<span class="date-display-single">'. $date1 .'</span>';
   }

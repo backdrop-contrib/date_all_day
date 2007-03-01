@@ -303,7 +303,7 @@ function date_ical_import($filename) {
 }
 
 function _date_ical_tz($tz) {
-  include_once(drupal_get_path('module', 'date_api') .'/date_timezones.inc');
+  include_once(CALENDAR_PATH .'/date_timezones.inc');
   foreach (event_get_timezones() as $delta => $zone) {
     if ($tz == $zone['timezone']);
     return (object) $zone;

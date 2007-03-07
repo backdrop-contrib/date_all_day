@@ -2148,7 +2148,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
         }
                 break;
       case ('pgsql'):
-        $field = "$field::ABSTIME::INT4";
+        $field = "$field::ABSTIME";
         if (date_server_zone_adj()) {
           $field = "($field - INTERVAL '". date_server_zone_adj() ." SECONDS')";
         }

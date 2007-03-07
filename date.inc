@@ -2085,9 +2085,9 @@ function date_server_zone_adj() {
           $server_zone_adj = date('Z');
         }
         break;
-      case ('postgres'):
-        // The TIMEZONE function returns the timezone adjustment in seconds.
-        $server_zone_adj = db_result(db_query("TIMEZONE"));
+      case ('pgsql'):
+        // EXTRACT TIMEZONE returns the timezone adjustment in seconds.
+        $server_zone_adj = db_result(db_query("SELECT EXTRACT('TIMEZONE' FROM NOW())"));
         break;
     }
     // If no value got set by this point,
@@ -2128,9 +2128,9 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
           $field = "(NOW() - INTERVAL ". date_server_zone_adj() ." SECOND)";
         }
         break;
-      case ('postgres'):
+      case ('pgsql'):
         if (date_server_zone_adj()) {
-          $field = "(NOW() - INTERVAL ". date_server_zone_adj() ." SECONDS)";
+          $field = "(NOW() - INTERVAL '". date_server_zone_adj() ." SECONDS')";
         }
         break;
      }
@@ -2147,10 +2147,10 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
           $field = "($field - INTERVAL ". date_server_zone_adj() ." SECOND)";
         }
                 break;
-      case ('postgres'):
-        $field = "TIMESTAMP($field::ABSTIME::INT4)";
+      case ('pgsql'):
+        $field = "$field::ABSTIME::INT4";
         if (date_server_zone_adj()) {
-          $field = "($field - INTERVAL ". date_server_zone_adj() ." SECONDS)";
+          $field = "($field - INTERVAL '". date_server_zone_adj() ." SECONDS')";
         }
         break;
     }
@@ -2167,8 +2167,8 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
     case ('mysqli'):
       $field = "($field $offset_op INTERVAL ($offset) SECOND)";
       break;
-    case ('postgres'):
-      $field = "($field $offset_op INTERVAL ($offset) SECONDS)";
+    case ('pgsql'):
+      $field = "($field $offset_op INTERVAL '$offset SECONDS')";
       break;
     }
   }
@@ -2197,7 +2197,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       case ('mysqli'):
         // WEEK using arg 3 in mysql should return the same value as postgres EXTRACT
         return "WEEK($field, 3)";
-      case ('postgres'):
+      case ('pgsql'):
         return "EXTRACT(WEEK FROM($field))";
     }
   case ('DOW'):
@@ -2207,7 +2207,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
         // mysql returns 1 for Sunday through 7 for Saturday
         // php date functions and postgres use 0 for Sunday and 6 for Saturday
         return "INTEGER(DAYOFWEEK($field) - 1)";
-      case ('postgres'):
+      case ('pgsql'):
         return "DOW($field)";
     }
   case ('DOY'):
@@ -2215,7 +2215,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       case ('mysql'):
       case ('mysqli'):
         return "DAYOFYEAR($field)";
-      case ('postgres'):
+      case ('pgsql'):
         return "DOY($field)";
     }
   }
@@ -2234,7 +2234,7 @@ function date_sql_concat($array) {
     case ('mysql'):
     case ('mysqli'):
       return "CONCAT(". implode(",", $array) .")";
-    case ('postgres'):
+    case ('pgsql'):
       return implode(" || ", $array);
   }
 }

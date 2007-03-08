@@ -160,25 +160,20 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   $table   = 'node_data_'. $field['field_name'];
   $table_field   = $db_info['columns'][$column]['column'];
 
-  // The correct offset is the timezone offset for the site or field, if any
-  // adjusted by any value added in the filter options field.
-  $offset  = date_views_offset($field) . ($filter['options'] ? " - ". intval($filter['options']) : '');
-
   // When using NOW(), must adjust out the server zone adj which may not match
   // the offset we really want, and add back the right offset.
   // This will be necessary any time the server timezone does not match the site or date zone
   // because the server is going to adjust the value of NOW() for the server timezone.
   switch ($filterinfo['type']) {
     case ('DATE'):
-      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, $offset) : "'". str_replace('T', ' ', date_custom2iso($value, $formats['input']['text'])) ."'";
+      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : "'". str_replace('T', ' ', date_custom2iso($value, $formats['input']['text'])) ."'";
       break;
     default:
-      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, $offset) : $value;
+      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
       break;
   }
   $query->ensure_table($table);
-  $query->add_where(date_sql($type, $table .".". $table_field, $field_type, $offset) .' '. $filter['operator'] .' '. $date);
-
+  $query->add_where(date_sql($type, $table .".". $table_field, $field_type, date_views_offset($field)) .' '. $filter['operator'] .' '. $date);
 }
 
 /**

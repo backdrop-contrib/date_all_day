@@ -138,9 +138,9 @@ function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query)
   return date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
 function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
-  if (empty($filter['value'])) return;
-
+  // See what kind of filter we're working with.
   $totype = $filterinfo['type'];
   $type = substr($totype, 0, 3) == 'to|' ? substr($totype, 3) : $totype;
   if ($totype == $type) {
@@ -151,8 +151,22 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
     $value = $filter['value2'];
     $column = 'value2';
   }
-
-  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+  // Do some validation of input values before creating any SQL.
+  switch ($type) {
+    case 'year':
+    case 'month':
+    case 'day':
+      if (empty($filter[$value]) || $filter[$value] != 'now' || !is_numeric($filter[$value])) return;
+      break;
+    default:
+      if ($field_type == 'int' && (empty($filter[$value]) || !($filter[$value] == 'now' || date_is_valid($filter[$value], DATE_UNIX)))) {
+        return;
+      }
+      elseif (empty($filter[$value]) || !($filter[$value] == 'now' || date_is_valid($filter['value'], DATE_ISO))) {
+        return;
+      }
+      break;
+  }
 
   $field   = $filterinfo['extra']['field'];
   $formats = date_get_formats($field);

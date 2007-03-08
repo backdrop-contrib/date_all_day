@@ -96,7 +96,7 @@ function date_field_settings($op, $field) {
         '#type' => 'select',
         '#title' => t('To Date'),
         '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
-        '#description' => t('Display a matching second date field as a \'To\' date. If marked \'Optional\' field will be presented but not required. If marked \'Required\' the \'To\' date will be required if the \'From\' date is required or filled in.'),
+        '#description' => t('Display a matching second date field as a \'To date\'. If marked \'Optional\' field will be presented but not required. If marked \'Required\' the \'To date\' will be required if the \'From date\' is required or filled in.'),
         '#default_value' => $field['todate'] ? $field['todate'] : '',
         );
       $form['input']['advanced'] = array(
@@ -285,10 +285,10 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
           $error_field = $field['field_name'] .']['. $delta .']['. $processed;
           $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
           if ($processed == 'value' && $field['todate'] && !date_is_valid($item['value'], $field['type']) && (date_is_valid($item['value2'], $field['type']))) {
-            form_set_error($error_field, t("A 'From' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
+            form_set_error($error_field, t("A 'From date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
           }
           if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || date_is_valid($item['value'], $field['type']) && !date_is_valid($item['value2'], $field['type']))) {
-            form_set_error($error_field, t("A 'To' date is required for %field %delta", array('%delta', $field['multiple'] ? intval($delta + 1) : '', '%field', $field['widget']['label'])));
+            form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta', $field['multiple'] ? intval($delta + 1) : '', '%field', $field['widget']['label'])));
           }
 
           if ($item[$processed] || date_is_required($field, $processed, $delta, $item['value'], $item['value2'])) {
@@ -297,7 +297,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
               form_set_error($error_field, t('%name %delta %column is not a valid date.', array(
                 '%name' => $field['widget']['label'],
                 '%delta' => $field['multiple'] ? $delta : '',
-                '%column' => ($processed == 'value2' ? t('To') : (sizeof($process) == 2 ? t('From') : '')))
+                '%column' => ($processed == 'value2' ? t('To date') : (sizeof($process) == 2 ? t('From date') : '')))
                 ));
             }
           }
@@ -492,9 +492,9 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']['year']) ? TRUE : FALSE;
             }
             else {
-              $params['label'] = t('From');
+              $params['label'] = t('From date');
               $form[$field['field_name']][$delta]['value'] = date_select_input($params);
-              $params['label'] = t('To');
+              $params['label'] = t('To date');
               $params['value'] = $items[$delta]['value2'];
               $params['required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
               if (!$params['required'] && empty($params['value'])) $params['blank_default'] = 1;
@@ -514,10 +514,10 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
               $form[$field['field_name']][$delta]['#empty'] = empty($items[$delta]['value']) ? TRUE : FALSE;
             }
             else {
-              $params['label'] = t('From');
+              $params['label'] = t('From date');
               $params['field_name'] = 'value';
               $form[$field['field_name']][$delta] = date_text_input($params);
-              $params['label'] = t('To');
+              $params['label'] = t('To date');
               $params['field_name'] = 'value2';
               $params['value'] = $items[$delta]['value2'];
               $params['required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
@@ -809,7 +809,7 @@ function date_columns($field) {
   } elseif ($field['type'] == 'datestamp') {
     $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'default' => NULL, 'sortable' => TRUE);
   }
-  // If a second date is needed for 'To' date, just make a copy of the first one.
+  // If a second date is needed for 'To date', just make a copy of the first one.
   if ($field['todate']) {
     $db_columns['value2'] = $db_columns['value'];
   }

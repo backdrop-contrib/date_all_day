@@ -2247,7 +2247,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
         // php date functions and postgres use 0 for Sunday and 6 for Saturday
         return "INTEGER(DAYOFWEEK($field) - 1)";
       case ('pgsql'):
-        return "DOW($field)";
+        return "EXTRACT (DOW FROM($field))";
     }
   case ('DOY'):
     switch ($db_type) {
@@ -2255,7 +2255,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       case ('mysqli'):
         return "DAYOFYEAR($field)";
       case ('pgsql'):
-        return "DOY($field)";
+        return "EXTRACT (DOY FROM ($field))";
     }
   }
 }

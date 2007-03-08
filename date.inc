@@ -1692,6 +1692,40 @@ function date_unix_seconds($unix) {
 }
 
 /**
+ *  Compute min and max dates for an ISO week
+ *
+ *  based on ISO weeks, which start counting on the first Monday in a week that
+ *  has at least 4 days in the current year
+ *
+ *  @value - an argument in the format 2006-W20 (year + -W + week number)
+ *  @return an array of ISO dates representing the first and last day in the week
+ */
+function date_iso_week($value) {
+
+  $parts = explode('-W', $value);
+  echo $value;
+
+  $year = $parts[0];
+  // subtract 1 from week number so we don't double-count the final week
+  $weeks = intval($parts[1] - 1);
+  // get a unix value for the first day of the year
+  $first_day_of_year = date_iso2unix($year .'-01-01T00:00:00');
+
+  // get to the day of week of the first day of the year, 0 is Sunday
+  $dow   = date_gmdate('w', $first_day_of_year);
+  // ISO week counts actual first week only if it has at least 4 days in it
+  if ($dow > 2) $weeks += 1;
+  // calc adjustment from first day of year dow back or forward to Monday
+  $shift = intval((1 - $dow) * 86400);
+  // the day we want is $weeks away from first day of year, adjusted to the Monday of that week by $shift
+  $first_day_of_week = $first_day_of_year + ($weeks * 604800) + $shift;
+  $last_day_of_week  = $first_day_of_week + 604800 - 1;
+  // convert the unix dates back to iso
+  return array(date_unix2iso($first_day_of_week), date_unix2iso($last_day_of_week));
+
+}
+
+/**
  *  Functions to test the validity of various date parts
  *
  *  @param $format could be 'array', DATE_UNIX, or DATE_ISO

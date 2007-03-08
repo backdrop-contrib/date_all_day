@@ -1698,16 +1698,11 @@ function date_unix_seconds($unix) {
  *  has at least 4 days in the current year
  *
  *  @value - an argument in the format 2006-W20 (year + -W + week number)
- *  @return an array of ISO dates representing the first and last day in the week
+ *  @return an array of timestamps representing the first and last day in the week
  */
-function date_iso_week($value) {
-
-  $parts = explode('-W', $value);
-  echo $value;
-
-  $year = $parts[0];
+function date_iso_week_range($year, $week) {
   // subtract 1 from week number so we don't double-count the final week
-  $weeks = intval($parts[1] - 1);
+  $weeks = intval($week - 1);
   // get a unix value for the first day of the year
   $first_day_of_year = date_iso2unix($year .'-01-01T00:00:00');
 
@@ -1721,8 +1716,18 @@ function date_iso_week($value) {
   $first_day_of_week = $first_day_of_year + ($weeks * 604800) + $shift;
   $last_day_of_week  = $first_day_of_week + 604800 - 1;
   // convert the unix dates back to iso
-  return array(date_unix2iso($first_day_of_week), date_unix2iso($last_day_of_week));
+  return array($first_day_of_week, $last_day_of_week);
+}
 
+/**
+ * Find the last day of a month
+ *
+ * @param mixed $month
+ * @param mixed $year
+ * @return last day of the specified month and year
+ */
+function date_last_day_of_month($month, $year) {
+  return date_gmdate('t', date_mktime(array('year' => intval($year), 'mon' => intval($month), 'mday' => 1)));
 }
 
 /**

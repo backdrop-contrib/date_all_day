@@ -928,8 +928,10 @@ function date_select_input($params) {
   }
   $form[] = array(
     '#theme' => 'date_form_select_description',
-    '#value' =>  $description,
     '#weight' => 11,
+    'description' => array(
+      '#value' =>  $description,
+     ),
   );
   return $form;
 }
@@ -2320,7 +2322,7 @@ function theme_date_form_select($form) {
 function theme_date_form_select_description($form) {
   $description = drupal_render($form);
   if ($description) {
-    return '<br class="clear" /><div class="form-item"><div class="description">'.$description.'</div></div>';
+    return '<br class="clear" /><div class="description"><div class="form-item">'.$description.'</div></div>';
   }
   return '';
 }

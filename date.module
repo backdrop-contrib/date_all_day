@@ -773,7 +773,7 @@ function date_granularity_array($field) {
 }
 
 function date_get_formats($field) {
-  if ($cached = cache_get('date_formats:'. $field['field_name'] .':'.$field['type_name'], 'cache')) {
+  if ($cached = cache_get('date_formats:'. $field['field_name'] .':'.$field['type_name'], 'cache') && $cached->data) {
     $formats = unserialize($cached->data);
 
     // are we up-to-date with current site-wide format ?

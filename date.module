@@ -33,6 +33,7 @@ function date_init() {
       module_disable(array('date'));
       drupal_set_message(t('Date API module is not installed. Date module was disabled.'));
     }
+    drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
   }
 }
 
@@ -65,7 +66,7 @@ function date_field_settings($op, $field) {
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
 
   switch ($op) {
-  case 'form':
+    case 'form':
       include_once(DATE_TIMEZONES);
 
       $form = array();
@@ -285,7 +286,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
           $error_field = $field['field_name'] .']['. $delta .']['. $processed;
           $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
           if ($processed == 'value' && $field['todate'] && !date_is_valid($item['value'], $field['type']) && (date_is_valid($item['value2'], $field['type']))) {
-            form_set_error($error_field, t("A 'From date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
+            form_set_error($error_field, t("A 'From date' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
           }
           if ($processed == 'value2' && $field['todate'] == 'required' && ($field['required'] || date_is_valid($item['value'], $field['type']) && !date_is_valid($item['value2'], $field['type']))) {
             form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta', $field['multiple'] ? intval($delta + 1) : '', '%field', $field['widget']['label'])));
@@ -672,12 +673,20 @@ function date_field_formatter_info() {
       'label' => t('ISO'),
       'field types' => array('date', 'datestamp'),
     ),
+    'timestamp' => array(
+      'label' => t('Timestamp'),
+      'field types' => array('date', 'datestamp'),
+    ),
     'feed' => array(
       'label' => t('Feed'),
       'field types' => array('date', 'datestamp'),
     ),
     'ical' => array(
       'label' => t('iCal'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'format_interval' => array(
+      'label' => t('As Time Ago'),
       'field types' => array('date', 'datestamp'),
     ),
   );
@@ -687,60 +696,87 @@ function date_field_formatter_info() {
  * Implementation of hook_field_formatter().
  */
 function date_field_formatter($field, $item, $formatter, $node) {
-  drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
-  if (empty($item['value'])) {
-    return '';
-  }
+  // Get the complete date objects for the from and to dates in this field.
+  $dates = date_field_object($field, $item);
+  $dates['formatter'] = $formatter;
+  return theme('date_formatter', $dates, $field, $formatter, $node);
+}
+
+/**
+ * Use the Date API to return the formatted value for a date object.
+ *
+ * @param object $date - a date object
+ * @param string $format - the date format string
+ * @param string $format_db_type - the part of the date object to format, can be 'local' or 'db'
+ * @param string $format_zone - a format string for the timezone, can be '', '0000', '00:00', or 'name'
+ * @param string $append - a string to append to the end of the formatted date
+ * @return the formatted date value
+ */
+function date_format_item(&$date, $format, $format_db_type = 'local', $format_zone = '', $append = '') {
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+  return date_show_date($date, $format, $format_db_type, $format_zone) . $append;
+}
+
+/**
+ * Use the Date API to get an object representation of a date field
+ *
+ * @param array $field
+ * @param array $item - a node field item, like $node->myfield[0]
+ *
+ * @return array of From and To date objects
+ *  Each date object looks like:
+ *       date [object] => stdClass Object (
+ *         [db] => stdClass Object (  // the value stored in the database
+ *           [timestamp] => 1171569600
+ *           [iso] => 2007-02-15T20:00:00
+ *           [parts] => Array (
+ *             [seconds] => 0
+ *             [minutes] => 0
+ *             [hours] => 20
+ *             [mday] => 15
+ *             [wday] => 4
+ *             [mon] => 2
+ *             [year] => 2007
+ *             [yday] => 45
+ *             [weekday] => Thursday
+ *             [month] => February
+ *             [0] => 1171569600
+ *           )
+ *         )
+ *         [local] => stdClass Object (  // the local representation of that value
+ *           [timestamp] => 1171548000
+ *           [iso] => 2007-02-15T14:00:00
+ *           [parts] => Array (
+ *             [seconds] => 0
+ *             [minutes] => 0
+ *             [hours] => 14
+ *             [mday] => 15
+ *             [wday] => 4
+ *             [mon] => 2
+ *             [year] => 2007
+ *             [yday] => 45
+ *             [weekday] => Thursday
+ *             [month] => February
+ *             [0] => 1171548000
+ *           )
+ *           [timezone] => US/Central
+ *           [offset] => -21600
+ *         )
+ *      )
+ */
+function date_field_object($field, $item) {
+  $dates = array();
+  if (!is_array($field) || !is_array($item)) return $dates;
+
+  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   if ($field['todate']) {
     $process = array('value', 'value2');
   }
   else {
     $process = array('value');
   }
-
-  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
-
-  $format_db_type = 'local';
-
-  switch (strtolower($formatter)) {
-    case ('long'):
-      $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : ($field['output_format_date_long'] ? $field['output_format_date_long'] : variable_get('date_format_long',  'l, F j, Y - H:i'));
-      $format_zone = $field['output_format_zone_long'];
-      break;
-    case ('medium'):
-      $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : ($field['output_format_date_medium'] ? $field['output_format_date_medium'] : variable_get('date_format_medium',  'D, m/d/Y - H:i'));
-      $format_zone = $field['output_format_zone_medium'];
-      break;
-    case ('short'):
-      $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : ($field['output_format_date_short'] ? $field['output_format_date_short'] : variable_get('date_format_short', 'm/d/Y - H:i'));
-      $format_zone = $field['output_format_zone_short'];
-      break;
-    case ('iso'):
-      $format = DATE_STRING_ISO;
-      $format_zone = '00:00';
-      break;
-    case ('feed'):
-      $format = 'D, j M Y H:i:s';
-      $format_zone = '0000';
-      break;
-    case ('ical'):
-      // for ical, send the db value with Z appended to indicate it is the gmt value
-      $format = 'Ymd\THis';
-      $format_zone = '';
-      $append = 'Z';
-      $format_db_type = 'db';
-      $field['tz_handling'] == 'none';
-      break;
-    default:
-      $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
-      $format_zone = $field['output_format_zone'];
-      break;
-  }
-  $dates = array();
-  $dates['formatter'] = $formatter;
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
-      $dates[$processed]['formatted'] = NULL;
       $dates[$processed]['object'] = NULL;
     }
     else {
@@ -752,12 +788,10 @@ function date_field_formatter($field, $item, $formatter, $node) {
       } else {
         date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
       }
-      // display the date using the selected format
-      $dates[$processed]['formatted'] = date_show_date($date, $format, $format_db_type, $format_zone) . $append;
       $dates[$processed]['object'] = $date;
     }
   }
-  return theme('date_display_combination', $field, $dates, $node);
+  return $dates;
 }
 
 /**
@@ -823,6 +857,8 @@ function date_columns($field) {
 
 /**
  *  Themes for date input and display
+ * @addtogroup themeable
+ * @{
  */
 
 /**
@@ -878,72 +914,121 @@ function theme_date_form_combination($form) {
 }
 
 /**
+ *  Theme date formatter.
+ *
+ *  @param $dates = an array of the field From and To date objects, as created by date_field_object().
+ *  @param $field = the field settings
+ *  @param $node = node information, this is not always available and not
+ *     always the full node, it depends on what value was provided to the formatter.
+ *     Only the nid is always guaranteed to be available.
+ *
+ *  Useful values:
+ *    $field['type_name'] - the content type
+ *    $field['type'] - the field type
+ *    $node->nid - the node nid, get other node values using node_load($node->nid)
+ *    $dates['value']['object']->local->timestamp - the local timestamp for the From date
+ *    $dates['value2']['object']->local->timestamp - the local timestamp for the To date
+ *    $dates['value']['object']->db->timestamp - the timestamp of the From date database (GMT) value
+ *    $dates['value2']['object']->db->timestamp - the timestamp of the To date database (GMT) value
+ *
+ */
+function theme_date_formatter($dates, $field, $formatter, $node) {
+
+  // Most formats will be applied to the local value of the date,
+  // but use this value to identify those that should format the db part instead.
+  $format_db_type = 'local';
+
+  switch (strtolower($formatter)) {
+    case 'format_interval':
+      // Format interval has its own theme.
+       return theme('date_format_interval', $field, $dates, $node);
+    case 'timestamp':
+      $format = '';
+      break;
+    case ('long'):
+      $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : ($field['output_format_date_long'] ? $field['output_format_date_long'] : variable_get('date_format_long',  'l, F j, Y - H:i'));
+      $format_zone = $field['output_format_zone_long'];
+      break;
+    case ('medium'):
+      $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : ($field['output_format_date_medium'] ? $field['output_format_date_medium'] : variable_get('date_format_medium',  'D, m/d/Y - H:i'));
+      $format_zone = $field['output_format_zone_medium'];
+      break;
+    case ('short'):
+      $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : ($field['output_format_date_short'] ? $field['output_format_date_short'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format_zone = $field['output_format_zone_short'];
+      break;
+    case ('iso'):
+      $format = DATE_STRING_ISO;
+      $format_zone = '00:00';
+      break;
+    case ('feed'):
+      $format = 'D, j M Y H:i:s';
+      $format_zone = '0000';
+      break;
+    case ('ical'):
+      // for ical, send the db value with Z appended to indicate it is the gmt value
+      $format = 'Ymd\THis';
+      $format_zone = '';
+      $append = 'Z';
+      $format_db_type = 'db';
+      $field['tz_handling'] == 'none';
+      break;
+    default:
+      $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format_zone = $field['output_format_zone'];
+      break;
+  }
+ // Iterate through the From and To dates to format them, using the format selected above.
+  if ($field['todate']) {
+    $process = array('value', 'value2');
+  }
+  else {
+    $process = array('value');
+  }
+  foreach ($process as $processed) {
+    $date = $dates[$processed]['object'];
+    if (empty($date->$format_db_type)) {
+      $dates[$processed]['formatted'] = NULL;
+    }
+    else {
+      switch ($formatter) {
+        case 'timestamp':
+          $dates[$processed]['formatted'] = $date->local->timestamp;
+          break;
+        default:
+          $dates[$processed]['formatted'] = date_format_item($date, $format, $format_db_type, $format_zone, $append);
+      }
+    }
+  }
+  // Pass the date object with the formatted dates to the date_display_combination() theme.
+  return theme('date_display_combination', $field, $dates, $node);
+}
+
+/**
  *  Theme from/to date combination in the view.
  *
  *  @param $field = the field settings
  *  @param $node = node information, this is not always available and not
  *     always the full node, it depends on what value was provided to the formatter.
- *  @param $dates - an array of date information like:
- *     $dates['formatter'] = 'default';
- *     $dates['value']['formatted'] = 'February 15, 2007 2:00 pm';
- *     $dates['value']['object'] = the date object for 'value';
- *     $dates['value2']['formatted'] = 'February 15, 2007 6:00 pm';
- *     $dates['value2']['object'] = the date object for 'value2';
+ *     Only the nid is always guaranteed to be available.
+ *  @param $dates - an array of date information, see explanation for date_field_object() for details.
  *
- *  Each date object looks like:
- *       date [object] => stdClass Object (
- *         [db] => stdClass Object (  // the value stored in the database
- *           [timestamp] => 1171569600
- *           [iso] => 2007-02-15T20:00:00
- *           [parts] => Array (
- *             [seconds] => 0
- *             [minutes] => 0
- *             [hours] => 20
- *             [mday] => 15
- *             [wday] => 4
- *             [mon] => 2
- *             [year] => 2007
- *             [yday] => 45
- *             [weekday] => Thursday
- *             [month] => February
- *             [0] => 1171569600
- *           )
- *         )
- *         [local] => stdClass Object (  // the local representation of that value
- *           [timestamp] => 1171548000
- *           [iso] => 2007-02-15T14:00:00
- *           [parts] => Array (
- *             [seconds] => 0
- *             [minutes] => 0
- *             [hours] => 14
- *             [mday] => 15
- *             [wday] => 4
- *             [mon] => 2
- *             [year] => 2007
- *             [yday] => 45
- *             [weekday] => Thursday
- *             [month] => February
- *             [0] => 1171548000
- *           )
- *           [timezone] => US/Central
- *           [offset] => -21600
- *         )
- *      )
+ *  Useful values:
+ *    $field['type_name'] is the content type
+ *    $field['type'] is the field type
+ *    $node->nid is the node nid, get other node values using node_load($node->nid)
+ *    $dates['value']['object']->local->timestamp - the local timestamp for the From date
+ *    $dates['value2']['object']->local->timestamp - the local timestamp for the To date
+ *    $dates['value']['object']->db->timestamp - the timestamp of the From date database (GMT) value
+ *    $dates['value2']['object']->db->timestamp - the timestamp of the To date database (GMT) alue
+ *    $dates['formatter'] = formatter name, i.e. 'default';
+ *    $dates['value']['formatted'] = formatted From date, i.e. 'February 15, 2007 2:00 pm';
+ *    $dates['value2']['formatted'] = formatted To date, i.e. 'February 15, 2007 6:00 pm';
+ *
  */
 function theme_date_display_combination($field, $dates, $node = NULL) {
-  // Add a wrapper for anyone using the older version of this theme from a custom module or theme.
-  // This is just to ease the transition, the wrapper will be removed later.
-  if (!is_array($dates)) {
-    $date1 = $dates;
-    $date2 = $node;
-  }
-  // This is the way it should really work, get the formatted dates,
-  // or optionally use values from $dates['value']['object'] and
-  // $dates['value2']['object'] to display the date differently.
-  else {
-    $date1 = $dates['value']['formatted'];
-    $date2 = $dates['value2']['formatted'];
-  }
+  $date1 = $dates['value']['formatted'];
+  $date2 = $dates['value2']['formatted'];
   if ($date1 == $date2 || empty($date2)) {
     return '<span class="date-display-single">'. $date1 .'</span>';
   }
@@ -951,3 +1036,53 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
     return '<span class="date-display-start">'. $date1 .'</span><span class="date-display-separator"> - </span><span class="date-display-end">'. $date2 .'</span>';
   }
 }
+
+/**
+ * Theme a format interval for a date element
+ *
+ *  @param $field = the field settings
+ *  @param $node = node information, this is not always available and not
+ *     always the full node, it depends on what value was provided to the formatter.
+ *     Only the nid is always guaranteed to be available.
+ *  @param $dates - an array of date information, see explanation for date_field_object for details.
+ *  @return a formatted display
+ *
+ *  Useful values:
+ *    $field['type_name'] - the content type
+ *    $field['type'] - the field type
+ *    $node->nid - the node nid, get other node values using node_load($node->nid)
+ *    $dates['value']['object']->local->timestamp - the local timestamp for the From date
+ *    $dates['value2']['object']->local->timestamp - the local timestamp for the To date
+ *    $dates['value']['object']->db->timestamp - the timestamp of the From date database (GMT) value
+ *    $dates['value2']['object']->db->timestamp - the timestamp of the To date database (GMT) alue
+ */
+function theme_date_format_interval($field, $dates, $node = NULL) {
+  // Time to compare dates to
+  global $user;
+  if (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) {
+    $now = (time() - date("Z")) + $user->timezone;
+  }
+  else {
+    $now = (time() - date("Z")) + variable_get('date_default_timezone', 0);
+  }
+
+  // Pull local timestamps out of date objects.
+  $timestamp1 = $dates['value']['object']->local->timestamp;
+  $timestamp2 = $dates['value2']['object']->local->timestamp ? $dates['value2']['object']->local->timestamp : $timestamp1;
+
+  // 1) The date is entirely in the future
+  if ($now < $timestamp1) {
+    return t('!time', array('!time' => format_interval($timestamp1 - $now)));
+  }
+  // 2) Ongoing date
+  elseif ($now > $timestamp1 && $now <= $timestamp2) {
+    //return t('Started !time ago', array('!time' => format_interval($now - $timestamp1)));
+    return t('ongoing');
+  }
+  // 3) Date is in the past
+  else {
+    return t('!time ago', array('!time' => format_interval($now - $timestamp2)));
+  }
+}
+
+/** @} End of addtogroup themeable */

@@ -2118,7 +2118,7 @@ function date_server_zone_adj() {
         }
         // In 4.1.1+ we can use difference between NOW() and UTC_TIMESTAMP().
         elseif (version_compare(mysql_get_server_info(), '4.1.1', '>=')) {
-          $server_zone_adj = db_result(db_query("SELECT NOW() - UTC_TIMESTAMP()"));
+          $server_zone_adj = db_result(db_query("SELECT UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(UTC_TIMESTAMP())"));
         }
         // There is no MYSQL query to produce the adjustment amount in older
         // MYSQL versions, so estimate it using the php timezone adjustment.

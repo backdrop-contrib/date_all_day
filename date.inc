@@ -1629,7 +1629,7 @@ function date_text2iso($text, $format) {
   }
 
   // if custom parsing failed, try strtotime conversion
-  $iso = date_gmdate(DATE_STRING_ISO, strtotime($text .'UTC'));
+  $iso = date_gmdate(DATE_STRING_ISO, strtotime($text .' UTC'));
 
   if (date_part_is_valid(date_iso_year($iso), 'year')) {
 

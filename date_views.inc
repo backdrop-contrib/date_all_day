@@ -7,11 +7,11 @@
 function date_views_filters($field) {
 
   switch ($field['type']) {
-    case ('date'):
+    case('date'):
       $handler = 'date_views_filter_handler';
       $ymd_handler = 'date_views_handler_filter_ymd';
       break;
-    case ('datestamp'):
+    case('datestamp'):
       $handler = 'date_views_timestamp_filter_handler';
       $ymd_handler = 'date_views_timestamp_handler_filter_ymd';
       break;
@@ -173,7 +173,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
   // This will be necessary any time the server timezone does not match the site or date zone
   // because the server is going to adjust the value of NOW() for the server timezone.
   switch ($type) {
-    case ('DATE'):
+    case('DATE'):
       $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : "'". str_replace('T', ' ', date_custom2iso($value, $formats['input']['text'])) ."'";
       break;
     default:
@@ -207,10 +207,10 @@ function date_views_handler_filter_date_value_form($field) {
  */
 function date_views_offset($field) {
   switch ($field['tz_handling']) {
-  case ('date'):
+  case('date'):
     $offset = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_offset';
     break;
-  case ('site'):
+  case('site'):
     $offset = variable_get('date_default_timezone', 0);
     break;
   default:
@@ -343,20 +343,20 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
       $groupby = $arg;
 
       switch ($groupby) {
-        case ('year'):
+        case('year'):
           $format = 'Y';
           $fieldinfo['field'] = date_sql_concat(array(
               date_sql('YEAR', $table .'.'. $value, $field_type, $offset),
               ));
           break;
-        case ('month'):
+        case('month'):
           $format = 'F Y';
           $fieldinfo['field'] = date_sql_concat(array(
               date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
               date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
-        case ('day'):
+        case('day'):
           $format = 'F j Y';
           $fieldinfo['field'] = date_sql_concat(array(
               date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
@@ -364,7 +364,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
               date_sql_pad(date_sql('DAY', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
-        case ('hour'):
+        case('hour'):
           $format = 'F j Y - H';
           $fieldinfo['field'] = date_sql_concat(array(
               date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
@@ -373,7 +373,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
               date_sql_pad(date_sql('HOUR', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
-        case ('week'):
+        case('week'):
           $format = 'F j Y (W)';
           $fieldinfo['field'] = date_sql_concat(array(
               date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-W'",
@@ -446,22 +446,22 @@ function date_range_value($value, $value_type = 'min') {
   if (trim($value) == '@' || trim($value) == '') return $now;
 
   switch (strlen($value)) {
-  case (4):
+  case(4):
     $return = ($value_type == 'min' ? $value .'-01-01T00:00:00' : $value .'-12-31T23:59:59');
     break;
-  case (7):
+  case(7):
     $return = ($value_type == 'min' ? $value .'-01T00:00:00' : $value .'-31T23:59:59');
     break;
-  case (10):
+  case(10):
     $return = ($value_type == 'min' ? $value .'T00:00:00' : $value .'T23:59:59');
     break;
-  case (13):
+  case(13):
     $return = ($value_type == 'min' ? $value .':00:00' : $value .':59:59');
     break;
-  case (16):
+  case(16):
     $return = ($value_type == 'min' ? $value .':00' : $value .':59');
     break;
-  case (19):
+  case(19):
     $return = $value;
     break;
   default:
@@ -540,7 +540,7 @@ function date_plus_period($value) {
     $count     = intval($sub[0]);
     $cur_mon   = intval(substr($max_date->db->iso, 5, 2));
     $cur_year  = intval(substr($max_date->db->iso, 0, 4));
-    $max_iso   = (intval($cur_mon + $count) < 13 ? $cur_year : intval($cur_year + 1)) . '-'. sprintf('%02d', (intval($cur_mon + $count) < 13 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 12);
+    $max_iso   = (intval($cur_mon + $count) < 13 ? $cur_year : intval($cur_year + 1)) .'-'. sprintf('%02d', (intval($cur_mon + $count) < 13 ? intval($cur_mon + $count) : 1)) . substr($min_date, 7, 12);
     date_set_date($max_date, $max_iso, 'GMT', 'db', DATE_ISO, TRUE);
   }
   if (stristr($range[1], 'W')) {
@@ -695,13 +695,13 @@ function date_form_alter($form_id, $form) {
  */
 function date_views_browser_period($period = 'month') {
   switch ($period) {
-  case ('year'):
+  case('year'):
     return 'P1Y';
-  case ('week'):
+  case('week'):
     return 'P1W';
-  case ('day'):
+  case('day'):
     return 'P1D';
-  case ('hour'):
+  case('hour'):
     return 'P1H';
   default:
     return 'P1M';
@@ -713,13 +713,13 @@ function date_views_browser_period($period = 'month') {
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   switch ($period) {
-  case ('week'):
+  case('week'):
     return date_gmdate('Y-m-d', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
-  case ('year'):
+  case('year'):
     return date_gmdate('Y', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
-  case ('day'):
+  case('day'):
     return date_gmdate('Y-m-d', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
-  case ('hour'):
+  case('hour'):
     return date_gmdate('Y-m-d\TH', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
   default:
     return date_gmdate('Y-m', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
@@ -746,7 +746,7 @@ function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
 
   // if no range is yet set, find the beginning of the appropriate period
   switch ($period) {
-  case ('week'):
+  case('week'):
     $dow = date_gmdate('w', $stamp);
     if ($dow >= 6) $adj = (86400 * 7);
     $start = intval($stamp - intval($dow * 86400) + $adj);
@@ -755,17 +755,17 @@ function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
       $start += intval(variable_get('date_first_day', 0) * 86400);
     }
     break;
-  case ('year'):
+  case('year'):
     $year = date_gmdate('Y', $stamp);
     $start = date_gmmktime(array('year' => $year, 'mon' => 1, 'mday' => 1));
     break;
-  case ('day'):
+  case('day'):
     $year  = date_gmdate('Y', $stamp);
     $month = date_gmdate('n', $stamp);
     $day   = date_gmdate('j', $stamp);
     $start = date_gmmktime(array('year' => $year, 'mon' => $month, 'mday' => $day, 'hours' => 1));
     break;
-  case ('hour'):
+  case('hour'):
     $year  = date_gmdate('Y', $stamp);
     $month = date_gmdate('n', $stamp);
     $day   = date_gmdate('j', $stamp);
@@ -798,21 +798,21 @@ function date_views_browser_navigation($view, $period) {
   $stamp = date_views_browser_period_start_stamp($arg, $period);
 
   switch ($period) {
-  case ('week'):
+  case('week'):
     $prev_date = date_gmdate('Y-m-d', intval($stamp - 604799));
     $next_date = date_gmdate('Y-m-d', intval($stamp + 604801));
     break;
-  case ('year'):
+  case('year'):
     $year  = intval(substr($range[0], 0, 4));
     $month = intval(substr($range[0], 5, 2));
     $prev_date = $month < 2 ? intval($year - 1) : $year;
     $next_date = $month > 11 ? intval($year + 1) : $year;
     break;
-  case ('day'):
+  case('day'):
     $prev_date = date_gmdate('Y-m-d', intval($stamp - 86399));
     $next_date = date_gmdate('Y-m-d', intval($stamp + 86401));
     break;
-  case ('hour'):
+  case('hour'):
     $prev_date = date_gmdate('Y-m-d\TH', intval($stamp - 3599));
     $next_date = date_gmdate('Y-m-d\TH', intval($stamp + 3601));
     break;
@@ -878,9 +878,9 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
   $date_views_browser_views = date_views_browser_get_views();
   $period = $date_views_browser_views[$view->name]->options;
   switch ($type) {
-    case ('block'):
+    case('block'):
       $arg = date_views_browser_period_arg(NULL, $view->argument[0]['options']);
-      if ($view->url) $url = $view->url . '/'. $arg;
+      if ($view->url) $url = $view->url .'/'. $arg;
       $output  .= '<h5 class="date-browser-block-label">'. l(date_views_browser_period_label(NULL, $period), $url) .'</h5>';
       $display = 'views_view_list';
       break;

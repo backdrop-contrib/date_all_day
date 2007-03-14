@@ -225,6 +225,26 @@ function date_gmadj_zone($timestamp) {
 }
 
 /**
+ * Implementation of time() adjusted for the current site and user.
+ *
+ * @param $offset - optional method to force time to a specific offset
+ * @return integer timestamp
+ */
+function date_time($offset = NULL) {
+  global $user;
+
+  if ($offset) {
+  	return (time() - date("Z")) + offset;
+  }
+  elseif (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) {
+    return (time() - date("Z")) + $user->timezone;
+  }
+  else {
+    return (time() - date("Z")) + variable_get('date_default_timezone', 0);
+  }
+}
+
+/**
  *  Function to create a date object
  *
  *  All creation, manipulation, and display of the date is done using this date object
@@ -1563,7 +1583,7 @@ function date_iso_week_range($year, $week) {
  * @return last day of the specified month and year
  */
 function date_last_day_of_month($month, $year) {
-  return date_gmdate('t', date_mktime(array('year' => intval($year), 'mon' => intval($month), 'mday' => 1)));
+  return date_gmdate('t', date_gmmktime(array('year' => intval($year), 'mon' => intval($month), 'mday' => 1)));
 }
 
 /**

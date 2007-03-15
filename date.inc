@@ -245,6 +245,26 @@ function date_time($offset = NULL) {
 }
 
 /**
+ * Implementation of time() adjusted for the current site and user.
+ *
+ * @param $offset - optional method to force time to a specific offset
+ * @return integer timestamp
+ */
+function date_time($offset = NULL) {
+  global $user;
+
+  if ($offset) {
+  	return (time() - date("Z")) + offset;
+  }
+  elseif (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) {
+    return (time() - date("Z")) + $user->timezone;
+  }
+  else {
+    return (time() - date("Z")) + variable_get('date_default_timezone', 0);
+  }
+}
+
+/**
  *  Function to create a date object
  *
  *  All creation, manipulation, and display of the date is done using this date object

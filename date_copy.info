@@ -1,0 +1,6 @@
+; $Id$
+name = Date Copy
+description = Import and export date data.
+version = "$Name$"
+dependencies = content date
+package = CCK

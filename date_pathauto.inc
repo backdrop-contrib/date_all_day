@@ -18,7 +18,7 @@ function date_pathauto_node($op, $node = NULL) {
     case 'placeholders':
       $placeholders = array();
       foreach (content_fields() as $field) {
-		if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+		if (($field['type'] == 'date' || $field['type'] == 'datestamp') && is_array($field['granularity'])) {
 		  if (array_key_exists('Y', $field['granularity'])) {
     	    $placeholders['['. $field['field_name'] . '_y]'] = t($field['widget']['label'] . ' - year');
 		  }

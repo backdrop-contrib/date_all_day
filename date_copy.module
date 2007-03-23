@@ -30,7 +30,7 @@ function date_copy_menu($may_cache) {
       'description' => t('Import and export date data.'),
       'access'   => user_access('administer content'),
       'callback' => 'drupal_get_form',
-      'callback arguments' => 'date_copy_import_event_form',
+      'callback arguments' => 'date_copy_import_ical_form',
       'type' => MENU_NORMAL_ITEM,
     );
     $items[] = array(
@@ -38,7 +38,7 @@ function date_copy_menu($may_cache) {
       'title'    => t('Import'),
       'access'   => user_access('administer content'),
       'callback' => 'drupal_get_form',
-      'callback arguments' => 'date_copy_import_event_form',
+      'callback arguments' => 'date_copy_import_ical_form',
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 1,
     );

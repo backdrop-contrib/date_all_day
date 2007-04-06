@@ -200,9 +200,9 @@ function date_field_settings($op, $field) {
           $name = 'default';
         }
         $append = ($i > 0 ? '_'. $name : '');
-        $options[] = 'output_format_date'. $append;
-        $options[] = 'output_format_zone'. $append;
-        $options[] = 'output_format_custom'. $append;
+        $options[] = date_strip_granularity('output_format_date'. $append, date_granularity_array($field));
+        $options[] = date_strip_granularity('output_format_zone'. $append, date_granularity_array($field));
+        $options[] = date_strip_granularity('output_format_custom'. $append, date_granularity_array($field));
       }
       return $options;
 
@@ -269,7 +269,6 @@ function date_formatter_setup_form($field, $delta) {
  * Implementation of hook_field().
  *
  */
-
 function date_field($op, &$node, $field, &$items, $teaser, $page) {
   if ($field['todate']) {
     $process = array('value', 'value2');
@@ -302,10 +301,56 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
                 ));
             }
           }
+          // Unset undesired date part values in ISO dates.
+          if (!form_get_errors()) {
+          	form_set_value($error_field, date_set_granularity($item[$processed], $field));
+          }
         }
       }
       return;
   }
+}
+
+/**
+ * Unset undesired date part values.
+*/
+function date_set_granularity($item, $field) {
+  if (!$nongranularity = array_diff(array('Y', 'M', 'D', 'H', 'N', 'S'), date_granularity_array($field))) {
+ 		 return $item;
+ 	}
+  else {
+  	 if ($field['type'] == DATE_ISO) {
+ 	 	  $date = date_iso2array($item);
+ 	  }
+ 	  else {
+ 		   $date = date_unix2array($item);
+ 	  }
+ 	  foreach ($nongranularity as $level) {
+ 		   switch ($level) {
+ 			    case 'S':
+ 				     $date['seconds'] = 0;
+ 				     break;
+ 			    case 'N':
+ 				     $date['minutes'] = 0;
+ 				     break;
+ 			    case 'H':
+ 				     $date['hours'] = 0;
+ 				     break;
+ 			    case 'M':
+ 				     $date['mon'] = $field['type'] == DATE_UNIX ? 1 : 0;
+ 				     break;
+ 			    case 'D':
+ 				     $date['mday'] = $field['type'] == DATE_UNIX ? 1 : 0;
+ 				     break;
+  		  }
+ 	  }
+    if ($field['type'] == DATE_ISO) {
+ 	 	  return date_array2iso($date);
+ 	  }
+ 	  else {
+ 		   return date_array2unix($date);
+ 	  }
+ 	}
 }
 
 /**

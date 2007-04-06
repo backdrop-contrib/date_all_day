@@ -227,10 +227,12 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
 
   $node_types = node_get_types('names');
   $fields = content_fields();
+  $field   = content_fields($date_field);
+
   $account = user_load(array('name' => $name));
   foreach ($imported_values as $key => $value) {
-  	$start = $fields[$date_field]['type'] == 'date' ? date_unix2iso($value['start']) : $value['start'];
-  	$end = $fields[$date_field]['type'] == 'date' ? date_unix2iso($value['end']) : $value['end'];
+  	$start = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['start'], $field)) : date_set_granularity($value['start'], $field);
+  	$end = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['end']), $field) : date_set_granularity($value['end'], $field);
     $target_node = new StdClass();
     $target_node->nid = 0;
     $target_node->type = $target_type;
@@ -330,7 +332,7 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   $i = 0;
   $limit = min(10, intval($max));
   while($i < intval($max)) {
-    $new_rows = date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $i);
+    $new_rows = date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old);
     $rows = array_merge($rows, $new_rows);
     $i += $limit;
   }
@@ -339,7 +341,7 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   return;
 }
 
-function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0) {
+function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0, $delete_old) {
 
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   include_once(DATE_TIMEZONES);
@@ -387,10 +389,10 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
     $timestamp  = $event->event_start;
     $timestamp2 = $event->event_end;
     if ($field['type'] == 'date') {
-      $data = array(0 => array('value' => date_unix2iso($timestamp), 'value2' => date_unix2iso($timestamp2), 'timezone' => '', 'offset' => ''));
+      $data = array(0 => array('value' => date_set_granularity(date_unix2iso($timestamp), $field), 'value2' => date_set_granularity(date_unix2iso($timestamp2), $field), 'timezone' => '', 'offset' => ''));
     }
     else {
-      $data = array(0 => array('value' => $timestamp, 'value2' => $timestamp2, 'timezone' => '', 'offset' => ''));
+      $data = array(0 => array('value' => date_set_granularity($timestamp, $field), 'value2' => date_set_granularity($timestamp2, $field), 'timezone' => '', 'offset' => ''));
     }
     if ($tz_handling == 'date' && $event_tz_handling == 'event') {
       $data[0]['timezone'] = $timezones[$event->timezone]['timezone'];
@@ -411,14 +413,13 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
     node_save($target_node);
 
     if ($target_type != $source_type) {
-      watchdog('date_copy', t('%type: created %title.', array('%type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
+      watchdog('date_copy', t('!type: created %title.', array('!type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
       if ($delete_old) {
         node_delete($source_nid);
-        watchdog('date_copy', t('%type: deleted %title.', array('%type' => t($source_type), '%title' => $target_node->title)), WATCHDOG_NOTICE);
       }
     }
     else {
-      watchdog('date_copy', t('%type: updated %title.', array('%type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
+      watchdog('date_copy', t('!type: updated %title.', array('!type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
     }
     $new_field = $target_node->$date_field;
     $rows[] = array(l($target_node->title, 'node/'. $target_node->nid), $source_nid, $target_node->nid, $new_field[0]['value'], $new_field[0]['value2']);

@@ -67,7 +67,7 @@ function date_pathauto_node($op, $node = NULL) {
       node_invoke_nodeapi($node, 'view', false, false);
 
       foreach (content_fields() as $field) {
-		if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+		if ($field['type'] == 'date' || $field['type'] == 'datestamp' && is_array($field['granularity'])) {
 		  // this could probably be done better
 		  $fieldname = $field['field_name'];
 		  $datefield = $node->$fieldname;
@@ -85,26 +85,27 @@ function date_pathauto_node($op, $node = NULL) {
             date_convert_timezone($date, 'GMT', date_get_timezone($field['tz_handling'], $item['timezone']), 'local');
           }
 		  $iso = $date->local->iso;
-
-		  // we were using the date_iso_field calls, but we'd prefer 01 rather than 1 for january
-		  if (array_key_exists('Y', $field['granularity'])) {
+                  if (is_array($field['granularity'])) {
+		    // we were using the date_iso_field calls, but we'd prefer 01 rather than 1 for january
+		    if (array_key_exists('Y', $field['granularity'])) {
             $results['['. $field['field_name'] . '_y]'] = pathauto_cleanstring(substr($iso, 0, 4));
-		  }
-		  if (array_key_exists('M', $field['granularity'])) {
+		    }
+		    if (array_key_exists('M', $field['granularity'])) {
             $results['['. $field['field_name'] . '_m]'] = pathauto_cleanstring(substr($iso, 5, 2));
-		  }
-		  if (array_key_exists('D', $field['granularity'])) {
+		    }
+		    if (array_key_exists('D', $field['granularity'])) {
             $results['['. $field['field_name'] . '_d]'] = pathauto_cleanstring(substr($iso, 8, 2));
-		  }
-		  if (array_key_exists('H', $field['granularity'])) {
+		    }
+		    if (array_key_exists('H', $field['granularity'])) {
             $results['['. $field['field_name'] . '_h]'] = pathauto_cleanstring(substr($iso, 11, 2));
-		  }
-		  if (array_key_exists('N', $field['granularity'])) {
+		    }
+		    if (array_key_exists('N', $field['granularity'])) {
             $results['['. $field['field_name'] . '_n]'] = pathauto_cleanstring(substr($iso, 14, 2));
-		  }
-		  if (array_key_exists('S', $field['granularity'])) {
+		    }
+		    if (array_key_exists('S', $field['granularity'])) {
             $results['['. $field['field_name'] . '_s]'] = pathauto_cleanstring(substr($iso, 17, 2));
-		  }
+		    }
+                  }
 		}
       }
 

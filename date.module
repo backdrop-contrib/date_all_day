@@ -316,41 +316,41 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 */
 function date_set_granularity($item, $field) {
   if (!$nongranularity = array_diff(array('Y', 'M', 'D', 'H', 'N', 'S'), date_granularity_array($field))) {
- 		 return $item;
- 	}
+   return $item;
+  }
   else {
-  	 if ($field['type'] == DATE_ISO) {
- 	 	  $date = date_iso2array($item);
- 	  }
- 	  else {
- 		   $date = date_unix2array($item);
- 	  }
- 	  foreach ($nongranularity as $level) {
- 		   switch ($level) {
- 			    case 'S':
- 				     $date['seconds'] = 0;
- 				     break;
- 			    case 'N':
- 				     $date['minutes'] = 0;
- 				     break;
- 			    case 'H':
- 				     $date['hours'] = 0;
- 				     break;
- 			    case 'M':
- 				     $date['mon'] = $field['type'] == DATE_UNIX ? 1 : 0;
- 				     break;
- 			    case 'D':
- 				     $date['mday'] = $field['type'] == DATE_UNIX ? 1 : 0;
- 				     break;
-  		  }
- 	  }
+   if ($field['type'] == DATE_ISO) {
+    $date = date_iso2array($item);
+   }
+   else {
+    $date = date_unix2array($item);
+   }
+   foreach ($nongranularity as $level) {
+     switch ($level) {
+       case 'S':
+         $date['seconds'] = 0;
+         break;
+       case 'N':
+         $date['minutes'] = 0;
+         break;
+       case 'H':
+         $date['hours'] = 0;
+         break;
+       case 'M':
+         $date['mon'] = $field['type'] == DATE_UNIX ? 1 : 0;
+         break;
+       case 'D':
+         $date['mday'] = $field['type'] == DATE_UNIX ? 1 : 0;
+         break;
+      }
+    }
     if ($field['type'] == DATE_ISO) {
- 	 	  return date_array2iso($date);
- 	  }
- 	  else {
- 		   return date_array2unix($date);
- 	  }
- 	}
+      return date_array2iso($date);
+    }
+    else {
+      return date_array2unix($date);
+    }
+  }
 }
 
 /**

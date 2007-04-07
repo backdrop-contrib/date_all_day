@@ -483,7 +483,7 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   // Get $max records, 10 at a time.
   $limit = min(10, intval($max));
   while($i < intval($max)) {
-    $new_rows = date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old);
+    $new_rows = date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old, $start_nid);
     $rows = array_merge($rows, $new_rows);
     $i += $limit;
   }
@@ -501,7 +501,7 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   return;
 }
 
-function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0, $delete_old) {
+function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0, $delete_old, $start_nid) {
 
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   include_once(DATE_TIMEZONES);
@@ -517,8 +517,10 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
   $timezones = event_get_timezones();
 
   $rows = array();
-
-  if (!$result = db_query_range("SELECT * FROM {event} e INNER JOIN {node} n ON e.nid=n.nid WHERE n.type = '%s' ORDER BY n.nid", array($source_type), $start, $limit)) {
+  if ($start_nid) {
+    $where = " AND n.nid >= $start_nid ";
+  }
+  if (!$result = db_query_range("SELECT * FROM {event} e INNER JOIN {node} n ON e.nid=n.nid WHERE n.type = '%s' $where ORDER BY n.nid", array($source_type, $start_nid), $start, $limit)) {
     return array();
   }
   while ($event = db_fetch_object($result)) {

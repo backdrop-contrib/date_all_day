@@ -389,7 +389,6 @@ function date_widget_info() {
   return $info;
 }
 
-
 /**
  * Implementation of hook_widget_settings().
  */
@@ -650,7 +649,6 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
                   $date = date_text_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
                   break;
               }
-
               // replace $items values with the converted date, timezone, and offset values
               $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
             }
@@ -994,14 +992,17 @@ function theme_date_formatter($dates, $field, $formatter, $node) {
       break;
     case('long'):
       $format = $field['output_format_custom_long'] > '' ? $field['output_format_custom_long'] : ($field['output_format_date_long'] ? $field['output_format_date_long'] : variable_get('date_format_long',  'l, F j, Y - H:i'));
+      $format = date_strip_granularity($format, date_granularity_array($field));
       $format_zone = $field['output_format_zone_long'];
       break;
     case('medium'):
       $format = $field['output_format_custom_medium'] > '' ? $field['output_format_custom_medium'] : ($field['output_format_date_medium'] ? $field['output_format_date_medium'] : variable_get('date_format_medium',  'D, m/d/Y - H:i'));
+      $format = date_strip_granularity($format, date_granularity_array($field));
       $format_zone = $field['output_format_zone_medium'];
       break;
     case('short'):
       $format = $field['output_format_custom_short'] > '' ? $field['output_format_custom_short'] : ($field['output_format_date_short'] ? $field['output_format_date_short'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format = date_strip_granularity($format, date_granularity_array($field));
       $format_zone = $field['output_format_zone_short'];
       break;
     case('iso'):
@@ -1022,6 +1023,7 @@ function theme_date_formatter($dates, $field, $formatter, $node) {
       break;
     default:
       $format = $field['output_format_custom'] > '' ? $field['output_format_custom'] : ($field['output_format_date'] ? $field['output_format_date'] : variable_get('date_format_short', 'm/d/Y - H:i'));
+      $format = date_strip_granularity($format, date_granularity_array($field));
       $format_zone = $field['output_format_zone'];
       break;
   }

@@ -3,12 +3,12 @@
  * Date Copy
  *
  * A module to import and export date data in various ways.
- * Currently only imports date data from events.
+ * Currently only imports date data from events and ical.
  *
  * Importing data from csv files can currently be done using the Node Import module, no need to add that here.
  *
  * @todo
- *  Add in more import/export capabilities like handling ical import and export.
+ *  Add export capabilities, possibly add support for csv import.
  */
 function date_copy_help($section) {
   switch ($section) {
@@ -82,13 +82,41 @@ function date_copy_menu($may_cache) {
   }
 }
 /**
- * A form to select a target for the imported data.
+ * A form to select a content type.
  */
-function date_copy_target_form($extended = FALSE) {
+function date_copy_type_form($target = TRUE) {
   $form = array();
   $node_types = node_get_types('names');
   $fields = content_fields();
-  $target_type_options = array();
+  $type_options = array();
+
+  // Find out what content types contain date fields and set them up as target options.
+  foreach ($fields as $field_name => $field) {
+    if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+      $type_options[$field['type_name']] = $node_types[$field['type_name']];
+    }
+  }
+  if (sizeof($type_options) < 1) {
+    drupal_set_message(t('There are no date fields in this database to import the data into. Please add a date field to the desired node types and be sure to indicate it uses both a "from" and a "to" date.'));
+    return $form;
+  }
+  $type = $target ? 'target_type' : 'source_type';
+  $label = $target ? t('Target type') : t('Source type');
+  $form[$type] = array(
+    '#type' => 'select',
+    '#options' => $type_options,
+    '#title' => $label,
+    '#default_value' => '',
+    );
+  return $form;
+}
+
+/**
+ * A form to select fields from a content type.
+ */
+function date_copy_type_fields_form($type, $extended = FALSE) {
+  $form = array();
+  $fields = content_fields();
   $date_options = array();
   $description_options = array('' => '');
   $uid_options = array('' => '');
@@ -97,38 +125,27 @@ function date_copy_target_form($extended = FALSE) {
 
   // Find out what content types contain date fields and set them up as target options.
   foreach ($fields as $field_name => $field) {
-    if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
-    	$date_options[$field['type_name']][$field_name] = $field['widget']['label'];
-      $target_type_options[$field['type_name']] = $node_types[$field['type_name']];
-    }
-  }
-  // Bring up all fields in the target type as options for various parts of the ical.
-  foreach ($fields as $field_name => $field) {
-  	if ($field['type'] == 'text' && array_key_exists($field['type_name'], $target_type_options)) {
-      $description_options[$field['type_name']][$field_name] = $field['widget']['label'] .' '. $node_types[$field['type_name']];
-      $location_options[$field['type_name']][$field_name] = $field['widget']['label'] .' '. $node_types[$field['type_name']];
-      $uid_options[$field['type_name']][$field_name] = $field['widget']['label'] .' '. $node_types[$field['type_name']];
-      $url_options[$field['type_name']][$field_name] = $field['widget']['label'] .' '. $node_types[$field['type_name']];
-    }
-    if ($field['type'] == 'link' && array_key_exists($field['type_name'], $target_type_options)) {
-      $url_options[$field['type_name']][$field_name] = $field['widget']['label'] .' '. $node_types[$field['type_name']];
+    if ($field['type_name'] == $type) {
+      if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+        $date_options[$field_name] = $field['widget']['label'];
+      }
+      if ($field['type'] == 'text') {
+        $description_options[$field_name] = $field['widget']['label'];
+        $location_options[$field_name] = $field['widget']['label'];
+        $uid_options[$field_name] = $field['widget']['label'];
+        $url_options[$field_name] = $field['widget']['label'];
+      }
+      if ($field['type'] == 'link') {
+        $url_options[$field_name] = $field['widget']['label'];
+      }
     }
   }
   // The body field is also available as an option for the description.
-  foreach ($target_type_options as $type_name => $type) {
-  	$description_options[$type_name]['body'] = t('body');
-  }
+  $description_options['body'] = t('body');
   if (sizeof($date_options) < 1) {
     drupal_set_message(t('There are no date fields in this database to import the data into. Please add a date field to the desired node types and be sure to indicate it uses both a "from" and a "to" date.'));
     return $form;
   }
-
-  $form['target_type'] = array(
-    '#type' => 'select',
-    '#options' => $target_type_options,
-    '#title' => t('Target type'),
-    '#default_value' => '',
-    );
   $form['date_field'] = array(
     '#type' => 'select',
     '#options' => $date_options,
@@ -156,7 +173,7 @@ function date_copy_target_form($extended = FALSE) {
       '#options' => $location_options,
       '#title' => t('Location field'),
       '#default_value' => '',
-      '#description' => t('The text field which will contain the source location in the target content type.'),
+      '#description' => t('The text field which will contain the source location text in the target content type.'),
       );
     $form['uid_field'] = array(
       '#type' => 'select',
@@ -167,6 +184,64 @@ function date_copy_target_form($extended = FALSE) {
       );
   }
   return $form;
+}
+
+/**
+ * A form to select miscellaneous other options for a content type.
+ */
+function date_copy_type_misc_form($type) {
+  $form = array();
+  $vocabs = taxonomy_get_vocabularies($type);
+  if ($vocabs && count($vocabs) > 0) {
+    $taxonomy = isset($taxonomy) ? $taxonomy : array();
+    $node = (object)array(
+      'type' => $type,
+      'taxonomy' => date_import_taxonomy_form2node($taxonomy),
+    );
+    $subform = array(
+      'type' => array(
+        '#value' => $type,
+      ),
+      '#node' => $node,
+    );
+    taxonomy_form_alter($type .'_node_form', $subform);
+    $form['taxonomy'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Categories'),
+      '#description' => t('Select the categories that should be used for the imported nodes.'),
+      );
+    $form['taxonomy'] += $subform['taxonomy'];
+
+  }
+  if (module_exists('og')) {
+    og_form_add_og_audience($form_id, $form);
+  }
+  $form['name'] = array('#type' => 'textfield', '#title' => t('Authored by'), '#maxlength' => 60, '#autocomplete_path' => 'user/autocomplete', '#default_value' => $node->name ? $node->name : '', '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))));
+  $form['status']   = array('#type' => 'checkbox', '#title' => t('Published'), '#default_value' => $node->status);
+  $form['promote']  = array('#type' => 'checkbox', '#title' => t('Promoted to front page'), '#default_value' => $node->promote);
+  $form['sticky']   = array('#type' => 'checkbox', '#title' => t('Sticky at top of lists'), '#default_value' => $node->sticky);
+  $form['revision'] = array('#type' => 'checkbox', '#title' => t('Create new revision'), '#default_value' => $node->revision);
+  return $form;
+}
+
+/**
+ * Convert the taxonomy array from the form form to the node form.
+ * Borrowed from the Node Import module.
+ */
+function date_import_taxonomy_form2node($taxonomy) {
+  $tids = array();
+  foreach ($taxonomy as $key => $value) {
+    if ($key != 'tags') {
+      $value = is_array($value) ? $value : array($value);
+      foreach ($value as $tid) {
+        $tids[$tid] = taxonomy_get_term($tid);
+      }
+    }
+    else {
+      $tids[$key] = $value;
+    }
+  }
+  return $tids;
 }
 
 /**
@@ -188,156 +263,241 @@ function date_copy_import_csv_form() {
 }
 
 /**
- * iCal import.
- *
+ * iCal import form.
  */
-function date_copy_import_ical_form() {
-  if (!$POST) {
-    $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
+function date_copy_import_ical_form($form_values = NULL) {
+  $step = intval($form_values['step'] + 1);
+  $form['step'] = array(
+    '#type' => 'hidden',
+    '#value' => $step,
+  );
+  $form['#prefix'] = t('This form will process a content type and one or more fields from that type and export the settings. The export created by this process can be copied and pasted as an import into the current or any other database. The import will add the fields to into an existing content type or create a new content type that includes the selected fields.');
+  $form['#multistep'] = TRUE;
+  $form['#redirect'] = FALSE;
+
+  switch ($step) {
+    case 1: // Select a content type to import into.
+      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
+      $form['source_file'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Source file'),
+        '#default_value' => '',
+      );
+      $form += date_copy_type_form(TRUE);
+      $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
+      return $form;
+
+    case 2: // Select the fields to import into.
+      $node_types = node_get_types('names');
+      $type = $form_values['target_type'];
+      $form['target_type'] = array(
+        '#value' => $type,
+        '#type' => 'hidden',
+      );
+      $form['source_file'] = array(
+        '#value' => $form_values['source_file'],
+        '#type' => 'hidden',
+      );
+      $form['fields'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('!type Fields', array('!type' => $node_types[$type])),
+        '#weight' => -1,
+      );
+      $form['fields'] += date_copy_type_fields_form($type, TRUE);
+      $form += date_copy_type_misc_form($type);
+      $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
+      return $form;
   }
-  $form['source_file'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Source file'),
-    '#default_value' => '',
-    );
-  $form += date_copy_target_form(TRUE);
+}
 
-  $form['#value'] = t('<p>Set what the default value should be for each imported node.</p>');
-  // Node author information for administrators
-  $form['name'] = array('#type' => 'textfield', '#title' => t('Authored by'), '#maxlength' => 60, '#autocomplete_path' => 'user/autocomplete', '#default_value' => $node->name ? $node->name : '', '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))));
-  $form['status']   = array('#type' => 'checkbox', '#title' => t('Published'), '#default_value' => $node->status);
-  $form['promote']  = array('#type' => 'checkbox', '#title' => t('Promoted to front page'), '#default_value' => $node->promote);
-  $form['sticky']   = array('#type' => 'checkbox', '#title' => t('Sticky at top of lists'), '#default_value' => $node->sticky);
-  $form['revision'] = array('#type' => 'checkbox', '#title' => t('Create new revision'), '#default_value' => $node->revision);
-
-  if (module_exists('og')) {
-  	og_form_add_og_audience($form_id, $form);
+/**
+ * iCal import processing.
+ */
+function date_copy_import_ical_form_validate($form_id, $form_values) {
+  extract($form_values);
+  if ($step == 2) {
+    return;
   }
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
-  return $form;
-
+  $imported_values = ical_import($source_file);
+  if (empty($imported_values)) {
+    form_set_error('source_file', t('This is an invalid file.'));
+  }
 }
 
 function date_copy_import_ical_form_submit($form_id, $form_values) {
   extract($form_values);
+  if ($step != 2) {
+    return;
+  }
+  $imported_values = ical_import($source_file);
+
+  // workaround to disable drupal messages when nodes are created or deleted
+  $messages = drupal_get_messages();
+
+  $taxonomy = $taxonomy['taxonomy'];
+
   include_once(drupal_get_path('module', 'date_api') .'/date.inc');
   include_once(drupal_get_path('module', 'date_api') .'/date_ical.inc');
 
   $imported_values = ical_import($source_file);
 
   $node_types = node_get_types('names');
-  $fields = content_fields();
-  $field   = content_fields($date_field);
-
+  $field = content_fields($date_field, $target_type);
   $account = user_load(array('name' => $name));
+  $rows = array();
   foreach ($imported_values as $key => $value) {
-  	$start = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['start'], $field)) : date_set_granularity($value['start'], $field);
-  	$end = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['end']), $field) : date_set_granularity($value['end'], $field);
-    $target_node = new StdClass();
-    $target_node->nid = 0;
-    $target_node->type = $target_type;
-    $target_node->name = $name;
-    $target_node->uid = $account->uid;
-    $target_node->status = $status;
-    $target_node->promote = $promote;
-    $target_node->sticky = $sticky;
-    $target_node->revision = $revision;
-    if (module_exists('og')) {
-      $target_node->og_public = $og_public;
-      $target_node->og_groups = $og_groups;
+    if (!empty($value['summary']) && !empty($value['start'])) {
+      if (empty($value['end'])) $value['end'] = $value['start'];
+      $start = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['start']), $field) : date_set_granularity($value['start'], $field);
+   	  $end = $field['type'] == 'date' ? date_set_granularity(date_unix2iso($value['end']), $field) : date_set_granularity($value['end'], $field);
+   	  $target_node = new StdClass();
+      $target_node->nid = 0;
+      $target_node->type = $target_type;
+      $target_node->name = $name;
+      $target_node->uid = $account->uid;
+      $target_node->status = $status;
+      $target_node->promote = $promote;
+      $target_node->sticky = $sticky;
+      $target_node->revision = $revision;
+      if (module_exists('og')) {
+        $target_node->og_public = $og_public;
+        $target_node->og_groups = $og_groups;
+      }
+      $target_node->title = stripslashes($value['summary']);
+      $target_node->$date_field = array(0 => array('value' => $start, 'value2' => $end));
+      if ($description_field == 'body') {
+        $target_node->body = stripslashes($value['description']);
+      }
+      elseif (!empty($description_field)) {
+    	  $target_node->$description_field = array(0 => array('value' => stripslashes($value['description'])));
+      }
+      if (!empty($uid_field)) {
+    	  $target_node->$uid_field = array(0 => array('value' => stripslashes($value['uid'])));
+      }
+      if (!empty($location_field)) {
+    	  $target_node->$location_field = array(0 => array('value' => stripslashes($value['location'])));
+      }
+      if (!empty($url_field)) {
+        $target_node->$url_field = array(0 => array('url' => stripslashes($value['url']), 'title' => stripslashes($value['summary'])));
+      }
+      $target_node->taxonomy = $taxonomy;
+      node_save($target_node);
+      watchdog('date_copy', t('!type: created %title.', array('!type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
+      $new_field = $target_node->$date_field;
+      $rows[] = array(l($target_node->title, 'node/'. $target_node->nid), $target_node->nid, $new_field[0]['value'], $new_field[0]['value2']);
     }
-    $target_node->title = stripslashes($value['summary']);
-    $target_node->$date_field = array(0 => array('value' => $start, 'value2' => $end));
-    if ($description_field == 'body') {
-      $target_node->body = stripslashes($value['description']);
-    }
-    else {
-    	$target_node->$description_field = array(0 => array('value' => stripslashes($value['description'])));
-    }
-    $target_node->$uid_field = array(0 => array('value' => stripslashes($value['uid'])));
-    $target_node->$location_field = array(0 => array('value' => stripslashes($value['location'])));
-    if ($fields[$url_field]['type'] == 'link') {
-      $target_node->$url_field = array(0 => array('url' => stripslashes($value['url']), 'title' => stripslashes($value['summary'])));
-    }
-    else {
-    	$target_node->$url_field = array(0 => array('value' => stripslashes($value['url'])));
-    }
-    node_save($target_node);
-
-    watchdog('date_copy', t('%type: created %title.', array('%type' => t($target_type), '%title' => $target_node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $target_node->nid));
-    $new_field = $target_node->$date_field;
-    $rows[] = array(l($target_node->title, 'node/'. $target_node->nid), $new_field[0]['value'], $new_field[0]['value2']);
   }
+
+  // write back the old messages
+  $_SESSION['messages'] = $messages;
+
+  if (!empty($rows)) {
+    drupal_set_message(t('%limit ical events have been added.', array('%limit' => sizeof($rows))));
+    drupal_set_message(theme('table', array(t('Title'), t('Id'), t('Start'), t('End')), $rows));
+  }
+  else {
+    drupal_set_message(t('No ical events have been added.'));
+  }
+  return;
 }
 
 /**
- *  Event import.
+ *  Event import form.
  */
-function date_copy_import_event_form() {
-  $node_types = node_get_types('names');
-
-  // We can do an import if there are event fields available whether or not the event module is enabled.
+function date_copy_import_event_form($form_values = NULL) {
+  // We can do an import if there are event fields available whether or not the event module is enabled
+  // so we just check whether the table exists.
   if (!db_table_exists('event')) {
     drupal_set_message(t('There is no event table in this database. No event import options are available.'));
     return array();
   }
-  else {
-    $source_type_options = array();
-    $result = db_query("SELECT DISTINCT n.type FROM {event} e INNER JOIN {node} n ON e.nid=n.nid");
-    while ($arr = db_fetch_array($result)) {
-      $source_type_options[$arr['type']] = $node_types[$arr['type']];
-    }
-    if (sizeof($source_type_options) < 1) {
-      drupal_set_message(t('There are no event nodes in this database. No event import options are available.'));
-      return array();
-    }
-  }
-  if (!$POST) {
-    $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the event. If you want to bring in other node data like taxonomy terms and Organic Groups permissions, make sure the new content type is configured the same way as the source event. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
-  }
-  $form['source_type'] = array(
-    '#type' => 'select',
-    '#options' => $source_type_options,
-    '#title' => t('Source type'),
-    '#default_value' => '',
-    );
-  $form += date_copy_target_form();
-  $form['delete_old'] = array('#type' => 'select', '#options' => array('yes' => t('Yes'), 'no' => t('No')), '#title' => t('Delete original event?'), '#description' => t('Should the original entry be deleted once it has been copied to the new content type? If so, be sure to back up your database first.'));
-  $form['max'] = array('#type' => 'textfield', '#title' => t('Limit'), '#description' => t('The maximum number of nodes to convert in this pass.'));
-  $form['start_nid'] = array('#type' => 'textfield', '#title' => t('Starting nid'), '#default_value' => 0, '#description' => t('Convert nodes with nids greater than or equal to this number.'));
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
-  return $form;
 
+  $step = intval($form_values['step'] + 1);
+  $form['step'] = array(
+    '#type' => 'hidden',
+    '#value' => $step,
+  );
+  $form['#prefix'] = t('This form will process a content type and one or more fields from that type and export the settings. The export created by this process can be copied and pasted as an import into the current or any other database. The import will add the fields to into an existing content type or create a new content type that includes the selected fields.');
+  $form['#multistep'] = TRUE;
+  $form['#redirect'] = FALSE;
+
+  switch ($step) {
+    case 1: // Select a content type to import into.
+      $node_types = node_get_types('names');
+      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
+      $source_type_options = array();
+      $result = db_query("SELECT DISTINCT n.type FROM {event} e INNER JOIN {node} n ON e.nid=n.nid");
+      while ($arr = db_fetch_array($result)) {
+        $source_type_options[$arr['type']] = $node_types[$arr['type']];
+      }
+      if (sizeof($source_type_options) < 1) {
+        drupal_set_message(t('There are no event nodes in this database. No event import options are available.'));
+        return array();
+      }
+      $form['source_type'] = array(
+        '#type' => 'select',
+        '#options' => $source_type_options,
+        '#title' => t('Source type'),
+        '#default_value' => '',
+      );
+      $form += date_copy_type_form(TRUE);
+      $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
+      return $form;
+
+    case 2: // Select the fields to import into.
+      $type = $form_values['target_type'];
+      $form['target_type'] = array(
+        '#value' => $type,
+        '#type' => 'hidden',
+      );
+      $form['source_type'] = array(
+        '#value' => $form_values['source_type'],
+        '#type' => 'hidden',
+      );
+      $form['fields'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('!type Fields', array('!type' => $node_types[$type])),
+        '#weight' => -1,
+      );
+      $form['fields'] += date_copy_type_fields_form($type);
+      $form['delete_old'] = array('#type' => 'select', '#options' => array('yes' => t('Yes'), 'no' => t('No')), '#title' => t('Delete original event?'), '#description' => t('Should the original entry be deleted once it has been copied to the new content type? If so, be sure to back up your database first.'));
+      $form['max'] = array('#type' => 'textfield', '#title' => t('Limit'), '#description' => t('The maximum number of nodes to convert in this pass.'));
+      $form['start_nid'] = array('#type' => 'textfield', '#title' => t('Starting nid'), '#default_value' => 0, '#description' => t('Convert nodes with nids greater than or equal to this number.'));
+      $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
+      return $form;
+  }
 }
 
 /**
- *  Import date data created by event module.
- *
- *  $target_type
- *    the content type to import these values into.
- *  $source_type
- *    the content type to import values from.
- *  $date_field
- *    the field name to import the start time into.
- *  $description_field
- *    the field name to import the description into, in Drupal 5.x it can be 'body'
- *  $limit
- *    the maximum number of records to convert at one time.
+ *  Event import processing.
  */
 function date_copy_import_event_form_submit($form_id, $form_values) {
   extract($form_values);
-  $_SESSION['date_copy_conversion'] = TRUE;
+  if ($step != 2) return;
+
+  // workaround to disable drupal messages when nodes are created or deleted
+  $messages = drupal_get_messages();
+
   $rows = array();
-  //$count = db_result(db_query("SELECT COUNT(*) FROM {event} e INNER JOIN {node} n ON e.nid=n.nid WHERE n.type = '%s' AND n.nid > %d ORDER BY n.nid", array($source_type, $start_nid)));
   $i = 0;
+  // Get $max records, 10 at a time.
   $limit = min(10, intval($max));
   while($i < intval($max)) {
     $new_rows = date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old);
     $rows = array_merge($rows, $new_rows);
     $i += $limit;
   }
-  drupal_set_message(t('%limit events have been converted.', array('%limit' => sizeof($rows))));
-  drupal_set_message(theme('table', array(t('Title'), t('Source Id'), t('Target Id'), t('Start'), t('End')), $rows));
+
+  // write back the old messages
+  $_SESSION['messages'] = $messages;
+
+  if (!empty($rows)) {
+    drupal_set_message(t('%limit events have been converted.', array('%limit' => sizeof($rows))));
+    drupal_set_message(theme('table', array(t('Title'), t('Source Id'), t('Target Id'), t('Start'), t('End')), $rows));
+  }
+  else {
+    drupal_set_message(t('No events have been converted.'));
+  }
   return;
 }
 

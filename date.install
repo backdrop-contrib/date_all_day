@@ -4,12 +4,13 @@
 /**
  * Implementation of hook_install().
  */
-variable_set('date_version', drupal_get_installed_schema_version('date'));
 
 function date_install() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
 }
 
 function date_update_1() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
 
   switch ($GLOBALS['db_type']) {
@@ -27,6 +28,7 @@ function date_update_1() {
 }
 
 function date_update_2() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   // Multi-part update
   if (!isset($_SESSION['date_update_2'])) {
     $_SESSION['date_update_2'] = 0;
@@ -52,6 +54,7 @@ function date_update_2() {
  * Data is now stored in per-field tables.
  */
 function date_update_3() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
 
   include_once(drupal_get_path('module', 'content') .'/content.module');
@@ -94,6 +97,7 @@ function date_update_3() {
 // a conditional update, can be rerun if changes didn't get made properly previously
 
 function date_update_4() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
 
   include_once(drupal_get_path('module', 'content') .'/content.module');
@@ -125,6 +129,7 @@ function date_update_4() {
 // add column for timezone offset -- needed for views integration with dates that have date-specific zones
 
 function date_update_5() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
@@ -190,6 +195,7 @@ function date_update_5() {
  * a conditional update, can be rerun if changes didn't get made properly previously
  */
 function date_update_6() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
 
   include_once(drupal_get_path('module', 'content') .'/content.module');
@@ -270,6 +276,7 @@ function date_update_6() {
  *  Previously only non-required fields allowed NULL values.
  */
 function date_update_7() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
   $ret = array();
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');

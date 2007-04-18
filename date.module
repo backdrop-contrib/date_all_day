@@ -33,6 +33,15 @@ function date_init() {
       module_disable(array('date'));
       drupal_set_message(t('Date API module is not installed. Date module was disabled.'));
     }
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function date_menu($may_cache) {
+  // Include css unconditionally exactly once.
+  if ($may_cache) {
     drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
   }
 }

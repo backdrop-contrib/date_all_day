@@ -320,13 +320,12 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
       // Unset undesired date part values in ISO dates.
       // Not sure this is the best place to do this, but form_set_value requires knowlege of the widget structure,
       // so that won't work in the field, and doing it in the widget get much more complex, so leaving it here for now.
-      dprint_r($field);
       foreach ($items as $delta => $item) {
         foreach ($process as $processed) {
           if (!form_get_errors()) {
-            $items[$delta][$processed] =  date_unset_granularity($item[$processed], date_granularity_array($field), $field['type']);
+            $replace = date_unset_granularity($item[$processed], date_granularity_array($field), $field['type']);
+            $items[$delta][$processed] = $replace !== 'ERROR' && $replace != $items[$delta][$processed] ? $replace : $items[$delta][$processed];
           }
-
         }
       }
       return $items;

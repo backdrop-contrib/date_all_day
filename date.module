@@ -1049,7 +1049,10 @@ function theme_date_formatter($dates, $field, $formatter, $node) {
 function theme_date_display_combination($field, $dates, $node = NULL) {
   $date1 = $dates['value']['formatted'];
   $date2 = $dates['value2']['formatted'];
-  if ($date1 == $date2 || empty($date2)) {
+  if (empty($date1) && empty($date2)) {
+    return '';
+  }
+  elseif ($date1 == $date2 || empty($date2)) {
     return '<span class="date-display-single">'. $date1 .'</span>';
   }
   else {

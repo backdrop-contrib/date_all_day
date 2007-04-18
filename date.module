@@ -270,6 +270,7 @@ function date_formatter_setup_form($field, $delta) {
  *
  */
 function date_field($op, &$node, $field, &$items, $teaser, $page) {
+  $field_name = $field['field_name'];
   if ($field['todate']) {
     $process = array('value', 'value2');
   }
@@ -301,55 +302,25 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
                 ));
             }
           }
-          // Unset undesired date part values in ISO dates.
-          if (!form_get_errors()) {
-          	form_set_value($error_field, date_set_granularity($item[$processed], $field));
-          }
         }
       }
-      return;
-  }
-}
+      return $items;
 
-/**
- * Unset undesired date part values.
-*/
-function date_set_granularity($item, $field) {
-  if (!$nongranularity = array_diff(array('Y', 'M', 'D', 'H', 'N', 'S'), date_granularity_array($field))) {
-   return $item;
-  }
-  else {
-   if ($field['type'] == DATE_ISO) {
-    $date = date_iso2array($item);
-   }
-   else {
-    $date = date_unix2array($item);
-   }
-   foreach ($nongranularity as $level) {
-     switch ($level) {
-       case 'S':
-         $date['seconds'] = 0;
-         break;
-       case 'N':
-         $date['minutes'] = 0;
-         break;
-       case 'H':
-         $date['hours'] = 0;
-         break;
-       case 'M':
-         $date['mon'] = $field['type'] == DATE_UNIX ? 1 : 0;
-         break;
-       case 'D':
-         $date['mday'] = $field['type'] == DATE_UNIX ? 1 : 0;
-         break;
+    case 'update':
+    case 'insert':
+      // Unset undesired date part values in ISO dates.
+      // Not sure this is the best place to do this, but form_set_value requires knowlege of the widget structure,
+      // so that won't work in the field, and doing it in the widget get much more complex, so leaving it here for now.
+      dprint_r($field);
+      foreach ($items as $delta => $item) {
+        foreach ($process as $processed) {
+          if (!form_get_errors()) {
+            $items[$delta][$processed] =  date_unset_granularity($item[$processed], date_granularity_array($field), $field['type']);
+          }
+
+        }
       }
-    }
-    if ($field['type'] == DATE_ISO) {
-      return date_array2iso($date);
-    }
-    else {
-      return date_array2unix($date);
-    }
+      return $items;
   }
 }
 

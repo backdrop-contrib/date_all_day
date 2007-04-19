@@ -412,7 +412,7 @@ function date_widget_settings($op, $widget) {
           $form['input']['advanced']['years_back'] = array(
             '#type' => 'textfield',
             '#title' => t('Years back'),
-            '#default_value' => $widget['years_back'] ? $widget['years_back'] : 3,
+            '#default_value' => isset($widget['years_back']) ? $widget['years_back'] : 3,
             '#size' => 2,
             '#maxsize' => 2,
             '#description' => t('Number of years to go back when using a selection list.'),
@@ -420,7 +420,7 @@ function date_widget_settings($op, $widget) {
           $form['input']['advanced']['years_forward'] = array(
             '#type' => 'textfield',
             '#title' => t('Years forward'),
-            '#default_value' => $widget['years_forward'] ? $widget['years_forward'] : 3,
+            '#default_value' => isset($widget['years_forward']) ? $widget['years_forward'] : 3,
             '#size' => 2,
             '#maxsize' => 2,
             '#description' => t('Number of years to go forward when using a selection list.'),
@@ -428,7 +428,7 @@ function date_widget_settings($op, $widget) {
           $form['input']['advanced']['increment'] = array(
             '#type' => 'select',
             '#title' => t('Time increment'),
-            '#default_value' => $widget['increment'] ? $widget['increment'] : 1,
+            '#default_value' => isset($widget['increment']) ? $widget['increment'] : 1,
             '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
             '#description' => t('Increment the minute and second fields by this amount.'),
           );

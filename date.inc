@@ -375,13 +375,7 @@ function date_set_date(&$date, $value, $timezone = 'GMT', $type = 'db', $format 
  * @return true or false
  */
 function date_no_conversion($date) {
-  if (isset($date->local->parts) && $date->local->parts['hours'] == 0 && $date->local->parts['minutes'] == 0 && $date->local->parts['seconds'] == 0) {
-    return TRUE;
-  }
-  elseif (isset($date->db->parts) && $date->db->parts['hours'] == 0 && $date->db->parts['minutes'] == 0 && $date->db->parts['seconds'] == 0) {
-    return TRUE;
-  }
-  elseif (isset($date->local->parts['year']) && $date->local->parts['year'] < 1970) {
+  if (isset($date->local->parts['year']) && $date->local->parts['year'] < 1970) {
     return TRUE;
   }
   elseif (isset($date->db->parts['year']) && $date->db->parts['year'] < 1970) {

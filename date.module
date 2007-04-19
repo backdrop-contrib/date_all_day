@@ -505,7 +505,7 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
         }
 
         switch ($field['widget']['type']) {
-          case('date_select'):
+          case 'date_select':
             if ($delta > 0) $params['opt_fields'] = array('year', 'month', 'day');
             if ($delta > 0 || (!$params['required'] && $params['value'] == '')) $params['blank_default'] = 1;
             $params['increment'] = $field['widget']['increment'];
@@ -593,16 +593,16 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       if ($field['multiple']) {
         foreach ($items as $delta => $item) {
           switch ($field['widget']['type']) {
-            case('date_select'):
+            case 'date_select':
               if (empty($item['value']['year']) && ($delta > 0 || !$field['required'])) {
                 unset($items[$delta]);
               }
-            break;
+              break;
             default:
               if (empty($item['value']) && ($delta > 0 || !$field['required'])) {
                 unset($items[$delta]);
               }
-            break;
+              break;
           }
         }
       }
@@ -610,26 +610,35 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
       $timezone = date_get_timezone($field['tz_handling'], $items['timezone']);
       unset($items['timezone']);
       foreach ($items as $delta => $item) {
-        if ($item) {
+        if (!empty($item)) {
           foreach ($process as $processed) {
-            if ($processed == 'value2' && (empty($item['value2']) && empty($item['value2']['year']))) {
-               // Handle empty 'to' date values.
-               $add[$delta]['value2'] = $add[$delta]['value'];
-            }
-            else {
-              switch ($field['widget']['type']) {
-                case('date_select'):
+            // Handle empty to date values by substituting in the from date.
+            // Otherwise, replace $items values with the converted date, timezone, and offset values
+            switch ($field['widget']['type']) {
+              case 'date_select':
+                if ($processed == 'value2' && empty($item['value2']['year'])) {
+                  $add[$delta]['value2'] = $add[$delta]['value'];
+                }
+                else {
                   $date = date_selector_make_dbdate($item[$processed], $field['type'], $timezone, date_granularity_array($field));
-                  break;
-                case('date_js'):
-                  $date = date_jscalendar_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-                  break;
-                default:
-                  $date = date_text_make_dbdate(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
-                  break;
-              }
-              // replace $items values with the converted date, timezone, and offset values
-              $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
+                  $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
+                }
+                break;
+              default:
+                if ($processed == 'value2' && empty($item['value2'])) {
+                  $add[$delta]['value2'] = $add[$delta]['value'];
+                }
+                else {
+                  if ($field['widget']['type'] == 'date_js') {
+                    $function = 'date_jscalendar_make_dbdate';
+                  }
+                  else {
+                    $function = 'date_text_make_dbdate';
+                  }
+                  $date = $function(trim($item[$processed]), $field['type'], $formats['input']['text'], $timezone, date_granularity_array($field));
+                  $add[$delta][$processed]    = date_show_value($date, 'db', $field['type']);
+                }
+                break;
             }
             // Replace $item values with calculated values from $date object.
             // This will also eliminate timezone and offset for dates too old

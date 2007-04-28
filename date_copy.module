@@ -28,7 +28,7 @@ function date_copy_menu($may_cache) {
       'path'     => 'admin/content/date',
       'title'    => t('Date Import/Export'),
       'description' => t('Import and export date data.'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_import_ical_form',
       'type' => MENU_NORMAL_ITEM,
@@ -36,7 +36,7 @@ function date_copy_menu($may_cache) {
     $items[] = array(
       'path'     => 'admin/content/date/import',
       'title'    => t('Import'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_import_ical_form',
       'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -45,7 +45,7 @@ function date_copy_menu($may_cache) {
     $items[] = array(
       'path'     => 'admin/content/date/export',
       'title'    => t('Export'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_export_form',
       'type' => MENU_LOCAL_TASK,
@@ -54,7 +54,7 @@ function date_copy_menu($may_cache) {
     $items[] = array(
       'path'     => 'admin/content/date/import/ical',
       'title'    => t('iCal'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_import_ical_form',
       'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -63,7 +63,7 @@ function date_copy_menu($may_cache) {
     $items[] = array(
       'path'     => 'admin/content/date/import/event',
       'title'    => t('Events'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_import_event_form',
       'type' => MENU_LOCAL_TASK,
@@ -72,7 +72,7 @@ function date_copy_menu($may_cache) {
     $items[] = array(
       'path'     => 'admin/content/date/import/csv',
       'title'    => t('CSV'),
-      'access'   => user_access('administer content'),
+      'access'   => user_access('administer nodes'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'date_copy_import_csv_form',
       'type' => MENU_LOCAL_TASK,
@@ -271,13 +271,12 @@ function date_copy_import_ical_form($form_values = NULL) {
     '#type' => 'hidden',
     '#value' => $step,
   );
-  $form['#prefix'] = t('This form will process a content type and one or more fields from that type and export the settings. The export created by this process can be copied and pasted as an import into the current or any other database. The import will add the fields to into an existing content type or create a new content type that includes the selected fields.');
   $form['#multistep'] = TRUE;
   $form['#redirect'] = FALSE;
 
   switch ($step) {
     case 1: // Select a content type to import into.
-      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
+      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import. The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import.');
       $form['source_file'] = array(
         '#type' => 'textfield',
         '#title' => t('Source file'),
@@ -417,14 +416,13 @@ function date_copy_import_event_form($form_values = NULL) {
     '#type' => 'hidden',
     '#value' => $step,
   );
-  $form['#prefix'] = t('This form will process a content type and one or more fields from that type and export the settings. The export created by this process can be copied and pasted as an import into the current or any other database. The import will add the fields to into an existing content type or create a new content type that includes the selected fields.');
   $form['#multistep'] = TRUE;
   $form['#redirect'] = FALSE;
 
   switch ($step) {
     case 1: // Select a content type to import into.
       $node_types = node_get_types('names');
-      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.');
+      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import. The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import.');
       $source_type_options = array();
       $result = db_query("SELECT DISTINCT n.type FROM {event} e INNER JOIN {node} n ON e.nid=n.nid");
       while ($arr = db_fetch_array($result)) {
@@ -526,7 +524,7 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
   while ($event = db_fetch_object($result)) {
 
     $source_nid = $event->nid;
-    $event_node = node_load($source_nid);
+    $event_node = node_load($source_nid, NULL, TRUE);
 
     // Creating new nodes or converting existing ones??
     if ($target_type != $source_type) {

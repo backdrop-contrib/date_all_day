@@ -135,7 +135,7 @@ function date_field_settings($op, $field) {
         );
 
       $default_formatter = date_formatter_setup_form($field, 0);
-      $form['output'][] = $default_formatter;
+      $form['output']['default'] = $default_formatter;
 
       $form['output']['advanced'] = array(
         '#type' => 'fieldset',
@@ -177,7 +177,6 @@ function date_field_settings($op, $field) {
         '#description' => t('Select the timezone to be used as the site\'s timezone for all date fields in every content type in which they appear. List includes GMT and all timezones with the same GMT offset as the site timezone setting.'),
       );
       $form['#suffix'] = t('<div class="form-item"><div class="description">* The custom format, if provided, will override the selected date display. Define a php date format like \'m-d-Y H:i\' (see <a href="http://php.net/date">http://php.net/date</a>). Do not add time zone formatting to the custom format, it will not work correctly. Use the zone display option instead.</div></div>');
-
       return $form;
 
 
@@ -209,9 +208,9 @@ function date_field_settings($op, $field) {
           $name = 'default';
         }
         $append = ($i > 0 ? '_'. $name : '');
-        $options[] = date_strip_granularity('output_format_date'. $append, date_granularity_array($field));
-        $options[] = date_strip_granularity('output_format_zone'. $append, date_granularity_array($field));
-        $options[] = date_strip_granularity('output_format_custom'. $append, date_granularity_array($field));
+        $options[] = 'output_format_date'. $append;
+        $options[] = 'output_format_zone'. $append;
+        $options[] = 'output_format_custom'. $append;
       }
       return $options;
 

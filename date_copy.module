@@ -549,10 +549,10 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
     $timestamp  = $event->event_start;
     $timestamp2 = $event->event_end;
     if ($field['type'] == 'date') {
-      $data = array(0 => array('value' => date_set_granularity(date_unix2iso($timestamp), $field), 'value2' => date_set_granularity(date_unix2iso($timestamp2), $field), 'timezone' => '', 'offset' => ''));
+      $data = array(0 => array('value' => date_unset_granularity(date_unix2iso($timestamp), date_granularity_array($field), $field['type']), 'value2' => date_unset_granularity(date_unix2iso($timestamp2), date_granularity_array($field), $field['type']), 'timezone' => '', 'offset' => ''));
     }
     else {
-      $data = array(0 => array('value' => date_set_granularity($timestamp, $field), 'value2' => date_set_granularity($timestamp2, $field), 'timezone' => '', 'offset' => ''));
+      $data = array(0 => array('value' => date_unset_granularity($timestamp, date_granularity_array($field), $field['type']), 'value2' => date_unset_granularity($timestamp2, date_granularity_array($field), $field['type']), 'timezone' => '', 'offset' => ''));
     }
     if ($tz_handling == 'date' && $event_tz_handling == 'event') {
       $data[0]['timezone'] = $timezones[$event->timezone]['timezone'];

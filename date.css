@@ -1,0 +1,14 @@
+fieldset.container-inline-date .form-item {float:left; padding:0; margin:0}
+fieldset.container-inline-date .form-item, fieldset.container-inline-date .form-item input {width:auto;}
+fieldset.container-inline-date .description {clear: both;}
+fieldset.container-inline-date .form-item input, fieldset.container-inline-date .form-item select {margin-right:.5em;}
+/*
+
+fieldset.container-inline-date {
+  display: inline-block;
+ }
+
+/* force IE to display the jscalendar icon in date fieldsets */
+fieldset.container-inline-date .jscalendar-icon {
+  text-indent: 0;
+}

@@ -34,7 +34,6 @@ if (!date_handle_timezones()) {
  * to site and user edit settings by setting date_store_timezones to TRUE.
  */
 variable_get('date_store_timezones', FALSE);
-variable_set('date_store_timezones', TRUE);
 
 /**
  * NULL is used for the default setting of date_default_timezone_name
@@ -116,6 +115,7 @@ function date_api_menu($may_cache) {
     drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
   }
   else {
+    drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
     $items[] = array('path' => 'date/timezone',
       'title' => t('Browser timezone'),
       'callback' => 'date_user_timezone_name',
@@ -186,8 +186,8 @@ function date_month_names($required = FALSE) {
   static $month_names;
   if (empty($month_names)) {
     $month_names = array();
-    foreach (date_month_names_untranslated() as $month) {
-      $month_names[] = t($month);
+    foreach (date_month_names_untranslated() as $key => $month) {
+      $month_names[$key] = t($month);
     }
   }
   $none = array(0 => '');
@@ -206,8 +206,8 @@ function date_month_names_abbr($required = FALSE) {
   static $month_names;
   if (empty($month_names)) {
     $month_names = array();
-    foreach (date_month_names_untranslated() as $month) {
-      $month_names[] = t(substr($month, 0, 3));
+    foreach (date_month_names_untranslated() as $key => $month) {
+      $month_names[$key] = t(substr($month, 0, 3));
     }
   }
   $none = array(0 => '');
@@ -245,8 +245,8 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
   static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
-    foreach (date_week_days_untranslated($refresh) as $day) {
-      $weekdays[] = t($day);
+    foreach (date_week_days_untranslated($refresh) as $key => $day) {
+      $weekdays[$key] = t($day);
     }
   }
   $none = array(0 => '');
@@ -265,8 +265,8 @@ function date_week_days_abbr($required = FALSE, $refresh = TRUE) {
   static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
-    foreach (date_week_days_untranslated($refresh) as $day) {
-      $weekdays[] = t(substr($day, 0, 3));
+    foreach (date_week_days_untranslated($refresh) as $key => $day) {
+      $weekdays[$key] = t(substr($day, 0, 3));
     }
   }
   $none = array(0 => '');
@@ -438,7 +438,7 @@ function date_long_formats() {
 }
 
 /**
- * Array or regex replacement strings for date format elements.
+ * Array of regex replacement strings for date format elements.
  * Used to allow input in custom formats. Based on work done for
  * the Date module by Yves Chedemois (yched).
  *
@@ -461,13 +461,36 @@ function date_format_patterns() {
 }
 
 /**
+ * Array of granularity options and their lables
+ *
+ * @return array
+ */
+function date_granularity_names() {
+  return array('Y' => t('Year'), 'M' => t('Month'), 'D' => t('Day'),
+    'H' => t('Hour'), 'N' => t('Minute'), 'S' => t('Second'),
+    );
+}
+
+/**
+ * Array of granularity keys and the names of the related array parts.
+ *
+ * @return array
+ */
+function date_granularity_parts() {
+  return array('Y' => 'year', 'M' => 'mon', 'D' => 'mday',
+  'H' => 'hours', 'N' => 'minutes', 'S' => 'seconds');
+}
+
+/**
  * A translated array of timezone names.
  * Cache the untranslated array, make the translated array a static variable.
  *
+ * @param $required
+ *   if not required, returned array will include a blank value
  * @return
  *   an array of timezone names
  */
-function date_timezone_names($refresh = FALSE) {
+function date_timezone_names($required = FALSE, $refresh = FALSE) {
   static $zonenames;
   if (empty($zonenames)) {
     $zonenames = array();
@@ -481,7 +504,8 @@ function date_timezone_names($refresh = FALSE) {
       $zonenames[$name] = t($name);
     }
   }
-  return $zonenames;
+  $none = array('' => '');
+  return !$required ? $none + $zonenames : $zonenames;
 }
 
 /**
@@ -982,7 +1006,7 @@ function date_has_time($granularity) {
  *   the date with the unwanted parts reset to zeros (or ones if zeros are
  *   invalid for that date type).
 */
-function date_granularity_value($date, $granularity, $type = DATE_DATETIME) {
+function date_limit_value($date, $granularity, $type = DATE_DATETIME) {
   if (!$nongranularity = date_nongranularity($granularity)) {
    return $item;
   }
@@ -1017,7 +1041,7 @@ function date_granularity_value($date, $granularity, $type = DATE_DATETIME) {
  *
  * Example:
  * $format = variable_get('date_format_long', 'l, F j, Y - H:i');
- * $new_format = date_granularity_format($format, array('M', 'D', 'Y'));
+ * $new_format = date_limit_format($format, array('M', 'D', 'Y'));
  * results in: 'l, F j, Y';
  *
  * @param $format
@@ -1028,7 +1052,7 @@ function date_granularity_value($date, $granularity, $type = DATE_DATETIME) {
  * @return
  *   a format string with all other elements removed
  */
-function date_granularity_format($format, $granularity) {
+function date_limit_format($format, $granularity) {
   $regex = array();
   // Get rid of dash separating date and time if either is missing.
   if (!date_has_time($granularity)
@@ -1051,10 +1075,10 @@ function date_granularity_format($format, $granularity) {
         $regex[] = '([HhGg][:]?)';
         break;
       case 'N':
-        $regex[] = '([:]?[i a|i A|ia|iA|i])';
+        $regex[] = '([:]?[ia|iA|i])';
         break;
       case 'S':
-        $regex[] = '([:]?[s a|s A|sa|sA|s])';
+        $regex[] = '([:]?[sa|sA|s])';
         break;
     }
   }
@@ -1062,6 +1086,70 @@ function date_granularity_format($format, $granularity) {
   // Don't leave any trailing punctuation behind.
   $format = trim(preg_replace($regex, array(), $format));
   return preg_replace('([\-/\.,]$)', '', $format);
+}
+
+/**
+ * Recreate a date format string so it has the values jscalendar expects.
+ *
+ * @param string $format
+ * @return string that uses the jscalendar format elements
+ */
+
+function date_format_to_jscalendar($format) {
+  $replace = array(
+    'd' => '%d', 'j' => '%e', 'D' => '%a', 'l' => '%A', 'z' => '%j', 'w' => '%w',
+    'W' => '%U',
+    'm' => '%m', 'n' => '%m', 'F' => '%B', 'M' => '%b',
+    'Y' => '%Y', 'y' => '%y',
+    'g' => '%l', 'G' => '%k', 'h' => '%I', 'H' => '%H',
+    'i' => '%M',
+    's' => '%S',
+    'a' => '%P', 'A' => '%p',
+  );
+  return strtr($format, $replace);
+}
+
+/**
+ * Convert a format to an ordered array of granularity parts.
+ *
+ * @param string $format
+ * @return array of ordered granularity elements in this format string
+ */
+function date_format_order($format) {
+  $max = strlen($format);
+  $order = array();
+  for ($i = 0; $i <= $max; $i++) {
+    $c = $format[$i];
+    switch ($c) {
+      case 'd':
+      case 'j':
+        $order[] = 'D';
+        break;
+      case 'F':
+      case 'M':
+      case 'm':
+      case 'n':
+        $order[] = 'M';
+        break;
+      case 'Y':
+      case 'y':
+        $order[] = 'Y';
+        break;
+      case 'g':
+      case 'G':
+      case 'h':
+      case 'H':
+        $order[] = 'H';
+        break;
+      case 'i':
+        $order[] = 'N';
+        break;
+      case 's':
+        $order[] = 'S';
+        break;
+    }
+  }
+  return $order;
 }
 
 /**
@@ -1074,6 +1162,87 @@ function date_granularity_format($format, $granularity) {
  */
 function date_nongranularity($granularity) {
   return array_diff(array('Y', 'M', 'D', 'H', 'N', 'S'), $granularity);
+}
+
+/**
+ * Implementation of hook_elements().
+ *
+ * Parameters for date form elements, designed to have sane defaults so any
+ * or all can be omitted.
+ *
+ * date_select will create a collection of form elements, with a select
+ * or textfield for each date part. The whole collection will get
+ * reconstructed into a #date_type date during validation.
+ *
+ * date_text will create a single textfield that can contain a whole
+ * date or any part of a date as text. The input value will be formatted
+ * into the type of date specified by #date_type during validation.
+ *
+ * #date_type
+ *   the type of the date value, DATE_UNIX, DATE_ISO, DATE_DATETIME, etc
+ * #timezone_in
+ *   the timezone of the date/time value being passed in, default is UTC
+ * #timezone_out
+ *   the timezone to be used when displaying the date, default is date
+ *   site timezone, if set, or UTC. Valid timezones are standard timezone
+ *   ids like US/Central, America/New_York, UTC
+ * #am/pm
+ *   0 to use 24 hour format, 1 to use 12 hour format,
+ *   default is taken from short site format
+ * #granularity
+ *   an array of date parts to be allowed, default is (M, D, Y),
+ *   Y - year, M - month, D - day, H - hours, N - minutes, S - seconds
+ * #format
+ *   a format string that describes the type and order of date parts in
+ *   this element, defaults to short site default format
+ * #blank_default
+ *   control for empty date values:
+ *   'blank' to leave blank value
+ *   'now' to show current time
+ *   '+1 day' to show current time +- years|months|days|hours|minutes|seconds
+ *
+ * // date_select options
+ * #text_fields
+ *   array of date parts that should be textfields instead of selects
+ *   like array('Y', 'M', 'D'), default is empty array
+ * #opt_fields
+ *   an array of date parts that are in granularity but optional
+ *   like array('Y', 'M', 'D'), default is empty array
+ * #increment
+ *   increment minutes and seconds by increment amount, default is 1
+ * #years_back
+ *   the number of years to go back on the year selector
+ * #years_forward
+ *   the number of years to go forward on the year selector
+ *
+ * // date_text options
+ * #jscalendar
+ *   1 use if available, 0 do not use
+ */
+function date_api_elements() {
+  $site_format = variable_get('date_format_short', 'm/d/Y - H:i');
+  $ampm = strstr($site_format, 'G') || strstr($site_format, 'H') ? 0 : 1;
+  $type['date_select'] = array(
+    '#input' => TRUE, '#tree' => TRUE, '#date_type' => DATE_DATETIME,
+    '#format' => $site_format, '#ampm' => $ampm,
+    '#granularity' => array('M', 'D', 'Y'),
+    '#text_fields' => array(), '#opt_fields' => array(),
+    '#blank_default' => 'now', '#timezone_in' => 'UTC',
+    '#timezone_out' => variable_get('date_default_timezone_name', NULL),
+    '#increment' => 1, '#years_back' => 3, '#years_forward' => 3,
+    '#process' => array('date_select_process' => array()),
+    '#validate' => array('date_select_validate' => array()),
+    );
+  $type['date_text'] = array(
+    '#input' => TRUE, '#date_type' => DATE_DATETIME,
+    '#format' => $site_format, '#ampm' => $ampm,
+    '#granularity' => array('M', 'D', 'Y'), '#jscalendar' =>0,
+    '#blank_default' => 'now', '#timezone_in' => 'UTC',
+    '#timezone_out' => variable_get('date_default_timezone_name', NULL),
+    '#process' => array('date_text_process' => array()),
+    '#validate' => array('date_text_validate' => array()),
+    );
+  return $type;
 }
 
 /**

@@ -40,6 +40,21 @@ automatically by the Date API module when necessary.
 The contrib folders contain optional modules and can be removed if not needed.
 
 More documentation is available at http://drupal.org/node/92460.
+
+
+CCK Date Field installation instructions:
+
+1) The CCK date field is included in the Date files at http://drupal.org/project/date.
+
+2) Go to admin/build/modules and enable the date module. Be sure that the Date API module
+   and the Content module are also installed.
+
+3) Go to admin/content/types to view cck content types and edit a content type.
+
+4) While viewing a content type, select the option to add a new field from the tabs at
+   the top of the page. Several options for date fields should be visible.
+   
+More documentation is available at http://drupal.org/node/92460.
    
    
 

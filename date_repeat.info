@@ -1,0 +1,5 @@
+; $Id$
+name = Date Repeat API
+description = An API to calculate repeating events using iCal rules.
+dependencies = date_api
+package = Date

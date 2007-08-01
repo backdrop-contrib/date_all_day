@@ -441,17 +441,15 @@ function date_ical_parse_text($field, $data) {
  *
  *  @param $ical_date
  *    an array of ical date information created in the ical import.
- *  @param $format
- *    the format to use for the results.
  *  @param $to_tz
  *    the timezone to convert the date's value to.
- *  @return string
- *    a timezone-adjusted datetime value in the requested format
+ *  @return object
+ *    a timezone-adjusted date object
  */
-function date_ical_date_format($ical_date, $format = DATE_FORMAT_DATETIME, $to_tz = FALSE) {
+function date_ical_date($ical_date, $to_tz = FALSE) {
   global $user;
 
-  $date = date_create($ical_date, timezone_open($ical_date['tz']));
+  $date = date_create($ical_date['datetime'], timezone_open($ical_date['tz']));
 
   // If ical_date['tz'] is blank, the ical defined it as a date that should
   // never have timezone conversion. If the ical already is set to the
@@ -470,5 +468,5 @@ function date_ical_date_format($ical_date, $format = DATE_FORMAT_DATETIME, $to_t
   if (!empty($to_tz)) {
     $date = date_timezone_set($date, timezone_open($to_tz));
   }
-  return date_format($date, $format);
+  return $date;
 }

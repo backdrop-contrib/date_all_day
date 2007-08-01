@@ -1,0 +1,362 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install().
+ */
+
+function date_install() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  // Make sure this module loads after date_api.
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+}
+
+function date_update_1() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+
+  switch ($GLOBALS['db_type']) {
+    case 'pgsql':
+      db_add_column($ret, 'node_field_date_data', 'nid', 'integer', array('not null' => TRUE, 'default' => 0));
+      break;
+
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("ALTER TABLE {node_field_date_data} ADD COLUMN nid int(10) NOT NULL DEFAULT 0");
+      break;
+  }
+
+  return $ret;
+}
+
+function date_update_2() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  // Multi-part update
+  if (!isset($_SESSION['date_update_2'])) {
+    $_SESSION['date_update_2'] = 0;
+    $_SESSION['date_update_2_max'] = db_result(db_query("SELECT COUNT(*) FROM {node_field_date_data}"));;
+  }
+
+  $limit = 20;
+  $result = db_query_range("SELECT nr.nid, nfdd.vid, nfdd.field_name, nfdd.delta FROM {node_field_date_data} nfdd LEFT JOIN {node_revisions} nr ON nr.vid = nfdd.vid", $_SESSION['date_update_2'], $limit);
+  if (db_num_rows($result) == 0) {
+    unset($_SESSION['date_update_2']);
+    unset($_SESSION['date_update_2_max']);
+    return array();
+  }
+  while ($data = db_fetch_object($result)) {
+    $_SESSION['date_update_2']++;
+    db_query("UPDATE {node_field_date_data} SET nid = %d WHERE vid = %d AND field_name = '%s' AND delta = %d", $data->nid, $data->vid, $data->field_name, $data->delta);
+  }
+
+  return array('#finished' => $_SESSION['date_update_2'] / $_SESSION['date_update_2_max']);
+}
+
+/**
+ * Data is now stored in per-field tables.
+ */
+function date_update_3() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+
+  content_clear_type_cache();
+  $fields = content_fields();
+
+  foreach ($fields as $field) {
+    switch ($field['type']) {
+      case 'date':
+        $columns = array(
+          'value' => array('type' => 'varchar', 'length' => 17, 'not null' => TRUE, 'default' => "'00010101T00:00:00'"),
+        );
+        // the following line will trigger (negligible) warnings if content_update_3 was run before
+        // (column already exists)
+        @content_alter_db_field(array(), array(), $field, $columns);
+        $db_info = content_database_info($field);
+        $table = $db_info['table'];
+        if ($field['multiple']) {
+          $ret[] = update_sql('INSERT INTO {'. $table .'} (vid, delta, nid, '. $field['field_name'] ."_value) SELECT vid, delta, nid, field_date FROM {node_field_date_data} WHERE field_name = '". $field['field_name'] ."'");
+        }
+        else {
+          $ret[] = update_sql('INSERT INTO {'. $table .'} (vid, nid, '. $field['field_name'] ."_value) SELECT vid, nid, field_date FROM {node_field_date_data} WHERE field_name = '". $field['field_name'] ."'");
+        }
+        break;
+    }
+  }
+
+  $ret[] = update_sql('DROP TABLE {node_field_date_data}');
+
+  db_query('DELETE FROM {cache}');
+  return $ret;
+}
+
+/**
+ * Alter date field size and default value to comply with ISO standards, add timezone field.
+ */
+
+// a conditional update, can be rerun if changes didn't get made properly previously
+
+function date_update_4() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+
+  content_clear_type_cache();
+  $fields = content_fields();
+
+  foreach ($fields as $field) {
+    switch ($field['type']) {
+      case 'date':
+        $columns = array(
+          'value' => array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'"),
+          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'UTC'"),
+        );
+        $db_info = content_database_info($field);
+        if ($db_info['columns']['value']['default'] != "'0001-01-01T00:00:00'") {
+          content_alter_db_field(array(), array(), $field, $columns);
+        }
+        $id = $field['field_name']. '_value';
+        $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = CONCAT(SUBSTRING($id,1,4), '-', SUBSTRING($id,5,2), '-', SUBSTRING($id,7)) WHERE SUBSTRING($id, 5, 1) <> '-'");
+    }
+  }
+  db_query('DELETE FROM {cache}');
+  return $ret;
+}
+
+// adds in potential for empty dates by allowing date and timezone values to be null
+// add column for timezone offset -- needed for views integration with dates that have date-specific zones
+
+function date_update_5() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+
+  content_clear_type_cache();
+  $fields = content_fields();
+  foreach ($fields as $field) {
+
+    $db_info = content_database_info($field);
+    $table = $db_info['table'];
+
+    if ($field['type'] == 'date') {
+      $columns_v4['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'", 'sortable' => TRUE);
+    } elseif ($field['type'] == 'datestamp') {
+      $columns_v4['value'] = array('type' => 'integer', 'length' => 11, 'not null' => TRUE, 'default' => 0, 'sortable' => TRUE);
+    }
+    $columns_v4['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'UTC'", 'sortable' => TRUE);
+
+    $columns_v5 = date_columns($field);
+
+    // update the table columns and their default values
+    if (($field['type'] == 'date' || $field['type'] == 'datestamp') && variable_get('date_version', 4) < 5) {
+      $db_info = content_database_info($field);
+      content_alter_db_field($field, $columns_v4, $field, $columns_v5);
+      $id     = $field['field_name']. '_value';
+      $tz_id  = $field['field_name']. '_timezone';
+      $offset = $field['field_name']. '_offset';
+    }
+    // reset not required values that were previously set to the default to null
+    // using a range of values because timezone conversions might have altered the default by up to 24 hours
+    switch ($field['type']) {
+      case 'date':
+        if (!$field['required'] && ($columns_v4['value']['default'] == "'0001-01-01T00:00:00'" || $columns_v4['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+        }
+        break;
+      case 'datestamp':
+        if (!$field['required'] && ($columns_v4['value']['default'] == 0 || $columns_v4['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+        }
+        break;
+    }
+  }
+  drupal_set_message(t('Date module fields were updated to allow empty (NULL) values. Existing date fields with default values were reset to NULL.'));
+  db_query('DELETE FROM {cache}');
+  variable_set('date_version', 5);
+  return $ret;
+}
+
+/**
+ * Update existing date-specific timezone fields with their offset values
+ * a conditional update, can be rerun if changes didn't get made properly previously
+ */
+function date_update_6() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+
+  content_clear_type_cache();
+  $fields = content_fields();
+
+  // See if being called for the first time
+  if (!isset($_SESSION['date_update_5'])) {
+    // find all tables that have date-specific timezone handling
+    $update = array();
+    foreach ($fields as $field) {
+      $db_info = content_database_info($field);
+      if ($field['tz_handling'] && ($field['type'] == 'date' || $field['type'] == 'datestamp')) {
+        $update[$db_info['table']] = $field;
+      }
+    }
+    // keep track of progress
+    $_SESSION['date_update_5']['tables'] = $update;
+    $_SESSION['date_update_5']['counted'] = 0;
+    foreach ($update as $table => $field) {
+      $_SESSION['date_update_5'][$table]['nid']   = 0;
+      $_SESSION['date_update_5'][$table]['to_count'] = db_result(db_query("SELECT COUNT(nid) FROM  {$table}"));
+      $_SESSION['date_update_5']['count_total'] += $_SESSION['date_update_5'][$table]['to_count'];
+    }
+  }
+  $update = $_SESSION['date_update_5']['tables'];
+  foreach ($update as $table => $field) {
+    // Fetch the next 20 nodes
+    $results = db_query_range("SELECT * FROM {$table} WHERE nid > %d ORDER BY nid", $_SESSION['date_update_5'][$table]['nid'], 0, 20);
+    while ($arr = db_fetch_array($results)) {
+      $node = node_load($arr['nid']);
+      foreach ((array) $node->$field['field_name'] as $delta => $field_part) {
+        $date = date_make_date($field_part['value'], 'UTC', 'db', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
+        date_convert_timezone($date, 'UTC', $field_part['timezone'], 'local');
+        $add[$delta]['value']    = $field_part['value'];
+        $add[$delta]['timezone'] = $field['required'] || $field_part['value'] ? $field_part['timezone'] : NULL;
+        $add[$delta]['offset']   = $field['required'] || $field_part['value'] ? $date->local->offset : NULL;
+      }
+      $node->$field['field_name'] = $add;
+      node_save($node);
+      // reset nid
+      $_SESSION['date_update_5'][$table]['nid'] = $node->nid;
+      // add to count total
+      $_SESSION['date_update_5']['counted']++;
+      // reduce the number of items in this table left to count
+      $_SESSION['date_update_5'][$table]['to_count']--;
+    }
+
+    // if everything in this table has been done, move to next table
+    if ($_SESSION['date_update_5'][$table]['to_count'] < 1) {
+      array_shift($_SESSION['date_update_5']['tables']);
+    }
+
+    // See if we are done
+    if ($_SESSION['date_update_5']['count'] && $_SESSION['date_update_5']['counted'] < $_SESSION['date_update_5']['count_total']) {
+      // Not done yet. Return the progress.
+      return array('#finished' => $_SESSION['date_update_5']['counted'] / $_SESSION['date_update_5']['count']);
+    }
+    else {
+      // Done. Clean up and indicate we're finished.
+      unset($_SESSION['date_update_5']);
+
+      drupal_set_message(t('Date module timezone-specific fields were updated to add offset values.'));
+      db_query('DELETE FROM {cache}');
+      variable_set('date_version', 6);
+
+      return array('#finished' => 1);
+    }
+  }
+}
+
+/**
+ *  Update 7
+ *
+ *  Force all columns to allow NULL values to simplify the module.
+ *  Previously only non-required fields allowed NULL values.
+ */
+function date_update_7() {
+  variable_set('date_version', drupal_get_installed_schema_version('date'));
+  $ret = array();
+  include_once(drupal_get_path('module', 'content') .'/content.module');
+  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+
+  content_clear_type_cache();
+  $fields = content_fields();
+  foreach ($fields as $field) {
+    $db_info = content_database_info($field);
+    if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
+      $table = $db_info['table'];
+
+      // start with the new column patterns.
+      $columns_start = date_columns($field);
+      $columns_end = date_columns($field);
+
+      // alter the start column values to invalid values to force the new columns to be reset.
+      $columns_start['value']['not null'] = TRUE;
+      $columns_start['value']['default'] = 0;
+      if ($field['tz_handling'] == 'date') {
+        $columns_start['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'sortable' => TRUE);
+        $columns_start['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => TRUE, 'sortable' => TRUE);
+      }
+      unset($columns_start['value2']);
+
+      $db_info = content_database_info($field);
+      content_alter_db_field($field, $columns_start, $field, $columns_end);
+      $id     = $field['field_name']. '_value';
+      $tz_id  = $field['field_name']. '_timezone';
+      $offset = $field['field_name']. '_offset';
+
+      // Make sure default values in the new NULL columns get set to NULL.
+
+      switch ($field['type']) {
+      case 'date':
+        if (($columns_start['value']['default'] == "'0001-01-01T00:00:00'" || $columns_start['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id <= '0001-01-01T23:59:59'");
+          }
+        }
+        break;
+      case 'datestamp':
+        if (($columns_start['value']['default'] == 0 || $columns_start['value']['not null'])) {
+          if ($field['tz_handling'] != 'date') {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+          else {
+            $ret[] = update_sql("UPDATE {". $table ."} SET $id = NULL, $tz_id = NULL, $offset = NULL WHERE $id > -86399 AND $id <= 86399");
+          }
+        }
+        break;
+      }
+    }
+  }
+  drupal_set_message(t('All date module fields were updated to allow empty (NULL) values. Existing date fields with default values were reset to NULL.'));
+  db_query('DELETE FROM {cache}');
+  return $ret;
+}
+
+function date_update_5008() {
+  $ret = array();
+
+  // No longer using the cached formats.
+  cache_clear_all('date_formats', 'cache', TRUE);
+
+  // Make sure date module loads after date_api.
+  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+  return $ret;
+}
+
+function date_uninstall() {
+  $variables = array(
+    'date_version',
+    );
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+}

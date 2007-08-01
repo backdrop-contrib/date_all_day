@@ -1,0 +1,10 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install().
+ */
+function date_repeat_install() {
+  // Make sure this module loads after date_api.
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'date_repeat'");
+}

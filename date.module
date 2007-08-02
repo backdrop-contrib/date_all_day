@@ -279,16 +279,7 @@ function date_field_object($field, $item) {
     }
     else {
       // create a date object with a gmt timezone from the database value
-      switch ($field['type']) {
-        case DATE_ISO:
-          $value = date_convert($item[$processed], DATE_ISO, DATE_DATETIME);
-          break;
-        case DATE_UNIX:
-          $value = date_convert($item[$processed], DATE_UNIX, DATE_DATETIME);
-          break;
-        default:
-          $value = $item[$processed];
-      }
+      $value = $field['type'] == 'DATE_UNIX' ? "@$value" : $value;
       $date = date_create($value, timezone_open('UTC'));
       $dates[$processed] = array();
       $dates[$processed]['db']['object'] = $date;

@@ -406,22 +406,25 @@ function date_ical_parse_exceptions($field, $data) {
  * Parse the duration of the event.
  *
  *  @return the duration in seconds.
- *
- *  @todo
- *   this may not always be correct for long periods of time, because of
- *   leap years and leap seconds, need a better formula.
  */
 function date_ical_parse_duration($field, $data) {
   $items = array();
-  ereg ('^P(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?', $data, $duration);
-	$items['W'] = str_replace('W', '', $duration[1]);
-	$items['D'] = str_replace('D', '', $duration[2]);
-	$items['H'] = str_replace('H', '', $duration[4]);
-	$items['M'] = str_replace('M', '', $duration[5]);
-	$items['S'] = str_replace('S', '', $duration[6]);
-	$items['DURATION'] = ($items['W'] * 60 * 60 * 24 * 7)
-	  + ($items['D'] * 60 * 60 * 24) + ($items['H'] * 60 * 60)
-	  + ($items['M'] * 60) + ($items['S']);
+  ereg ('^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?', $data, $duration);
+	$items['year'] = str_replace('Y', '', $duration[1]);
+	$items['month'] = str_replace('M', '', $duration[2]);
+	$items['week'] = str_replace('W', '', $duration[3]);
+	$items['day'] = str_replace('D', '', $duration[4]);
+	$items['hour'] = str_replace('H', '', $duration[6]);
+	$items['minute'] = str_replace('M', '', $duration[7]);
+	$items['second'] = str_replace('S', '', $duration[8]);
+	$date = date_create('now', timezone_open('UTC'));
+	$date2 = drupal_clone($date);
+	foreach ($items as $item => $count) {
+	  if ($count > 0) {
+	    date_modify($date2, '+'. $count .' '. $item);
+	  }
+	}
+	$items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
   return $items;
 }
 

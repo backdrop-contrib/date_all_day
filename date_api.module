@@ -792,10 +792,8 @@ function date_convert($date, $from_type, $to_type) {
       $obj = $date;
       break;
     case DATE_DATETIME:
-      $obj = date_create($date, timezone_open('UTC'));
-      break;
     case DATE_ISO:
-      $obj = date_create(str_replace(' ', 'T', $date), timezone_open('UTC'));
+      $obj = date_create($date, timezone_open('UTC'));
       break;
     case DATE_UNIX:
       $obj = date_create("@$date", timezone_open('UTC'));
@@ -1175,28 +1173,27 @@ function date_nongranularity($granularity) {
  * reconstructed into a #date_type date during validation.
  *
  * date_text will create a single textfield that can contain a whole
- * date or any part of a date as text. The input value will be formatted
- * into the type of date specified by #date_type during validation.
+ * date or any part of a date as text. The input value will be re-formatted
+ * into a #date_type date during validation.
  *
  * #date_type
  *   the type of the date value, DATE_UNIX, DATE_ISO, DATE_DATETIME, etc
  * #timezone_in
- *   the timezone of the date/time value being passed in, default is UTC
+ *   the timezone of the date/time value being passed in, this is
+ *   the way the date/time is stored in the database, default is UTC
  * #timezone_out
- *   the timezone to be used when displaying the date, default is date
- *   site timezone, if set, or UTC. Valid timezones are standard timezone
- *   ids like US/Central, America/New_York, UTC
- * #am/pm
- *   0 to use 24 hour format, 1 to use 12 hour format,
- *   default is taken from short site format
+ *   the timezone to be used when collecting or displaying the date,
+ *   default is date site timezone, if set, or UTC. Valid timezones are
+ *   standard timezone ids like US/Central, America/New_York, UTC
  * #granularity
- *   an array of date parts to be allowed, default is (M, D, Y),
+ *   an array of date parts to be collected, default is (M, D, Y),
  *   Y - year, M - month, D - day, H - hours, N - minutes, S - seconds
  * #format
  *   a format string that describes the type and order of date parts in
- *   this element, defaults to short site default format
+ *   this element, be sure to add 'A' or 'a' to get an am/pm selector,
+ *   defaults to short site default format
  * #blank_default
- *   control for empty date values:
+ *   handling for empty date values:
  *   'blank' to leave blank value
  *   'now' to show current time
  *   '+1 day' to show current time +- years|months|days|hours|minutes|seconds
@@ -1220,11 +1217,9 @@ function date_nongranularity($granularity) {
  *   1 use if available, 0 do not use
  */
 function date_api_elements() {
-  $site_format = variable_get('date_format_short', 'm/d/Y - H:i');
-  $ampm = strstr($site_format, 'G') || strstr($site_format, 'H') ? 0 : 1;
   $type['date_select'] = array(
     '#input' => TRUE, '#tree' => TRUE, '#date_type' => DATE_DATETIME,
-    '#format' => $site_format, '#ampm' => $ampm,
+    '#format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#granularity' => array('M', 'D', 'Y'),
     '#text_fields' => array(), '#opt_fields' => array(),
     '#blank_default' => 'now', '#timezone_in' => 'UTC',
@@ -1235,7 +1230,7 @@ function date_api_elements() {
     );
   $type['date_text'] = array(
     '#input' => TRUE, '#date_type' => DATE_DATETIME,
-    '#format' => $site_format, '#ampm' => $ampm,
+    '#format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#granularity' => array('M', 'D', 'Y'), '#jscalendar' =>0,
     '#blank_default' => 'now', '#timezone_in' => 'UTC',
     '#timezone_out' => variable_get('date_default_timezone_name', NULL),

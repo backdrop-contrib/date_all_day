@@ -12,12 +12,15 @@
  *
  * Supported:
  *   date_create()
- *     - with limitations, input date must be in YYYY-MM-DD HH:MM:SS format,
- *       or 'now' or unix timestamp like '@99999999' or something
- *       strtotime will understand (strtotime works only for dates earlier than 1970).
- *       Also must supply timezone as second argument.
+ *     with limitations, input date must be one of:
+ *       - YYYY-MM-DD HH:MM:SS
+ *       - YYYY-MM-DDTHH:MM:SS
+ *       - 'now'
+ *       - unix timestamp prefixed with '@', like '@99999999'
+ *       - or something strtotime will understand (only for dates earlier than 1970).
+ *     also must supply timezone as second argument to date_create().
  *   date_modify()
- *     - with limitations, must supply modification in form like:
+ *     with limitations, must supply modification in form like:
  *       '+1 day|week|month|year|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday'
  *       '-3 day|week|month|year|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday'
  *   date_format()
@@ -43,7 +46,8 @@ if (!function_exists('date_create')) {
  *    - anything strtotime will support for a post-1970 date,
  *    - a timestamp (must be prefixed with a @ to be interpreted as a
  *        timestamp in PHP 5 -- see http://bugs.php.net/bug.php?id=40171)
- *    - otherwise, must be a DATETIME date (YYYY-MM-DD HH:MM:SS)
+ *    - otherwise, must be a DATETIME date (YYYY-MM-DD HH:MM:SS) or
+ *        ISO date (YYYY-MM-DDTHH:MM:SS)
  *        PHP 5 accepts more alternative formats, but that's too complicated
  *        for us to handle here, so a standardized format is required.
  *
@@ -63,6 +67,10 @@ if (!function_exists('date_create')) {
     elseif (preg_match(DATE_REGEX_DATETIME, $date_in)) {
       // If it's an DATETIME date, just use it.
       $date_out = $date_in;
+    }
+    elseif (preg_match(DATE_REGEX_ISO, $date_in)) {
+      // If it's an ISO date, get rid of the 'T' and use it.
+      $date_out = str_replace('T', '', $date_in);
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.

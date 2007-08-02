@@ -6,11 +6,11 @@
  */
 function date_views_filters($field) {
   switch ($field['type']) {
-    case('date'):
+    case(DATE_ISO):
       $handler = 'date_views_filter_handler';
       $ymd_handler = 'date_views_handler_filter_ymd';
       break;
-    case('datestamp'):
+    case(DATE_UNIX):
       $handler = 'date_views_timestamp_filter_handler';
       $ymd_handler = 'date_views_timestamp_handler_filter_ymd';
       break;
@@ -34,7 +34,7 @@ function date_views_filters($field) {
 
   $filters = array(
     'default' => array(
-      'name' => t('Date'),
+      'name' => t(DATE_ISO),
       'operator' => $operator,
       'value' => date_views_handler_filter_date_value_form($field),
       'option' => 'string',
@@ -135,7 +135,8 @@ function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query)
   return date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
 function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
-  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+  date_api_load('date_api_sql.inc');
+
   $value = $filter['value'];
   $type = $filterinfo['type'];
 
@@ -203,7 +204,7 @@ function date_views_handler_filter_date_value_form($field) {
  */
 function date_views_offset($field) {
   switch ($field['tz_handling']) {
-  case('date'):
+  case(DATE_ISO):
     $offset = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_offset';
     break;
   case('site'):
@@ -232,7 +233,7 @@ function date_views_arguments() {
   foreach (content_fields() as $field) {
     $db_info = content_database_info($field);
     switch ($field['type']) {
-    case 'date':
+    case DATE_ISO:
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_argument_range_handler';
@@ -250,7 +251,7 @@ function date_views_arguments() {
       }
       break;
 
-    case 'datestamp':
+    case DATE_UNIX:
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_timestamp_argument_range_handler';
@@ -311,6 +312,8 @@ function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $ar
 }
 function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
+
+  date_api_load('date_api_sql.inc');
 
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
   $tofield_name = trim($name[1]);
@@ -407,13 +410,13 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
 function date_views_date_range($arg) {
   if (stristr($arg, 'P')) {
     // for a date plus value, get the min and max values
-    $range = date_plus_period($arg);
+    $range = date_plus_period_range($arg);
     $min_date = $range[0];
     $max_date = $range[1];
   }
   elseif (stristr($arg, '-W') && !stristr($arg, '--')) {
     // for a specified week, get the min and max values
-    $range = date_week_value($arg);
+    $range = date_iso_week_range($arg);
     $min_date = $range[0];
     $max_date = $range[1];
   }
@@ -468,96 +471,49 @@ function date_range_value($value, $value_type = 'min') {
  *  based on ISO weeks, which start counting on the first Monday in a week that
  *  has at least 4 days in the current year
  *
+ *  January 4 is always in the first ISO week of the year. Move ahead by the
+ *  number of ISO weeks to find a date in the ISO week. Find the Monday of the
+ *  ISO week for the first second of the week, move ahead 1 week and back
+ *  1 second to find last second of the week.
+ *
  *  @value - an argument in the format 2006-W20 (year + -W + week number)
  *  @return an array of ISO dates representing the first and last day in the week
  */
-function date_week_value($value) {
+function date_iso_week_range($value) {
   $parts = explode('-W', $value);
   $year = $parts[0];
-  // subtract 1 from week number so we don't double-count the final week
-  $weeks = intval($parts[1] - 1);
-  // get a unix value for the first day of the year
-  $first_day_of_year = date_convert($year .'-01-01T00:00:00', DATE_ISO, DATE_UNIX);
-
-  // get to the day of week of the first day of the year, 0 is Sunday
-  $dow   = date_format_date($first_day_of_year, 'custom', 'w', 'UTC');
-  // ISO week counts actual first week only if it has at least 4 days in it
-  if ($dow > 2) $weeks += 1;
-  // calc adjustment from first day of year dow back or forward to Monday
-  $shift = intval((1 - $dow) * 86400);
-  // the day we want is $weeks away from first day of year, adjusted to the Monday of that week by $shift
-  $first_day_of_week = $first_day_of_year + ($weeks * 604800) + $shift;
-  $last_day_of_week  = $first_day_of_week + 604800 - 1;
-  // convert the unix dates back to iso
-  return array(date_convert($first_day_of_week, DATE_UNIX, DATE_ISO), date_convert($last_day_of_week, DATE_UNIX, DATE_ISO));
-
+  $week = $parts[1];
+  $date = date_create($year .'-01-04 00:00:00', timezone_open('UTC'));
+  date_modify($date, '+'. $week .' weeks');
+  date_modify($date, '-1 Monday');
+  $min_date = date_format($date, DATE_FORMAT_ISO);
+  date_modify($date, '+1 week');
+  date_modify($date, '-1 second');
+  $max_date = date_foramt($date, DATE_FORMAT_ISO);
+  return array($min_date, $max_date);
 }
 
 /**
  *  Compute min and max dates for a P value
+ *
+ *  Min date is whatever is to the left of the period sign, defaults to
+ *  current date. Use ical module to parse the period. Set end date to
+ *  1 second before the end of the period, since we use <= operator.
  *
  *  @value = an argument in the format (start date)P#(period type)
  *     where (period type) can be Y (year), M (month), D (day), W (week), H (hour)
  *     i.e. P1Y or P90D or P1Y3M2D4H
  *  @return an array of ISO dates representing the first and last day in the range
  */
-function date_plus_period($value) {
-
-  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
-
-  // min date is whatever is to the left of the period sign, defaults to current date
+function date_plus_period_range($value) {
   $value = str_replace('--P', 'P', $value);
   $range = explode('P', $value);
   $min_date = date_range_value($range[0], 'min');
-
-  // create a date object to use for the max_date
-  $max_date = date_make_date($min_date, 'UTC', 'db', DATE_ISO);
-
-  // iterate through the requested period, adding values as needed to the date object
-  $remaining = $range[1];
-  if ($years = strpos($remaining, 'Y')) {
-    $sub       = explode('Y', $remaining);
-    $remaining = $sub[1];
-    $count     = intval($sub[0]);
-    $max_iso   = intval(substr($max_date->db->iso, 0, 4) + $count) . substr($max_date->db->iso, 4, 15);
-    date_set_date($max_date, $max_iso, 'UTC', 'db', DATE_ISO, TRUE);
-  }
-  if ($months = strpos($remaining, 'M')) {
-    $sub       = explode('M', $remaining);
-    $remaining = $sub[1];
-    $count     = intval($sub[0]);
-    $cur_mon   = intval(substr($max_date->db->iso, 5, 2));
-    $cur_year  = intval(substr($max_date->db->iso, 0, 4));
-    $max_iso   = (intval($cur_mon + $count) < 13 ? $cur_year : intval($cur_year + 1)) .'-'. date_pad(intval($cur_mon + $count) < 13 ? intval($cur_mon + $count) : 1) . substr($min_date, 7, 12);
-    date_set_date($max_date, $max_iso, 'UTC', 'db', DATE_ISO, TRUE);
-  }
-  if (stristr($range[1], 'W')) {
-    $sub       = explode('W', $remaining);
-    $remaining = $sub[1];
-    $count     = intval($sub[0]);
-    $max_unix  = intval($max_date->db->timestamp + (604800 * $count));
-    date_set_date($max_date, $max_unix, 'UTC', 'db', DATE_UNIX, TRUE);
-  }
-  if ($days = strpos($remaining, 'D')) {
-    $sub       = explode('D', $remaining);
-    $remaining = $sub[1];
-    $count     = intval($sub[0]);
-    $max_unix  = intval($max_date->db->timestamp + (86400 * $count));
-    date_set_date($max_date, $max_unix, 'UTC', 'db', DATE_UNIX, TRUE);
-  }
-  if ($hours = strpos($remaining, 'H')) {
-    $sub       = explode('H', $remaining);
-    $remaining = $sub[1];
-    $count     = intval($sub[0]);
-    $max_unix  = intval($max_date->db->timestamp + (3600 * $count));
-    date_set_date($max_date, $max_unix, 'UTC', 'db', DATE_UNIX, TRUE);
-  }
-  // slice 1 second off max date to stop it just before end of period
-  // needed because we are using <= as the operator
-  $date->db->unix = intval($max_date->db->timestamp - 1);
-  date_set_date($max_date, $date->db->unix, 'UTC', 'db', DATE_UNIX, TRUE);
-  return array($min_date, $max_date->db->iso);
-
+  date_api_load('date_api_ical.inc');
+  $parsed = date_ical_parse_duration('', $range[1]);
+  $max_date = date_create($min_date, timezone_open('UTC'));
+  date_modify($max_date, '+'. intval($parsed['DURATION'] - 1) .' seconds');
+  return array($min_date, date_format($max_date, DATE_FORMAT_ISO));
 }
 
 /**
@@ -634,7 +590,7 @@ function date_views_query_alter(&$query, &$view) {
       $name       = explode(':', $view->argument[0]['type']);
       $field_name = trim($name[1]);
       $field      = content_fields($field_name);
-      $field_type = $field['type'] == 'datestamp' ? 'int' : 'iso';
+      $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
       $db_info    = content_database_info($field);
       $value      = $db_info['columns']['value']['column'];
       $table      = 'node_data_'. $field['field_name'];
@@ -699,73 +655,30 @@ function date_views_browser_period($period = 'month') {
  *  Format an argument for the date range
  */
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
-  $stamp = date_views_browser_period_start_stamp($arg, $period);
+  $range = date_views_date_range($arg);
+  $date = date_create($range[0], timezone_open('UTC'));
   switch ($period) {
   case('week'):
-    return date_format_date($stamp, 'custom', 'Y-m-d', 'UTC') . date_views_browser_period($period);
+    return date_format($date, 'Y-m-d') . date_views_browser_period($period);
   case('year'):
-    return date_format_date($stamp, 'custom', 'Y', 'UTC') . date_views_browser_period($period);
+    return date_format($date, 'Y') . date_views_browser_period($period);
   case('day'):
-    return date_format_date($stamp, 'custom', 'Y-m-d', 'UTC') . date_views_browser_period($period);
+    return date_format($date, 'Y-m-d') . date_views_browser_period($period);
   case('hour'):
-    return date_format_date($stamp, 'custom', 'Y-m-d\TH', 'UTC') . date_views_browser_period($period);
+    return date_format($date, 'Y-m-d\TH') . date_views_browser_period($period);
   default:
-    return date_format_date('Y-m', date_views_browser_period_start_stamp($arg, $period)) . date_views_browser_period($period);
+    return date_format($date, 'Y-m') . date_views_browser_period($period);
   }
 }
 /**
  *  Return label for current date range
  */
 function date_views_browser_period_label($arg = NULL, $period = 'month') {
-  return theme('date_views_browser_period_label', $period, date_views_browser_period_start_stamp($arg, $period));
-}
-/**
- *  Find the timestamp for the beginning of the period of the analyzed date arg
- */
-function date_views_browser_period_start_stamp($arg = NULL, $period = 'month') {
-  // get the range of dates
   $range = date_views_date_range($arg);
-  $stamp = date_convert($range[0], DATE_ISO, DATE_UNIX);
-
-  // if a date range has already been determined, return the beginning of that range
-  if ($arg) return $stamp;
-
-  // if no range is yet set, find the beginning of the appropriate period
-  switch ($period) {
-  case('week'):
-    $dow = date_format_date($stamp, 'custom', 'w', 'UTC');
-    if ($dow >= 6) $adj = (86400 * 7);
-    $start = intval($stamp - intval($dow * 86400) + $adj);
-    // if site preference is to start week on other than a Sunday, go back a week and move up to correct day
-    if (variable_get('date_first_day', 0)) {
-      $start += intval(variable_get('date_first_day', 0) * 86400);
-    }
-    break;
-  case('year'):
-    $year = date_format_date($stamp, 'custom', 'Y', 'UTC');
-    $start = date_gmmktime(0, 0, 0, 1, 1, $year);
-    break;
-  case('day'):
-    $year  = date_format_date($stamp, 'custom', 'Y', 'UTC');
-    $month = date_format_date($stamp, 'custom', 'n', 'UTC');
-    $day   = date_format_date($stamp, 'custom', 'j', 'UTC');
-    $start = date_gmmktime(1, 0, 0, $month, $day, $year);
-    break;
-  case('hour'):
-    $year  = date_format_date($stamp, 'custom', 'Y', 'UTC');
-    $month = date_format_date($stamp, 'custom', 'n', 'UTC');
-    $day   = date_format_date($stamp, 'custom', 'j', 'UTC');
-    $hour  = date_format_date($stamp, 'custom', 'H', 'UTC');
-    $start = date_gmmktime($hour, 1, 0, $month, $day, $year);
-    break;
-  default:
-    $year  = date_format_date($stamp, 'custom', 'Y', 'UTC');
-    $month = date_format_date($stamp, 'custom', 'n', 'UTC');
-    $start = date_gmmktime(0, 0, 0, $month, 1, $year);
-    break;
-  }
-  return $start;
+  $date = date_create($range[0], timezone_open('UTC'));
+  return theme('date_views_browser_period_label', $period, date_format($date, DATE_UNIX));
 }
+
 /**
  *  Navigation links for the full view
  */
@@ -779,34 +692,9 @@ function date_views_browser_navigation($view, $period) {
     $arg = arg($pos);
   }
   $range = date_views_date_range($arg);
-  $stamp = date_views_browser_period_start_stamp($arg, $period);
-
-  switch ($period) {
-  case('week'):
-    $prev_date = date_format_date(intval($stamp - 604799), 'custom', 'Y-m-d', 'UTC');
-    $next_date = date_format_date(intval($stamp + 604801), 'custom', 'Y-m-d', 'UTC');
-    break;
-  case('year'):
-    $year  = intval(substr($range[0], 0, 4));
-    $month = intval(substr($range[0], 5, 2));
-    $prev_date = $month < 2 ? intval($year - 1) : $year;
-    $next_date = $month > 11 ? intval($year + 1) : $year;
-    break;
-  case('day'):
-    $prev_date = date_format_date(intval($stamp - 86399), 'custom', 'Y-m-d', 'UTC');
-    $next_date = date_format_date(intval($stamp + 86401), 'custom', 'Y-m-d', 'UTC');
-    break;
-  case('hour'):
-    $prev_date = date_format_date(intval($stamp - 3599), 'custom', 'Y-m-d\TH', 'UTC');
-    $next_date = date_format_date(intval($stamp + 3601), 'custom', 'Y-m-d\TH', 'UTC');
-    break;
-  default:
-    $year  = intval(substr($range[0], 0, 4));
-    $month = intval(substr($range[0], 5, 2));
-    $prev_date = ($month > 1 ? $year : intval($year - 1)) .'-'. ($month > 1 ? date_pad(intval($month - 1)) : '12');
-    $next_date = ($month < 12 ? $year : intval($year + 1)) .'-'.  ($month < 12 ? date_pad(intval($month + 1)) : '01');
-    break;
-  }
+  $date = date_create($range[0], timezone_open('UTC'));
+  $prev_date = date_prev($date, 1, $period, DATE_OBJECT);
+  $next_date = date_next($date, 2, $period, DATE_OBJECT);
   $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);
   $next = $view->url .'/'. $next_date . date_views_browser_period($period);
   $label = date_views_browser_period_label($arg, $period);
@@ -819,12 +707,20 @@ function date_views_browser_navigation($view, $period) {
  *  Theme for the current period label name
  */
 function theme_date_views_browser_period_label($period, $date) {
-  // use the m/d/Y part of the preferred short date format
-  if ($period != 'hour') {
-    $format = array_shift(explode(' ', variable_get('date_format_short', 'm/d/Y - H:i')));
-  }
-  else {
-    $format = str_replace(':i', '', variable_get('date_format_short', 'm/d/Y - H:i'));
+  switch ($period) {
+    case 'year':
+      $format = 'Y';
+      break;
+    case 'month':
+      $format = 'F Y':
+      break;
+    case 'day':
+      // Use just the year/month/day part of the short date format.
+      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('M', 'D', 'Y'));
+      break;
+    case 'hour':
+      // Use just the year/month/day/hour part of the short date format.
+      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('M', 'D', 'Y', 'H'));
   }
   return t('%period of %date', array('%period' => ucwords($period), '%date' => date_format_date($date, 'custom', $format, 'UTC')));
 }
@@ -876,29 +772,3 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
 
   return $output;
 }
-
-/**
- *  Get timestamp for first day of an ISO week.
- *
- *  based on ISO weeks, which start counting on the first Monday in a week that
- *  has at least 4 days in the current year
- *
- *  Compute min and max dates for an ISO week
- *  @return an array of ISO dates representing the first and last day in the week
- */
-function date_iso_week_range($year, $week) {
-  // subtract 1 from week number so we don't double-count the final week
-  $weeks = intval($week - 1);
-  // get a unix value for the first day of the year
-  $first_day_of_year = date_convert($year .'-01-01T00:00:00', DATE_ISO, DATE_UNIX);
-
-  // get to the day of week of the first day of the year, 0 is Sunday
-  $dow   = date_gmdate('w', $first_day_of_year);
-  // ISO week counts actual first week only if it has at least 4 days in it
-  if ($dow > 2) $weeks += 1;
-  // calc adjustment from first day of year dow back or forward to Monday
-  $shift = intval((1 - $dow) * 86400);
-  // the day we want is $weeks away from first day of year, adjusted to the Monday of that week by $shift
-  $first_day_of_week = $first_day_of_year + ($weeks * 604800) + $shift;
-}
-

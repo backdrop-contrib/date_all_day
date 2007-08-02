@@ -148,7 +148,7 @@ function date_select_process($element) {
       $element[$field]['#size'] = $part == 'Y' ? 4 : 2;
     }
   }
-  if (strstr(strtolower($element['#format']), 'a')) {
+  if ($hours_format == 'g') {
     $part_required = $element['#required'] || !(in_array('N', $element['#opt_fields']) && $element['#blank_default'] != 'blank');
     $element['ampm'] = array(
       '#type' => 'select',
@@ -212,8 +212,8 @@ function  date_select_validate($element) {
   }
   if (!form_get_errors()) {
     // Convert the array back to a value.
-    $string = date_convert($element['#value'], DATE_ARRAY, $element['#date_type']);
-    $string = date_limit_value($string, $element['#granularity'], $element['#date_type']);
+    $string = date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME);
+    $string = date_limit_value($string, $element['#granularity'], DATE_DATETIME);
     $date = date_create($string, timezone_open($element['#timezone_in']));
     date_timezone_set($date, timezone_open('UTC'));
     $value = date_convert(date_format($date, DATE_FORMAT_DATETIME), DATE_DATETIME, $element['#date_type']);
@@ -240,8 +240,8 @@ function  date_select_validate($element) {
 function  date_text_validate($element) {
   $element['#value'] = trim($element['#value']);
   if (!$element['#required'] && $element['#value'] == '') return TRUE;
-  $string = date_convert_from_custom($element['#value'], $element['#format'], $element['#date_type']);
-  $string = date_limit_value($string, $element['#granularity'], $element['#date_type']);
+  $string = date_convert_from_custom($element['#value'], $element['#format'], DATE_DATETIME);
+  $string = date_limit_value($string, $element['#granularity'], DATE_DATETIME);
   $date = date_create($string, timezone_open($element['#timezone_in']));
   date_timezone_set($date, timezone_open('UTC'));
   $value = date_convert(date_format($date, DATE_FORMAT_DATETIME), DATE_DATETIME, $element['#date_type']);

@@ -449,10 +449,12 @@ function date_field_settings($op, $field) {
     case 'database columns':
       return date_columns($field);
 
+    case 'arguments':
+      return date_arguments($field);
+
     case 'filters':
-      if (module_exists('views')) {
-        return date_views_filters($field);
-      }
+      return date_filters($field);
+      break;
   }
 }
 
@@ -689,18 +691,13 @@ function date_get_timezone($handling, $timezone = '') {
   global $user;
   switch ($handling) {
     case('site'):
-      $timezone_out = variable_get('date_default_timezone_name', 'UTC');
+      $timezone_out = date_default_timezone_name();
       break;
     case('date'):
       $timezone_out = $timezone > '' ? $timezone : variable_get('date_default_timezone_name', 'UTC');
       break;
     case('user'):
-      if ((variable_get('configurable_timezones', 1)) && !empty($user->timezone_name)) {
-        $timezone_out = $user->timezone_name;
-      }
-      else {
-        $timezone_out = variable_get('date_default_timezone_name', 'UTC');
-      }
+      $timezone_out = date_default_timezone_name();
     case('none'):
       $timezone_out = 'none';
       break;
@@ -711,7 +708,7 @@ function date_get_timezone($handling, $timezone = '') {
 }
 
 /**
- *  Return the database column structure.
+ *  Callback for field columns.
  */
 function date_columns($field) {
   if ($field['type'] == 'date') {
@@ -733,7 +730,26 @@ function date_columns($field) {
 }
 
 /**
- * Include pathauto files without any need to put them in hook_init().
+ * Callback for views arguments.
+ */
+function date_arguments($field) {
+  if (module_exists('views')) {
+    date_load('date_views.inc');
+    return date_views_arguments($field);
+  }
+}
+
+/**
+ * Callback for views filters.
+ */
+function date_filters($field) {
+  if (module_exists('views')) {
+    return date_views_filters($field);
+  }
+}
+
+/**
+ * Callback for pathauto.
  */
 function date_pathauto_node($op, $node = NULL) {
   include_once('./'. drupal_get_path('module', 'date') .'/'. 'date_pathauto.inc');
@@ -954,30 +970,25 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
  */
 function theme_date_format_interval($field, $dates, $node = NULL) {
   // Time to compare dates to
-  global $user;
-  if (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) {
-    $now = (time() - date("Z")) + $user->timezone;
-  }
-  else {
-    $now = (time() - date("Z")) + variable_get('date_default_timezone', 0);
-  }
+  $now = date_format(date_create('now', timezone_open(date_default_timezone_name())), 'U');
 
   // Pull local timestamps out of date objects.
-  $timestamp1 = $dates['value']['object']->local->timestamp;
-  $timestamp2 = $dates['value2']['object']->local->timestamp ? $dates['value2']['object']->local->timestamp : $timestamp1;
-
+  $start = date_format($dates['value']['local']['object'], 'U');
+  if (!$end = date_format($dates['value2']['local']['object'], 'U')) {
+    $end = $start;
+  }
   // 1) The date is entirely in the future
-  if ($now < $timestamp1) {
-    return t('!time', array('!time' => format_interval($timestamp1 - $now)));
+  if ($now < $start) {
+    return t('!time', array('!time' => format_interval($start - $now)));
   }
   // 2) Ongoing date
-  elseif ($now > $timestamp1 && $now <= $timestamp2) {
+  elseif ($now > $start && $now <= $end) {
     //return t('Started !time ago', array('!time' => format_interval($now - $timestamp1)));
     return t('ongoing');
   }
   // 3) Date is in the past
   else {
-    return t('!time ago', array('!time' => format_interval($now - $timestamp2)));
+    return t('!time ago', array('!time' => format_interval($now - $end)));
   }
 }
 

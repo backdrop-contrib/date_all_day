@@ -496,6 +496,22 @@ function date_datetime2timestamp($datetime) {
 }
 
 /**
+ * Something like time(), but adjusted to either the user or site offset.
+ *
+ * @return a local timestamp
+ */
+function date_time() {
+  global $user;
+  if (variable_get('configurable_timezones', 1) && !empty($user->timezone)) {
+    $offset = $user->timezone;
+  }
+  else {
+    $offset = variable_get('date_default_timezone', 0);
+  }
+  return time() - date('Z') + $offset;
+}
+
+/**
  * Check if time is in Daylight Savings Time
  *
  * @param $region

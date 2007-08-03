@@ -221,19 +221,11 @@ function date_views_offset($field) {
  * Implementation of hook_views_arguments().
  */
 function date_views_arguments() {
-
-  // must create an argument with the name content: $field['field_name'] to override
-  // the one created automatically for all fields by content.module (which will NOT work correctly)
-  // sending both to the same handler ultimately, using a wrapper function to identify
-  // whether the date is an iso or timestamp date
-
   $field_types = _content_field_types();
   $arguments = array();
-
   foreach (content_fields() as $field) {
-    $db_info = content_database_info($field);
-    switch ($field['type']) {
-    case DATE_ISO:
+    if ($field['type'] == DATE_ISO || $field['type'] == DATE_UNIX) {
+      $db_info = content_database_info($field);
       $argument = array();
       $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
       $argument['handler'] = 'date_views_argument_range_handler';
@@ -249,28 +241,8 @@ function date_views_arguments() {
         $argument['option'] = 'date_range_arg_options';
         $arguments['content: to|'. $field['field_name']] = $argument;
       }
-      break;
-
-    case DATE_UNIX:
-      $argument = array();
-      $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). $field['widget']['label'] .' ('. $field['field_name'] .')';
-      $argument['handler'] = 'date_views_timestamp_argument_range_handler';
-      $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
-      $argument['option'] = 'date_range_arg_options';
-      $arguments['content: '. $field['field_name']] = $argument;
-
-      if ($field['todate']) {
-        $argument = array();
-        $argument['name'] = $field_types[$field['type']]['label'] .t(': To '). $field['widget']['label'] .' ('. $field['field_name'] .')';
-        $argument['handler'] = 'date_views_timestamp_argument_range_handler';
-        $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
-        $argument['option'] = 'date_range_arg_options';
-        $arguments['content: to|'. $field['field_name']] = $argument;
-      }
-      break;
     }
   }
-
   return $arguments;
 }
 
@@ -552,6 +524,8 @@ function date_views_style_plugins() {
     'summary_theme' => 'date_views_browser_summary_view',
     'needs_fields' => true,
     'needs_table_header' => true,
+    'validate' => 'date_views_browser_get_views',
+    'even_empty' => true,
   );
   return $items;
 }
@@ -608,11 +582,16 @@ function date_views_query_alter(&$query, &$view) {
 }
 /**
  * Find all the views that qualify for date browser treatment
+ *
+ * @param $view
+ *   if called from Views UI validation, $edit_view will be populated,
+ *   otherwise it will be empty. Use that to tell if the list
+ *   needs to be refreshed.
  */
-function date_views_browser_get_views($refresh = FALSE) {
+function date_views_browser_get_views($edit_view = FALSE) {
   static $date_views_browser_views;
 
-  if (!isset($date_views_browser_views) || $refresh) {
+  if (!isset($date_views_browser_views) || $view) {
     $date_views_browser_views = array();
     $arguments = date_views_arguments();
     $argument_list = "'". implode("','", array_keys($arguments)) ."'";
@@ -623,17 +602,12 @@ function date_views_browser_get_views($refresh = FALSE) {
     while ($view = db_fetch_object($result)) {
       $date_views_browser_views[$view->name] = $view;
     }
+    // Make sure the view being edited gets added to the list
+    $date_views_browser_views[$edit_view->name] = $edit_view;
   }
   return $date_views_browser_views;
 }
-/**
- *  Make sure available views are refreshed when views are changed
- */
-function date_form_alter($form_id, $form) {
-  if ($form_id == 'views_edit_view') {
-    date_views_browser_get_views(TRUE);
-  }
-}
+
 /**
  *  Return the correct period for the date range argument
  */

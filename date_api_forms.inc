@@ -105,7 +105,7 @@ function date_select_process($element) {
     $minutes = intval(date_format($date, 'i'));
     $seconds = intval(date_format($date, 's'));
   }
-  $year = $year > 0 ? $year : date('Y', date_time());
+  $year = $year > 0 ? $year : date_format(date_now(), 'Y');
   $labels = date_granularity_names();
   $fields = date_granularity_parts();
   foreach ($element['#granularity'] as $part) {

@@ -40,13 +40,13 @@ function date_ical_export($events, $calname = NULL) {
     // Skip any items with empty dates.
     if (!empty($event['start'])  && ereg ('^(\d{4})(\d{2})(\d{2})$', $event['start'])) {
       $output .= "BEGIN:VEVENT\n";
-      $output .= "DTSTAMP;VALUE=DATE:". gmdate("Ymd\THis\Z", time()) ."\n";
+      $output .= "DTSTAMP;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", time()) ."\n";
       if ($event['start'] && $event['end']) {
-        $output .= "DTSTART;VALUE=DATE:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
-        $output .= "DTEND;VALUE=DATE:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
+        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
+        $output .= "DTEND;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
       }
       else {
-        $output .= "DTSTART;VALUE=DATE:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
+        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
       }
       $output .= "UID:". ($event['uid'] ? $event['uid'] : $uid) ."\n";
       if ($event['url']) {
@@ -452,23 +452,16 @@ function date_ical_parse_text($field, $data) {
 function date_ical_date($ical_date, $to_tz = FALSE) {
   global $user;
 
-  $date = date_create($ical_date['datetime'], timezone_open($ical_date['tz']));
-
-  // If ical_date['tz'] is blank, the ical defined it as a date that should
-  // never have timezone conversion. If the ical already is set to the
-  // requested timezone, no conversion is needed.
-  if ($ical_date['tz'] == '' || $to_tz == $ical_date['tz']) {
-    $to_tz = '';
+  // If the ical date has no timezone, must assume it is stateless
+  // so treat it as a local date.
+  if (empty($ical_date['tz'])) {
+    $from_tz = date_default_timezone_name();
   }
-  elseif (!isset($to_tz)) {
-    if (variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
-      $to_tz = $user->timezone_name;
-    }
-    else {
-      $to_tz = variable_get('date_default_timezone_name', '');
-    }
+  else {
+    $from_tz = $ical_date['tz'];
   }
-  if (!empty($to_tz)) {
+  $date = date_create($ical_date['datetime'], timezone_open($from_tz));
+  if ($ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     $date = date_timezone_set($date, timezone_open($to_tz));
   }
   return $date;

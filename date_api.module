@@ -602,44 +602,48 @@ function date_format_date($timestamp, $type = 'medium', $format = '', $timezone 
     $timezone = $timezone;
   }
   else {
-    global $user;
-    if (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone_name)) {
-      $timezone = $user->timezone_name;
-    }
-    else {
-      $timezone = variable_get('date_default_timezone_name', NULL);
-    }
+    $timezone = date_default_timezone_name();
   }
   $date = date_create("@$timestamp", timezone_open($timezone ? $timezone : 'UTC'));
   return date_t(date_format($date, $format));
 }
 
 /**
- * Implementation of time() adjusted for the current site and user.
- *
- *  Without this capability, time() will find the local time using the server
- *  timezone. Use this function for better control of the timezone adjustment
- *  to be able to adjust it to a site or user timezone that is different than
- *  the server timezone.
+ * A date object for the current time, adjusted for the current site and user.
  *
  * @param $timezone
- *   optional method to force time to a specific offset
- * @return integer timestamp
+ *   optional method to force time to a specific timezone,
+ *   if none supplied will use user timezone, if available,
+ *   otherwise will use the site default timezone
+ * @return object date
  */
-function date_time($timezone = NULL) {
-  global $user;
-
-  if (!empty($timezone)) {
-    $date = (date_create('now', timezone_open($timezone)));
+function date_now($timezone = NULL) {
+  if (empty($timezone)) {
+    $timezone = date_default_timezone_name();
   }
-  elseif (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone_name)) {
-    $date = (date_create('now', timezone_open($user->timezone_name)));
+  if (!empty($timezone)) {
+    return (date_create('now', timezone_open($timezone)));
   }
   else {
-    $timezone = variable_get('date_default_timezone_name', NULL);
-    $date = (date_create('now', timezone_open($timezone ? $timezone : 'UTC')));
+     return (date_create('now'));
   }
-  return date_convert(date_format($date, 'Y-m-d H:i'), DATE_DATETIME, DATE_UNIX);
+}
+
+/**
+ * We do this in lots of places, so make it a function.
+ *
+ * @return a timezone name
+ *   Identify the default timezone for a user, if available, otherwise the site.
+ *   May return a blank value if no timezone info has been set up.
+ */
+function date_default_timezone_name() {
+  global $user;
+  if (variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
+    return $user->timezone_name;
+  }
+  else {
+    return variable_get('date_default_timezone_name', '');
+  }
 }
 
 /**
@@ -669,8 +673,8 @@ function date_last_day_of_month($month, $year) {
  */
 function date_day_of_week($date = NULL, $type = DATE_DATETIME) {
   if (empty($date)) {
-    $date = date_time();
-    $type = DATE_UNIX;
+    $date = date_now();
+    $type = DATE_OBJECT;
   }
   $date = date_convert($date, $type, DATE_OBJECT);
   return date_format($date, 'w');

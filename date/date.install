@@ -349,6 +349,24 @@ function date_update_5008() {
 
   // Make sure date module loads after date_api.
   $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+
+  // Move input format from field settings to widget settings, where it should have been all along.
+  $fields = content_fields();
+  foreach ($fields as $field) {
+    if (isset($field['input_format']) || isset($field['input_format_custom'])) {
+      $data = unserialize(db_result(db_query("SELECT global_settings from {node_field} where field_name = '%s'", $field['field_name'])));
+      $input_format = $data['input_format'];
+      $input_format_custom = $date['input_format_custom'];
+      unset($data['input_format']);
+      unset($data['input_format_custon']);
+      db_query("UPDATE {node_field} SET global_settings = '%s' WHERE field_name='%s'", serialize($data), $field['field_name']);
+      $data = unserialize(db_result(db_query("SELECT widget_settings from {node_field_instance} where field_name = '%s'", $field['field_name'])));
+      $data['input_format'] = $input_format;
+      $data['input_format_custom'] = $input_format_custom;
+      db_query("UPDATE {node_field_instance} SET widget_settings = '%s' WHERE field_name='%s'", serialize($data), $field['field_name']);
+    }
+  }
+  content_clear_type_cache();
   return $ret;
 }
 

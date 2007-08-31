@@ -111,11 +111,10 @@ variable_set('date_api_version', '5.2');
  */
 function date_api_menu($may_cache) {
   $items = array();
-  if (!may_cache) {
+  if (!$may_cache) {
     drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
   }
   else {
-    drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
     $items[] = array('path' => 'date/timezone',
       'title' => t('Browser timezone'),
       'callback' => 'date_user_timezone_name',
@@ -190,7 +189,7 @@ function date_month_names($required = FALSE) {
       $month_names[$key] = t($month);
     }
   }
-  $none = array(0 => '');
+  $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
 }
 
@@ -210,7 +209,7 @@ function date_month_names_abbr($required = FALSE) {
       $month_names[$key] = t(substr($month, 0, 3));
     }
   }
-  $none = array(0 => '');
+  $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
 }
 
@@ -261,12 +260,12 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
  * @return
  *   an array of week day abbreviations
  */
-function date_week_days_abbr($required = FALSE, $refresh = TRUE) {
+function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
   static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
     foreach (date_week_days_untranslated($refresh) as $key => $day) {
-      $weekdays[$key] = t(substr($day, 0, 3));
+      $weekdays[$key] = t(substr($day, 0, $length));
     }
   }
   $none = array(0 => '');
@@ -303,7 +302,10 @@ function date_week_days_ordered($weekdays) {
  * @return
  *   an array of years in the selected range
  */
-function date_years($min = DATE_MIN_YEAR, $max = DATE_MAX_YEAR, $required = FALSE) {
+function date_years($min = 0, $max = 0, $required = FALSE) {
+  // Have to be sure $min and $max are valid values;
+  if (empty($min)) $min = intval(date('Y', time()) - 3);
+  if (empty($max)) $max = intval(date('Y', time()) + 3);
   $none = array(0 => '');
   return $required ? $none + drupal_map_assoc(range($min, $max)) : drupal_map_assoc(range($min, $max));
 }
@@ -362,6 +364,8 @@ function date_hours($format = 'H', $required = FALSE) {
  */
 function date_minutes($format = 'i', $required = FALSE, $increment = 1) {
   $minutes = array();
+  // Have to be sure $increment has a value so we don't loop endlessly;
+  if (empty($increment)) $increment = 1;
   for ($i = 0; $i < 60; $i += $increment) {
     $minutes[$i] = $i < 10 && $format == 'i' ? "0$i" : $i;
   }
@@ -379,6 +383,8 @@ function date_minutes($format = 'i', $required = FALSE, $increment = 1) {
  */
 function date_seconds($format = 's', $required = FALSE, $increment = 1) {
   $seconds = array();
+  // Have to be sure $increment has a value so we don't loop endlessly;
+  if (empty($increment)) $increment = 1;
   for ($i = 0; $i < 60; $i += $increment) {
     $seconds[$i] = $i < 10 && $format == 's' ? "0$i" : $i;
   }
@@ -790,7 +796,7 @@ function date_next_day_of_week($date, $dow = 0, $count = 1, $type = DATE_DATETIM
  *   the type of date to convert to
  */
 function date_convert($date, $from_type, $to_type) {
-  if ($from_type == $to_type) return $date;
+  if (empty($date) || $from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_OBJECT:
       $obj = $date;
@@ -1061,6 +1067,9 @@ function date_limit_format($format, $granularity) {
     || sizeof(array_intersect($granularity, array('Y', 'M', 'D')) == 0)) {
     $regex[] = '( -)';
   }
+  if (!date_has_time($granularity)) {
+      $regex[] = '(a|A)';
+  }
   // Create regular expressions to remove selected values from string.
   foreach (date_nongranularity($granularity) as $element) {
     switch ($element) {
@@ -1077,10 +1086,10 @@ function date_limit_format($format, $granularity) {
         $regex[] = '([HhGg][:]?)';
         break;
       case 'N':
-        $regex[] = '([:]?[ia|iA|i])';
+        $regex[] = '([:]?[i])';
         break;
       case 'S':
-        $regex[] = '([:]?[sa|sA|s])';
+        $regex[] = '([:]?[s])';
         break;
     }
   }
@@ -1088,27 +1097,6 @@ function date_limit_format($format, $granularity) {
   // Don't leave any trailing punctuation behind.
   $format = trim(preg_replace($regex, array(), $format));
   return preg_replace('([\-/\.,]$)', '', $format);
-}
-
-/**
- * Recreate a date format string so it has the values jscalendar expects.
- *
- * @param string $format
- * @return string that uses the jscalendar format elements
- */
-
-function date_format_to_jscalendar($format) {
-  $replace = array(
-    'd' => '%d', 'j' => '%e', 'D' => '%a', 'l' => '%A', 'z' => '%j', 'w' => '%w',
-    'W' => '%U',
-    'm' => '%m', 'n' => '%m', 'F' => '%B', 'M' => '%b',
-    'Y' => '%Y', 'y' => '%y',
-    'g' => '%l', 'G' => '%k', 'h' => '%I', 'H' => '%H',
-    'i' => '%M',
-    's' => '%S',
-    'a' => '%P', 'A' => '%p',
-  );
-  return strtr($format, $replace);
 }
 
 /**
@@ -1172,72 +1160,71 @@ function date_nongranularity($granularity) {
  * Parameters for date form elements, designed to have sane defaults so any
  * or all can be omitted.
  *
- * date_select will create a collection of form elements, with a select
- * or textfield for each date part. The whole collection will get
- * reconstructed into a #date_type date during validation.
+ * date_select will create a collection of form elements, with a separate
+ * select or textfield for each date part. The whole collection will get
+ * re-formatted into the type of date in #date_params['type'] during validation.
  *
- * date_text will create a single textfield that can contain a whole
+ * date_text will create a textfield that can contain a whole
  * date or any part of a date as text. The input value will be re-formatted
- * into a #date_type date during validation.
+ * into the type of date in #date_params['type'] date during validation.
  *
  * #date_type
- *   the type of the date value, DATE_UNIX, DATE_ISO, DATE_DATETIME, etc
- * #timezone_in
+ *   the type of the date value that will be stored in the database,
+ *   DATE_UNIX, DATE_ISO, or DATE_DATETIME
+ * #date_format
+ *   a format string that describes the format and order of date parts to
+ *   display in the edit form for this element, be sure to add 'A' or 'a'
+ *   to get an am/pm selector, defaults to short site default format
+ * #date_empty - handling for empty date values:
+ *   'blank' to show blank value
+ *   'now' to show current time
+ *   [+-][##] [years|months|days|hours|minutes|seconds]
+ *     i.e. '+90 days', to show offset from current time
+ * #date_timezone_db
  *   the timezone of the date/time value being passed in, this is
  *   the way the date/time is stored in the database, default is UTC
- * #timezone_out
+ * #date_timezone_local
  *   the timezone to be used when collecting or displaying the date,
  *   default is date site timezone, if set, or UTC. Valid timezones are
  *   standard timezone ids like US/Central, America/New_York, UTC
- * #granularity
+ * #date_granularity
  *   an array of date parts to be collected, default is (M, D, Y),
  *   Y - year, M - month, D - day, H - hours, N - minutes, S - seconds
- * #format
- *   a format string that describes the type and order of date parts in
- *   this element, be sure to add 'A' or 'a' to get an am/pm selector,
- *   defaults to short site default format
- * #blank_default
- *   handling for empty date values:
- *   'blank' to leave blank value
- *   'now' to show current time
- *   '+1 day' to show current time +- years|months|days|hours|minutes|seconds
- *
- * // date_select options
- * #text_fields
- *   array of date parts that should be textfields instead of selects
- *   like array('Y', 'M', 'D'), default is empty array
- * #opt_fields
- *   an array of date parts that are in granularity but optional
- *   like array('Y', 'M', 'D'), default is empty array
- * #increment
- *   increment minutes and seconds by increment amount, default is 1
- * #years_back
- *   the number of years to go back on the year selector
- * #years_forward
- *   the number of years to go forward on the year selector
- *
- * // date_text options
- * #jscalendar
- *   1 use if available, 0 do not use
+ *   include 'T' to add a timezone selector for the date
+ * #date_increment
+ *   increment minutes and seconds by this amount,
+ *   default is 1
+ * #date_year_range
+ *   the number of years to go back and forward in the year selector,
+ *   default is -3:+3 (3 back and 3 forward)
+ * #date_select_parts
+ *   whether to make each date part a select or textfield
+ *   default is array('year' => 'select', 'month' => 'select', 'day' => 'select')
  */
 function date_api_elements() {
   $type['date_select'] = array(
-    '#input' => TRUE, '#tree' => TRUE, '#date_type' => DATE_DATETIME,
-    '#format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-    '#granularity' => array('M', 'D', 'Y'),
-    '#text_fields' => array(), '#opt_fields' => array(),
-    '#blank_default' => 'now', '#timezone_in' => 'UTC',
-    '#timezone_out' => variable_get('date_default_timezone_name', NULL),
-    '#increment' => 1, '#years_back' => 3, '#years_forward' => 3,
+    '#input' => TRUE, '#tree' => TRUE,
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+    '#date_empty' => 'now',
+    '#date_granularity' => array('M', 'D', 'Y'),
+    '#date_timezone_db' => 'UTC',
+    '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
+    '#date_select_parts' => array('year' => 'select', 'month' => 'select', 'day' => 'select'),
+    '#date_increment' => 1, '#date_year_range' => '-3:+3',
     '#process' => array('date_select_process' => array()),
     '#validate' => array('date_select_validate' => array()),
     );
   $type['date_text'] = array(
-    '#input' => TRUE, '#date_type' => DATE_DATETIME,
-    '#format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-    '#granularity' => array('M', 'D', 'Y'), '#jscalendar' =>0,
-    '#blank_default' => 'now', '#timezone_in' => 'UTC',
-    '#timezone_out' => variable_get('date_default_timezone_name', NULL),
+    '#input' => TRUE, '#tree' => TRUE,
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+    '#date_empty' => 'now',
+    '#date_granularity' => array('M', 'D', 'Y'),
+    '#date_timezone_db' => 'UTC',
+    '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
+    '#date_select_parts' => array('year' => 'select', 'month' => 'select', 'day' => 'select'),
+    '#date_increment' => 1, '#date_year_range' => '-3:+3',
     '#process' => array('date_text_process' => array()),
     '#validate' => array('date_text_validate' => array()),
     );

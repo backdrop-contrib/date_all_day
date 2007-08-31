@@ -1,5 +1,0 @@
-; $Id$
-name = Date
-description = Defines a date/time field type.
-dependencies = content date_api
-package = CCK

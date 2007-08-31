@@ -14,108 +14,29 @@ variable_set('date_store_timezones', TRUE);
 /**
  * Implementation of hook_widget().
  */
-function date_widget($op, &$node, $field, &$items, $delta = NULL) {
-  $process = $field['todate'] ? array('value', 'value2') : array('value');
+function date_widget($op, &$node, $field, &$items) {
+  $col1 = 'value';
+  $col2 = 'value2';
+
   switch ($op) {
     case 'default value':
-      return date_default_value($node, $field, $items, $delta);
+      return date_default_value($node, $field, $items);
 
     case 'form':
-      $max     = $field['multiple'] ? 2 + sizeof($items) : 0;
-      $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
-      $field_name = $field['field_name'];
-
-      $form[$field_name]['#tree'] = TRUE;
-
-      foreach (range(0, $max) as $delta) {
-        $timezone = date_get_timezone($tz_handling, $items[$delta]['timezone']);
-        $form[$field_name][$delta]['value'] = array(
-          '#title'         => $field['widget']['label'],
-          '#weight'        => $field['widget']['weight'],
-          '#date_type'     => $field['type'],
-          '#timezone_out'  => date_get_timezone($tz_handling, $items[$delta]['timezone']),
-          '#timezone_in'   => 'UTC',
-          '#description'   => $field['widget']['description'],
-          '#required'      => ($field['required'] && $delta == 0) ? 1 : 0,
-          '#granularity'   => date_granularity($field),
-          '#default_value' => $items[$delta]['value'],
-          '#format'        => !empty($field['input_format_custom']) ? $field['input_format_custom'] : $field['input_format'],
-          '#blank_default' => $field['default_value'] != 'custom' ? $field['default_value'] : $field['default_value_custom'],
-          );
-        if ($field['todate'] != 'required' && $items[$delta]['value2'] == $items[$delta]['value']) {
-          unset($items[$delta]['value2']);
-        }
-
-        switch ($field['widget']['type']) {
-          case 'date_select':
-            $form[$field_name][$delta]['value']['#type'] = 'date_select';
-
-            $text_fields = array();
-            if (empty($field['widget']['select_year'])) $text_fields[] = 'Y';
-            if (empty($field['widget']['select_month'])) $text_fields[] = 'M';
-            if (empty($field['widget']['select_day'])) $text_fields[] = 'D';
-            $form[$field_name][$delta]['value']['#text_fields'] = $text_fields;
-            $form[$field_name][$delta]['value']['#increment'] = $field['widget']['increment'];
-            $form[$field_name][$delta]['value']['#select_day'] = $field['widget']['select_day'];
-            $form[$field_name][$delta]['value']['#select_month'] = $field['widget']['select_month'];
-            $form[$field_name][$delta]['value']['#select_year'] = $field['widget']['select_year'];
-            $form[$field_name][$delta]['value']['#years_back']  = $field['widget']['years_back'];
-            $form[$field_name][$delta]['value']['#years_forward'] = $field['widget']['years_forward'];
-
-            if ($field['todate']) {
-              $form[$field_name][$delta]['value']['#title']  = t('From date');
-              $form[$field_name][$delta]['value2'] = $form[$field_name][$delta]['value'];
-              $form[$field_name][$delta]['value2']['#title'] = t('To date');
-              $form[$field_name][$delta]['value2']['#default_value'] = $items[$delta]['value2'];
-              $form[$field_name][$delta]['value2']['#required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
-              $form[$field_name][$delta]['value2']['#weight'] += .1;
-            }
-            break;
-
-          default:
-            $form[$field_name][$delta]['value']['#type'] = 'date_text';
-            $form[$field_name][$delta]['value']['#jscalendar'] = $field['widget']['type'] == 'date_js' ? 1 : 0;
-
-            if ($field['todate']) {
-              $form[$field_name][$delta]['value']['#title']  = t('From date');
-              $form[$field_name][$delta]['value2'] = $form[$field_name][$delta]['value'];
-              $form[$field_name][$delta]['value2']['#title'] = t('To date');
-              $form[$field_name][$delta]['value2']['#required'] = date_is_required($field, 'value2', $delta, $items[$delta]['value'], $items[$delta]['value2']);
-              $form[$field_name][$delta]['value2']['#weight'] += .1;
-            }
-        }
-
-        // Group from/to items together.
-        if ($field['todate']) {
-          $form[$field_name][$delta]['#theme'] = 'date_form_combination';
-        }
-        if ($field['tz_handling'] == 'date') {
-          $form[$field_name]['timezone'] = array(
-            '#type' => 'select',
-            '#title' => t('Timezone'),
-            '#weight' => 10,
-            '#default_value' => $timezone ? $timezone : 'UTC',
-            '#options' => date_timezone_names($field['required']),
-            );
-        }
-      }
-      return $form;
+       return date_process(&$node, $field, &$items);
 
     case 'process form values':
-      return;
-      $add = array();
-
       // Don't save empty fields.
       if ($field['multiple']) {
         foreach ($items as $delta => $item) {
           switch ($field['widget']['type']) {
             case 'date_select':
-              if (empty($item['value']['year']) && ($delta > 0 || !$field['required'])) {
+              if (empty($item[$col1]['year']) && ($delta > 0 || !$field['required'])) {
                 unset($items[$delta]);
               }
               break;
             default:
-              if (empty($item['value']) && ($delta > 0 || !$field['required'])) {
+              if (empty($item[$col1]) && ($delta > 0 || !$field['required'])) {
                 unset($items[$delta]);
               }
               break;
@@ -125,11 +46,12 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
 
       foreach ($items as $delta => $item) {
         if (!empty($item)) {
+          $process = $field['todate'] ? array($col1, $col2) : array($col1);
           foreach ($process as $processed) {
             // Handle empty to date values by substituting in the from date.
             // Otherwise, replace $items values with the converted date, timezone, and offset values
-            if ($processed == 'value2' && empty($item['value2'])) {
-              $items[$delta]['value2'] = $items[$delta]['value'];
+            if ($processed == $col2 && empty($item[$col2])) {
+              $items[$delta][$col2] = $items[$delta][$col1];
             }
           }
         }
@@ -138,11 +60,114 @@ function date_widget($op, &$node, $field, &$items, $delta = NULL) {
   }
 }
 
+function date_process(&$node, $field, &$items) {
+  $col1 = 'value';
+  $col2 = 'value2';
+
+  $max     = $field['multiple'] ? 2 + sizeof($items) : 0;
+  $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
+  $field_name = $field['field_name'];
+
+  $element = array();
+  $element[$field_name]['#tree'] = TRUE;
+
+  $granularity = date_granularity($field);
+  if ($field['tz_handling'] == 'date') {
+    array_push($granularity, 'T');
+  }
+
+  foreach (range(0, $max) as $delta) {
+    $timezone = date_get_timezone($tz_handling, $items[$delta]['timezone']);
+    if ($field['todate'] != 'required' && $items[$delta][$col2] == $items[$delta][$col1]) {
+      unset($items[$delta][$col2]);
+    }
+
+    if (!empty($field['widget']['input_format_custom'])) {
+      $format = $field['widget']['input_format_custom'];
+    }
+    elseif (!empty($field['widget']['input_format']) && $field['widget']['input_format'] != 'site-wide') {
+      $format = $field['widget']['input_format'];
+    }
+    else {
+      $format = variable_get('date_format_short', 'm/d/Y - H:i');
+    }
+
+    $element[$field_name][$delta][$col1] = array(
+      '#title'         => $field['widget']['label'],
+      '#weight'        => $field['widget']['weight'],
+      '#description'   => $field['widget']['description'],
+      '#required'      => ($field['required'] && $delta == 0) ? 1 : 0,
+      '#default_value' => $items[$delta][$col1],
+      '#date_type'           => $field['type'],
+      '#date_format'         => $format,
+      '#date_empty'          => $field['widget']['default_value'] != 'custom' ? $field['widget']['default_value'] : $field['widget']['default_value_custom'],
+      '#date_timezone_local' => date_get_timezone($tz_handling, $items[$delta]['timezone']),
+      '#date_timezone_db'    => 'UTC',
+      '#date_granularity'    => $granularity,
+      '#date_increment'      => isset($field['widget']['increment']) ? $field['widget']['increment'] : 1,
+      '#date_year_range'     => '-'. (isset($field['widget']['years_back']) ? $field['widget']['years_back'] : 3) .
+          ':+'. (isset($field['widget']['years_forward']) ? $field['widget']['years_forward'] : 3),
+      '#date_select_parts' => array(
+        'year' => $field['widget']['select_year'] ? 'select' : 'text',
+        'month' => $field['widget']['select_month'] ? 'select' : 'text',
+        'day' => $field['widget']['select_day'] ? 'select' : 'text',
+        ),
+     );
+
+    switch ($field['widget']['type']) {
+      case 'date_select':
+        $element[$field_name][$delta][$col1]['#type'] = 'date_select';
+        break;
+      case 'date_js':
+        $element[$field_name][$delta][$col1]['#type'] = 'date_text';
+        $element[$field_name][$delta][$col1]['#attributes'] = array('class' => ' jscalendar');
+        $element[$field_name][$delta][$col1]['#jscalendar_ifFormat'] = strtr($element['#date_format'], date_jscalendar_replacements());
+        $element[$field_name][$delta][$col1]['#jscalendar_showsTime'] = 'false';
+        break;
+      case 'date_popup':
+        $element[$field_name][$delta][$col1]['#type'] = 'date_popup';
+        break;
+      default:
+        $element[$field_name][$delta][$col1]['#type'] = 'date_text';
+        break;
+    }
+    if ($field['todate']) {
+      $element[$field_name][$delta][$col1]['#title']  = t('From date');
+      $element[$field_name][$delta][$col2] = $element[$field_name][$delta][$col1];
+      $element[$field_name][$delta][$col2]['#title'] = t('To date');
+      $element[$field_name][$delta][$col2]['#default_value'] = $items[$delta][$col2];
+      $element[$field_name][$delta][$col2]['#required'] = false;
+      $element[$field_name][$delta][$col2]['#weight'] += .1;
+    }
+    // Group from/to items together.
+    if ($field['todate']) {
+      $element[$field_name][$delta]['#theme'] = 'date_form_combination';
+    }
+  }
+  return $element;
+}
+
+/**
+ * Replacement array for date formats to jscalendar formats
+ */
+function date_jscalendar_replacements() {
+  return array(
+    'd' => '%d', 'j' => '%e', 'D' => '%a', 'l' => '%A', 'z' => '%j', 'w' => '%w',
+    'W' => '%U', 'm' => '%m', 'n' => '%m', 'F' => '%B', 'M' => '%b',
+    'Y' => '%Y', 'y' => '%y',
+    'g' => '%l', 'G' => '%k', 'h' => '%I', 'H' => '%H',
+    'i' => '%M', 's' => '%S', 'a' => '%P', 'A' => '%p',
+  );
+}
+
 /**
  *  Set the date default values.
  *  Date should be in UTC to match values coming from the database.
  */
-function date_default_value($node, $field, $items, $delta) {
+function date_default_value($node, $field, $items) {
+  $col1 = 'value';
+  $col2 = 'value2';
+
   // Get a default value as a timestamp. gmmktime() works OK for this because
   // this is a current date and won't occur before 1970.
   switch ($field['widget']['default_value']) {
@@ -163,13 +188,13 @@ function date_default_value($node, $field, $items, $delta) {
   }
   // Return from and to dates as an array.
   if ($field['todate'] == 'required') {
-    return array(0 => array('value' => $default_date, 'value2' => $default_date));
+    return array(0 => array($col1 => $default_date, $col2 => $default_date));
   }
   elseif ($field['todate'] == 'optional') {
-    return array(0 => array('value' => $default_date, 'value2' => NULL));
+    return array(0 => array($col1 => $default_date, $col2 => NULL));
   }
   else {
-    return array(0 => array('value' => $default_date));
+    return array(0 => array($col1 => $default_date));
   }
 }
 
@@ -268,10 +293,10 @@ function date_field_formatter($field, $item, $formatter, $node) {
 function date_field_object($field, $item) {
   if (!is_array($field) || !is_array($item)) return $dates;
   if ($field['todate']) {
-    $process = array('value', 'value2');
+    $process = array($col1, 'value2');
   }
   else {
-    $process = array('value');
+    $process = array($col1);
   }
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
@@ -321,6 +346,11 @@ function date_widget_info() {
        'field types' => array('date', 'datestamp'),
      );
   }
+  if (module_exists('date_popup')) {
+    $info['date_popup'] = array('label' => t('Text Field with jquery pop-up calendar'),
+       'field types' => array('date', 'datestamp'),
+     );
+  }
   return $info;
 }
 
@@ -342,9 +372,6 @@ function date_field_settings($op, $field) {
     case 'form':
       $form = array();
       $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : 'site';
-      $form['input'] = array(
-        '#type' => 'fieldset', '#title' => t('Input options'),
-      );
       $form['input']['todate'] = array(
         '#type' => 'select', '#title' => t('To Date'),
         '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
@@ -359,37 +386,12 @@ function date_field_settings($op, $field) {
         '#size' => min(count($options), 6),
         '#description' => t('Set the date elements to be collected on input (at least a year is required).'),
         );
-      $formats = drupal_map_assoc(date_short_formats());
-      $options = array();
-      $options['site-wide'] = format_date(time(), 'custom', $formats[variable_get('date_format_short', 'm/d/Y - H:i')]);
-      foreach ($formats as $f) {
-        $options[$f] = format_date(time(), 'custom', $f);
-      }
-      $form['input']['input_format'] = array(
-        '#type' => 'select', '#title' => t('Input format'),
-        '#default_value' => $field['input_format'] ? $field['input_format'] : 'site_format',
-        '#options' => $options,
-        '#description' => t('Set an order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
-      );
-      $form['input']['advanced'] = array(
-        '#type' => 'fieldset', '#title' => t('Advanced input options'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        );
-      $form['input']['advanced']['input_format_custom'] = array(
-        '#type' => 'textfield',  '#title' => t('*Custom input format'),
-        '#default_value' => $field['input_format_custom'] ? $field['input_format_custom'] : '',
-        '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
-      );
-      $form['output'] = array(
-        '#type' => 'fieldset', '#title' => t('Display Options'),
-        '#description' => t('Choose the way the date should be displayed.'),
-        );
 
       $default_formatter = date_formatter_setup_form($field, 0);
-      $form['output'][] = $default_formatter;
+      $form['output'][0] = $default_formatter;
+      $form['output'][0]['#type'] = '';
       $form['output']['advanced'] = array(
-        '#type' => 'fieldset', '#title' => t('Advanced display options'),
+        '#type' => 'fieldset', '#title' => t('Customize display options'),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         '#description' => t('Define alternate formatting for the date display. Options other than the default are made available to views and themes. Possible formats are default, long, medium, and short.'),
@@ -397,10 +399,6 @@ function date_field_settings($op, $field) {
       for ($i = 1; $i <= 3; $i++) {
         $form['output']['advanced'][$i] = date_formatter_setup_form($field, $i);
       }
-      $form['timezone'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Timezone options'),
-      );
       $form['timezone']['tz_handling'] = array(
         '#type' => 'select',
         '#title' => t('Time zone handling'),
@@ -526,27 +524,52 @@ function date_widget_settings($op, $widget) {
       return array('default value' => CONTENT_CALLBACK_CUSTOM);
     case 'form':
         $form = array();
-        $form['default'] = array(
-          '#type' => 'fieldset', '#title' => t('Default value'),
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          );
-        $form['default']['default_value'] = array(
+        $form['default_value'] = array(
           '#type' => 'select', '#title' => t('Default value'),
           '#default_value' => isset($widget['default_value']) ? $widget['default_value'] : 'blank',
           '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'custom' => t('Custom')),
           '#description' => t("A default value to use for this field. If you select 'custom', add details to the box below."),
+          );
+        $form['default'] = array(
+          '#type' => 'fieldset', '#title' => t('Customize default value'),
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
           );
         $form['default']['default_value_custom'] = array(
           '#type' => 'textfield', '#title' => t('Custom default value'),
           '#default_value' => isset($widget['default_value_custom']) ? $widget['default_value_custom'] : '',
           '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
           );
+
+        $formats = drupal_map_assoc(date_short_formats());
+        $options = array();
+        $options['site-wide'] = t('Site default');
+        foreach ($formats as $f) {
+          $options[$f] = format_date(time(), 'custom', $f);
+        }
+        $form['input']['input_format'] = array(
+          '#type' => 'select', '#title' => t('Input format'),
+          '#default_value' => $field['input_format'] ? $field['input_format'] : 'site_format',
+          '#options' => $options,
+          '#description' => t('Set an order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
+        );
+        $form['input']['format'] = array(
+          '#type' => 'fieldset', '#title' => t('Customize input format'),
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          );
+        $form['input']['format']['input_format_custom'] = array(
+          '#type' => 'textfield',  '#title' => t('*Custom input format'),
+          '#default_value' => $field['input_format_custom'] ? $field['input_format_custom'] : '',
+          '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
+        );
+
         if ($widget['type'] == 'date_select') {
           $form['input']['advanced'] = array(
-            '#type' => 'fieldset', '#title' => t('Advanced select options'),
+            '#type' => 'fieldset', '#title' => t('Customize select options'),
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
+            '#weight' => -1,
             );
           $form['input']['advanced']['select_day'] = array(
             '#type' => 'select', '#title' => t('Days'),
@@ -587,6 +610,15 @@ function date_widget_settings($op, $widget) {
             '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
             '#description' => t('Increment the minute and second fields by this amount.'),
           );
+          foreach ($form['input']['advanced'] as $key => $element) {
+            if (!strstr($key, '#')) {
+              $current[] = $element['#title'] .' = '. (isset($element['#options']) ? $element['#options'][$element['#default_value']] : $element['#default_value']);
+            }
+          }
+          $form['input']['summary'] = array(
+            '#value' => theme('form_element', array('#title' => t('Select options')), implode(', ', $current)),
+            '#weight' => -2,
+            );
         }
         return $form;
    case 'save':
@@ -602,19 +634,6 @@ function date_widget_settings($op, $widget) {
      }
 
   }
-}
-
-/**
- * Logic for telling when a field value is required.
- */
-function date_is_required($field, $column, $delta, $value1, $value2) {
-  if ($column == 'value2' && ($field['todate'] == 'required' && ($value1 || $delta == 0))) {
-    return TRUE;
-  }
-  elseif ($column == 'value' && ($field['required'] && $delta == 0)) {
-    return TRUE;
-  }
-  return FALSE;
 }
 
 /**
@@ -691,20 +710,20 @@ function date_get_timezone($handling, $timezone = '') {
   global $user;
   switch ($handling) {
     case('site'):
-      $timezone_out = date_default_timezone_name();
+      $timezone = date_default_timezone_name();
       break;
     case('date'):
-      $timezone_out = $timezone > '' ? $timezone : variable_get('date_default_timezone_name', 'UTC');
+      $timezone = $timezone > '' ? $timezone : variable_get('date_default_timezone_name', 'UTC');
       break;
     case('user'):
-      $timezone_out = date_default_timezone_name();
+      $timezone = date_default_timezone_name();
     case('none'):
-      $timezone_out = 'none';
+      $timezone = 'none';
       break;
     default:
-      $timezone_out = 'UTC';
+      $timezone = 'UTC';
   }
-  return $timezone_out > '' ? $timezone_out : 'UTC';
+  return $timezone > '' ? $timezone : 'UTC';
 }
 
 /**
@@ -734,7 +753,6 @@ function date_columns($field) {
  */
 function date_arguments($field) {
   if (module_exists('views')) {
-    date_load('date_views.inc');
     return date_views_arguments($field);
   }
 }
@@ -752,7 +770,7 @@ function date_filters($field) {
  * Callback for pathauto.
  */
 function date_pathauto_node($op, $node = NULL) {
-  include_once('./'. drupal_get_path('module', 'date') .'/'. 'date_pathauto.inc');
+  include_once(drupal_get_path('module', 'date') .'/date_pathauto.inc');
   return _date_pathauto_node($op, $node);
 }
 
@@ -761,12 +779,10 @@ function date_pathauto_node($op, $node = NULL) {
  */
 function date_menu($may_cache) {
   // Include these unconditionally exactly once.
-  if ($may_cache) {
-    if (module_exists('views')) {
-      include_once('./'. drupal_get_path('module', 'date') .'/'. 'date_views.inc');
-    }
-    include_once(drupal_get_path('module', 'date_api') .'/date_api_forms.inc');
+  if (module_exists('views')) {
+    include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   }
+  date_api_load('date_api_forms.inc');
 }
 
 /**

@@ -1,0 +1,5 @@
+; $Id$
+name = Date
+description = Defines CCK date/time fields and widgets.
+dependencies = content date_api
+package = Date/Time

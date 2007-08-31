@@ -13,3 +13,23 @@
 .container-inline-date .jscalendar-icon {
   text-indent: 0;
 }
+
+.container-inline-date .date-timezone .form-item {
+  float:none;
+  width:auto;
+  clear:both;
+  }
+
+ /* Fixes for date popup css so it will behave in Drupal */
+#calendar_div, #calendar_div td, #calendar_div th {
+    margin:0;
+    padding:0;
+}
+#calendar_div, .calendar_control, .calendar_links, .calendar_header, .calendar {
+width: 185px;
+border-collapse: separate;
+margin: 0;
+}
+.calendar td {
+padding: 0;
+}

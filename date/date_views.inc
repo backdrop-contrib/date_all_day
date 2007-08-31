@@ -187,7 +187,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
  */
 function date_views_handler_filter_date_value_form($field) {
 
-  $format = date_format_to_jscalendar($field['widget']['input_format']);
+  $format = strtr($field['widget']['input_format'], date_jscalendar_replacements());
 
   $form = array(
     '#type' => 'textfield',
@@ -686,7 +686,7 @@ function theme_date_views_browser_period_label($period, $date) {
       $format = 'Y';
       break;
     case 'month':
-      $format = 'F Y':
+      $format = 'F Y';
       break;
     case 'day':
       // Use just the year/month/day part of the short date format.

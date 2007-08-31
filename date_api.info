@@ -1,3 +1,4 @@
 ; $Id$
 name = Date API
-description = Makes the date api available to other modules.
+description = Makes the Date Api available to other modules.
+package = Date/Time

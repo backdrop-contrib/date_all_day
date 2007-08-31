@@ -250,6 +250,16 @@ function date_popup_time_formats() {
     );
 }
 
+function date_popup_formats() {
+  $formats = array();
+  foreach (date_popup_date_formats() as $format) {
+    foreach (date_popup_time_formats() as $time_format) {
+      $formats[] = $format .' '. $time_format;
+    }
+  }
+  return $formats;
+}
+
 /**
  * Recreate a date format string so it has the values popup expects.
  *

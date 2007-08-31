@@ -422,7 +422,7 @@ function date_field_settings($op, $field) {
 
     case 'save':
 
-      $options = array('granularity', 'field_timezone', 'tz_handling', 'input_format', 'input_format_custom', 'todate');
+      $options = array('granularity', 'field_timezone', 'tz_handling', 'todate');
       for ($i = 0; $i <= 3; $i++) {
         switch ($i) {
         case(1):
@@ -541,15 +541,20 @@ function date_widget_settings($op, $widget) {
           '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
           );
 
-        $formats = drupal_map_assoc(date_short_formats());
         $options = array();
-        $options['site-wide'] = t('Site default');
+        if ($widget['type'] == 'date_popup') {
+          $formats = date_popup_formats();
+        }
+        else {
+          $formats = drupal_map_assoc(date_short_formats());
+          $options['site-wide'] = t('Site default');
+        }
         foreach ($formats as $f) {
           $options[$f] = format_date(time(), 'custom', $f);
         }
         $form['input']['input_format'] = array(
           '#type' => 'select', '#title' => t('Input format'),
-          '#default_value' => $field['input_format'] ? $field['input_format'] : 'site_format',
+          '#default_value' => $widget['input_format'] ? $widget['input_format'] : 'site_format',
           '#options' => $options,
           '#description' => t('Set an order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
         );
@@ -560,7 +565,7 @@ function date_widget_settings($op, $widget) {
           );
         $form['input']['format']['input_format_custom'] = array(
           '#type' => 'textfield',  '#title' => t('*Custom input format'),
-          '#default_value' => $field['input_format_custom'] ? $field['input_format_custom'] : '',
+          '#default_value' => $widget['input_format_custom'] ? $widget['input_format_custom'] : '',
           '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
         );
 
@@ -623,7 +628,7 @@ function date_widget_settings($op, $widget) {
         return $form;
    case 'save':
       cache_clear_all('date_formats:'. $widget['field_name'] .':'. $widget['type_name'], 'cache');
-      return array('default_value', 'default_value_custom', 'increment', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
+      return array('default_value', 'default_value_custom', 'input_format', 'input_format_custom', 'increment', 'select_day', 'select_month', 'select_year', 'years_back', 'years_forward');
 
    case 'validate':
      if ($field['default_value'] == 'custom') {

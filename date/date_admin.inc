@@ -116,7 +116,6 @@ function date_widget_form($widget) {
     '#default_value' => $widget['input_format_custom'] ? $widget['input_format_custom'] : '',
     '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
   );
-
   if ($widget['type'] == 'date_select') {
     if (!is_array($widget['text_parts'])) {
       $widget['text_parts'] = array();

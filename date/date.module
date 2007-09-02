@@ -520,7 +520,7 @@ function date_widget_info() {
 
 function date_widget_settings($op, $widget) {
   include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
-  return _date_widget_settings($op, $field);
+  return _date_widget_settings($op, $widget);
 }
 
 function date_field_info() {

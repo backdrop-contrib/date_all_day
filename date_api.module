@@ -906,21 +906,23 @@ function date_is_valid($date, $type = DATE_DATETIME) {
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;
 
   // If checkdate works, no need for further tests.
-  if (!checkdate(date_part_extract($date, 'year', $type), date_part_extract($date, 'mon', $type), date_part_extract($date, 'mday', $type))) {
+  $year = date_part_extract($date, 'year', $type);
+  $month = date_part_extract($date, 'mon', $type);
+  $day = date_part_extract($date, 'mday', $type);
+
+  if (!checkdate($month, $day, $year)) {
     // ISO dates and arrays can have empty date parts
     if ($type == DATE_ISO || $type == DATE_ARRAY) {
-      if (DATE_MAX_YEAR < date_part_extract($date, 'year', $type) < DATE_MIN_YEAR
-        || 12 < date_part_extract($date, 'mon', $type) < 0
-        || 31 < date_part_extract($date, 'mday', $type) < 0) {
+      if (DATE_MAX_YEAR < $year || DATE_MIN_YEAR > $year
+        || 12 < $month || 0 > $month || 31 < $day || 0 > $day) {
         return FALSE;
       }
     }
     // Unix and datetime are expected to have at least a year, month, and day.
     // This test is needed to test very old dates in PHP 4, where checkdate won't work.
     // @TODO - this can be removed once everyone is using PHP 5.
-    elseif (DATE_MAX_YEAR < date_part_extract($date, 'year', $type) < DATE_MIN_YEAR
-      || 12 < date_part_extract($date, 'mon', $type) < 1
-      || 31 < date_part_extract($date, 'mday', $type) < 1) {
+    elseif (DATE_MAX_YEAR < $year || DATE_MIN_YEAR > $year
+      || 12 < $month || 1 > $month || 31 < $day || 1 > $day) {
       return FALSE;
     }
   }

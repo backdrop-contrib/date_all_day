@@ -341,7 +341,10 @@ function date_update_7() {
   return $ret;
 }
 
-function date_update_5008() {
+/**
+ * Version 5.2 updates, changes to field and widget settings.
+ */
+function date_update_5200() {
   $ret = array();
 
   // No longer using the cached formats.
@@ -350,19 +353,44 @@ function date_update_5008() {
   // Make sure date module loads after date_api.
   $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
 
-  // Move input format from field settings to widget settings, where it should have been all along.
   $fields = content_fields();
   foreach ($fields as $field) {
     if (isset($field['input_format']) || isset($field['input_format_custom'])) {
+
+      // Move input format from field settings to widget settings, where it should have been all along.
       $data = unserialize(db_result(db_query("SELECT global_settings from {node_field} where field_name = '%s'", $field['field_name'])));
       $input_format = $data['input_format'];
       $input_format_custom = $date['input_format_custom'];
       unset($data['input_format']);
       unset($data['input_format_custon']);
+
+      // Save the new field settings.
       db_query("UPDATE {node_field} SET global_settings = '%s' WHERE field_name='%s'", serialize($data), $field['field_name']);
+
+      // Add input formats to widget settings.
       $data = unserialize(db_result(db_query("SELECT widget_settings from {node_field_instance} where field_name = '%s'", $field['field_name'])));
       $data['input_format'] = $input_format;
       $data['input_format_custom'] = $input_format_custom;
+
+      // Change select_year, select_month, select_day to array of text_parts and add to widget settings.
+      if (empty($data['text_parts'])) {
+        $text_parts = array();
+        if (empty($data['select_year'])) {
+          $text_parts[] = 'year';
+        }
+        if (empty($data['select_month'])) {
+          $text_parts[] = 'mon';
+        }
+        if (empty($data['select_day'])) {
+          $text_parts[] = 'mday';
+        }
+        $data['text_parts'] = $text_parts;
+        unset($data['select_year']);
+        unset($data['select_month']);
+        unset($data['select_day']);
+      }
+
+      // Save the new widget settings.
       db_query("UPDATE {node_field_instance} SET widget_settings = '%s' WHERE field_name='%s'", serialize($data), $field['field_name']);
     }
   }

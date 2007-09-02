@@ -151,7 +151,7 @@ function date_parts_element($element, $date, $granularity, $format) {
   $fields = date_granularity_parts();
   $count = 0;
   foreach ($granularity as $part) {
-    $part_required = $element['#required'] || (empty($element['#value']) && $element['#date_empty'] != 'blank');
+    $part_required = $element['#required'];
     $field = $fields[$part];
     $sub_element[$field] = array(
       '#title' => $labels[$part],
@@ -178,11 +178,11 @@ function date_parts_element($element, $date, $granularity, $format) {
         $sub_element[$field]['#options'] = date_hours($hours_format, $part_required);
         break;
       case 'minutes':
-        $sub_element[$field]['#default_value'] = date_format($date, 'i');
+        $sub_element[$field]['#default_value'] = intval(round(intval(date_format($date, 'i')) / $element['#date_increment']) * $element['#date_increment']);
         $sub_element[$field]['#options'] = date_minutes('i', $part_required, $element['#date_increment']);
         break;
       case 'seconds':
-        $sub_element[$field]['#default_value'] = date_format($date, 's');
+        $sub_element[$field]['#default_value'] = intval(round(intval(date_format($date, 's')) / $element['#date_increment']) * $element['#date_increment']);
         $sub_element[$field]['#options'] = date_seconds('s', $part_required, $element['#date_increment']);
         break;
     }
@@ -198,11 +198,11 @@ function date_parts_element($element, $date, $granularity, $format) {
     }
   }
   if ($hours_format == 'g') {
-    $part_required = $element['#required'] || (empty($element['#value']) && $element['#date_empty'] != 'blank');
+    $part_required = $element['#required'];
     $sub_element['ampm'] = array(
       '#type' => 'select',
       '#theme' => 'date_select_element',
-      '#default_value' => $ampm,
+      '#default_value' => date_format($date, 'G') < 12 ? 'am' : 'pm',
       '#options' => date_ampm($part_required),
       '#title' => t('am/pm'),
       '#weight' => 8,

@@ -176,7 +176,10 @@ function date_calc_is_valid($day, $month, $year) {
     return false;
   }
   if (!checkdate($month, $day, $year)) {
-    return false;
+    // Checkdate won't work on very old dates in PHP 4, need more testing.
+    if (!date_gmmktime(0, 0, 0, $month, $day, $year)) {
+      return false;
+    }
   }
   return true;
 }

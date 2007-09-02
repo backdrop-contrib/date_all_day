@@ -126,26 +126,6 @@ function date_api_menu($may_cache) {
 }
 
 /**
- * Implementation of hook_form_alter().
- *
- * Override system handling of user and site timezone selection.
- * Done if variable date_store_timezones() has been set.
- */
-function date_api_form_alter($form_id, &$form) {
-  if (variable_get('date_store_timezones', FALSE)
-    && $form_id == 'system_date_time_settings') {
-      date_api_load('date_api_forms.inc');
-      date_form_site($form);
-  }
-  elseif (variable_get('date_store_timezones', FALSE)
-    && $form_id == 'user_edit'
-    && variable_get('configurable_timezones', 1)) {
-      date_api_load('date_api_forms.inc');
-      date_form_user($form);
-  }
-}
-
-/**
  * Helper to include optional files. Use to include files that are not
  * automatically included, like date_api_ical.inc.
  */
@@ -660,7 +640,7 @@ function date_default_timezone_name() {
  * @return last day of the specified month and year
  */
 function date_last_day_of_month($month, $year) {
-  if (date_part_is_valid($month, 'mon') && date_part_is_valid($year, 'year')) {
+  if (date_is_valid($year .'-'. $month .'-00T00:00:00', DATE_DATETIME)) {
     $date = date_create($year .'-'. date_pad($month) .'-01 00:00:00', timezone_open('UTC'));
     return date_format($date, 't');
   }
@@ -925,49 +905,24 @@ function date_is_valid($date, $type = DATE_DATETIME) {
   if ($type == DATE_UNIX and !is_numeric($date)) return FALSE;
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;
 
-  // Test that the parts of the date make sense for this type.
-  // ISO dates and arrays can have empty date parts, unix and datetime
-  // are expected to have at least a year, month, and day.
-  if ($type == DATE_ISO || $type == DATE_ARRAY) {
-    if (!date_part_is_valid(date_part_extract($date, 'year', $type), 'year')
-      || !date_part_is_valid(date_part_extract($date, 'mon', $type), 'mon')
-      || !date_part_is_valid(date_part_extract($date, 'mday', $type), 'mday')) {
+  // If checkdate works, no need for further tests.
+  if (!checkdate(date_part_extract($date, 'year', $type), date_part_extract($date, 'mon', $type), date_part_extract($date, 'mday', $type))) {
+    // ISO dates and arrays can have empty date parts
+    if ($type == DATE_ISO || $type == DATE_ARRAY) {
+      if (DATE_MAX_YEAR < date_part_extract($date, 'year', $type) < DATE_MIN_YEAR
+        || 12 < date_part_extract($date, 'mon', $type) < 0
+        || 31 < date_part_extract($date, 'mday', $type) < 0) {
         return FALSE;
+      }
     }
-    return TRUE;
-  }
-  else {
-    if (!date_part_is_valid(date_part_extract($date, 'year', $type), 'year')
-      || !date_part_is_valid(date_part_extract($date, 'mon', $type), 'mon', 1)
-      || !date_part_is_valid(date_part_extract($date, 'mday', $type), 'mday', 1)) {
-        return FALSE;
+    // Unix and datetime are expected to have at least a year, month, and day.
+    // This test is needed to test very old dates in PHP 4, where checkdate won't work.
+    // @TODO - this can be removed once everyone is using PHP 5.
+    elseif (DATE_MAX_YEAR < date_part_extract($date, 'year', $type) < DATE_MIN_YEAR
+      || 12 < date_part_extract($date, 'mon', $type) < 1
+      || 31 < date_part_extract($date, 'mday', $type) < 1) {
+      return FALSE;
     }
-    return TRUE;
-  }
-}
-
-/**
- *  Function to test validity of specific date part
- *
- *  @param $part - the value to test
- *  @param $type - the type of date part provided, coult be 'year', 'mon', or 'mday'
- *  @param $min either 0 or 1, use to set min for mon and mday
- *      can be 0 for iso dates, set to 1 for unix timestamps that require a complete date
- */
-function date_part_is_valid($part, $type, $min = 0) {
-  switch ($type) {
-  case('year'):
-    if ($part < DATE_MIN_YEAR || $part > DATE_MAX_YEAR) return FALSE;
-    break;
-  case('mon'):
-    if ($part < $min || $part > 12) return FALSE;
-    break;
-  case('mday'):
-    if ($part < $min || $part > 31) return FALSE;
-    break;
-  case('week'):
-    if ($part < 0 || $part > 53) return FALSE;
-    break;
   }
   return TRUE;
 }
@@ -1157,78 +1112,11 @@ function date_nongranularity($granularity) {
 /**
  * Implementation of hook_elements().
  *
- * Parameters for date form elements, designed to have sane defaults so any
- * or all can be omitted.
- *
- * date_select will create a collection of form elements, with a separate
- * select or textfield for each date part. The whole collection will get
- * re-formatted into the type of date in #date_params['type'] during validation.
- *
- * date_text will create a textfield that can contain a whole
- * date or any part of a date as text. The input value will be re-formatted
- * into the type of date in #date_params['type'] date during validation.
- *
- * #date_type
- *   the type of the date value that will be stored in the database,
- *   DATE_UNIX, DATE_ISO, or DATE_DATETIME
- * #date_format
- *   a format string that describes the format and order of date parts to
- *   display in the edit form for this element, be sure to add 'A' or 'a'
- *   to get an am/pm selector, defaults to short site default format
- * #date_empty - handling for empty date values:
- *   'blank' to show blank value
- *   'now' to show current time
- *   [+-][##] [years|months|days|hours|minutes|seconds]
- *     i.e. '+90 days', to show offset from current time
- * #date_timezone_db
- *   the timezone of the date/time value being passed in, this is
- *   the way the date/time is stored in the database, default is UTC
- * #date_timezone_local
- *   the timezone to be used when collecting or displaying the date,
- *   default is date site timezone, if set, or UTC. Valid timezones are
- *   standard timezone ids like US/Central, America/New_York, UTC
- * #date_granularity
- *   an array of date parts to be collected, default is (M, D, Y),
- *   Y - year, M - month, D - day, H - hours, N - minutes, S - seconds
- *   include 'T' to add a timezone selector for the date
- * #date_increment
- *   increment minutes and seconds by this amount,
- *   default is 1
- * #date_year_range
- *   the number of years to go back and forward in the year selector,
- *   default is -3:+3 (3 back and 3 forward)
- * #date_select_parts
- *   whether to make each date part a select or textfield
- *   default is array('year' => 'select', 'month' => 'select', 'day' => 'select')
+ * This code and all the processes it uses are in date_api_forms.inc.
  */
 function date_api_elements() {
-  $type['date_select'] = array(
-    '#input' => TRUE, '#tree' => TRUE,
-    '#date_type' => DATE_DATETIME,
-    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-    '#date_empty' => 'now',
-    '#date_granularity' => array('M', 'D', 'Y'),
-    '#date_timezone_db' => 'UTC',
-    '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
-    '#date_select_parts' => array('year' => 'select', 'month' => 'select', 'day' => 'select'),
-    '#date_increment' => 1, '#date_year_range' => '-3:+3',
-    '#process' => array('date_select_process' => array()),
-    '#validate' => array('date_select_validate' => array()),
-    );
-  $type['date_text'] = array(
-    '#input' => TRUE, '#tree' => TRUE,
-    '#date_type' => DATE_DATETIME,
-    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-    '#date_empty' => 'now',
-    '#date_granularity' => array('M', 'D', 'Y'),
-    '#date_timezone_db' => 'UTC',
-    '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
-    '#date_select_parts' => array('year' => 'select', 'month' => 'select', 'day' => 'select'),
-    '#date_increment' => 1, '#date_year_range' => '-3:+3',
-    '#process' => array('date_text_process' => array()),
-    '#validate' => array('date_text_validate' => array()),
-    );
-  return $type;
+  date_api_load('date_api_forms.inc');
+  return _date_api_elements();
 }
 
 /**
@@ -1238,4 +1126,90 @@ function date_api_simpletest() {
   $dir = drupal_get_path('module', 'date_api') .'/tests';
   $tests = file_scan_directory($dir, '\.test$');
   return array_keys($tests);
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Override system handling of user and site timezone selection.
+ * Done if variable date_store_timezones() has been set.
+ */
+function date_api_form_alter($form_id, &$form) {
+  if (variable_get('date_store_timezones', FALSE)
+    && $form_id == 'system_date_time_settings') {
+      date_form_site($form);
+  }
+  elseif (variable_get('date_store_timezones', FALSE)
+    && $form_id == 'user_edit'
+    && variable_get('configurable_timezones', 1)) {
+      date_form_user($form);
+  }
+}
+
+/**
+ * Override form for the site timezone settings form.
+ * Display a list of timezone names instead of offsets
+ * and hide the offset value.
+ */
+function date_form_site(&$form) {
+  $form['date_default_timezone'] = array(
+    '#type' => 'hidden',
+    '#value' => variable_get('date_default_timezone', 0),
+  );
+  $timezone = variable_get('date_default_timezone_name', NULL);
+  $form['date_default_timezone_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Default time zone'),
+    '#default_value' => $timezone,
+    '#options' => date_timezone_names(),
+    '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time.'),
+    '#weight' => -10,
+    '#submit' => array('date_form_site' => array($form['date_default_timezone_name']['#value'])),
+  );
+}
+
+/**
+ * Override form for the user timezone settings form.
+ * Display a list of timezone names instead of offsets
+ * and hide the offset value.
+ */
+function date_form_user(&$form) {
+  $form['timezone']['timezone']['#type'] = 'hidden';
+  $form['timezone']['timezone']['#value'] = strlen($edit['timezone']) ? $edit['timezone'] : variable_get('date_default_timezone', 0);
+  $timezone = strlen($edit['timezone_name']) ? $edit['timezone_name'] : variable_get('date_default_timezone_name', NULL);
+
+  $form['timezone']['timezone_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Default time zone'),
+    '#default_value' => $timezone,
+    '#options' => date_timezone_names(),
+    '#description' => t('Select your current local time.  If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time. Dates and times throughout this site will be displayed using this time zone.'),
+    '#submit' => array('date_form_user' => array($form['timezone']['timezone_name']['#value'], $form['uid'])),
+  );
+  return $form;
+}
+
+/**
+ * Callback from site timezone settings form to update site timezone info.
+ * When the timezone name is updated, update the offset as well.
+ */
+function date_form_update_site($timezone) {
+  if (empty($timezone)) return;
+  variable_set('date_default_timezone_name', $timezone);
+  $date_time = date_create();
+  date_timezone_set($date_time, timezone_open($timezone ? $timezone : 'UTC'));
+  $offset = date_offset_get($date_time);
+  variable_set('date_default_timezone', $offset);
+}
+
+/**
+ * Callback from user timezone settings form to update user timezone info.
+ * When the timezone name is updated, update the offset as well.
+ */
+function date_form_update_user($timezone, $uid) {
+  if (empty($timezone)) return;
+  $date_time = date_create();
+  date_timezone_set($date_time, timezone_open($timezone ? $timezone : 'UTC'));
+  $offset = date_offset_get($date_time);
+  db_query("UPDATE {users} SET timezone_name = '%s', offset = '%s' WHERE uid = %d", $timezone, $offset, $uid);
 }

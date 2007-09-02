@@ -33,11 +33,6 @@ class DateAPI extends DrupalTestCase {
     $value = '2007-00-00T00:00';
     $this->assertEqual(TRUE, date_is_valid($value, DATE_ISO), "Test ISO exception to date_is_valid(". $value .", DATE_ISO)");
 
-    $this->assertEqual(TRUE, date_part_is_valid(3, 'mon'), "Test date_part_is_valid(3, 'mon')");
-    $this->assertNotEqual(TRUE, date_part_is_valid(13, 'mon'), "Test for invalid date_part_is_valid(13, 'mon')");
-    $this->assertEqual(TRUE, date_part_is_valid(2007, 'year'), "Test date_part_is_valid(2007, 'year')");
-    $this->assertNotEqual(TRUE, date_part_is_valid(0, 'year'), "Test for invalid date_part_is_valid(0, 'year')");
-
     $expected = 28;
     $value = date_last_day_of_month(2, 2005);
     $this->assertEqual($expected, $value, 'Test date_last_day_of_month(2, 2005), results '.$value);

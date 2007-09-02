@@ -197,7 +197,7 @@ function date_popup_process_time(&$element) {
 /**
  * Massage the input values back into a single date.
  */
-function date_popup_validate($form_id, $element) {
+function date_popup_validate($element) {
   date_popup_load();
   $input = $element['date']['#value'];
   $input .= ' '. $element['time']['#value'];
@@ -206,9 +206,9 @@ function date_popup_validate($form_id, $element) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_forms.inc');
   $value = date_convert_from_custom($input, $element['#date_format'], $element['#date_type']);
   $value = date_limit_value($value, $element['#date_granularity'], DATE_DATETIME);
-
+  echo $input.'>'.$value.'<br>';
   // Massage the date back to the right timezone for storage
-  $date = date_create($value, timezone_open($element['#date_timezone']));
+  $date = date_create($value, timezone_open($element['#date_timezone_local']));
   date_timezone_set($date, timezone_open($element['#date_timezone_db']));
   $value = date_convert($date, DATE_OBJECT, $element['#date_type']);
   if (date_is_valid($date, DATE_OBJECT)) {

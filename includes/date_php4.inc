@@ -167,6 +167,12 @@ if (!function_exists('date_format')) {
           case 'O':
             $date_string .= sprintf('%s%02d%02d', (date_offset_get($date) < 0 ? '-' : '+'), abs(date_offset_get($date) / 3600), abs(date_offset_get($date) % 3600) / 60);
             break;
+          case 'P':
+            $date_string .= sprintf('%s%02d:%02d', (date_offset_get($date) < 0 ? '-' : '+'), abs(date_offset_get($date) / 3600), abs(date_offset_get($date) % 3600) / 60);
+            break;
+          case 'e':
+            $date .= $date->timezone;
+            break;
           case 'Z':
             $date .= date_offset_get($date);
             break;

@@ -450,8 +450,6 @@ function date_ical_parse_text($field, $data) {
  *    a timezone-adjusted date object
  */
 function date_ical_date($ical_date, $to_tz = FALSE) {
-  global $user;
-
   // If the ical date has no timezone, must assume it is stateless
   // so treat it as a local date.
   if (empty($ical_date['tz'])) {

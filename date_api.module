@@ -57,10 +57,11 @@ function date_handle_timezones() {
  * Set up some constants.
  *
  * Includes standard date types, format strings, strict regex strings for ISO
- * and DATETIME formats (seconds are optional), and a loose regex that will
- * find any variety of ISO date and time, with or without time, with or
- * without dashes and colons separating the elements, and with either a 'T'
- * or a space separating date and time.
+ * and DATETIME formats (seconds are optional).
+ *
+ * The loose regex will find any variety of ISO date and time, with or
+ * without time, with or without dashes and colons separating the elements,
+ * and with either a 'T' or a space separating date and time.
  */
 define('DATE_ISO',  'date');
 define('DATE_UNIX', 'datestamp');
@@ -99,7 +100,7 @@ else {
  * Indicate errors with DATE_ERROR instead of FALSE because of problems
  * distinguishing between valid 0 and empty values and a FALSE value.
  */
-define('DATE_ERROR', 'ERROR');
+define('DATE_ERROR', 'DATE_ERROR');
 
 /**
  * Set an API version in a way that other modules can test for compatibility.
@@ -203,7 +204,7 @@ function date_month_names_abbr($required = FALSE) {
  *   an array of week day names
  */
 function date_week_days_untranslated($refresh = TRUE) {
-  static $weekdays, $ordered_days;
+  static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array(0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday',
       3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday',
@@ -241,7 +242,6 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
  *   an array of week day abbreviations
  */
 function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
-  static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
     foreach (date_week_days_untranslated($refresh) as $key => $day) {
@@ -584,7 +584,7 @@ function date_format_date($timestamp, $type = 'medium', $format = '', $timezone 
     default:
       $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
   }
-  if (isset($timezone)) {
+  if (!empty($timezone)) {
     $timezone = $timezone;
   }
   else {
@@ -622,9 +622,9 @@ function date_now($timezone = NULL) {
  *   Identify the default timezone for a user, if available, otherwise the site.
  *   May return a blank value if no timezone info has been set up.
  */
-function date_default_timezone_name() {
+function date_default_timezone_name($check_user = TRUE) {
   global $user;
-  if (variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
+  if ($check_user && variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
     return $user->timezone_name;
   }
   else {
@@ -776,7 +776,8 @@ function date_next_day_of_week($date, $dow = 0, $count = 1, $type = DATE_DATETIM
  *   the type of date to convert to
  */
 function date_convert($date, $from_type, $to_type) {
-  if (empty($date) || $from_type == $to_type) return $date;
+  if (empty($date) || $date === DATE_ERROR) return DATE_ERROR;
+  if ($from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_OBJECT:
       $obj = $date;
@@ -859,9 +860,9 @@ function date_fuzzy_stamp($array) {
 }
 
 /**
- * Extract any date part from any type of date.
+ * Helper function to extract any date part from any type of date.
  *
- * Example: date_part_extract('2007-03-15 00:00', 'month', DATE_DATETIME)
+ * Example: date_part_extract('2007-03-15 00:00', 'mon', DATE_DATETIME)
  * returns: 3
  *
  * @param mixed $date
@@ -958,7 +959,7 @@ function date_has_time($granularity) {
  * array. Helps prevent errors when unwanted values round up and ensures
  * that unwanted date part values don't get stored in the database.
  *
- * Example: turn '2007-05-15 04:45:59' into '2007-05-15 04:45:00'.
+ * Example: turn '2007-05-15 04:45:59' into '2007-05-15 00:00:00'.
  *
  * @param $date
  *   a date value
@@ -1004,10 +1005,7 @@ function date_limit_value($date, $granularity, $type = DATE_DATETIME) {
  * Rewrite a format string so it only inludes elements from a
  * specified granularity array.
  *
- * Example:
- * $format = variable_get('date_format_long', 'l, F j, Y - H:i');
- * $new_format = date_limit_format($format, array('M', 'D', 'Y'));
- * results in: 'l, F j, Y';
+ * Example, turn 'F j, Y - H:i' into 'F j, Y'
  *
  * @param $format
  *   a format string
@@ -1112,22 +1110,20 @@ function date_nongranularity($granularity) {
 }
 
 /**
- * Implementation of hook_elements().
- *
- * This code and all the processes it uses are in date_api_forms.inc.
- */
-function date_api_elements() {
-  date_api_load('date_api_forms.inc');
-  return _date_api_elements();
-}
-
-/**
  * Implementation of hook_simpletest().
  */
 function date_api_simpletest() {
   $dir = drupal_get_path('module', 'date_api') .'/tests';
   $tests = file_scan_directory($dir, '\.test$');
   return array_keys($tests);
+}
+
+/**
+ * Implementation of hook_elements().
+ */
+function date_api_elements() {
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  return _date_api_elements();
 }
 
 /**

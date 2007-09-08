@@ -30,7 +30,7 @@
  * #date_timezone_handling
  *   the way to determine the 'local' timezone for this date,
  *   Allows dynamic handling so dates can adapt to user timezones when needed.
- *   'site', 'user', 'date', or 'none'
+ *   Allowed values are 'site', 'user', 'date', or 'none'
  * #date_timezone_db
  *   the timezone of the date/time value being passed in from the database,
  *   default is UTC.
@@ -41,11 +41,10 @@
  *   standard timezone ids like US/Central, America/New_York, UTC
  * #date_granularity
  *   an array of date parts to be collected, default is (M, D, Y),
- *   Y - year, M - month, D - day, H - hours, N - minutes, S - seconds
- *   include 'T' to add a timezone selector for the date
+ *   Allowed values are:
+ *    Y (year), M (month), D (day), H (hours), N (minutes), S (seconds)
  * #date_increment
- *   increment minutes and seconds by this amount,
- *   default is 1
+ *   increment minutes and seconds by this amount, default is 1
  * #date_year_range
  *   the number of years to go back and forward in the year selector,
  *   default is -3:+3 (3 back and 3 forward)
@@ -59,7 +58,7 @@
  *     'strftime' to use strftime to adjust the current time
  *     'date' to insert a specific date
  * #date_empty_code
- *   if #date_empty is 'strftime' use the value in #date_empty_code, formatted:
+ *   if #date_empty is 'strftime' use the value in #date_empty_code, like:
  *     [+-][##] [years|months|days|hours|minutes|seconds], i.e. '+90 days'
  *   if #date_empty is 'date' use the value in #date_empty_code as the date
  *     should be formatted as #date_type, using timezone from #date_timezone_db
@@ -91,8 +90,12 @@ function _date_api_elements() {
 
 /**
  * Text date input form.
- *   Split date into date textfield and time selector,
- *   adds optional jscalendar or jquery-calendar popup to textfield.
+ *
+ * Display all or part of a date in a single textfield.
+ *
+ * The exact parts displayed in the field are those in #date_granularity.
+ * The display of each part comes from #date_format.
+ * A timezone selector is added if #date_timezone_handling' == 'date'.
  */
 function date_text_process($element) {
   $date =  date_default_date($element);
@@ -105,24 +108,32 @@ function date_text_process($element) {
     '#attributes' => array('class' => 'date-date'),
     '#type' => 'textfield',
     '#required' => $element['#required'],
+    '#theme' => 'date_textfield_element',
     );
-  if (in_array('T', $element['#date_granularity'])) {
-    $element += array('timezone' => date_timezone_element($element));
+  if ($element['#date_timezone_handling'] == 'date') {
+    $element['timezone'] = date_timezone_element($element);
   }
   return $element;
 }
 
 /**
- *  Flexible date/time drop-down selector.
- *   Splits date into a collection of date and time sub-elements.
+ * Flexible date/time drop-down selector.
+ *
+ * Splits date into a collection of date and time sub-elements, one
+ * for each date part. Each sub-element can be either a textfield or a
+ * select, based on the value of #date_text_fields.
+ *
+ * The exact parts displayed in the field are those in #date_granularity.
+ * The display of each part comes from #date_format.
+ * A timezone selector is added if #date_timezone_handling' == 'date'.
  */
 function date_select_process($element) {
   $date =  date_default_date($element);
   $element['#tree'] = TRUE;
 
   $element += date_parts_element($element, $date, $element['#date_granularity'], $element['#date_format']);
-  if (in_array('T', $element['#date_granularity'])) {
-    $element += array('timezone' => date_timezone_element($element));
+  if ($element['#date_timezone_handling'] == 'date') {
+    $element['timezone'] = date_timezone_element($element);
   }
   return $element;
 }
@@ -225,12 +236,13 @@ function date_parts_element($element, $date, $granularity, $format) {
 function date_timezone_element($element) {
   $sub_element = array(
     '#type' => 'select',
-    '#title' => theme('date_select_element_timezone', 'select', $element),
-    '#default_value' => $element['#timezone_value'],
+    '#title' => theme('date_select_label_timezone', 'select', $element),
+    '#default_value' => date_element_timezone($element),
     '#options' => date_timezone_names($element['#required']),
     '#weight' => 9,
     '#required' => $element['#required'],
     '#attributes' => array('class' => 'date-timezone'),
+    '#theme' => 'date_select_element',
   );
   return $sub_element;
 }
@@ -531,7 +543,7 @@ function theme_date_select($element) {
  *   A themed HTML string representing the date selection boxes.
  */
 function theme_date_text($element) {
-  return theme('textfield', $element, $element['#children']);
+  return theme('form_element', $element, $element['#children']);
 }
 
 /**

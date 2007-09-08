@@ -382,13 +382,13 @@ function date_update_5200() {
       if (!empty($field_settings['output_format_zone'])) {
         $field_settings['output_format_date'] .= ' '. $replace[$field_settings['output_format_zone']];
       }
-      if (!empty($field_settings['output_format_zone_short']) {
+      if (!empty($field_settings['output_format_zone_short'])) {
         $field_settings['output_format_date_short'] .= ' '. $replace[$field_settings['output_format_zone_short']];
       }
-      if (!empty($field_settings['output_format_zone_medium']) {
+      if (!empty($field_settings['output_format_zone_medium'])) {
         $field_settings['output_format_date_medium'] .= ' '. $replace[$field_settings['output_format_zone_medium']];
       }
-      if (!empty($field_settings['output_format_zone_long']) {
+      if (!empty($field_settings['output_format_zone_long'])) {
         $field_settings['output_format_date_long'] .= ' '. $replace[$field_settings['output_format_zone_long']];
       }
       unset($field_settings['output_format_zone']);
@@ -440,3 +440,40 @@ function date_uninstall() {
     variable_del($variable);
   }
 }
+
+/**
+ * Implementation of hook_requirements().
+ * Make sure a site timezone name has been selected.
+ */
+function date_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  switch ($phase) {
+    case 'runtime':
+      $tz_name = variable_get('date_default_timezone_name', NULL);
+      $error = FALSE;
+      if ($tz_name === NULL) {
+        $error = TRUE;
+        $value = $t('The Date module requires you to !link.', array('!link' => l($t('set the site timezone name'), 'admin/settings/date-time')));
+      }
+      else {
+        $date = date_create('now', timezone_open($tz_name));
+        if (date_offset_get($date) != variable_get('date_default_timezone', 0)) {
+          $error = TRUE;
+          $value = $t('The !link may not be correct.', array('!link' => l($t('site timezone name'), 'admin/settings/date-time')));
+        }
+      }
+      if ($error) {
+        $requirements['date_default_timezone'] = array(
+          'title' => $t('Date requirements'),
+          'value' => $value,
+          'severity' => REQUIREMENT_ERROR,
+          );
+      }
+      break;
+     case 'install':
+      break;
+  }
+  return $requirements;
+}
+

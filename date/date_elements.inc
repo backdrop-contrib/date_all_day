@@ -97,6 +97,7 @@ function date_combo_process($element) {
   if ($element['#date_timezone_handling']  == 'date') {
     $element[$tz_field] = date_timezone_element($element);
   }
+
   return $element;
 }
 

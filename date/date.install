@@ -379,16 +379,16 @@ function date_update_5200() {
         'name' => 'e',
         '' => '',
         );
-      if ($field_settings['output_format_zone']) {
+      if (!empty($field_settings['output_format_zone'])) {
         $field_settings['output_format_date'] .= ' '. $replace[$field_settings['output_format_zone']];
       }
-      if ($field_settings['output_format_zone_short']) {
+      if (!empty($field_settings['output_format_zone_short']) {
         $field_settings['output_format_date_short'] .= ' '. $replace[$field_settings['output_format_zone_short']];
       }
-      if ($field_settings['output_format_zone_medium']) {
+      if (!empty($field_settings['output_format_zone_medium']) {
         $field_settings['output_format_date_medium'] .= ' '. $replace[$field_settings['output_format_zone_medium']];
       }
-      if ($field_settings['output_format_zone_long']) {
+      if (!empty($field_settings['output_format_zone_long']) {
         $field_settings['output_format_date_long'] .= ' '. $replace[$field_settings['output_format_zone_long']];
       }
       unset($field_settings['output_format_zone']);

@@ -287,7 +287,7 @@ function date_years($min = 0, $max = 0, $required = FALSE) {
   if (empty($min)) $min = intval(date('Y', time()) - 3);
   if (empty($max)) $max = intval(date('Y', time()) + 3);
   $none = array(0 => '');
-  return $required ? $none + drupal_map_assoc(range($min, $max)) : drupal_map_assoc(range($min, $max));
+  return !$required ? $none + drupal_map_assoc(range($min, $max)) : drupal_map_assoc(range($min, $max));
 }
 
 /**

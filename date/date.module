@@ -89,16 +89,34 @@ function date_default_value($node, $field, $items) {
     default:
       $default_date = NULL;
   }
+  // Get a default value as a timestamp. gmmktime() works OK for this because
+  // this is a current date and won't occur before 1970.
+  switch ($field['widget']['default_value2']) {
+    case 'same':
+      $default_date2 = $default_date;
+      break;
+    case 'now':
+      $default_date2 = gmmktime();
+      break;
+    case 'custom':
+      if (!$default_date2 = strtotime($field['widget']['default_value_custom2'], gmmktime())) {
+        $default_date2 = gmmktime();
+      }
+      break;
+    default:
+      $default_date2 = NULL;
+  }
   // Determine what the right way to format that value to match values from the database.
-  if ($field['type'] == DATE_ISO) {
+  if ($field['type'] == DATE_ISO && is_numeric($default_date)) {
     $default_date = date_convert($default_date, DATE_UNIX, DATE_ISO);
   }
-  // Return from and to dates as an array.
-  if ($field['todate'] == 'required') {
-    return array(0 => array($from_field => $default_date, $to_field => $default_date));
+  if ($field['type'] == DATE_ISO && is_numeric($default_date2)) {
+    $default_date2 = date_convert($default_date2, DATE_UNIX, DATE_ISO);
   }
-  elseif ($field['todate'] == 'optional') {
-    return array(0 => array($from_field => $default_date, $to_field => NULL));
+
+  // Return from and to dates as an array.
+  if ($field['todate'] == 'required' || $field['todate'] == 'optional') {
+    return array(0 => array($from_field => $default_date, $to_field => $default_date2));
   }
   else {
     return array(0 => array($from_field => $default_date));

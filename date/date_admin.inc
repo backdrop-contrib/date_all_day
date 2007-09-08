@@ -34,34 +34,30 @@ function _date_widget_info() {
 /**
  * Implementation of hook_widget_settings().
  */
-function _date_widget_settings($op, &$widget) {
+function _date_widget_settings($op, &$field) {
   switch ($op) {
     case 'callbacks':
       return array('default value' => CONTENT_CALLBACK_CUSTOM);
     case 'form':
-      return date_widget_settings_form($widget);
+      return date_widget_settings_form($field);
 
     case 'save':
-      return array('default_value', 'default_value_custom', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      return array('default_value', 'default_value_custom', 'default_value2', 'default_value_custom2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
 
     case 'validate':
-      if ($widget['default_value'] == 'custom') {
-        $is_strtotime = @strtotime($widget['default_value_custom']);
+      if ($field['default_value'] == 'custom') {
+        $is_strtotime = @strtotime($field['default_value_custom']);
         if (!$is_strtotime) {
           form_set_error('default_value_custom', t('The custom default value is invalid.'));
         }
       }
-      if ($widget['type'] == 'date_select' && !preg_match('@\-[0-9]*:\+[0-9]*@', $widget['year_range'])) {
+      if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:\+[0-9]*@', $field['year_range'])) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
       // Munge the table display for text parts back into an array of text parts.
-      $text_parts = array();
-      foreach ((array) $widget['widget']['text_parts'] as $key => $value) {
-        if ($value == 1) {
-          $text_parts[] = $key;
-        }
+      if (is_array($field['text_parts'])) {
+        form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['text_parts'])));
       }
-      form_set_value(array('#parents' => array('text_parts')), $text_parts);
       break;
 
   }
@@ -77,13 +73,25 @@ function date_widget_settings_form($widget) {
     );
   $form['input']['default'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Customize'),
+    '#title' => t('Customize Default Value'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     );
   $form['input']['default']['default_value_custom'] = array(
-    '#type' => 'textfield', '#title' => t('Custom default value'),
+    '#type' => 'textfield', '#title' => t('Custom default value for From date'),
     '#default_value' => isset($widget['default_value_custom']) ? $widget['default_value_custom'] : '',
+    '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
+    );
+
+  $form['input']['default']['default_value2'] = array(
+    '#type' => 'select', '#title' => t('Default value for To date'),
+    '#default_value' => isset($widget['default_value2']) ? $widget['default_value2'] : 'same',
+    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'custom' => t('Custom')),
+    '#description' => t("A default value to use for this field. If you select 'custom', add details below."),
+    );
+  $form['input']['default']['default_value_custom2'] = array(
+    '#type' => 'textfield', '#title' => t('Custom default value for To date'),
+    '#default_value' => isset($widget['default_value_custom2']) ? $widget['default_value_custom2'] : '',
     '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
     );
 
@@ -149,7 +157,8 @@ function date_widget_settings_form($widget) {
 }
 
 /**
- * Display the text/select options for date parts in a table for easier readability.
+ * Display the text/select options for date parts in a table
+ * for easier readability.
  */
 function theme_date_text_parts_theme($element) {
   $rows[] = array(t('Year'), drupal_render($element['year'][0]), drupal_render($element['year'][1]));
@@ -158,7 +167,7 @@ function theme_date_text_parts_theme($element) {
   $rows[] = array(t('Hours'), drupal_render($element['hours'][0]), drupal_render($element['hours'][1]));
   $rows[] = array(t('Minutes'), drupal_render($element['minutes'][0]), drupal_render($element['minutes'][1]));
   $rows[] = array(t('Seconds'), drupal_render($element['seconds'][0]), drupal_render($element['seconds'][1]));
-  $header = array(t('Date Part Input'), t('Select list'), t('Text field'));
+  $header = array(t('Input Type'), t('Select list'), t('Text field'));
   return theme('table', $header, $rows);
 }
 
@@ -264,16 +273,15 @@ function date_field_settings_form($field) {
     '#description' => t('Set the date elements to be stored (at least a year is required).'),
     );
 
-  $default_formatter = date_formatter_setup_form($field, 0);
-  $form['output'][0] = $default_formatter['output_format_date'];
+  $form['output']['simple'] = date_formatter_setup_form($field, 0);
+  $form['output']['simple']['#title'] = t('Default Display');
 
   $form['output']['advanced'] = array(
-    '#type' => 'fieldset', '#title' => t('Customize'),
+    '#type' => 'fieldset', '#title' => t('Additional Display Settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#description' => t('Define alternate formatting for the date display. Options other than the default are made available to views and themes. Possible formats are default, long, medium, and short.'),
   );
-  $form['output']['advanced'][0] = $default_formatter;
   for ($i = 1; $i <= 3; $i++) {
     $form['output']['advanced'][$i] = date_formatter_setup_form($field, $i);
   }

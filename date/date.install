@@ -344,17 +344,12 @@ function date_update_7() {
 }
 
 /**
- * Version 5.2 updates, make changes to field and widget settings.
+ * Prepare for Version 5.2 updates, make changes to field and widget settings.
  */
-function date_update_5200() {
+function date_update_5100() {
   $ret = array();
   include_once(drupal_get_path('module', 'content') .'/content.module');
-
-  // No longer using the cached formats.
-  cache_clear_all('date_formats', 'cache', TRUE);
-
-  // Make sure date module loads after date_api.
-  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+  include_once(drupal_get_path('module', 'views') .'/views.module');
 
   $fields = content_fields();
   foreach ($fields as $field) {
@@ -368,8 +363,6 @@ function date_update_5200() {
       $input_format_custom = $field_settings['input_format_custom'];
       $widget_settings['input_format'] = $input_format;
       $widget_settings['input_format_custom'] = $input_format_custom;
-      unset($field_settings['input_format']);
-      unset($field_settings['input_format_custon']);
 
       // New PHP 5 date handling will handle timezone formats correctly, so
       // add timezone formats to format string and drop old setting for tracking zones.
@@ -381,20 +374,28 @@ function date_update_5200() {
         );
       if (!empty($field_settings['output_format_zone'])) {
         $field_settings['output_format_date'] .= ' '. $replace[$field_settings['output_format_zone']];
+        if (!empty($field_settings['output_format_custom'])) {
+          $field_settings['output_format_custom'] .= ' '. $replace[$field_settings['output_format_zone']];
+        }
       }
       if (!empty($field_settings['output_format_zone_short'])) {
         $field_settings['output_format_date_short'] .= ' '. $replace[$field_settings['output_format_zone_short']];
+        if (!empty($field_settings['output_format_custom_short'])) {
+          $field_settings['output_format_custom_short'] .= ' '. $replace[$field_settings['output_format_zone_short']];
+        }
       }
       if (!empty($field_settings['output_format_zone_medium'])) {
         $field_settings['output_format_date_medium'] .= ' '. $replace[$field_settings['output_format_zone_medium']];
+        if (!empty($field_settings['output_format_custom_medium'])) {
+          $field_settings['output_format_custom_medium'] .= ' '. $replace[$field_settings['output_format_zone_medium']];
+        }
       }
       if (!empty($field_settings['output_format_zone_long'])) {
         $field_settings['output_format_date_long'] .= ' '. $replace[$field_settings['output_format_zone_long']];
+        if (!empty($field_settings['output_format_custom_long'])) {
+          $field_settings['output_format_custom_long'] .= ' '. $replace[$field_settings['output_format_zone_long']];
+        }
       }
-      unset($field_settings['output_format_zone']);
-      unset($field_settings['output_format_zone_short']);
-      unset($field_settings['output_format_zone_medium']);
-      unset($field_settings['output_format_zone_long']);
 
       // Add new timezone_db setting.
       // For now this is fixed at 'UTC', but it provides a method to store a different timezone in the future.
@@ -402,33 +403,55 @@ function date_update_5200() {
 
       // Change select_year, select_month, select_day to array of text_parts and add to widget settings.
       $text_parts = array();
-      if (empty($widget_settings['select_year'])) {
+      if (isset($widget_settings['select_year']) && empty($widget_settings['select_year'])) {
         $text_parts[] = 'year';
       }
-      if (empty($widget_settings['select_month'])) {
+      if (isset($widget_settings['select_month']) && empty($widget_settings['select_month'])) {
         $text_parts[] = 'mon';
       }
-      if (empty($widget_settings['select_day'])) {
+      if (isset($widget_settings['select_day']) && empty($widget_settings['select_day'])) {
         $text_parts[] = 'mday';
       }
       $widget_settings['text_parts'] = $text_parts;
-      unset($widget_settings['select_year']);
-      unset($widget_settings['select_month']);
-      unset($widget_settings['select_day']);
 
       // Combine years_back and years_forward into single year_range
-      $widget_settings['year_range'] = '-'. intval($widget_settings['years_back']) .':+'. intval($widget_settings['years_forward']);
-      unset($widget_settings['years_back']);
-      unset($widget_settings['years_forward']);
+      $widget_settings['year_range'] = '-'. intval(isset($widget_settings['years_back']) ? $widget_settings['years_back'] : 3) .':+'. intval(isset($widget_settings['years_forward']) ? $widget_settings['years_forward'] : 3);
 
+      // Clean up settings by removing all that are not valid.
+      $fields = array('granularity', 'field_timezone', 'timezone_db', 'tz_handling', 'todate',
+        'output_format_date', 'output_format_date_short', 'output_format_date_medium', 'output_format_date_long',
+        'output_format_custom', 'output_format_custom_short', 'output_format_custom_medium', 'output_format_custom_long');
+      foreach (array_keys($field_settings) as $setting) {
+        if (!in_array($setting, $fields)) {
+          unset($field_settings[$setting]);
+        }
+      }
+      $widgets = array('default_value', 'default_value_custom', 'default_value2', 'default_value_custom2',
+        'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      foreach (array_keys($widget_settings) as $setting) {
+        if (!in_array($setting, $widgets)) {
+          unset($widget_settings[$setting]);
+        }
+      }
       // Save the new settings.
       db_query("UPDATE {node_field} SET global_settings = '%s' WHERE field_name='%s'", serialize($field_settings), $field['field_name']);
       db_query("UPDATE {node_field_instance} SET widget_settings = '%s' WHERE field_name='%s'", serialize($widget_settings), $field['field_name']);
     }
-    // Force the cached data to be regenerated with these new values.
-    cache_clear_all('content_type_info', 'cache');
-    _content_type_info(TRUE);
   }
+  content_clear_type_cache();
+  return $ret;
+}
+
+/**
+ * Version 5.2 updates.
+ */
+function date_update_5200() {
+  $ret = array();
+  // Make sure date module loads after date_api.
+  $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+
+  // No longer using the cached formats.
+  cache_clear_all('date_formats', 'cache', TRUE);
   return $ret;
 }
 
@@ -452,7 +475,7 @@ function date_requirements($phase) {
     case 'runtime':
       $tz_name = variable_get('date_default_timezone_name', NULL);
       $error = FALSE;
-      if ($tz_name === NULL) {
+      if ($tz_name === NULL || $tz_name == 'GMT') {
         $error = TRUE;
         $value = $t('The Date module requires you to !link.', array('!link' => l($t('set the site timezone name'), 'admin/settings/date-time')));
       }
@@ -476,4 +499,3 @@ function date_requirements($phase) {
   }
   return $requirements;
 }
-

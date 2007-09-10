@@ -52,15 +52,17 @@ function date_popup_elements() {
     'date_popup' => array(
       '#input' => TRUE,
       '#tree' => TRUE,
-      '#date_format' => DATE_FORMAT_DATETIME,
-      '#date_type' => DATE_UNIX,
-      '#date_empty' => 'now',
+      '#date_type' => DATE_DATETIME,
+      '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
       '#date_timezone_handling' => variable_get('configurable_timezones', 1) ? 'user' : 'site',
-      '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
       '#date_timezone_db' => 'UTC',
-      '#date_year_range' => '-3:+3',
-      '#date_granularity' => array('M', 'D', 'Y', 'H', 'N'),
+      '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
+      '#date_granularity' => array('M', 'D', 'Y'),
+      '#date_text_parts' => array(),
       '#date_increment' => 1,
+      '#date_year_range' => '-3:+3',
+      '#date_empty' => 'now',
+      '#date_empty_code' => '',
       '#process' => array('date_popup_process' => array()),
       '#validate' => array('date_popup_validate' => array()),
       ),
@@ -101,8 +103,8 @@ function date_popup_process($element) {
   date_popup_load();
 
   // Use the Date Forms API to initialize the date value.
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_forms.inc');
-  $element['#date'] = date_form_date($element);
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  $element['#date'] = date_default_date($element);
   $element['date'] = date_popup_process_date($element);
   $element['time'] = date_popup_process_time($element);
   return $element;
@@ -112,7 +114,6 @@ function date_popup_process($element) {
  * Process the date portion of the element.
  */
 function date_popup_process_date(&$element) {
-
   $date_granularity = array_intersect($element['#date_granularity'], array('M', 'D', 'Y'));
   $date_format = (date_limit_format($element['#date_format'], $date_granularity));
   if (empty($date_granularity)) return array();
@@ -204,10 +205,10 @@ function date_popup_validate($element) {
   $input .= ' '. $element['time']['#value'];
 
   // Use the Date Forms API to convert a custom format back to a standard date.
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_forms.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   $value = date_convert_from_custom($input, $element['#date_format'], $element['#date_type']);
   $value = date_limit_value($value, $element['#date_granularity'], DATE_DATETIME);
-  echo $input.'>'.$value.'<br>';
+
   // Massage the date back to the right timezone for storage
   $date = date_create($value, timezone_open($element['#date_timezone_local']));
   date_timezone_set($date, timezone_open($element['#date_timezone_db']));
@@ -242,11 +243,9 @@ function date_popup_date_formats() {
 /**
  * Allowable time formats.
  */
-function date_popup_time_formats() {
+function date_popup_time_formats($with_seconds = FALSE) {
   return array(
-    'H:i',
     'H:i:s',
-    'h:iA',
     'h:i:sA',
     );
 }

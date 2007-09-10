@@ -103,30 +103,35 @@ function date_combo_process($element) {
 
 /**
  * Validate and update a combo element.
+ * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element) {
-  $field = $element['#field'];
-  $delta = $element['#delta'];
-  $from_field = $element['#columns'][0];
-  $to_field = $element['#columns'][1];
-  $tz_field = $element['#columns'][2];
-
-  if ($field['multiple']) {
-    switch ($field['widget']['type']) {
-      case 'date_select':
-        if (empty($element['#value'][$from_field]['year']) && ($delta > 0 || !$field['required'])) {
-          form_set_value($element, NULL);
-        }
-        break;
-      default:
-        if (empty($element['#value'][$from_field]) && ($delta > 0 || !$field['required'])) {
-          form_set_value($element, NULL);
-        }
-        break;
+  if (!form_get_errors()) {
+    $field = $element['#field'];
+    $delta = $element['#delta'];
+    $from_field = $element['#columns'][0];
+    $to_field = $element['#columns'][1];
+    $tz_field = $element['#columns'][2];
+    $offset_field = $element['#columns'][3];
+    if ($field['multiple']) {
+      switch ($field['widget']['type']) {
+        case 'date_select':
+          if (empty($element['#value'][$from_field]['year']) && ($delta > 0 || !$field['required'])) {
+            form_set_value($element, NULL);
+          }
+          break;
+        default:
+          if (empty($element['#value'][$from_field]) && ($delta > 0 || !$field['required'])) {
+            form_set_value($element, NULL);
+          }
+          break;
+      }
     }
-  }
-  if (empty($element['#value'][$to_field])) {
-    $element['#value'][$to_field] = $element['#value'][$from_field];
+    if (empty($element['#value'][$to_field])) {
+      $element['#value'][$to_field] = $element['#value'][$from_field];
+    }
+    $element['#value'][$tz_field] = date_timezone_get($element['#date']);
+    $element['#value'][$offset_field] = date_offset_get($element['#date']);
     form_set_value($element, $element['#value']);
   }
 }

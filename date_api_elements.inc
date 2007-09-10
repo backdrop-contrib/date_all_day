@@ -99,6 +99,8 @@ function _date_api_elements() {
  */
 function date_text_process($element) {
   $date =  date_default_date($element);
+  $element['#date'] = $date;
+
   $element['#tree'] = TRUE;
   $element['date'] = array(
     '#type' => 'textfield',
@@ -130,6 +132,7 @@ function date_text_process($element) {
 function date_select_process($element) {
   $date =  date_default_date($element);
   $element['#tree'] = TRUE;
+  $element['#date'] = $date;
 
   $element += date_parts_element($element, $date, $element['#date_granularity'], $element['#date_format']);
   if ($element['#date_timezone_handling'] == 'date') {
@@ -216,7 +219,7 @@ function date_parts_element($element, $date, $granularity, $format) {
     $sub_element['ampm'] = array(
       '#type' => 'select',
       '#theme' => 'date_select_element',
-      '#default_value' => date_format($date, 'G') < 12 ? 'am' : 'pm',
+      '#default_value' => is_object($date) ? (date_format($date, 'G') < 12 ? 'am' : 'pm') : '',
       '#options' => drupal_map_assoc(date_ampm($element['#required'])),
       '#title' => theme('date_select_label_ampm', 'select', $element),
       '#weight' => 8,
@@ -329,7 +332,7 @@ function  date_text_validate($element) {
  * adjust the date to the right timezone for this element.
  */
 function date_default_date($element) {
-  if (empty($element['#default_value'])) {
+  if (empty($element['#value'])) {
     if (empty($element['#date_empty']) || $element['#date_empty'] == 'blank') {
       return NULL;
     }
@@ -341,13 +344,13 @@ function date_default_date($element) {
     }
   }
   else {
-    $value = $element['#default_value'];
+    $value = $element['#value'];
   }
   $date = date_element_date($element, $value, 'db2local');
   if ($date === DATE_ERROR) {
     return NULL;
   }
-  if (empty($element['#default_value']) && $element['#date_empty'] == 'strftime' && !empty($element['#date_empty_code'])) {
+  if (empty($element['#value']) && $element['#date_empty'] == 'strftime' && !empty($element['#date_empty_code'])) {
     date_modify($date, $element['#date_empty_code']);
   }
   return $date;
@@ -367,7 +370,12 @@ function date_default_date($element) {
  */
 function date_element_date($element, $value, $direction = 'db2local') {
   if (!empty($value) && $value != 'now') {
-    $value = date_convert($element['#default_value'], $element['#date_type'], DATE_DATETIME);
+    if (isset($element['#value']['date'])) {
+      $value = date_convert_from_custom($element['#value']['date'], $element['#date_format'], DATE_DATETIME);
+    }
+    else {
+      $value = date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME);
+    }
   }
   if ($value === DATE_ERROR) {
     return DATE_ERROR;

@@ -100,11 +100,14 @@ function date_widget_settings_form($widget) {
     $formats = date_popup_formats();
   }
   else {
-    $formats = drupal_map_assoc(date_short_formats());
+    // example input formats must show all possible date parts, so add seconds.
+    $formats = str_replace('i', 'i:s', date_short_formats());
+    $formats = drupal_map_assoc($formats);
     $options['site-wide'] = t('Site default');
   }
+  $now = date_example_date();
   foreach ($formats as $f) {
-    $options[$f] = format_date(time(), 'custom', $f);
+    $options[$f] = date_format($now, $f);
   }
   $form['input']['input_format'] = array(
     '#type' => 'select', '#title' => t('Input format'),
@@ -118,14 +121,14 @@ function date_widget_settings_form($widget) {
     '#default_value' => $widget['input_format_custom'] ? $widget['input_format_custom'] : '',
     '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
   );
-  if ($widget['type'] == 'date_select') {
+  if ($widget['type'] == 'date_select' || $widget['type'] == 'date_popup') {
     $form['input']['advanced']['year_range'] = array(
       '#type' => 'textfield',
       '#title' => t('Years back and forward'),
       '#default_value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
       '#size' => 10,
       '#maxsize' => 10,
-      '#description' => t('Number of years to go back and forward when using a year selection list, default is -3:+3.'),
+      '#description' => t('Number of years to go back and forward in the year selection list, default is -3:+3.'),
       );
     $form['input']['advanced']['increment'] = array(
       '#type' => 'select', '#title' => t('Time increment'),
@@ -133,6 +136,18 @@ function date_widget_settings_form($widget) {
       '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
       '#description' => t('Increment the minute and second fields by this amount.'),
     );
+  }
+  else {
+    $form['increment'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
+      );
+    $form['year_range'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($widget['increment']) ? $widget['increment'] : 1,
+      );
+  }
+  if ($widget['type'] == 'date_select') {
     $form['input']['advanced']['text_parts'] = array(
       '#tree' => TRUE,
       '#theme' => 'date_text_parts_theme',
@@ -152,6 +167,12 @@ function date_widget_settings_form($widget) {
         '#options' => array(0 => '', 1 => ''),
         );
     }
+  }
+  else {
+    $form['text_parts'] = array(
+      '#type' => 'hidden',
+      '#value' => (array) $widget['text_parts'],
+      );
   }
   return $form;
 }
@@ -200,7 +221,7 @@ function _date_field_settings($op, $field) {
 
     case 'save':
 
-      $options = array('granularity', 'field_timezone', 'tz_handling', 'todate');
+      $options = array('granularity', 'timezone_db', 'tz_handling', 'todate');
       for ($i = 0; $i <= 3; $i++) {
         switch ($i) {
         case(1):
@@ -336,12 +357,12 @@ function date_formatter_setup_form($field, $delta) {
     );
   $formats = array_merge(date_short_formats(), date_medium_formats(), date_long_formats());
   $options = array();
-  $now = date_now();
+  $now = date_example_date();
   foreach ($formats as $format) {
     // Create an option that shows date only without time, along with the
     // default string which has both date and time.
     $no_time = date_limit_format($format, array('M', 'D', 'Y'));
-    $zones = array('', 'O', 'P', 'e', 'T');
+    $zones = array('', 'O', 'P', 'e');
     foreach ($zones as $zone) {
       $time_format = !empty($zone) ? $format .' '. $zone : $format;
       $options[$no_time] = date_format($now, $no_time);
@@ -379,4 +400,19 @@ function date_timezone_handling_options() {
     'gmt' => 'UTC',
     'none' => t('No time zone conversion'),
     );
+}
+
+/**
+ * Get an example date and make sure the difference between
+ * month and day and 12 and 24 hours will be clear.
+ */
+function date_example_date() {
+  $now = date_now();
+  if (date_format($now, 'm') == date_format($now, 'd')) {
+    date_modify($now, '+1 day');
+  }
+  if (date_format($now, 'H') == date_format($now, 'h')) {
+    date_modify($now, '+12 hours');
+  }
+  return $now;
 }

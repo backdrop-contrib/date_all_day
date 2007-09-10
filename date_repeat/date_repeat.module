@@ -1,10 +1,5 @@
 <?php
 // $Id$
-
-function date_repeat_menu($may_cache) {
-  date_load('date_calc.inc');
-}
-
 /**
  * Helper functions to handle various date formats
  */
@@ -79,7 +74,7 @@ function date_repeat_help($section) {
  * @return array
  */
 function date_repeat_get($rid, $rule, $repeat_start, $repeat_end) {
-  date_load('date_ical.inc.');
+  date_api_load('date_ical.inc.');
   $items = date_ical_parse_rule($rule);
   return array('RID' => $rid,
                'FREQ' => $items[0]['FREQ'],
@@ -700,7 +695,7 @@ function _date_repeat_get_description($repeat) {
   }
   if ($repeat->FREQ != 'NONE') {
     $freq = FREQ_options();
-    $description[] = t('repeating !freq', array('!freq' => $freq[$repeat->FREQ]);
+    $description[] = t('repeating !freq', array('!freq' => $freq[$repeat->FREQ]));
   }
   if ($repeat->EXDATE) {
     $results = array();
@@ -721,7 +716,7 @@ function _date_repeat_get_description($repeat) {
  */
 function date_repeat_calc($repeat, $rule, $start, $end, $exceptions) {
   //parse out the RRULE for this sequence
-  date_load('date_ical.inc');
+  date_api_load('date_ical.inc');
   $rule = date_ical_parse_rule($rule);
   //calculate the start time and duration for all the repeat nodes
   //we'll be creating

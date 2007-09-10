@@ -74,6 +74,7 @@ function date_widget($op, &$node, $field, &$items) {
 function date_default_value($node, $field, $items) {
   $from_field = 'value';
   $to_field = 'value2';
+  return array(0 => array($from_field => NULL, $to_field => NULL));
 
   // Get a default value as a timestamp. gmmktime() works OK for this because
   // this is a current date and won't occur before 1970.
@@ -137,20 +138,24 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
   }
   switch ($op) {
     case 'validate':
-      foreach ($items as $delta => $item) {
-        foreach ($process as $processed) {
-          $error_field = $field['field_name'] .']['. $delta .']['. $processed;
-          $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
-          if ($processed == 'value' && $field['todate']
-            && !date_is_valid($item['value'], $field['type'])
-            && (date_is_valid($item['value2'], $field['type']))) {
-            form_set_error($error_field, t("A 'From date' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
-          }
-          if ($processed == 'value2'
-            && $field['todate'] == 'required' && ($field['required']
-            && date_is_valid($item['value'], $field['type'])
-            && !date_is_valid($item['value2'], $field['type']))) {
-            form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
+      // Don't try to validate if there were any errors before this point
+      // since the element won't have been munged back into a date.
+      if (!form_get_errors()) {
+        foreach ($items as $delta => $item) {
+          foreach ($process as $processed) {
+            $error_field = $field['field_name'] .']['. $delta .']['. $processed;
+            $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
+            if ($processed == 'value' && $field['todate']
+              && !date_is_valid($item['value'], $field['type'])
+              && (date_is_valid($item['value2'], $field['type']))) {
+              form_set_error($error_field, t("A 'From date' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
+            }
+            if ($processed == 'value2'
+              && $field['todate'] == 'required' && ($field['required']
+              && date_is_valid($item['value'], $field['type'])
+              && !date_is_valid($item['value2'], $field['type']))) {
+              form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => $field['widget']['label'])));
+            }
           }
         }
       }

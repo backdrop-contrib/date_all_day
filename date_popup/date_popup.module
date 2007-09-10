@@ -21,6 +21,15 @@
  *   m/j/y G:i
  */
 
+function date_popup_available() {
+  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-calendar.js')) {
+    return FALSE;
+  }
+  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-timeentry.js')) {
+    return FALSE;
+  }
+  return TRUE;
+}
 /**
  * Load needed files.
  */
@@ -29,10 +38,12 @@ function date_popup_load() {
   if ($loaded) {
     return;
   }
-  $path = drupal_get_path('module', 'date_popup');
-  drupal_add_js($path . '/lib/jquery-calendar.js');
-  drupal_add_js($path . '/lib/jquery-timeentry.js');
-  $loaded = TRUE;
+  if (date_popup_available()) {
+    $path = drupal_get_path('module', 'date_popup');
+    drupal_add_js($path . '/lib/jquery-calendar.js');
+    drupal_add_js($path . '/lib/jquery-timeentry.js');
+    $loaded = TRUE;
+  }
 }
 
 /**

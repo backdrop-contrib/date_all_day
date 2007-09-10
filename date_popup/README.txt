@@ -1,53 +1,34 @@
-Drupal jquery-datetime.module README.txt
+Drupal date_popup.module README.txt
 ==============================================================================
 
-Javascript popup calendars using the jquery-calendar library,
+Javascript popup calendar and timeentry using the 
+jquery-calendar and jquery-timeentry libraries,
 
-Pop-Up Calendar Built from Scratch by Marc Grabanski */
-Enhanced by Keith Wood (kbwood@iprimus.com.au). */
-Under the Creative Commons License http://creativecommons.org/licenses/by/3.0/
+Read the instructions in the /lib/ folder for 
+where to find and download the jquery libraries.
 
-Javascript time entry widget using the jquery-timeentry library,
+==================================================================================
+Usage
+==================================================================================
 
-Written by Keith Wood (kbwood@iprimus.com.au) June 2007.
-Under the Creative Commons Licence http://creativecommons.org/licenses/by/3.0/
-
-
-Installation
-------------------------------------------------------------------------------
-Create a directory modules/jquery_calendar and copy all the module's files 
-into it, as well as the folder 'lib' and its contents. Enable the module via the 
-administer > build > modules page.
-
-Contents
-------------------------------------------------------------------------------
-The 'lib' folder contains the original jquery-calendar.js and jquery-calendar.css
-files from the jquery-calendar home page (http://marcgrabanski.com/code/jquery-calendar/).
-
-
-Developer usage
-------------------------------------------------------------------------------
-
-Adding to a textfield
-----------------------
-
-To include a jscalendar popup with a textfield, add the class 'jquery-calendar':
+To include a popup calendar in a form, use the type 'date_popup':
 
   $form['date'] = array(
-    '#type' => 'textfield',
-    '#attributes' => array('class' => 'jquery-calendar'),
+    '#type' => 'date_popup':
+    '#title => t('My Date'),
+    ....
   );
 
-The pop up calendar does not include a time selector, so if time is used, it 
-should be in a separate form item from the date.
-
-
+==================================================================================
 Customization
-----------------------
+==================================================================================
 
 To change the default display and functionality of the calendar, set startup
 parameters by adding selectors to your element. The configurable options 
 are:
+
+#date_type
+  The type of date to convert the input value to, DATE_DATETIME, DATE_ISO, or DATE_UNIX
 
 #date_format
   a standard PHP date format string that represents the way the month, day, 
@@ -59,27 +40,66 @@ are:
 
   The m, d, and Y elements can be in any order and the order will be preserved.
 
-  All other formatting elements will be ignored.
+  The time selector will add AM/PM if 'a' is in the format string.
 
-  The default format is the month, day, and year elements of the short 
-  site default format, after converting 'n' to 'm', and 'j' to 'd',
-  i.e. a short site format of 'n/j/Y - H:i' will become 'm/d/Y'.
+  The default format uses the short site default format.
 
 
 #date_year_range
   the number of years to go backwards and forwards from current year 
-  in year selector, in the format -{years back}:+{years forward}
-  
-Example:
-  $form['date'] = array(
-    '#type' => 'textfield',
-    '#attributes' => array('class' => 'jquery-calendar'),
-    '#date_format' => 'm.d.Y',
-    '#date_year_range' => -3:+3,
-  );
+  in year selector, in the format -{years back}:+{years forward},
+  like -3:+3
 
+#date_timezone_db
+   The timezone to convert the input value to, default is 'UTC'.
+
+#date_timezone_handling
+  'site', 'user', 'date', 'UTC', or 'none'
+
+#date_timezone_local
+   Only applies if #date_timezone_handling is set to 'date', the timezone name to use
+
+#date_granularity
+   an array of date parts to display, leave out time elements to omit a time selector,
+   include or exclude 'S' to control whether seconds are included
+   Allowed values are:
+   Y (year), M (month), D (day), H (hours), N (minutes), S (seconds)
+
+#date_increment
+   increment minutes and seconds by this amount, default is 1
+
+#date_empty
+   handling for empty date values:
+     'blank' to show blank value
+     'now' to show current time
+     'strftime' to use strftime to adjust the current time
+     'date' to insert a specific date
+
+#date_empty_code
+   if #date_empty is 'strftime' use the value in #date_empty_code, like:
+     [+-][##] [years|months|days|hours|minutes|seconds], i.e. '+90 days'
+   if #date_empty is 'date' use the value in #date_empty_code as the date
+     should be formatted as #date_type, using timezone from #date_timezone_db
+  
+==================================================================================
+Example:
+==================================================================================
+
+$form['date'] = array(
+  '#type' => 'date_popup',
+  '#default_value' => '2007-01-01 10:30:00,
+  '#date_type' => DATE_DATETIME,
+  '#date_format' => 'm.d.Y h:ia',
+  '#date_year_range' => -3:+3,
+  '#date_timezone_handling => 'date',
+  '#date_timezone_local' => 'US/Central',
+  '#date_increment' => 15,
+  '#date_granularity' => array('Y', 'M', 'D', 'H', 'N'),
+);
+
+==================================================================================
 Localization
-----------------------
+==================================================================================
 
 The module will use the t() function for abbreviated month names, abbreviated 
 day names, and the words 'Today', 'Clear', 'Close', 'Prev', and 'Next'. 

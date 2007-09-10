@@ -1,20 +1,21 @@
-The jQuery Calendar
--------------------
+Drupal date_popup.module README.txt
+==============================================================================
 
-Pop-Up Calendar Built from Scratch by Marc Grabanski
-Enhanced by Keith Wood (kbwood@iprimus.com.au).
+Javascript popup calendar and timeentry using the jquery-calendar library,
 
-This program is free software originally published under the
-Creative Commons License http://creativecommons.org/licenses/by/3.0/
+==================================================================================
+Contents
+==================================================================================
 
-This copy has been relicensed under the GPL for compatibiity
-with Drupal.
+This 'lib' folder should be filled with the following four files, downloaded from
+the jquery plugins page:
 
-Homepage
----------
+Download the following two files from the jquery-calendar home page 
+ at http://marcgrabanski.com/code/jquery-calendar/
+- jquery-calendar.js
+- jquery-calendar.css
 
-For details and latest versions please refer to the jQuery calendar
-homepage, located at:
-
-http://marcgrabanski.com/code/jquery-calendar/
-
+Download the following two files from the jquery-timeentry home page
+  at http://home.iprimus.com.au/kbwood/jquery/timeEntry.html
+- jquery-timeentry.js
+- jquery-timeentry.css

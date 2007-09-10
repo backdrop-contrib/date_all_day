@@ -118,7 +118,7 @@ function date_popup_process_date(&$element) {
   $date_format = (date_limit_format($element['#date_format'], $date_granularity));
   if (empty($date_granularity)) return array();
 
-  $settings =  "\n". "prevText:'&lt;". t('Prev') ."', \n".
+  $settings =  "\n". //"prevText:'&lt;". t('Prev') ."', \n".
     "nextText:'". t('Next') ."&gt;', \n".
     "currentText:'". t('Today') ."', \n".
     "clearText:'". t('Clear') ."', \n".
@@ -132,11 +132,13 @@ function date_popup_process_date(&$element) {
     "closeAtTop:false, \n".
     "speed: 'immediate', \n".
     "dateFormat:'". date_popup_format_to_popup($date_format) ."', \n".
-    "yearRange:'". $element['#date_year_range'] ."', \n".
+    "yearRange:'". $element['#date_year_range'] ."'\n".
     "\n";
 
+  // This is just a placeholder to indicate the method to constrain from and to dates.
+  // Not yet implemented.
   if ($fromto) {
-    $settings .+ "minDate: (input.id == 'dTo' ? getDate($('#dFrom').val()) : null), \n".
+    $settings .+ ", minDate: (input.id == 'dTo' ? getDate($('#dFrom').val()) : null), \n".
     "maxDate: (input.id == 'dFrom' ? getDate($('#dTo').val()) : null) ";
   }
 
@@ -171,10 +173,12 @@ function date_popup_process_time(&$element) {
   $settings = "\n". "show24Hours: ". (strpos($element['#date_format'], 'H') ? 'true' : 'false') .", \n".
 		"showSeconds: ". (in_array('S', $element['#date_granularity']) ? 'true' : 'false') .", \n".
 		"timeSteps: [1,". $element['#date_increment'] .",". (in_array('S', $element['#date_granularity']) ? $element['#date_increment'] : 0) ."], \n".
-		"spinnerImage: '', \n";
+		"spinnerImage: ''\n";
 
+  // This is just a placeholder to indicate the method to constrain from and to times.
+  // Not yet implemented.
   if ($fromto) {
-    $settings .+ "minTime: (input.id == 'tTo' ? getTime($('#tFrom').val()) : null), \n".
+    $settings .+ ", minTime: (input.id == 'tTo' ? getTime($('#tFrom').val()) : null), \n".
     "maxTime: (input.id == 'tFrom' ? getTime($('#tTo').val()) : null)} ";
   }
 

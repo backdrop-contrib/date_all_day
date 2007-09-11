@@ -10,11 +10,11 @@ function date_popup_requirements($phase) {
   switch ($phase) {
     case 'runtime':
       $error = FALSE;
-      if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-calendar.js')) {
-       $message .= t('<p>Download jquery-calendar.js and jquery-calendar.css from the jquery-calendar home page at !link and install them in the /lib/ folder of the Date Popup module.</p>', array('!link' => l('http://marcgrabanski.com/code/jquery-calendar/', 'http://marcgrabanski.com/code/jquery-calendar/', array(), NULL, NULL, FALSE, TRUE)));
+      if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-calendar.pack.js')) {
+       $message .= t('<p>Download jquery-calendar.pack.js and jquery-calendar.css from the jquery-calendar home page at !link and install them in the /lib/ folder of the Date Popup module.</p>', array('!link' => l('http://marcgrabanski.com/code/jquery-calendar/', 'http://marcgrabanski.com/code/jquery-calendar/', array(), NULL, NULL, FALSE, TRUE)));
       }
-      if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-timeentry.js')) {
-        $message .= t('<p>Download jquery-timeentry.js and jquery-timeentry.css from the jquery-timeentry home page at !link and install them in the /lib/ folder of the Date Popup module.</p>', array('!link' => l('http://home.iprimus.com.au/kbwood/jquery/timeEntry.html', 'http://home.iprimus.com.au/kbwood/jquery/timeEntry.html', array(), NULL, NULL, FALSE, TRUE)));
+      if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery.timeentry.pack.js')) {
+        $message .= t('<p>Download jquery.timeentry.pack.js and jquery.timeentry.css from the jquery-timeentry home page at !link and install them in the /lib/ folder of the Date Popup module.</p>', array('!link' => l('http://home.iprimus.com.au/kbwood/jquery/timeEntry.html', 'http://home.iprimus.com.au/kbwood/jquery/timeEntry.html', array(), NULL, NULL, FALSE, TRUE)));
       }
       if (!empty($message)) {
         $requirements['date_popup_files'] = array(

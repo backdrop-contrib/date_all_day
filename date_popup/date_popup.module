@@ -22,14 +22,15 @@
  */
 
 function date_popup_available() {
-  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-calendar.js')) {
-    return FALSE;
+  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-calendar.pack.js')) {
+   return FALSE;
   }
-  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery-timeentry.js')) {
+  if (!file_exists(drupal_get_path('module', 'date_popup') .'/lib/jquery.timeentry.pack.js')) {
     return FALSE;
   }
   return TRUE;
 }
+
 /**
  * Load needed files.
  */
@@ -40,8 +41,8 @@ function date_popup_load() {
   }
   if (date_popup_available()) {
     $path = drupal_get_path('module', 'date_popup');
-    drupal_add_js($path . '/lib/jquery-calendar.js');
-    drupal_add_js($path . '/lib/jquery-timeentry.js');
+    drupal_add_js($path . '/lib/jquery-calendar.pack.js');
+    drupal_add_js($path . '/lib/jquery.timeentry.pack.js');
     $loaded = TRUE;
   }
 }
@@ -53,7 +54,7 @@ function date_popup_menu($may_cache) {
   $items = array();
   if (!$may_cache) {
     drupal_add_css(drupal_get_path('module', 'date_popup')  .'/lib/jquery-calendar.css');
-    drupal_add_css(drupal_get_path('module', 'date_popup')  .'/lib/jquery-timeentry.css');
+    drupal_add_css(drupal_get_path('module', 'date_popup')  .'/lib/jquery.timeentry.css');
   }
   return $items;
 }
@@ -68,7 +69,7 @@ function date_popup_elements() {
       '#date_timezone_handling' => variable_get('configurable_timezones', 1) ? 'user' : 'site',
       '#date_timezone_db' => 'UTC',
       '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
-      '#date_granularity' => array('M', 'D', 'Y'),
+      '#date_granularity' => array('M', 'D', 'Y', 'H', 'N'),
       '#date_text_parts' => array(),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',

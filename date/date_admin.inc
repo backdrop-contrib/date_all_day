@@ -42,13 +42,19 @@ function _date_widget_settings($op, &$field) {
       return date_widget_settings_form($field);
 
     case 'save':
-      return array('default_value', 'default_value_custom', 'default_value2', 'default_value_custom2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
 
     case 'validate':
-      if ($field['default_value'] == 'custom') {
-        $is_strtotime = @strtotime($field['default_value_custom']);
+      if ($field['default_value'] == 'strtotime') {
+        $is_strtotime = @strtotime($field['default_value_code']);
         if (!$is_strtotime) {
-          form_set_error('default_value_custom', t('The custom default value is invalid.'));
+          form_set_error('default_value_code', t('The Strtotime default value is invalid.'));
+        }
+      }
+      if ($field['default_value2'] == 'strtotime') {
+        $is_strtotime = @strtotime($field['default_value_code2']);
+        if (!$is_strtotime) {
+          form_set_error('default_value_code2', t('The Strtotime default value for the To Date is invalid.'));
         }
       }
       if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:\+[0-9]*@', $field['year_range'])) {
@@ -68,31 +74,30 @@ function date_widget_settings_form($widget) {
   $form['input']['default_value'] = array(
     '#type' => 'select', '#title' => t('Default value'),
     '#default_value' => isset($widget['default_value']) ? $widget['default_value'] : 'blank',
-    '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'custom' => t('Custom')),
-    '#description' => t("A default value to use for this field. If you select 'custom', add details below."),
+    '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative'), 'date' => t('Date')),
+    '#description' => t("A default value to use for this field. If you select 'Relative' or 'Date', add details below."),
     );
   $form['input']['default'] = array(
     '#type' => 'fieldset',
     '#title' => t('Customize Default Value'),
+    '#description' => t("<p>The custom value for a date default must be a complete date in the right format for this field, YYYY-MM-DDTHH:MM:SS or a unix timestamp.</p><p>The custom value for a Relative default should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.</p>", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     );
-  $form['input']['default']['default_value_custom'] = array(
-    '#type' => 'textfield', '#title' => t('Custom default value for From date'),
-    '#default_value' => isset($widget['default_value_custom']) ? $widget['default_value_custom'] : '',
-    '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
+  $form['input']['default']['default_value_code'] = array(
+    '#type' => 'textfield', '#title' => t('Custom value for From date'),
+    '#default_value' => isset($widget['default_value_code']) ? $widget['default_value_code'] : '',
     );
 
   $form['input']['default']['default_value2'] = array(
     '#type' => 'select', '#title' => t('Default value for To date'),
     '#default_value' => isset($widget['default_value2']) ? $widget['default_value2'] : 'same',
-    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'custom' => t('Custom')),
-    '#description' => t("A default value to use for this field. If you select 'custom', add details below."),
+    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative'), 'date' => t('Date')),
+    '#description' => t("A default value to use for this field. If you select 'Relative' or 'Date', add details below."),
     );
-  $form['input']['default']['default_value_custom2'] = array(
-    '#type' => 'textfield', '#title' => t('Custom default value for To date'),
-    '#default_value' => isset($widget['default_value_custom2']) ? $widget['default_value_custom2'] : '',
-    '#description' => t("A custom default value should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
+  $form['input']['default']['default_value_code2'] = array(
+    '#type' => 'textfield', '#title' => t('Custom value for To date'),
+    '#default_value' => isset($widget['default_value_code2']) ? $widget['default_value_code2'] : '',
     );
 
   $options = array();

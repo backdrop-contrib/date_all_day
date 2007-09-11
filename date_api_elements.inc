@@ -55,10 +55,10 @@
  *   handling for empty date values:
  *     'blank' to show blank value
  *     'now' to show current time
- *     'strftime' to use strftime to adjust the current time
+ *     'strtotime' to use strtotime to adjust the current time
  *     'date' to insert a specific date
  * #date_empty_code
- *   if #date_empty is 'strftime' use the value in #date_empty_code, like:
+ *   if #date_empty is 'strtotime' use the value in #date_empty_code, like:
  *     [+-][##] [years|months|days|hours|minutes|seconds], i.e. '+90 days'
  *   if #date_empty is 'date' use the value in #date_empty_code as the date
  *     should be formatted as #date_type, using timezone from #date_timezone_db
@@ -346,11 +346,14 @@ function date_default_date($element) {
   else {
     $value = $element['#value'];
   }
-  $date = date_element_date($element, $value, 'db2local');
+  if (!empty($value)) {
+    $value = date_convert($value, $element['#date_type'], DATE_DATETIME);
+    $date = date_create($value, timezone_open(date_element_timezone($element)));
+  }
   if ($date === DATE_ERROR) {
     return NULL;
   }
-  if (empty($element['#value']) && $element['#date_empty'] == 'strftime' && !empty($element['#date_empty_code'])) {
+  if (empty($element['#value']) && $element['#date_empty'] == 'strtotime' && !empty($element['#date_empty_code'])) {
     date_modify($date, $element['#date_empty_code']);
   }
   return $date;
@@ -369,17 +372,6 @@ function date_default_date($element) {
  *   a valid date object, adjusted to the right timezone
  */
 function date_element_date($element, $value, $direction = 'db2local') {
-  if (!empty($value) && $value != 'now') {
-    if (isset($element['#value']['date'])) {
-      $value = date_convert_from_custom($element['#value']['date'], $element['#date_format'], DATE_DATETIME);
-    }
-    else {
-      $value = date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME);
-    }
-  }
-  if ($value === DATE_ERROR) {
-    return DATE_ERROR;
-  }
   if (empty($element['#date_timezone_db'])) {
     $element['#date_timezone_db'] = 'UTC';
   }

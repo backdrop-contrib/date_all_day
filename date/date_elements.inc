@@ -50,7 +50,7 @@ function date_combo_process($element) {
     '#date_type'              => $field['type'],
     '#date_format'            => date_input_format($element),
     '#date_empty'             => $field['widget']['default_value'],
-    '#date_empty_code'        => $field['widget']['default_value_custom'],
+    '#date_empty_code'        => $field['widget']['default_value_code'],
     '#date_granularity'       => date_granularity($field),
     '#date_timezone_handling' => $field['tz_handling'],
     '#date_timezone_db'       => $field['timezone_db'],
@@ -92,12 +92,15 @@ function date_combo_process($element) {
     $element[$to_field]['#default_value'] = $element['#value'][$to_field];
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
+    if ($field['widget']['default_value2'] != 'same') {
+      $element[$to_field]['#date_empty'] = $field['widget']['default_value2'];
+      $element[$to_field]['#date_empty_code'] = $field['widget']['default_value_code2'];
+    }
   }
 
   if ($element['#date_timezone_handling']  == 'date') {
     $element[$tz_field] = date_timezone_element($element);
   }
-
   return $element;
 }
 

@@ -1192,18 +1192,20 @@ function date_api_menu($may_cache) {
   if (!$may_cache) {
     drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
 
-    // See if the user needs to have their timezone info set.
-    if (variable_get('configurable_timezones', 1) && $user->uid > 0 && empty($user->timezone_name)) {
-      $timezone = $user->timezone / -60;
-      $js = "\nvar d = new Date();";
-      $js .= "\nvar name = d.toString();";
-      $js .= "\nvar offset = d.getTimezoneOffset();";
-      $js .= "\n" .'{$(document).ready(function(){$.get('. drupal_to_js(url('date/timezone/', NULL, NULL, TRUE)) ." + encodeURIComponent(offset + '|' + name));})}";
-      drupal_add_js($js, 'inline');
+    if (!function_exists('throttle_status') || !throttle_status()) { //Don't do anything if the throttle is active.
+      // See if the user needs to have their timezone name set.
+      if (variable_get('configurable_timezones', 1) && $user->uid > 0 && empty($user->timezone_name)) {
+        $timezone = $user->timezone / -60;
+        $js = "\nvar d = new Date();";
+        $js .= "\nvar dstring = d.toString();";
+        $js .= "\nvar doffset = d.getTimezoneOffset();";
+        $js .= "\n" .'{$(document).ready(function(){$.get('. drupal_to_js(url('timezone/', NULL, NULL, TRUE)) .", {doffset: doffset, dstring: dstring} );})}";
+        drupal_add_js($js, 'inline');
+      }
     }
   }
   else {
-    $items[] = array('path' => 'date/timezone',
+    $items[] = array('path' => 'timezone',
       'title' => t('Browser timezone'),
       'callback' => 'date_browser_timezone',
       'type' => MENU_CALLBACK,
@@ -1217,12 +1219,10 @@ function date_api_menu($may_cache) {
  * Menu callback for /date/timezone/
  * Take the data sent from the Javascript and update the timezone offset and name.
  */
-function date_browser_timezone($value) {
+function date_browser_timezone() {
   global $user;
-  $values = explode('|', urldecode($value));
-  $offset = $values[0];
-  $string = $values[1];
-  $offset = intval($offset * -60);
+  $offset = intval($_GET['doffset'] * -60);
+  $string = urldecode($_GET['dstring']);
   $timezone_name = date_browser_get_timezone($string, $offset);
   if (!empty($timezone_name)) {
     $_SESSION['timezone'] = $offset; //Update session variable.

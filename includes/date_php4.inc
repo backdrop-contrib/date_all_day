@@ -70,7 +70,7 @@ if (!function_exists('date_create')) {
     }
     elseif (preg_match(DATE_REGEX_ISO, $date_in)) {
       // If it's an ISO date, get rid of the 'T' and use it.
-      $date_out = str_replace('T', '', $date_in);
+      $date_out = str_replace('T', ' ', $date_in);
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.
@@ -130,6 +130,7 @@ if (!function_exists('date_format')) {
         switch ($c) {
           case 'U':
             $date_string .= $timestamp;
+            break;
           case 'l':
           case 'w':
           case 'D':

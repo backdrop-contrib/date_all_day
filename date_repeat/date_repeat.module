@@ -201,8 +201,8 @@ function theme_date_repeat_form($repeat) {
     '#description' => t('Determines the number of repeat nodes that will be created for the repeat sequence')
   );
 
-  $form['date_repeat'][] = theme_date_repeat_form_advanced($repeat, $advanced_collapsed);
-  $form['date_repeat'][] = theme_date_repeat_form_exception($repeat, $exception_collapsed);
+  $form['date_repeat'][] = theme('date_repeat_form_advanced', $repeat, $advanced_collapsed);
+  $form['date_repeat'][] = theme('date_repeat_form_exception', $repeat, $exception_collapsed);
 
   return $form;
 }

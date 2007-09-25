@@ -133,8 +133,8 @@ if (!function_exists('date_format')) {
           case 'l':
           case 'w':
           case 'D':
-            $dow = date_dow(date_part_extract($date->value, 'mday'),
-              date_part_extract($date->value, 'mon'),
+            $dow = date_dow(date_part_extract($date->value, 'day'),
+              date_part_extract($date->value, 'month'),
               date_part_extract($date->value, 'year'));
             if ($c == 'w') {
               $date_string .= $dow;
@@ -152,14 +152,14 @@ if (!function_exists('date_format')) {
             $date_string .= date_is_leap_year(date_part_extract($date->value, 'year'));
             break;
           case 'z':
-            $date_string .= date_calc_julian_date(date_part_extract($date->value, 'mday'),
-              date_part_extract($date->value, 'mon'),
+            $date_string .= date_calc_julian_date(date_part_extract($date->value, 'day'),
+              date_part_extract($date->value, 'month'),
               date_part_extract($date->value, 'year'));
             break;
           case 'N':
           case 'o':
-            $iso_week = date_calc_gregorian_to_ISO(date_part_extract($date->value, 'mday'),
-              date_part_extract($date->value, 'mon'),
+            $iso_week = date_calc_gregorian_to_ISO(date_part_extract($date->value, 'day'),
+              date_part_extract($date->value, 'month'),
               date_part_extract($date->value, 'year'));
             $iso = explode('-', $iso_week);
             $date_string .= ($c == 'o') ? $iso[0] : $iso[1];
@@ -180,7 +180,7 @@ if (!function_exists('date_format')) {
             $date_string .= $format[++$i];
             break;
           case 't':
-            $date_string .= date_calc_days_in_month(date_part_extract($date->value, 'mon'),
+            $date_string .= date_calc_days_in_month(date_part_extract($date->value, 'month'),
               date_part_extract($date->value, 'year'));
             break;
           default:
@@ -368,8 +368,8 @@ if (!function_exists('date_modify')) {
         }
         for ($i = 1; $i <= $count; $i++) {
           $cdate = $function($dow,
-            date_part_extract($cdate, 'mday'),
-            date_part_extract($cdate, 'mon'),
+            date_part_extract($cdate, 'day'),
+            date_part_extract($cdate, 'month'),
             date_part_extract($cdate, 'year'));
         }
         $date->value = $cdate .' '. $time;
@@ -382,8 +382,8 @@ if (!function_exists('date_modify')) {
           $function = 'date_calc_prev_day';
         }
         for ($i = 1; $i <= $count; $i++) {
-          $cdate = $function(date_part_extract($cdate, 'mday'),
-            date_part_extract($cdate, 'mon'),
+          $cdate = $function(date_part_extract($cdate, 'day'),
+            date_part_extract($cdate, 'month'),
             date_part_extract($cdate, 'year'));
         }
         $date->value = $cdate;
@@ -396,11 +396,11 @@ if (!function_exists('date_modify')) {
           $function = 'date_calc_end_of_month_by_span';
         }
         // Find the next end or beginning of month that matches the search.
-        $day = date_part_extract($cdate, 'mday');
-        $cdate = $function($count, $day, date_part_extract($cdate, 'mon'),
+        $day = date_part_extract($cdate, 'day');
+        $cdate = $function($count, $day, date_part_extract($cdate, 'month'),
           date_part_extract($cdate, 'year'));
         // Construct a new date with the current day of the month and the new month and year.
-        $mon = date_part_extract($cdate, 'mon');
+        $mon = date_part_extract($cdate, 'month');
         $year = date_part_extract($cdate, 'year');
         $date->value = $year .'-'. $mon .'-'. $mday .' '. $time;
       }
@@ -414,21 +414,21 @@ if (!function_exists('date_modify')) {
         }
         // Move to right week.
         for ($i = 1; $i <= $count; $i++) {
-          $cdate = $function(date_part_extract($cdate, 'mday'),
-            date_part_extract($cdate, 'mon'),
+          $cdate = $function(date_part_extract($cdate, 'day'),
+            date_part_extract($cdate, 'month'),
             date_part_extract($cdate, 'year'));
         }
         // Move to the right day of the week.
         for ($i = 1; $i <= $dow; $i++) {
-          $cdate = date_calc_next_day(date_part_extract($cdate, 'mday'),
-            date_part_extract($cdate, 'mon'),
+          $cdate = date_calc_next_day(date_part_extract($cdate, 'day'),
+            date_part_extract($cdate, 'month'),
             date_part_extract($cdate, 'year'));
         }
         $date->value = $cdate .' '. $time;
       }
       elseif ($item == 'year') {
         // Move to the new year.
-        $year = date_part_extract($cdate, 'mon');
+        $year = date_part_extract($cdate, 'month');
           for ($i = 1; $i < $count; $i++) {
           if ($direction = '+') {
             $year++;
@@ -438,8 +438,8 @@ if (!function_exists('date_modify')) {
           }
         }
         // Construct a new date with the current day and month and the new year.
-        $mday = date_part_extract($cdate, 'mday');
-        $mon = date_part_extract($cdate, 'mon');
+        $mday = date_part_extract($cdate, 'day');
+        $mon = date_part_extract($cdate, 'month');
         $date->value = $year .'-'. $mon .'-'. $mday .' '. $time;
       }
     }
@@ -745,7 +745,14 @@ function date_getdate($timestamp = false, $is_gmt = false, $test = false) {
   // Below PHP 5.2 in windows, must be positive integer
   if (!$test && abs($timestamp) <= 0x7FFFFFFF) {
     if (date_handle_timezones() || $timestamp >= 0) {
-      return @getdate($timestamp);
+      $array = (array) @getdate($timestamp);
+      // Make the array match our custom granularity array.
+      $array['month'] = $array['mon'];
+      $array['day'] = $array['mday'];
+      $array['hour'] = $array['hours'];
+      $array['minute'] = $array['minutes'];
+      $array['second'] = $array['seconds'];
+      unset($array['mon'], $array['mday'], $array['hours'], $array['minutes'], $array['seconds']);
     }
   }
   date_api_load('includes/date_php4_lib.inc');

@@ -34,7 +34,7 @@ function date_combo_process($element) {
   $to_field = $element['#columns'][1];
   $tz_field = $element['#columns'][2];
 
-  if ($field['todate'] != 'required' && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
+  if ($field['todate'] != 'required' && !empty($element['#default_value'][$to_field]) && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
     unset($element['#default_value'][$to_field]);
   }
 
@@ -69,9 +69,9 @@ function date_combo_process($element) {
       break;
     case 'date_js':
       $element[$from_field]['#type'] = 'date_text';
-      $element[$from_field]['#attributes'] = array('class' => ' jscalendar');
-      $element[$from_field]['#jscalendar_ifFormat'] = strtr($field['widget']['input_format'], date_jscalendar_replacements());
-      $element[$from_field]['#jscalendar_showsTime'] = 'false';
+      $element[$from_field]['date']['#attributes'] = array('class' => ' jscalendar');
+      $element[$from_field]['date']['#jscalendar_ifFormat'] = strtr($field['widget']['input_format'], date_jscalendar_replacements());
+      $element[$from_field]['date']['#jscalendar_showsTime'] = 'false';
       break;
     case 'date_popup':
       $element[$from_field]['#type'] = 'date_popup';

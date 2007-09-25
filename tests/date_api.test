@@ -20,8 +20,8 @@ class DateAPI extends DrupalTestCase {
 
     $value = '2007-12-05 23:59';
     $this->assertEqual(TRUE, date_part_extract($value, 'year'), "Test date_part_extract(". $value .", year), results ". date_part_extract($value, 'year'));
-    $this->assertEqual(TRUE, date_part_extract($value, 'mon'), "Test date_part_extract(". $value .", mon), results ". date_part_extract($value, 'mon'));
-    $this->assertEqual(TRUE, date_part_extract($value, 'mday'), "Test date_part_extract(". $value .", mday), results ". date_part_extract($value, 'mday'));
+    $this->assertEqual(TRUE, date_part_extract($value, 'month'), "Test date_part_extract(". $value .", mon), results ". date_part_extract($value, 'month'));
+    $this->assertEqual(TRUE, date_part_extract($value, 'day'), "Test date_part_extract(". $value .", mday), results ". date_part_extract($value, 'day'));
 
     $this->assertEqual(TRUE, date_is_valid($value), "Test date_is_valid(". $value .")");
     $value = '2007-00-00 00:00';

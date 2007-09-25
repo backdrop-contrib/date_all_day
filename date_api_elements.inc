@@ -71,7 +71,7 @@ function _date_api_elements() {
     '#date_timezone_handling' => variable_get('configurable_timezones', 1) ? 'user' : 'site',
     '#date_timezone_db' => 'UTC',
     '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
-    '#date_granularity' => array('M', 'D', 'Y'),
+    '#date_granularity' => array('month', 'day', 'year'),
     '#date_text_parts' => array(),
     '#date_increment' => 1, '#date_year_range' => '-3:+3',
     '#date_empty' => 'now',
@@ -102,16 +102,16 @@ function date_text_process($element) {
   $element['#date'] = $date;
 
   $element['#tree'] = TRUE;
-  $element['date'] = array(
-    '#type' => 'textfield',
-    '#title' => $element['#title'],
-    '#weight' => $element['#weight'],
-    '#default_value' => is_object($date) ? date_format($date, date_input_format($element)) : '',
-    '#attributes' => array('class' => 'date-date'),
-    '#type' => 'textfield',
-    '#required' => $element['#required'],
-    '#theme' => 'date_textfield_element',
-    );
+
+  // Don't overwrite values already added to $element['date'] in case
+  // using something like jscalendar that needs to set custom values.
+  $element['date']['#type'] = 'textfield';
+  $element['date']['#title'] = !empty($element['date']['#title']) ? $element['date']['#title'] : $element['#title'];
+  $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
+  $element['date']['#default_value'] = is_object($date) ? date_format($date, date_input_format($element)) : '';
+  $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] . ' date-date';
+  $element['date']['#required'] = $element['#required'];
+  $element['date']['#theme'] = 'date_textfield_element';
   if ($element['#date_timezone_handling'] == 'date') {
     $element['timezone'] = date_timezone_element($element);
   }
@@ -164,18 +164,16 @@ function date_parts_element($element, $date, $granularity, $format) {
 
   $hours_format  = strpos(strtolower($field['widget']['input_format']), 'a') ? 'g': 'G';
   $year = $year > 0 ? $year : date_format(date_now(), 'Y');
-  $fields = date_granularity_parts();
   $count = 0;
   $increment = min(intval($field['widget']['increment']), 1);
-  foreach ($granularity as $part) {
+  foreach ($granularity as $field) {
     $part_required = $element['#required'];
-    $field = $fields[$part];
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
       '#title' => theme('date_select_label_'. $field, $part_type, $element),
       '#weight' => $order[$part],
       '#required' => $part_required,
-      '#attributes' => array('class' => 'date-'. $field),
+      '#attributes' => array('class' => $element['#attributes']['class'] . ' date-'. $field),
       );
     switch ($field) {
       case 'year':
@@ -183,23 +181,23 @@ function date_parts_element($element, $date, $granularity, $format) {
         $range = explode(':', $element['#date_year_range']);
         $sub_element[$field]['#options'] = drupal_map_assoc(date_years($year + $range[0], $year + $range[1], $part_required));
         break;
-      case 'mon':
+      case 'month':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'n') : '';
         $sub_element[$field]['#options'] = (date_month_names($part_required));
         break;
-      case 'mday':
+      case 'day':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'j') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_days($part_required));
         break;
-      case 'hours':
+      case 'hour':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, $hours_format) : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_hours($hours_format, $part_required));
         break;
-      case 'minutes':
+      case 'minute':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 'i')) / $element['#date_increment']) * $element['#date_increment'])) : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_increment']));
         break;
-      case 'seconds':
+      case 'second':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 's')) / $element['#date_increment']) * $element['#date_increment'])) : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
         break;
@@ -256,8 +254,8 @@ function date_timezone_element($element) {
  */
 function  date_select_validate($element) {
   $field = $element['#field'];
-  if ($element['#value']['ampm'] == 'pm' && $element['#value']['hours'] < 12) {
-    $element['#value']['hours'] += 12;
+  if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
+    $element['#value']['hour'] += 12;
   }
   if ($element['#required'] || !empty($element['#value']['year'])) {
     if ($element['#value']['year'] < DATE_MIN_YEAR || $element['#value']['year'] > DATE_MAX_YEAR) {
@@ -265,13 +263,13 @@ function  date_select_validate($element) {
         '%min' => DATE_MIN_YEAR, '%max' => DATE_MAX_YEAR)));
     }
   }
-  if ($element['#required'] || !empty($element['#value']['mon'])) {
-    if ($element['#value']['mon'] < 1 || $element['#value']['mon'] > 12) {
+  if ($element['#required'] || !empty($element['#value']['month'])) {
+    if ($element['#value']['month'] < 1 || $element['#value']['month'] > 12) {
       form_set_error($fieldname, t('month must be a number between 1 and 12.'));
     }
   }
-  if ($element['#required'] || !empty($element['#value']['mday'])) {
-    if ($element['#value']['mday'] < 1 || $element['#value']['mday'] > 31) {
+  if ($element['#required'] || !empty($element['#value']['day'])) {
+    if ($element['#value']['day'] < 1 || $element['#value']['day'] > 31) {
       form_set_error($fieldname, t('day must be a number between 1 and 31.'));
     }
   }
@@ -285,17 +283,17 @@ function  date_select_validate($element) {
       $value = date_convert($date, DATE_OBJECT, $field['type']);
       form_set_value($element, $value);
       form_set_value($element['year'], NULL);
-      form_set_value($element['mon'], NULL);
-      form_set_value($element['mday'], NULL);
-      form_set_value($element['hours'], NULL);
-      form_set_value($element['minutes'], NULL);
-      form_set_value($element['seconds'], NULL);
+      form_set_value($element['month'], NULL);
+      form_set_value($element['day'], NULL);
+      form_set_value($element['hour'], NULL);
+      form_set_value($element['minute'], NULL);
+      form_set_value($element['second'], NULL);
       form_set_value($element['ampm'], NULL);
     }
     else {
       form_set_error($element, t('A valid date cannot be constructed from %m-%d-%year.', array(
-        '%m' => $element['#value']['mon'],
-        '%d' => $element['#value']['mday'],
+        '%m' => $element['#value']['month'],
+        '%d' => $element['#value']['day'],
         '%y' => $element['#value']['year'],
         )));
     }
@@ -450,25 +448,25 @@ function date_convert_from_custom($date, $format, $to_type = DATE_DATETIME) {
   if (count($letters) != count($values)) {
     return  DATE_ERROR;
   }
-  $final_date = array('hours' => 0, 'minutes' => 0, 'seconds' => 0,
-    'mon' => 0, 'mday' => 0, 'year' => 0);
+  $final_date = array('hour' => 0, 'minute' => 0, 'second' => 0,
+    'month' => 0, 'day' => 0, 'year' => 0);
   foreach($letters as $i => $letter) {
     $value = $values[$i];
     switch($letter) {
       case 'd':
       case 'j':
-        $final_date['mday'] = intval($value);
+        $final_date['day'] = intval($value);
         break;
       case 'm':
-        $final_date['mon'] = intval($value);
+        $final_date['month'] = intval($value);
         break;
       case 'F':
         $array_month_long = array_flip(date_month_names());
-        $final_date['mon'] = $array_month_long[$value];
+        $final_date['month'] = $array_month_long[$value];
         break;
       case 'M':
         $array_month = array_flip(date_month_names_abbr());
-        $final_date['mon'] = $array_month[$value];
+        $final_date['month'] = $array_month[$value];
         break;
       case 'Y':
       case 'y':
@@ -484,21 +482,21 @@ function date_convert_from_custom($date, $format, $to_type = DATE_DATETIME) {
       case 'h':
       case 'G':
       case 'H':
-        $final_date['hours'] = intval($value);
+        $final_date['hour'] = intval($value);
         break;
       case 'i':
-        $final_date['minutes'] = intval($value);
+        $final_date['minute'] = intval($value);
         break;
       case 's':
-        $final_date['seconds'] = intval($value);
+        $final_date['second'] = intval($value);
         break;
       case 'U':
         $final_date = date_convert($value, DATE_UNIX, DATE_ARRAY);
         break;
     }
   }
-  if ($ampm == 'pm' && $final_date['hours'] != 12) {
-    $final_date['hours'] += 12;
+  if ($ampm == 'pm' && $final_date['hour'] != 12) {
+    $final_date['hour'] += 12;
   }
   if ($to_type == DATE_ARRAY) {
     // If returning a date array, get the remaining array values for the

@@ -69,7 +69,7 @@ function date_popup_elements() {
       '#date_timezone_handling' => variable_get('configurable_timezones', 1) ? 'user' : 'site',
       '#date_timezone_db' => 'UTC',
       '#date_timezone_local' => variable_get('date_default_timezone_name', NULL),
-      '#date_granularity' => array('M', 'D', 'Y', 'H', 'N'),
+      '#date_granularity' => array('month', 'day', 'year', 'hour', 'minute'),
       '#date_text_parts' => array(),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',
@@ -126,7 +126,7 @@ function date_popup_process($element) {
  * Process the date portion of the element.
  */
 function date_popup_process_date(&$element) {
-  $date_granularity = array_intersect($element['#date_granularity'], array('M', 'D', 'Y'));
+  $date_granularity = array_intersect($element['#date_granularity'], array('month', 'day', 'year'));
   $date_format = (date_limit_format($element['#date_format'], $date_granularity));
   if (empty($date_granularity)) return array();
 
@@ -177,14 +177,14 @@ function date_popup_process_date(&$element) {
  */
 function date_popup_process_time(&$element) {
 
-  $time_granularity = array_intersect($element['#date_granularity'], array('H', 'N', 'S'));
+  $time_granularity = array_intersect($element['#date_granularity'], array('hour', 'minute', 'second'));
   $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
   if (empty($time_granularity)) return array();
 
   $spinner_text = array(t('Now'), t('Previous field'), t('Next field'), t('Increment'), t('Decrement'));
   $settings = "\n". "show24Hours: ". (strpos($element['#date_format'], 'H') ? 'true' : 'false') .", \n".
-		"showSeconds: ". (in_array('S', $element['#date_granularity']) ? 'true' : 'false') .", \n".
-		"timeSteps: [1,". $element['#date_increment'] .",". (in_array('S', $element['#date_granularity']) ? $element['#date_increment'] : 0) ."], \n".
+		"showSeconds: ". (in_array('second', $element['#date_granularity']) ? 'true' : 'false') .", \n".
+		"timeSteps: [1,". $element['#date_increment'] .",". (in_array('second', $element['#date_granularity']) ? $element['#date_increment'] : 0) ."], \n".
 		"spinnerImage: ''\n";
 
   // This is just a placeholder to indicate the method to constrain from and to times.

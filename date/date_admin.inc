@@ -74,13 +74,13 @@ function date_widget_settings_form($widget) {
   $form['input']['default_value'] = array(
     '#type' => 'select', '#title' => t('Default value'),
     '#default_value' => isset($widget['default_value']) ? $widget['default_value'] : 'blank',
-    '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative'), 'date' => t('Date')),
-    '#description' => t("A default value to use for this field. If you select 'Relative' or 'Date', add details below."),
+    '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
+    '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
   $form['input']['default'] = array(
     '#type' => 'fieldset',
     '#title' => t('Customize Default Value'),
-    '#description' => t("<p>The custom value for a date default must be a complete date in the right format for this field, YYYY-MM-DDTHH:MM:SS or a unix timestamp.</p><p>The custom value for a Relative default should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.</p>", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
+    '#description' => t("<p>The custom value for a Relative default should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.</p>", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php'))),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     );
@@ -92,8 +92,8 @@ function date_widget_settings_form($widget) {
   $form['input']['default']['default_value2'] = array(
     '#type' => 'select', '#title' => t('Default value for To date'),
     '#default_value' => isset($widget['default_value2']) ? $widget['default_value2'] : 'same',
-    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative'), 'date' => t('Date')),
-    '#description' => t("A default value to use for this field. If you select 'Relative' or 'Date', add details below."),
+    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
+    '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
   $form['input']['default']['default_value_code2'] = array(
     '#type' => 'textfield', '#title' => t('Custom value for To date'),
@@ -108,7 +108,6 @@ function date_widget_settings_form($widget) {
     // example input formats must show all possible date parts, so add seconds.
     $formats = str_replace('i', 'i:s', date_short_formats());
     $formats = drupal_map_assoc($formats);
-    $options['site-wide'] = t('Site default');
   }
   $now = date_example_date();
   foreach ($formats as $f) {
@@ -145,39 +144,31 @@ function date_widget_settings_form($widget) {
   else {
     $form['increment'] = array(
       '#type' => 'hidden',
-      '#value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
+      '#value' => isset($widget['increment']) ? $widget['increment'] : '-3:+3',
       );
     $form['year_range'] = array(
       '#type' => 'hidden',
-      '#value' => isset($widget['increment']) ? $widget['increment'] : 1,
+      '#value' => isset($widget['year_range']) ? $widget['year_range'] : 1,
       );
   }
-  if ($widget['type'] == 'date_select') {
-    $form['input']['advanced']['text_parts'] = array(
-      '#tree' => TRUE,
-      '#theme' => 'date_text_parts_theme',
-      );
-    $options = array(
-      'year' => t('Year'),
-      'mon' => t('Month'),
-      'mday' => t('Day'),
-      'hours' => t('Hour'),
-      'minutes' => t('Minute'),
-      'seconds' => t('Second'),
-      );
-    foreach ($options as $key => $value) {
+  $form['input']['advanced']['text_parts'] = array(
+    '#tree' => TRUE,
+    '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts_theme' : '',
+    );
+  foreach (date_granularity_names() as $key => $value) {
+    if ($widget['type'] == 'date_select') {
       $form['input']['advanced']['text_parts'][$key] = array(
         '#type' => 'radios',
         '#default_value' => in_array($key, (array) $widget['text_parts']) ? 1 : 0,
         '#options' => array(0 => '', 1 => ''),
         );
     }
-  }
-  else {
-    $form['text_parts'] = array(
-      '#type' => 'hidden',
-      '#value' => (array) $widget['text_parts'],
-      );
+    else {
+      $form['input']['advanced']['text_parts'][$key] = array(
+        '#type' => 'hidden',
+        '#value' => in_array($key, (array) $widget['text_parts']) ? 1 : 0,
+        );
+    }
   }
   return $form;
 }
@@ -187,14 +178,23 @@ function date_widget_settings_form($widget) {
  * for easier readability.
  */
 function theme_date_text_parts_theme($element) {
-  $rows[] = array(t('Year'), drupal_render($element['year'][0]), drupal_render($element['year'][1]));
-  $rows[] = array(t('Month'), drupal_render($element['mon'][0]), drupal_render($element['mon'][1]));
-  $rows[] = array(t('Day'), drupal_render($element['mday'][0]), drupal_render($element['mday'][1]));
-  $rows[] = array(t('Hours'), drupal_render($element['hours'][0]), drupal_render($element['hours'][1]));
-  $rows[] = array(t('Minutes'), drupal_render($element['minutes'][0]), drupal_render($element['minutes'][1]));
-  $rows[] = array(t('Seconds'), drupal_render($element['seconds'][0]), drupal_render($element['seconds'][1]));
-  $header = array(t('Input Type'), t('Select list'), t('Text field'));
-  return theme('table', $header, $rows);
+  $names = date_granularity_names();
+  $rows = array();
+  foreach ($names as $key => $part) {
+    if ($element[$part]['#type'] == 'hidden') {
+      $rows[] = drupal_render($element[$part]);
+    }
+    else {
+      $rows[] = array($names[$key], drupal_render($element[$part][0]), drupal_render($element[$part][1]));
+    }
+  }
+  if ($element['year']['#type'] == 'hidden') {
+    return implode($rows);
+  }
+  else {
+    $header = array(t('Input Type'), t('Select list'), t('Text field'));
+    return theme('table', $header, $rows);
+  }
 }
 
 /**
@@ -216,10 +216,10 @@ function _date_field_settings($op, $field) {
       return date_field_settings_form($field);
 
     case 'validate':
-      if (!in_array('Y', $field['granularity'])) {
+      if (!in_array('year', $field['granularity'])) {
         form_set_error('granularity', t('Input granularity must include a year.'));
       }
-      if ($field['tz_handling'] != 'none' && !in_array('H', array_filter($field['granularity']))) {
+      if ($field['tz_handling'] != 'none' && !in_array('hour', array_filter($field['granularity']))) {
         form_set_error('tz_handling', t('Dates without hours granularity must not use any timezone handling.'));
       }
       break;
@@ -292,7 +292,7 @@ function date_field_settings_form($field) {
     );
   $form['input']['granularity'] = array(
     '#type' => 'checkboxes', '#title' => t('Granularity'),
-    '#default_value' => $field['granularity'] ? $field['granularity'] : array('Y', 'M', 'D', 'H', 'N'),
+    '#default_value' => $field['granularity'] ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute'),
     '#options' => date_granularity_names(),
     '#multiple' => TRUE,
     '#size' => min(count($options), 6),
@@ -366,7 +366,7 @@ function date_formatter_setup_form($field, $delta) {
   foreach ($formats as $format) {
     // Create an option that shows date only without time, along with the
     // default string which has both date and time.
-    $no_time = date_limit_format($format, array('M', 'D', 'Y'));
+    $no_time = date_limit_format($format, array('month', 'day', 'year'));
     $zones = array('', 'O', 'P', 'e');
     foreach ($zones as $zone) {
       $time_format = !empty($zone) ? $format .' '. $zone : $format;

@@ -460,7 +460,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   }
   $date = date_create($ical_date['datetime'], timezone_open($from_tz));
   if ($ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
-    $date = date_timezone_set($date, timezone_open($to_tz));
+    $date = date_timezone_set($date, date_make_timezone($to_tz));
   }
   return $date;
 }

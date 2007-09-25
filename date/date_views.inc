@@ -650,7 +650,7 @@ function date_views_browser_period_arg($arg = NULL, $period = 'month') {
 function date_views_browser_period_label($arg = NULL, $period = 'month') {
   $range = date_views_date_range($arg);
   $date = date_create($range[0], timezone_open('UTC'));
-  return theme('date_views_browser_period_label', $period, date_format($date, DATE_UNIX));
+  return theme('date_views_browser_period_label', $period, $date);
 }
 
 /**
@@ -690,13 +690,13 @@ function theme_date_views_browser_period_label($period, $date) {
       break;
     case 'day':
       // Use just the year/month/day part of the short date format.
-      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('M', 'D', 'Y'));
+      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('month', 'day', 'year'));
       break;
     case 'hour':
       // Use just the year/month/day/hour part of the short date format.
-      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('M', 'D', 'Y', 'H'));
+      $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('month', 'day', 'year', 'hour'));
   }
-  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_format_date($date, 'custom', $format, 'UTC')));
+  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_format($date, $format)));
 }
 /**
  *  Theme for page navigation

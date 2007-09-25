@@ -190,10 +190,10 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
   $secs = $timestamp - $min * $_min_power;
   $dow = date_dow($day, $month, $year);
   return array(
-    'seconds' => $secs,
-    'minutes' => $min,
-    'hours' => $hour,
-    'mday' => $day,
+    'second' => $secs,
+    'minute' => $min,
+    'hour' => $hour,
+    'day' => $day,
     'wday' => $dow,
     'mon' => $month,
     'year' => $year,
@@ -221,10 +221,10 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
   $arr = _date_getdate($timestamp, true, $is_gmt);
   $year = $arr['year'];
   $month = $arr['mon'];
-  $day = $arr['mday'];
-  $hour = $arr['hours'];
-  $min = $arr['minutes'];
-  $secs = $arr['seconds'];
+  $day = $arr['day'];
+  $hour = $arr['hour'];
+  $min = $arr['minute'];
+  $secs = $arr['second'];
   $max = strlen($format);
   $dates = '';
   /*

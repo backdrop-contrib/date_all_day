@@ -606,8 +606,9 @@ function date_default_timezone_name($check_user = TRUE) {
  * @return last day of the specified month and year
  */
 function date_last_day_of_month($month, $year) {
-  if (date_is_valid($year .'-'. $month .'-00T00:00:00', DATE_DATETIME)) {
-    $date = date_create($year .'-'. date_pad($month) .'-01 00:00:00', timezone_open('UTC'));
+  $string = date_pad($year, 4) .'-'. date_pad($month) .'-01 00:00:00';
+  if (date_is_valid($string, DATE_DATETIME)) {
+    $date = date_create($string, timezone_open('UTC'));
     return date_format($date, 't');
   }
   return DATE_ERROR;

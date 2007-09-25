@@ -210,7 +210,7 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
       $weekdays[$key] = t($day);
     }
   }
-  $none = array(0 => '');
+  $none = array('' => '');
   return !$required ? $none + $weekdays : $weekdays;
 }
 
@@ -229,7 +229,7 @@ function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
       $weekdays[$key] = t(substr($day, 0, $length));
     }
   }
-  $none = array(0 => '');
+  $none = array('' => '');
   return !$required ? $none + $weekdays : $weekdays;
 }
 

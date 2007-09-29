@@ -2,7 +2,7 @@ Drupal date_popup.module README.txt
 ==============================================================================
 
 Javascript popup calendar and timeentry using the 
-jquery-calendar and jquery-timeentry libraries,
+jquery UI calendar and jquery-timeentry libraries,
 
 Read the instructions in the /lib/ folder for 
 where to find and download the jquery libraries.

@@ -1,0 +1,107 @@
+<?php
+// $Id$
+/**
+ * @file
+ * This module will make the alter the user and site timezone forms to
+ * select a timezone name instead of a timezone offset.
+ *
+ * This module won't be needed once core starts tracking timezone names
+ * instead of offsets.
+ */
+/**
+ * Set a variable to indicate if user and site timezone forms should be
+ * overridden to store timezone names.
+ *
+ * Some method of storing timezone names in site and user records is
+ * required if any timezone conversions are going to be needed or if
+ * any of the new date functions, like date_create() are used. This
+ * variable tells us whether to automatically add
+ * timezone names to those forms.
+ */
+variable_set('date_store_timezones', TRUE);
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Override system handling of user and site timezone selection.
+ * Done if variable date_store_timezones() has been set.
+ */
+function date_timezone_form_alter($form_id, &$form) {
+  if ($form_id == 'system_date_time_settings') {
+    date_timezone_site($form);
+  }
+  elseif ($form_id == 'user_edit' && variable_get('configurable_timezones', 1) && isset($form['timezone'])) {
+    date_timezone_user($form);
+  }
+}
+
+/**
+ * Override form for the site timezone settings form.
+ * Display a list of timezone names instead of offsets
+ * and hide the offset value.
+ */
+function date_timezone_site(&$form) {
+  $timezone = variable_get('date_default_timezone_name', NULL);
+  $form['date_default_timezone'] = array(
+    '#type' => 'select',
+    '#title' => t('Default time zone'),
+    '#default_value' => $timezone,
+    '#options' => date_timezone_names(),
+    '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time.'),
+    '#weight' => -10,
+    '#validate' => array('date_timezone_update_site' => array()),
+    '#offset' => variable_get('date_default_timezone', 0),
+  );
+}
+
+/**
+ * Override form for the user timezone settings form.
+ * Display a list of timezone names instead of offsets
+ * and hide the offset value.
+ */
+function date_timezone_user(&$form) {
+  $account = $form['_account']['#value'];
+  $form['timezone']['#validate'] = array('date_timezone_update_user' => array());
+  $form['timezone']['#uid'] = $account->uid;
+  $form['timezone']['timezone']['#type'] = 'hidden';
+  $form['timezone']['timezone']['#value'] = $form['timezone']['#default_value'];
+  $timezone = $account->timezone_name ? $account->timezone_name : variable_get('date_default_timezone_name', NULL);
+
+  $form['timezone']['timezone_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Default time zone'),
+    '#default_value' => $timezone,
+    '#options' => date_timezone_names(),
+    '#description' => t('Select your current local time.  If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time. Dates and times throughout this site will be displayed using this time zone.'),
+  );
+  return $form;
+}
+
+/**
+ * Callback from site timezone settings form to update site timezone info.
+ * When the timezone name is updated, update the offset as well.
+ */
+function date_timezone_update_site($element) {
+  $timezone = $element['#value'];
+  if (empty($timezone)) {
+    form_set_value($element, $element['#offset']);
+  }
+  else {
+    variable_set('date_default_timezone_name', $timezone);
+    $date = date_create('now', timezone_open($timezone));
+    form_set_value($element, date_offset_get($date));
+  }
+}
+
+/**
+ * Callback from user timezone settings form to update user timezone info.
+ * When the timezone name is updated, update the offset as well.
+ */
+function date_timezone_update_user($element) {
+  $timezone = $element['timezone_name']['#value'];
+  if (!empty($timezone)) {
+    $date = date_create('now', timezone_open($timezone));
+    $offset = date_offset_get($date);
+    form_set_value($element['timezone'], $offset);
+  }
+}

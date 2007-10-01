@@ -51,11 +51,6 @@ function date_make_date($date, $timezone, $type = DATE_DATETIME, $default = 'now
 }
 
 /**
- * Make sure the site is set up to store site and user timezone names.
- */
-variable_set('date_store_timezones', TRUE);
-
-/**
  * Something in the order that modules get executed breaks this
  * if I try to put it into hook_init() or hook_menu(), so I give
  * up and include it always.

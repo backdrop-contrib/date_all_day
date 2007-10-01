@@ -20,12 +20,46 @@ function date_api_uninstall() {
     'date_api_version',
     'date_store_timezones',
     'date_default_timezone_name',
+    'date_min_year',
+    'date_max_year',
+    'date_php_min_year',
     );
   foreach ($variables as $variable) {
     variable_del($variable);
   }
   return $ret;
 }
+
+/**
+ * Implementation of hook_requirements().
+ * Make sure Date PHP4 is installed if running less than PHP 5.2.
+ */
+function date_api_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  //switch ($phase) {
+ //   case 'runtime':
+      $tz_name = variable_get('date_default_timezone_name', NULL);
+      $error = FALSE;
+      if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
+        $error = TRUE;
+        $severity = REQUIREMENT_ERROR;
+        $value = $t('The Date API module requires the !link for PHP versions less than 5.2.', array('!link' => l($t('Date PHP4 module'), 'admin/build/modules')));
+      }
+      if ($error) {
+        $requirements['date_php4'] = array(
+          'title' => $t('Date API requirements'),
+          'value' => $value,
+          'severity' => $severity,
+          );
+      }
+  //    break;
+  //   case 'install':
+  //    break;
+  //}
+  return $requirements;
+}
+
 
 /**
  * Implementation of hook_update().

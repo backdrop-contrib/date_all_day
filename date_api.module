@@ -9,33 +9,6 @@
  */
 
 /**
- * Include PHP 4 date handling files unconditionally, but only on systems
- * where native date and timezone handling won't work. These are the
- * files that will create the functions date_create(), date_offset_get(),
- * etc. that will work in PHP 4.
- *
- * @todo Remove this and the 'php4' files in /includes/, like date_php4.inc,
- *   once PHP 4 is no longer supported.
- */
-if (!date_handle_timezones()) {
-  date_api_load('includes/date_php4.inc');
-}
-
-/**
- * Set a variable to indicate if user and site timezone forms should be
- * overridden to store timezone names.
- *
- * Some method of storing timezone names in site and user records is
- * required if any timezone conversions are going to be needed or if
- * any of the new date functions, like date_create() are used. This
- * variable tells us whether the Date API should automatically add
- * timezone names to those forms. Implemented using variable_get()
- * so other modules can order the Date API to add timezone selection
- * to site and user edit settings by setting date_store_timezones to TRUE.
- */
-variable_get('date_store_timezones', FALSE);
-
-/**
  * NULL is used for the default setting of date_default_timezone_name
  * to have a way to tell that no site timezone name has been implemented.
  * Otherwise, many functions would use 'UTC' incorrectly and
@@ -43,15 +16,6 @@ variable_get('date_store_timezones', FALSE);
  * value and not use this if it is not set.
  */
 variable_get('date_default_timezone_name', NULL);
-
-/**
- * Test whether the system can use native php timezone handling.
- * Testing for PHP version 5.2 because date handling worked much less
- * reliably in earlier 5.x versions.
- */
-function date_handle_timezones() {
-  return version_compare(PHP_VERSION, '5.2', '>=');
-}
 
 /**
  * Set up some constants.
@@ -85,16 +49,9 @@ define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(
  * like -1250-01-01T00:00:00, which probably won't make sense or work
  * correctly anywhere.
  */
-if (date_handle_timezones()) {
-  define('DATE_MAX_YEAR', 4000);
-  define('DATE_MIN_YEAR', 1);
-  define('DATE_PHP_MIN_YEAR', 1901);
-}
-else {
-  define('DATE_MAX_YEAR', 3000);
-  define('DATE_MIN_YEAR', 100);
-  define('DATE_PHP_MIN_YEAR', 1971);
-}
+variable_set('date_max_year', 4000);
+variable_set('date_min_year', 1);
+variable_set('date_php_min_year', 1901);
 
 /**
  * Indicate errors with DATE_ERROR instead of FALSE because of problems
@@ -864,7 +821,7 @@ function date_is_valid($date, $type = DATE_DATETIME) {
   if (!checkdate($month, $day, $year)) {
     // ISO dates and arrays can have empty date parts
     if ($type == DATE_ISO || $type == DATE_ARRAY) {
-      if (DATE_MAX_YEAR < $year || DATE_MIN_YEAR > $year
+      if (variable_get('date_max_year', 4000) < $year || variable_get('date_min_year', 1) > $year
         || 12 < $month || 0 > $month || 31 < $day || 0 > $day) {
         return FALSE;
       }
@@ -872,7 +829,7 @@ function date_is_valid($date, $type = DATE_DATETIME) {
     // Unix and datetime are expected to have at least a year, month, and day.
     // This test is needed to test very old dates in PHP 4, where checkdate won't work.
     // @TODO - this can be removed once everyone is using PHP 5.
-    elseif (DATE_MAX_YEAR < $year || DATE_MIN_YEAR > $year
+    elseif (variable_get('date_max_year', 4000) < $year || variable_get('date_min_year', 1) > $year
       || 12 < $month || 1 > $month || 31 < $day || 1 > $day) {
       return FALSE;
     }
@@ -1078,94 +1035,6 @@ function date_api_simpletest() {
 function date_api_elements() {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   return _date_api_elements();
-}
-
-/**
- * Implementation of hook_form_alter().
- *
- * Override system handling of user and site timezone selection.
- * Done if variable date_store_timezones() has been set.
- */
-function date_api_form_alter($form_id, &$form) {
-  if (variable_get('date_store_timezones', FALSE)) {
-    if ($form_id == 'system_date_time_settings') {
-      date_form_site($form);
-    }
-    elseif ($form_id == 'user_edit' && variable_get('configurable_timezones', 1) && isset($form['timezone'])) {
-      date_form_user($form);
-    }
-  }
-}
-
-/**
- * Override form for the site timezone settings form.
- * Display a list of timezone names instead of offsets
- * and hide the offset value.
- */
-function date_form_site(&$form) {
-  $timezone = variable_get('date_default_timezone_name', NULL);
-  $form['date_default_timezone'] = array(
-    '#type' => 'select',
-    '#title' => t('Default time zone'),
-    '#default_value' => $timezone,
-    '#options' => date_timezone_names(),
-    '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time.'),
-    '#weight' => -10,
-    '#validate' => array('date_form_update_site' => array()),
-    '#offset' => variable_get('date_default_timezone', 0),
-  );
-}
-
-/**
- * Override form for the user timezone settings form.
- * Display a list of timezone names instead of offsets
- * and hide the offset value.
- */
-function date_form_user(&$form) {
-  $account = $form['_account']['#value'];
-  $form['timezone']['#validate'] = array('date_form_update_user' => array());
-  $form['timezone']['#uid'] = $account->uid;
-  $form['timezone']['timezone']['#type'] = 'hidden';
-  $form['timezone']['timezone']['#value'] = $form['timezone']['#default_value'];
-  $timezone = $account->timezone_name ? $account->timezone_name : variable_get('date_default_timezone_name', NULL);
-
-  $form['timezone']['timezone_name'] = array(
-    '#type' => 'select',
-    '#title' => t('Default time zone'),
-    '#default_value' => $timezone,
-    '#options' => date_timezone_names(),
-    '#description' => t('Select your current local time.  If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time. Dates and times throughout this site will be displayed using this time zone.'),
-  );
-  return $form;
-}
-
-/**
- * Callback from site timezone settings form to update site timezone info.
- * When the timezone name is updated, update the offset as well.
- */
-function date_form_update_site($element) {
-  $timezone = $element['#value'];
-  if (empty($timezone)) {
-    form_set_value($element, $element['#offset']);
-  }
-  else {
-    variable_set('date_default_timezone_name', $timezone);
-    $date = date_create('now', timezone_open($timezone));
-    form_set_value($element, date_offset_get($date));
-  }
-}
-
-/**
- * Callback from user timezone settings form to update user timezone info.
- * When the timezone name is updated, update the offset as well.
- */
-function date_form_update_user($element) {
-  $timezone = $element['timezone_name']['#value'];
-  if (!empty($timezone)) {
-    $date = date_create('now', timezone_open($timezone));
-    $offset = date_offset_get($date);
-    form_set_value($element['timezone'], $offset);
-  }
 }
 
 /**

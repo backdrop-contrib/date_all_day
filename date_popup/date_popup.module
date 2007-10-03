@@ -151,7 +151,7 @@ function date_popup_process_date(&$element) {
   $sub_element = array(
     '#type' => 'textfield',
     '#title' => t('Date'),
-    '#default_value' => is_object($elment['#date']) ? date_format($element['#date'], $date_format) : '',
+    '#default_value' => is_object($element['#date']) ? date_format($element['#date'], $date_format) : '',
     '#attributes' => array('class' => 'jquery-calendar-'. $element['#id']),
     '#size' => 20,
     '#maxlength' => 20,
@@ -191,7 +191,7 @@ function date_popup_process_time(&$element) {
   $sub_element = array(
     '#type' => 'textfield',
     '#title' => t('Time'),
-    '#default_value' => is_object($elment['#date']) ? date_format($element['#date'], $time_format) : '',
+    '#default_value' => is_object($element['#date']) ? date_format($element['#date'], $time_format) : '',
     '#attributes' => array('class' => 'jquery-timeentry-'. $element['#id']),
     '#size' => 10,
     '#maxlength' => 10,

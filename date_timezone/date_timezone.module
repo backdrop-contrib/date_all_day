@@ -28,10 +28,10 @@ variable_set('date_store_timezones', TRUE);
  */
 function date_timezone_form_alter($form_id, &$form) {
   if ($form_id == 'system_date_time_settings') {
-    date_timezone_site($form);
+    date_timezone_site_form($form);
   }
   elseif ($form_id == 'user_edit' && variable_get('configurable_timezones', 1) && isset($form['timezone'])) {
-    date_timezone_user($form);
+    date_timezone_user_form($form);
   }
 }
 
@@ -40,7 +40,7 @@ function date_timezone_form_alter($form_id, &$form) {
  * Display a list of timezone names instead of offsets
  * and hide the offset value.
  */
-function date_timezone_site(&$form) {
+function date_timezone_site_Form(&$form) {
   $timezone = variable_get('date_default_timezone_name', NULL);
   $form['date_default_timezone'] = array(
     '#type' => 'select',
@@ -59,7 +59,7 @@ function date_timezone_site(&$form) {
  * Display a list of timezone names instead of offsets
  * and hide the offset value.
  */
-function date_timezone_user(&$form) {
+function date_timezone_user_form(&$form) {
   $account = $form['_account']['#value'];
   $form['timezone']['#validate'] = array('date_timezone_update_user' => array());
   $form['timezone']['#uid'] = $account->uid;

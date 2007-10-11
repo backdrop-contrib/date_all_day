@@ -1,0 +1,107 @@
+<?php
+// $Id$
+/**
+ * Test Date API date handling against valid PHP 5 dates
+ */
+class DateAPI extends DrupalTestCase {
+  function get_info() {
+    return array('name' => t('Date API conversions'), 'desc' => t('Test Date API date converstions against valid PHP5 results. Tests only provide meaningful results when run in PHP5 environment.') , 'group' => 'Date tests');
+  }
+
+  function testDateAPI() {
+    include_once(drupal_get_path('module', 'date_api') .'/date_api.module');
+    include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+    include_once(drupal_get_path('module', 'date_api') .'/date_timezones.inc');
+
+    define('ADODB_TEST_DATES', 1);
+
+    $timezone = 'America/Chicago';
+    $value = '2007-03-11T01:59:59';
+    $date = date_create($value, timezone_open($timezone));
+    $php5 = date_offset_get($date);
+    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $php4 = $date->local->offset;
+    // should be -21600
+    $this->assertEqual($php4, $php5, 'The offset 1 minute before start of CDT, 2am on Mar 11, 2007 is '. $php5 .', Date API returned '. $php4);
+
+    $value = '2007-03-11T02:00:00';
+    $date = date_create($value, timezone_open($timezone));
+    $php5 = date_offset_get($date);
+    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $php4 = $date->local->offset;
+    // should be -18000
+    $this->assertEqual($php4, $php5, 'New DST rules: The offset at start of CDT, 2am on Mar 11, 2007 is '. $php5 .', Date API returned '. $php4);
+
+    $value = '2001-03-11T02:00:00';
+    $date = date_create($value, timezone_open($timezone));
+    $php5 = date_offset_get($date);
+    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $php4 = $date->local->offset;
+    // should be -21600
+    $this->assertEqual($php4, $php5, 'Old DST rules: The offset at 2am on Mar 11, 2001 is '. $php5 .', Date API returned '. $php4);
+
+    $value = '1970-01-01T00:00:00';
+    $format = 'm/d/Y h:i:s';
+    $date = date_create($value, timezone_open($timezone));
+    $php5 = date_format($date, $format);
+    $timezone2 = 'Asia/Tokyo';
+    date_timezone_set($date, timezone_open($timezone2));
+    $php5 = date_format($date, $format);
+    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    date_convert_timezone($date, $timezone, $timezone2, 'local');
+    $php4 = date_show_date($date, $format, 'local');
+    // should be 01/01/1970 03:00 pm
+    $this->assertEqual($php4, $php5, 'Convert timezone, 1970-01-01 00:00:00 in America/Chicago becomes '. $php5 .' in Asia/Tokyo, Date API returned '. $php4);
+
+    // Test formatted dates from random timestamps
+  	for ($i=100; --$i > 0; ) {
+  		//$ts = 3600.0*((rand()%60000)+(rand()%60000))+(rand()%60000);
+  		$ts = rand(-11676096000, 11676096000);
+  		$format = 'm/d/Y H:i:s';
+  	  $php4 = date_format_date($format, $ts, 0, 'Australia/Sydney');
+  	  $date = date_create("@$ts", timezone_open('Australia/Sydney'));
+  	  $php5 = date_format($date, $format);
+  	  $this->assertEqual($php4, $php5, 'Test date_format_date() on timestamp for Australia/Sydney '. $ts .': PHP5 returned '. $php5 .', Date API returned '. $php4);
+  	}
+
+    // Test offsets for DST and non DST in various parts of the world.
+    $date = '2007-02-01T00:00:00';
+    $date2 = '2007-08-07T00:00:00';
+    $vals = array(
+      // This is tricky, Honolulu does not observe dst
+      array('val' => $date, 'tz' => 'Pacific/Honolulu', 'offset' => -36000),
+      array('val' => $date2, 'tz' => 'Pacific/Honolulu', 'offset' => -36000),
+      array('val' => $date, 'tz' => 'America/Vancouver', 'offset' => -28800),
+      array('val' => $date2, 'tz' => 'America/Vancouver', 'offset' => -25200),
+      // Mexico changes to dst at different times in different states,
+      // too complex to get this working in PHP 4.
+      //array('val' => $date, 'tz' => 'America/Mexico_City', 'offset' => -21600),
+      //array('val' => $date2, 'tz' => 'America/Mexico_City', 'offset' => -18000),
+      array('val' => $date, 'tz' => 'America/New_York', 'offset' => -18000),
+      array('val' => $date2, 'tz' => 'America/New_York', 'offset' => -14400),
+      array('val' => $date, 'tz' => 'Europe/London', 'offset' => 0),
+      array('val' => $date2, 'tz' => 'Europe/London', 'offset' => 3600),
+      array('val' => $date, 'tz' => 'Europe/Brussels', 'offset' => 3600),
+      array('val' => $date2, 'tz' => 'Europe/Brussels', 'offset' => 7200),
+      array('val' => $date, 'tz' => 'Europe/Kiev', 'offset' => 7200),
+      array('val' => $date2, 'tz' => 'Europe/Kiev', 'offset' => 10800),
+      array('val' => $date, 'tz' => 'Asia/Calcutta', 'offset' => 19800),
+      array('val' => $date2, 'tz' => 'Asia/Calcutta', 'offset' => 19800),
+      array('val' => $date, 'tz' => 'Asia/Shanghai', 'offset' => 28800),
+      array('val' => $date2, 'tz' => 'Asia/Shanghai', 'offset' => 28800),
+      array('val' => $date, 'tz' => 'Asia/Tokyo', 'offset' => 32400),
+      array('val' => $date2, 'tz' => 'Asia/Tokyo', 'offset' => 32400),
+      // Southern hemisphere rules get reversed.
+      array('val' => $date, 'tz' => 'Australia/Sydney', 'offset' => 39600),
+      array('val' => $date2, 'tz' => 'Australia/Sydney', 'offset' => 36000),
+      );
+    foreach ($vals as $val) {
+      $timezone = $val['tz'];
+      $date = date_create($val['val'], timezone_open($timezone));
+      $php5 = date_offset_get($date);
+      $date = date_make_date($val['val'], $timezone, 'local', DATE_ISO);
+      $php4 = $date->local->offset;
+      $this->assertEqual($php4, $php5, "Testing date '". $val['val'] ."', timezone'". $val['tz'] ."', offset should be ". $val['offset'] .", Date API result is ". $php4);
+    }
+  }
+}

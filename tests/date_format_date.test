@@ -1,7 +1,7 @@
 <?php
 // $Id$
 /**
- * Test Date API date handling against valid PHP 5 dates
+ * Test Date API date handling against valid PHP 5 date handling.
  */
 class DateAPI extends DrupalTestCase {
   function get_info() {
@@ -58,6 +58,9 @@ class DateAPI extends DrupalTestCase {
   		//$ts = 3600.0*((rand()%60000)+(rand()%60000))+(rand()%60000);
   		$ts = rand(-11676096000, 11676096000);
   		$format = 'm/d/Y H:i:s';
+  		// Picking 'Australia/Sydney' as the timezone because it is far from GMT,
+  		// and it uses reverse logic for daylight savings time,
+  		// so errors should be quite noticable.
   	  $php4 = date_format_date($format, $ts, 0, 'Australia/Sydney');
   	  $date = date_create("@$ts", timezone_open('Australia/Sydney'));
   	  $php5 = date_format($date, $format);
@@ -103,5 +106,15 @@ class DateAPI extends DrupalTestCase {
       $php4 = $date->local->offset;
       $this->assertEqual($php4, $php5, "Testing date '". $val['val'] ."', timezone'". $val['tz'] ."', offset should be ". $val['offset'] .", Date API result is ". $php4);
     }
+
+    // Test round trips on random timestamps
+  	for ($i=100; --$i > 0; ) {
+  		//$ts = 3600.0*((rand()%60000)+(rand()%60000))+(rand()%60000);
+  		$ts = rand(-11676096000, 11676096000);
+  		$iso = date_unix2iso($ts);
+  		$end = date_iso2unix($iso);
+  		$this->assertEqual($ts, $end, 'Test round trip on '. $ts .', date_unix2iso shows '. $iso .', date_iso2unix shows '. $end);
+  	}
+
   }
 }

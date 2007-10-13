@@ -3,12 +3,46 @@
 
 /**
  * Implementation of hook_install().
+ * Reset the date caches.
  */
-
 function date_install() {
+  $ret = array();
   variable_set('date_version', drupal_get_installed_schema_version('date'));
-  // Make sure this module loads after date_api.
   db_query("UPDATE {system} SET weight = 1 WHERE name = 'date'");
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+  date_clear_all();
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ */
+function date_uninstall() {
+  $ret = array();
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+  variable_del('date_version');
+  // Empty the date caches.
+  date_clear_all(TRUE);
+  return $ret;
+}
+
+/**
+ * Implementation of hook_enable().
+ * Reset the calendar caches.
+ */
+function date_enable() {
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+  date_clear_all();
+}
+
+/**
+ * Implementation of hook_disable().
+ * Empty the date caches.
+ */
+function date_disable() {
+  include_once(drupal_get_path('module', 'date') .'/date.module');
+  date_clear_all(TRUE);
 }
 
 function date_update_1() {

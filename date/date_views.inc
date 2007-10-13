@@ -588,22 +588,26 @@ function date_views_query_alter(&$query, &$view) {
  *   otherwise it will be empty. Use that to tell if the list
  *   needs to be refreshed.
  */
-function date_views_browser_get_views($edit_view = FALSE) {
+function date_views_browser_get_views($reset = FALSE) {
   static $date_views_browser_views;
-
-  if (!isset($date_views_browser_views) || $view) {
-    $date_views_browser_views = array();
-    $arguments = date_views_arguments();
-    $argument_list = "'". implode("','", array_keys($arguments)) ."'";
-    if (!$argument_list) {
-      return array();
+  if (empty($date_views_browser_views) || $reset) {
+    $cid = 'date_browser_views';
+    if (!$reset && $cached = cache_get($cid, 'cache')) {
+      $date_views_browser_views = unserialize($cached->data);
     }
-    $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg INNER JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type='date_views_browser'");
-    while ($view = db_fetch_object($result)) {
-      $date_views_browser_views[$view->name] = $view;
+    else {
+      $date_views_browser_views = array();
+      $arguments = date_views_arguments();
+      $argument_list = "'". implode("','", array_keys($arguments)) ."'";
+      if (!$argument_list) {
+        return array();
+      }
+      $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg INNER JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type='date_views_browser'");
+      while ($view = db_fetch_object($result)) {
+        $date_views_browser_views[$view->name] = $view;
+      }
+      cache_set($cid, 'cache', serialize($date_views_browser_views));
     }
-    // Make sure the view being edited gets added to the list
-    $date_views_browser_views[$edit_view->name] = $edit_view;
   }
   return $date_views_browser_views;
 }

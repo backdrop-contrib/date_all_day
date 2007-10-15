@@ -348,8 +348,6 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
   // workaround to disable drupal messages when nodes are created or deleted
   $messages = drupal_get_messages();
 
-  $taxonomy = $taxonomy['taxonomy'];
-
   include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   $imported_values = date_ical_import($source_file);

@@ -365,7 +365,7 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
       break;
   }
   foreach ($imported_values as $key => $value) {
-    if (!empty($value['SUMMARY']) && !empty($value['DTSTART'])) {
+    if (is_numeric($key) && !empty($value['SUMMARY']) && !empty($value['DTSTART'])) {
       if (empty($value['DTEND'])) $value['DTEND'] = $value['DTSTART'];
       $date = date_ical_date($value['DTSTART'], 'UTC');
       $start = date_limit_value(date_format($date, $format), date_granularity($field),  $field['type']);

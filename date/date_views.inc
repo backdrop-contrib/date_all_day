@@ -524,11 +524,31 @@ function date_views_style_plugins() {
     'summary_theme' => 'date_views_browser_summary_view',
     'needs_fields' => true,
     'needs_table_header' => true,
-    'validate' => 'date_views_browser_get_views',
+    'validate' => 'date_browser_validate',
     'even_empty' => true,
   );
   return $items;
 }
+
+/**
+ * Validate a view.
+ */
+function date_browser_validate($type, $view, $form) {
+  // list (and table) modes require there to be at least 1 field active.
+  if (is_array($view['field'])) {
+    $fields = array_filter(array_keys($view['field']), 'is_numeric');
+  }
+  if (!$fields) {
+    form_error($form["$type-info"][$type . '_type'], t('The Date Browser requires at least one field.'));
+  }
+  // Make sure all arguments are set to 'Display all values'.
+  foreach ($view['argument'] as $delta => $argument) {
+    if (is_numeric($delta) && $argument['argdefault'] != 2) {
+      form_error($form['argument'][$delta]['argdefault'], t('Date Browser arguments must be set to \'Display All Values\'.'));
+    }
+  }
+}
+
 /**
  * Implementation of hook_views_pre_view()
  */
@@ -580,6 +600,7 @@ function date_views_query_alter(&$query, &$view) {
 
   }
 }
+
 /**
  * Find all the views that qualify for date browser treatment
  *

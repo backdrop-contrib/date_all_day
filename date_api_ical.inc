@@ -189,12 +189,15 @@ function date_ical_import($filename) {
   // "unfold" wrapped lines
   $icaldata = array();
   foreach ($icaldatafolded as $line) {
-    if (substr($line, 0, 1) == ' ') {
-      $line = array_pop($icaldata) . substr($line, 1);
+    $out = array();
+    // See if this looks like the beginning of a new property or value.
+    // If not, it is a continuation of the previous line.
+    ereg ("([A-Z]+)[:|;](.*)", $line, $out);
+    if (empty($out)) {
+      $line = array_pop($icaldata) . ($line);
     }
     $icaldata[] = $line;
   }
-  $icaldatafolded = NULL;
 
   // Parse the iCal information
   $is_subgroup = FALSE;

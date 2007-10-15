@@ -550,20 +550,6 @@ function date_browser_validate($type, $view, $form) {
 }
 
 /**
- * Implementation of hook_views_pre_view()
- */
-function date_views_pre_view($view, $items) {
-  $date_views_browser_views = date_views_browser_get_views();
-  if ($view->build_type == 'page' && in_array($view->name, array_keys($date_views_browser_views))) {
-    // make sure the navigation link gets added to empty pages
-    if (sizeof($items) == 0 && $view->build_type == 'page') {
-      $period = $date_views_browser_views[$view->name]->options;
-      return date_views_browser_navigation($view, $period);
-    }
-  }
-}
-
-/**
  *  Implementation of hook_views_query()
  *  Used to make sure view defaults to current date if no date selected
  */

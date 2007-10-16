@@ -456,7 +456,7 @@ function date_copy_import_event_form($form_values = NULL) {
   switch ($step) {
     case 1: // Select a content type to import into.
       $node_types = node_get_types('names');
-      $form['#prefix'] = t('Create a new CCK content type to import your events into. Make sure it has a date field that can allows a To date so it can accept the From date and To date of the iCal feed. Test the new type by trying to create a node manually and make sure all the right options are available in the form before attempting an import. The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import.');
+      $form['#prefix'] = t('Create a new CCK content type to import your events into, or, if you do not want to create new nodes for your events, add a date field to the existing event type. Make sure the target content type has a date field that has an optional or required To date so it can accept the From date and To date of the event. If your source event has its own timezone field, make sure you set the target date timezone handling to \'date\'. Test the target type by trying to create a node manually and make sure all the right options are available in the form before attempting an import. </p><p><strong>The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import!</strong>');
       $source_type_options = array();
       $result = db_query("SELECT DISTINCT n.type FROM {event} e INNER JOIN {node} n ON e.nid=n.nid");
       while ($arr = db_fetch_array($result)) {

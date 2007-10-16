@@ -269,6 +269,12 @@ function date_ical_import($filename) {
 	          else {
 	            $subgroup[$property] = date_ical_parse_date($field, $data);
 	          }
+	          // Can't be sure whether DTSTART is before or after DURATION in
+	          // the VEVENT, so check for duration at both points.
+	          if ($property == 'DTSTART' && array_key_exists('DURATION', $subgroup)) {
+	            $subgroup['DURATION'] = date_ical_parse_duration('DURATION', $subgroup['DURATION']['DATA'], $subgroup);
+	            $subgroup['DTEND'] = $subgroup['DURATION']['DTEND'];
+	          }
             break;
 
           case 'EXDATE':
@@ -276,7 +282,12 @@ function date_ical_import($filename) {
             break;
 
           case 'DURATION':
-            $subgroup[$property] = date_ical_parse_duration($field, $data);
+            // Can't be sure whether DTSTART is before or after DURATION in
+	          // the VEVENT, so check for duration at both points.
+	          if (!array_key_exists('DURATION', $subgroup)) {
+	            $subgroup['DURATION'] = date_ical_parse_duration($field, $data, $subgroup);
+	            $subgroup['DTEND'] = $subgroup['DURATION']['DTEND'];
+	          }
 	          break;
 
           case 'RRULE':
@@ -347,7 +358,7 @@ function date_ical_import($filename) {
 function date_ical_parse_date($field, $data) {
   $tz = '';
   $data = trim($data);
-  $items = array();
+  $items = array('DATA' => $data);
   if (substr($data, -1) == 'Z') {
     $tz = 'UTC';
   }
@@ -375,7 +386,7 @@ function date_ical_parse_date($field, $data) {
  *   PROPERTIES include FREQ, INTERVAL, COUNT, BYDAY, BYMONTH, BYYEAR, UNTIL
  */
 function date_ical_parse_rule($field, $data) {
-  $items = array();
+  $items = array('DATA' => $data);
   $rule = explode(';', $data);
   foreach ($rule as $key => $value) {
     $param = explode('=', $value);
@@ -397,7 +408,7 @@ function date_ical_parse_rule($field, $data) {
  *   an array of date value arrays.
  */
 function date_ical_parse_exceptions($field, $data) {
-  $items = array();
+  $items = array('DATA' => $data);
   $ex_dates = explode(',', $data);
   foreach ($ex_dates as $ex_date) {
     $items[] = date_ical_parse_date('', $ex_date);
@@ -407,11 +418,16 @@ function date_ical_parse_exceptions($field, $data) {
 
 /**
  * Parse the duration of the event.
+ * Example:
+ *  DURATION:PT1H30M
+ *  DURATION:P1Y2M
  *
+ *  @param $subgroup
+ *   array of other values in the vevent so we can check for DTSTART
  *  @return the duration in seconds.
  */
-function date_ical_parse_duration($field, $data) {
-  $items = array();
+function date_ical_parse_duration($field, $data, $subgroup) {
+  $items = array('DATA' => $data);
   ereg ('^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?', $data, $duration);
 	$items['year'] = str_replace('Y', '', $duration[1]);
 	$items['month'] = str_replace('M', '', $duration[2]);
@@ -420,13 +436,20 @@ function date_ical_parse_duration($field, $data) {
 	$items['hour'] = str_replace('H', '', $duration[6]);
 	$items['minute'] = str_replace('M', '', $duration[7]);
 	$items['second'] = str_replace('S', '', $duration[8]);
-	$date = date_create('now', timezone_open('UTC'));
+	$start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : 'now';
+  $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', 'UTC');
+  $date = date_create($start_date, timezone_open($timezone));
 	$date2 = drupal_clone($date);
 	foreach ($items as $item => $count) {
 	  if ($count > 0) {
 	    date_modify($date2, '+'. $count .' '. $item);
 	  }
 	}
+	$items['DTEND'] = array(
+	  'datetime' => date_format($date2, DATE_FORMAT_DATETIME),
+	  'all_day' => 0,
+	  'tz' => $timezone,
+	  );
 	$items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
   return $items;
 }

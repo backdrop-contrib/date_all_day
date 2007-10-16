@@ -492,7 +492,7 @@ function date_copy_import_event_form($form_values = NULL) {
         '#weight' => -1,
       );
       $form['fields'] += date_copy_type_fields_form($type);
-      $form['delete_old'] = array('#type' => 'select', '#options' => array('yes' => t('Yes'), 'no' => t('No')), '#title' => t('Delete original event?'), '#description' => t('Should the original entry be deleted once it has been copied to the new content type? If so, be sure to back up your database first.'));
+      $form['delete_old'] = array('#type' => 'select', '#options' => array(1 => t('Yes'), 0 => t('No')), '#title' => t('Delete original event?'), '#description' => t('Should the original entry be deleted once it has been copied to the new content type? If so, be sure to back up your database first.'));
       $form['max'] = array('#type' => 'textfield', '#title' => t('Limit'), '#description' => t('The maximum number of nodes to convert in this pass.'), '#required' => TRUE);
       $form['start_nid'] = array('#type' => 'textfield', '#title' => t('Starting nid'), '#default_value' => 0, '#description' => t('Convert nodes with nids greater than or equal to this number.'));
       $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));

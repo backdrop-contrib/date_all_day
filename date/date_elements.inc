@@ -40,9 +40,9 @@ function date_combo_process($element) {
 
   $element[$from_field] = array(
     '#field'         => $field,
-    '#title'         => $field['widget']['label'],
+    '#title'         => t($field['widget']['label']),
     '#weight'        => $field['widget']['weight'],
-    '#description'   => $field['widget']['description'],
+    '#description'   => t($field['widget']['description']),
     '#required'      => ($field['required'] && $delta == 0) ? 1 : 0,
     '#field'         => $field,
     '#delta'         => $delta,

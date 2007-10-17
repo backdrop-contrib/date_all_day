@@ -17,7 +17,7 @@
  *       - YYYY-MM-DDTHH:MM:SS
  *       - 'now'
  *       - unix timestamp prefixed with '@', like '@99999999'
- *       - or something strtotime will understand (only for dates earlier than 1970).
+ *       - or something strtotime will understand (only for dates later than 1970).
  *     also must supply timezone as second argument to date_create().
  *   date_modify()
  *     with limitations, must supply modification in form like:
@@ -121,7 +121,7 @@ if (!function_exists('date_format')) {
     $max = strlen($format);
     for ($i = 0; $i < $max; $i++) {
       $c = $format[$i];
-      if (date_part_extract($date->value, 'year') > DATE_PHP_MIN_YEAR
+      if (date_part_extract($date->value, 'year') > variable_get('date_php_min_year', 1970)
         && !in_array($c, $php5_formats)) {
         $date_string .= gmdate($c, $timestamp);
       }
@@ -815,18 +815,27 @@ function date_gmdate($format, $timestamp = false, $test = false) {
 */
 function date_mktime($hr, $min, $sec, $mon = false, $day = false,
   $year = false, $is_gmt = false, $test = false) {
+  $hr = intval($hr);
+  $min = intval($min);
+  $sec = intval($sec);
   if (!$test) {
     if ($mon === false) {
       return $is_gmt? @gmmktime($hr, $min, $sec): @mktime($hr, $min, $sec);
     }
+    $mon = intval($mon) > 0 ? intval($mon) : 1;
+    $day = intval($day) > 0 ? intval($day) : 1;
+    $year = intval($year);
     // Below PHP 5.2 for windows, we don't check 1970 because with timezone
     // differences, 1 Jan 1970 could generate negative timestamp
-    if (DATE_PHP_MIN_YEAR < $year && $year < 2038) {
+    if (variable_get('date_php_min_year', 1970) < $year && $year < 2038) {
       return $is_gmt ?
         @gmmktime($hr, $min, $sec, $mon, $day, $year, 0):
         @mktime($hr, $min, $sec, $mon, $day, $year, 0);
     }
   }
+  $mon = intval($mon) > 0 ? intval($mon) : 1;
+  $day = intval($day) > 0 ? intval($day) : 1;
+  $year = intval($year);
   date_api_load('includes/date_php4_lib.inc');
   return _date_mktime($hr, $min, $sec, $mon, $day, $year, $is_gmt);
 }

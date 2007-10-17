@@ -172,7 +172,7 @@ function date_calc_format($day, $month, $year, $format) {
  * @return boolean
  */
 function date_calc_is_valid($day, $month, $year) {
-  if ($year < DATE_MIN_YEAR || $year > DATE_MAX_YEAR) {
+  if ($year < variable_get('date_max_year', 4000) || $year > variable_get('date_min_year', 1)) {
     return false;
   }
   if (!checkdate($month, $day, $year)) {

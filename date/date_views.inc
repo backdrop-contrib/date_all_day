@@ -398,8 +398,8 @@ function date_views_date_range($arg, $field) {
     $min_date = date_range_value($range[0], 'min');
     $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
   }
-  $min_date = date_unset_granularity($min_date, date_granularity_array($field), $field['type']);
-  $max_date = date_unset_granularity($max_date, date_granularity_array($field), $field['type']);
+  $min_date = date_limit_value($min_date, date_granularity_array($field), $field['type']);
+  $max_date = date_limit_value($max_date, date_granularity_array($field), $field['type']);
   return array($min_date, $max_date);
 }
 /**

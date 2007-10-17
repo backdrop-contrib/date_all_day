@@ -359,14 +359,14 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
 
     case 'link':
       // links are created from date range groupings
-      $time = $query->$value > '' ? ($field_type == 'iso' ? date_convert($query->$value, DATE_ISO, DATE_UNIX) : $query->$value) : '';
-      return l(date_date($format, $time), $arg .'/'. $query->range);
+      $time = $query->$value > '' ? ($field_type == 'iso' ? date_iso2unix($query->$value) : $query->$value) : '';
+      return l(date_format_date($format, $time), $arg .'/'. $query->range);
 
     case 'sort':
       break;
 
     case 'filter':
-      $range = date_views_date_range($arg);
+      $range = date_views_date_range($arg, $field);
       $query->ensure_table($table);
       $query->add_field($value, $table);
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
@@ -379,7 +379,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   }
 }
 
-function date_views_date_range($arg) {
+function date_views_date_range($arg, $field) {
   if (stristr($arg, 'P')) {
     // for a date plus value, get the min and max values
     $range = date_plus_period_range($arg);
@@ -398,6 +398,8 @@ function date_views_date_range($arg) {
     $min_date = date_range_value($range[0], 'min');
     $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
   }
+  $min_date = date_unset_granularity($min_date, date_granularity_array($field), $field['type']);
+  $max_date = date_unset_granularity($max_date, date_granularity_array($field), $field['type']);
   return array($min_date, $max_date);
 }
 /**

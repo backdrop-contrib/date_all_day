@@ -171,6 +171,11 @@ function date_update_5() {
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
   include_once(drupal_get_path('module', 'date') .'/date.module');
   include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
+  include_once(drupal_get_path('module', 'date') .'/date_timezones.inc');
+  // Make sure Date API module is installed before proceeding.
+  if (!module_exists('date_api')) {
+    drupal_install_modules(array('date_api'));
+  }
 
   content_clear_type_cache();
   $fields = content_fields();

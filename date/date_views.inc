@@ -601,7 +601,7 @@ function date_views_browser_get_views($reset = FALSE) {
   static $date_views_browser_views;
   if (empty($date_views_browser_views) || $reset) {
     $cid = 'date_browser_views';
-    if (!$reset && $cached = cache_get($cid, 'cache')) {
+    if (!$reset && $cached = cache_get($cid, 'cache_views')) {
       $date_views_browser_views = unserialize($cached->data);
     }
     else {
@@ -615,7 +615,7 @@ function date_views_browser_get_views($reset = FALSE) {
       while ($view = db_fetch_object($result)) {
         $date_views_browser_views[$view->name] = $view;
       }
-      cache_set($cid, 'cache', serialize($date_views_browser_views));
+      cache_set($cid, 'cache_views', serialize($date_views_browser_views));
     }
   }
   return $date_views_browser_views;

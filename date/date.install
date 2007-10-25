@@ -372,6 +372,16 @@ function date_update_5103() {
 }
 
 /**
+ * Move these caches from 'cache' to 'cache_views' so they get cleared
+ * automatically whenever views_invalidate_cache() is called.
+ */
+function date_update_5104() {
+  $ret = array();
+  cache_clear_all('date_browser_views', 'cache');
+  return $ret;
+}
+
+/**
  * Version 5.2 updates.
  */
 function date_update_5200() {

@@ -400,7 +400,7 @@ function date_form_alter($form_id, &$form) {
  */
 function date_clear_all($remove = FALSE) {
   if ($remove) {
-    cache_clear_all('date_browser_views', 'cache');
+    cache_clear_all('date_browser_views', 'cache_views');
   }
   else {
     if (module_exists('views')) {

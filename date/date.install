@@ -365,10 +365,13 @@ function date_update_5102() {
 }
 
 /**
- * Data integrity update, supercedes most previous data integrity updates.
+ * Data integrity update, moved to Version 2 because it can make
+ * lots of db changes and we want people to be prepared for a
+ * significant change.
  */
 function date_update_5103() {
-  return (date_data_integrity('5103'));
+  $ret = array();
+  return $ret;
 }
 
 /**
@@ -416,6 +419,13 @@ function date_update_5200() {
  return $ret;
 }
 
+/**
+ * Data integrity update, supercedes most previous data integrity updates.
+ */
+function date_update_5201() {
+  return (date_data_integrity('5201'));
+}
+
 function date_db_integrity($name) {
   $ret = array();
   include_once(drupal_get_path('module', 'content') .'/content.module');
@@ -455,9 +465,9 @@ function date_db_integrity($name) {
  *
  * @param name - name of the update
  */
-function date_data_integrity($name) {
+function date_data_integrity($name, $force_recalc = FALSE) {
   // Use this to turn extra debugging on or off.
-  $debug = FALSE;
+  $debug = TRUE;
   // The number of nodes to process in each pass.
   $limit = 5;
   $ret = array();
@@ -494,6 +504,11 @@ function date_data_integrity($name) {
     }
   }
   $update = $_SESSION[$update_name]['tables'];
+  if ($debug) {
+    $_SESSION[$update_name]['nids'] = array();
+    $_SESSION[$update_name]['nids_ok'] = array();
+    $_SESSION[$update_name]['dates'] = array();
+  }
   // Fetch the next $limit nodes
   $i = 0;
   foreach ($update as $table => $fields) {
@@ -502,26 +517,45 @@ function date_data_integrity($name) {
       $node = node_load($arr['nid']);
       // Iterate through all the date fields in this node and re-compute
       // values to make sure they are correct.
+      $needs_fix = FALSE;
       foreach ($fields as $field_name => $field) {
         foreach ((array) $node->$field['field_name'] as $delta => $item) {
           $add = array();
-          $add[$delta]['value']    = $item['value'];
-          $add[$delta]['value2']   = !empty($item['value2']) ? $item['value2'] : $item['value'];
+          // Check for non-required fields that still have the old default values and make them NULL.
+          if ($field['type'] == 'date' && !$field['required'] && (substr($item['value'], 0, 10) == '0000-00-00' || substr($item['value'], 0, 10) == '0001-00-00')) {
+            $item['value'] = NULL;
+            $needs_fix = TRUE;
+          }
+          if ($field['type'] == 'datestamp' && !$field['required'] && empty($item['value'])) {
+            $item['value'] = NULL;
+            $needs_fix = TRUE;
+          }
+          $add[$delta]['value'] = $item['value'];
+          // Check for missing todates.
+          if ($field['todate']) {
+            if ((empty($item['value2']) && !empty($item['value'])) || $force_recalc) $needs_fix = TRUE;
+            $add[$delta]['value2']   = !empty($item['value2']) ? $item['value2'] : $item['value'];
+          }
+          // Check for missing timezone and offset information.
           if ($field['tz_handling'] == 'date') {
-            $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-            $date = date_make_date($item['value'], 'GMT', 'db', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
-            date_convert_timezone($date, 'GMT', $timezone, 'local');
-            $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
-            $add[$delta]['offset']   = $field['required'] || $item['value'] ? $date->local->offset : NULL;
-            $add[$delta]['offset2']  = $add['offset'];
+            if (empty($item['offset']) || empty($item['timezone']) || $force_recalc) {
+              $needs_fix = TRUE;
+              $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+              $date = date_make_date($item['value'], 'GMT', 'db', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
+              date_convert_timezone($date, 'GMT', $timezone, 'local');
+              $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
+              $add[$delta]['offset']   = $field['required'] || $item['value'] ? $date->local->offset : NULL;
+            }
           }
         }
         $node->$field['field_name'] = $add;
         // Debugging information.
         if ($debug) {
-          $_SESSION[$update_name]['dates'][$i] = $node->nid .' > Value: '. $add[$delta]['value'] .
-            ' > Value2: '. $add[$delta]['value2'];
-          if ($field['tz_handling'] == 'date') {
+          $_SESSION[$update_name]['dates'][$i] = $node->nid .' > Value: '. (!empty($add[$delta]['value']) ? $add[$delta]['value'] : 'set to NULL');
+          if (!empty($add[$delta]['value2'])) {
+            $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
+          }
+          if ($field['tz_handling'] == 'date' && isset($date)) {
             $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '.$date->local->timezone.
             ' > Computed offset: '.$date->local->offset;
           }
@@ -530,10 +564,17 @@ function date_data_integrity($name) {
       }
       // More debugging information.
       if ($debug) {
-        $_SESSION[$update_name]['nids'][] = $node->nid;
+        if ($needs_fix) {
+          $_SESSION[$update_name]['nids'][] = $node->nid;
+        }
+        else {
+          $_SESSION[$update_name]['nids_ok'][] = $node->nid;
+        }
       }
-      node_submit($node);
-      node_save($node);
+      if ($needs_fix) {
+        node_submit($node);
+        node_save($node);
+      }
       // reset nid
       $_SESSION[$update_name][$table]['nid'] = $node->nid;
       // add to count total
@@ -552,10 +593,12 @@ function date_data_integrity($name) {
       // Not done yet. Return the progress and a progress debug message.
       $progress = floatval($_SESSION[$update_name]['counted'] / $_SESSION[$update_name]['count_total']);
       if ($debug) {
-        $message = 'Date data integrity check. Total nodes updated: '. $_SESSION[$update_name]['counted'].
-          '<br>Affected nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
+        $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'].
+          '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
+          '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['nids_ok']) .
           '<br>Date Computations:<br>'. implode('<br>', $_SESSION[$update_name]['dates']);
         unset($_SESSION[$update_name]['nids']);
+        unset($_SESSION[$update_name]['nids_ok']);
         unset($_SESSION[$update_name]['dates']);
       }
       if ($debug) {
@@ -567,10 +610,11 @@ function date_data_integrity($name) {
     }
     else {
       // Done. Clean up and indicate we're finished.
-      drupal_set_message(t('All nodes with date fields have been updated.'));
-      $message = 'Date data integrity check. Total nodes updated: '. $_SESSION[$update_name]['counted'];
+      drupal_set_message(t('All nodes with date fields have been checked.'));
+      $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'];
       if ($debug) {
-        $message .= '<br>Affected nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
+        $message .= '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
+          '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['nids_ok']) .
           '<br>Date Computations:<br>'. implode('<br>', $_SESSION[$update_name]['dates']);
       }
       unset($_SESSION[$update_name]);

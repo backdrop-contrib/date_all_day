@@ -478,9 +478,8 @@ function date_data_integrity($name, $force_recalc = FALSE) {
   }
   include_once(drupal_get_path('module', 'content') .'/content.module');
   include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
-  include_once(drupal_get_path('module', 'date_api') .'/date.inc');
+  include_once(drupal_get_path('module', 'date_api') .'/date_api.module');
   include_once(drupal_get_path('module', 'date') .'/date.module');
-  include_once(drupal_get_path('module', 'date') .'/date_timezones.inc');
   $fields = content_fields();
   // See if being called for the first time
   if (!isset($_SESSION[$update_name]) || empty($_SESSION[$update_name]['tables'])) {

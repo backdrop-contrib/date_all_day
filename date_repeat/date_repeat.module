@@ -104,7 +104,7 @@ function date_repeat_get($rid, $rule, $repeat_start, $repeat_end) {
  * @param $repeat - the $repeat object, could be a node or field
  * @return Fully themed page containing the repeat setting form.
  */
-function theme_date_repeat_form($repeat) {
+function date_repeat_form($repeat) {
 
   //if the node is part of a repeat sequence, then construct the radio
   //buttons for mass edit
@@ -201,8 +201,8 @@ function theme_date_repeat_form($repeat) {
     '#description' => t('Determines the number of repeat nodes that will be created for the repeat sequence')
   );
 
-  $form['date_repeat'][] = theme('date_repeat_form_advanced', $repeat, $advanced_collapsed);
-  $form['date_repeat'][] = theme('date_repeat_form_exception', $repeat, $exception_collapsed);
+  $form['date_repeat'][] = date_repeat_form_advanced($repeat, $advanced_collapsed);
+  $form['date_repeat'][] = date_repeat_form_exception($repeat, $exception_collapsed);
 
   return $form;
 }
@@ -210,7 +210,7 @@ function theme_date_repeat_form($repeat) {
 /**
  * theme the advanced fieldset of form elements
  */
-function theme_date_repeat_form_advanced($repeat, $advanced_collapsed){
+function date_repeat_form_advanced($repeat, $advanced_collapsed){
 
   $show_advanced = variable_get('date_repeat_showadvanced', array());
   if($show_advanced['INTERVAL'] == FALSE
@@ -409,7 +409,7 @@ function date_repeat_dow_options() {
 /**
  * theme the exception fieldset of form elements
  */
-function theme_date_repeat_form_exception($repeat, $exception_collapsed){
+function date_repeat_form_exception($repeat, $exception_collapsed){
 
 	$form = array();
 

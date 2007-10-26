@@ -47,17 +47,19 @@ function date_combo_process($element) {
     '#field'         => $field,
     '#delta'         => $delta,
     '#default_value' => $element['#value'][$from_field],
-    '#date_type'              => $field['type'],
-    '#date_format'            => date_input_format($element),
-    '#date_empty'             => $field['widget']['default_value'],
-    '#date_empty_code'        => $field['widget']['default_value_code'],
-    '#date_granularity'       => date_granularity($field),
-    '#date_timezone_handling' => $field['tz_handling'],
-    '#date_timezone_db'       => $field['timezone_db'],
-    '#date_timezone_local'    => $element['#value'][$tz_field],
-    '#date_text_parts'        => (array) $field['widget']['text_parts'],
-    '#date_increment'         => $field['widget']['increment'],
-    '#date_year_range'        => $field['widget']['year_range'],
+    '#date_settings' => array(
+      'type'              => $field['type'],
+      'format'            => date_input_format($element),
+      'empty'             => $field['widget']['default_value'],
+      'empty_code'        => $field['widget']['default_value_code'],
+      'granularity'       => date_granularity($field),
+      'timezone_handling' => $field['tz_handling'],
+      'timezone_db'       => $field['timezone_db'],
+      'timezone_local'    => $element['#value'][$tz_field],
+      'text_parts'        => (array) $field['widget']['text_parts'],
+      'increment'         => $field['widget']['increment'],
+      'year_range'        => $field['widget']['year_range'],
+      ),
     );
 
   // Give this element the right type, using a Date API
@@ -93,12 +95,12 @@ function date_combo_process($element) {
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
     if ($field['widget']['default_value2'] != 'same') {
-      $element[$to_field]['#date_empty'] = $field['widget']['default_value2'];
-      $element[$to_field]['#date_empty_code'] = $field['widget']['default_value_code2'];
+      $element[$to_field]['#date_settings']['empty'] = $field['widget']['default_value2'];
+      $element[$to_field]['#date_settings']['empty_code'] = $field['widget']['default_value_code2'];
     }
   }
 
-  if ($element['#date_timezone_handling']  == 'date') {
+  if ($element['#date_settings']['timezone_handling']  == 'date') {
     $element[$tz_field] = date_timezone_element($element);
   }
   return $element;

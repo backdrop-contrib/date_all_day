@@ -105,6 +105,9 @@ function date_widget($op, &$node, $field, &$items) {
           '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
         );
       }
+      if (!empty($field['widget']['repeat_type'])) {
+        $element[$field['field_name']]['repeat'] = date_repeat_form($repeat);
+      }
       return $element;
   }
 }

@@ -42,7 +42,7 @@ function _date_widget_settings($op, &$field) {
       return date_widget_settings_form($field);
 
     case 'save':
-      return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      return array('repeat_type', 'default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
 
     case 'validate':
       if ($field['default_value'] == 'strtotime') {
@@ -63,6 +63,21 @@ function _date_widget_settings($op, &$field) {
       // Munge the table display for text parts back into an array of text parts.
       if (is_array($field['text_parts'])) {
         form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['text_parts'])));
+      }
+      if (!form_get_error()) {
+        if (module_exists('date_repeat') && $field['widget']['repeat_type'] == 'advanced') {
+          variable_set('date_repeat_showadvanced', array(
+            'INTERVAL' => TRUE,
+            'BYDAY' => TRUE,
+            'BYWEEKNO' => TRUE,
+            'BYMONTH' => TRUE,
+            'BYMONTHDAY' => TRUE,
+            'BYYEARDAY' => TRUE,
+           ));
+        }
+        else {
+          variable_set('date_repeat_showadvanced', array());
+        }
       }
       break;
 
@@ -170,6 +185,15 @@ function date_widget_settings_form($widget) {
         );
     }
   }
+  if (module_exists('date_repeat')) {
+    $form['repeat_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Repeating events'),
+      '#options' => array('' => t('Manual'), 'simple' => t('Simple repeats'), 'advanced' => t('Advanced repeats')),
+      '#default_value' => $field['widget']['repeat_type'],
+      '#description' => t('Choose an option for handling multiple dates. Manual will allow the user to manually add multiple dates one at a time. Simple repeats provides some basic automatic repeating options. Advanced repeats have many options to allow the user to select when and how often the date will repeat.'),
+    );
+  }
   return $form;
 }
 
@@ -181,11 +205,11 @@ function theme_date_text_parts_theme($element) {
   $names = date_granularity_names();
   $rows = array();
   foreach ($names as $key => $part) {
-    if ($element[$part]['#type'] == 'hidden') {
-      $rows[] = drupal_render($element[$part]);
+    if ($element[$key]['#type'] == 'hidden') {
+      $rows[] = drupal_render($element[$key]);
     }
     else {
-      $rows[] = array($names[$key], drupal_render($element[$part][0]), drupal_render($element[$part][1]));
+      $rows[] = array($names[$key], drupal_render($element[$key][0]), drupal_render($element[$key][1]));
     }
   }
   if ($element['year']['#type'] == 'hidden') {

@@ -106,8 +106,11 @@ function date_widget($op, &$node, $field, &$items) {
         );
       }
       if (module_exists('date_repeat') && $field['multiple'] > 1) {
-        $element[$field['field_name']]['repeat'] = date_repeat_form($items);
-        $element[$field['field_name']]['repeat']['#weight'] = ($field['widget']['weight'] + .1);
+        $element[$field['field_name']]['repeat'] = array(
+          '#type' => 'date_repeat',
+          '#weight' => ($field['widget']['weight'] + .1),
+          '#default_value' => $items['repeat'],
+          );
       }
       return $element;
   }
@@ -152,7 +155,6 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'insert':
     case 'update':
-    print_r($items);
       // Don't save empty values.
       foreach ($items as $delta => $item) {
         if (empty($item['value']) && $delta > 0) {

@@ -703,7 +703,7 @@ function date_next_day_of_week($date, $dow = 0, $count = 1, $type = DATE_DATETIM
  */
 function date_convert($date, $from_type, $to_type) {
   if (empty($date) || $date === DATE_ERROR) return DATE_ERROR;
-  if ($from_type == $to_type) return $date;
+  if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_OBJECT:
       $obj = $date;

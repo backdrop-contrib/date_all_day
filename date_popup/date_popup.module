@@ -165,7 +165,7 @@ function date_popup_process_date(&$element) {
   if ($time_granularity) {
     $sub_element['#title'] = t('Date');
   }
-  $element['#description'] = t('Format: @date', array('@date' => date($date_format, time())));
+  $element['#description'] .= t(' Format: @date', array('@date' => date($date_format, time())));
   return $sub_element;
 }
 

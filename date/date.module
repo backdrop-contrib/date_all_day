@@ -94,7 +94,7 @@ function date_widget($op, &$node, $field, &$items) {
 
       // Iterate through the available items, adding as many new ones as needed,
       // to build out the complete multi-valued field form element.
-      $max = $field['multiple'] ? 2 + sizeof($items) : 0;
+      $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
       foreach (range(0, $max) as $delta) {
         $element[$field['field_name']][$delta] = array(
           '#type' => 'date_combo',
@@ -105,8 +105,9 @@ function date_widget($op, &$node, $field, &$items) {
           '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
         );
       }
-      if (!empty($field['widget']['repeat_type'])) {
-        $element[$field['field_name']]['repeat'] = date_repeat_form($repeat);
+      if (module_exists('date_repeat') && $field['multiple'] > 1) {
+        $element[$field['field_name']]['repeat'] = date_repeat_form($items);
+        $element[$field['field_name']]['repeat']['#weight'] = ($field['widget']['weight'] + .1);
       }
       return $element;
   }
@@ -151,6 +152,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'insert':
     case 'update':
+    print_r($items);
       // Don't save empty values.
       foreach ($items as $delta => $item) {
         if (empty($item['value']) && $delta > 0) {

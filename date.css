@@ -4,7 +4,6 @@
 .container-inline-date .description {clear: both;}
 .container-inline-date .form-item input, .container-inline-date .form-item select {margin-right:.5em;}
 
-
 .container-inline-date {
   display: inline-block;
  }
@@ -20,16 +19,21 @@
   clear:both;
   }
 
+/* A little trick to force the am/pm buttons to line up with the rest of the date select elements */
+.date-ampm {
+  border-top:1.5em transparent solid;
+}
+
  /* Fixes for date popup css so it will behave in Drupal */
 #calendar_div, #calendar_div td, #calendar_div th {
-    margin:0;
-    padding:0;
+  margin:0;
+  padding:0;
 }
 #calendar_div, .calendar_control, .calendar_links, .calendar_header, .calendar {
-width: 185px;
-border-collapse: separate;
-margin: 0;
+  width: 185px;
+  border-collapse: separate;
+  margin: 0;
 }
 .calendar td {
-padding: 0;
+  padding: 0;
 }

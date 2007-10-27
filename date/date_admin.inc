@@ -42,7 +42,7 @@ function _date_widget_settings($op, &$field) {
       return date_widget_settings_form($field);
 
     case 'save':
-      return array('repeat_type', 'default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
 
     case 'validate':
       if ($field['default_value'] == 'strtotime') {
@@ -64,21 +64,6 @@ function _date_widget_settings($op, &$field) {
       if (is_array($field['text_parts'])) {
         form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['text_parts'])));
       }
-      if (!form_get_error()) {
-        if (module_exists('date_repeat') && $field['widget']['repeat_type'] == 'advanced') {
-          variable_set('date_repeat_showadvanced', array(
-            'INTERVAL' => TRUE,
-            'BYDAY' => TRUE,
-            'BYWEEKNO' => TRUE,
-            'BYMONTH' => TRUE,
-            'BYMONTHDAY' => TRUE,
-            'BYYEARDAY' => TRUE,
-           ));
-        }
-        else {
-          variable_set('date_repeat_showadvanced', array());
-        }
-      }
       break;
 
   }
@@ -87,7 +72,7 @@ function _date_widget_settings($op, &$field) {
 function date_widget_settings_form($widget) {
   $form = array();
   $form['input']['default_value'] = array(
-    '#type' => 'select', '#title' => t('Default value'),
+    '#type' => 'radios', '#title' => t('Default value'),
     '#default_value' => isset($widget['default_value']) ? $widget['default_value'] : 'blank',
     '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
@@ -105,9 +90,9 @@ function date_widget_settings_form($widget) {
     );
 
   $form['input']['default']['default_value2'] = array(
-    '#type' => 'select', '#title' => t('Default value for To date'),
+    '#type' => 'radios', '#title' => t('Default value for To date'),
     '#default_value' => isset($widget['default_value2']) ? $widget['default_value2'] : 'same',
-    '#options' => array('same' => t('Same as From Date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
+    '#options' => array('same' => t('Same as From date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
   $form['input']['default']['default_value_code2'] = array(
@@ -184,15 +169,6 @@ function date_widget_settings_form($widget) {
         '#value' => in_array($key, (array) $widget['text_parts']) ? 1 : 0,
         );
     }
-  }
-  if (module_exists('date_repeat')) {
-    $form['repeat_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Repeating events'),
-      '#options' => array('' => t('Manual'), 'simple' => t('Simple repeats'), 'advanced' => t('Advanced repeats')),
-      '#default_value' => $field['widget']['repeat_type'],
-      '#description' => t('Choose an option for handling multiple dates. Manual will allow the user to manually add multiple dates one at a time. Simple repeats provides some basic automatic repeating options. Advanced repeats have many options to allow the user to select when and how often the date will repeat.'),
-    );
   }
   return $form;
 }
@@ -288,19 +264,23 @@ function _date_field_settings($op, $field) {
  */
 function date_columns($field) {
   if ($field['type'] == 'date') {
-    $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'default' => NULL, 'sortable' => TRUE);
+    $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'sortable' => TRUE);
   }
   elseif ($field['type'] == 'datestamp') {
-    $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'default' => NULL, 'sortable' => TRUE);
+    $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'sortable' => TRUE);
   }
   // If a second date is needed for 'To date', just make a copy of the first one.
   if ($field['todate']) {
     $db_columns['value2'] = $db_columns['value'];
   }
   // timezone and offset columns are used only if date-specific dates are chosen.
-  if ($field['tz_handling'] == 'date' && ($field['type'] == 'date' || $field['type'] == 'datestamp')) {
-    $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'default' => NULL, 'sortable' => TRUE);
-    $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'default' => NULL, 'sortable' => TRUE);
+  if ($field['tz_handling'] == 'date') {
+    $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'sortable' => TRUE);
+    $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
+    if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
+  }
+  if ($field['multiple']) {
+    $db_columns['repeat'] = array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE);
   }
   return $db_columns;
 }
@@ -308,8 +288,18 @@ function date_columns($field) {
 function date_field_settings_form($field) {
   $form = array();
   $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : (date_has_time($field['granularity']) ? 'site' : 'none');
+  // Override the normal multiple checkbox when using date repeat.
+  if (module_exists('date_repeat')) {
+    $form['multiple'] = array(
+      '#type' => 'radios',
+      '#title' => t('Multiple'),
+      '#options' => array(0 => t('No multiples'), 1 => t('Manual entry'), 2 => t('Simple repeats'), 3 => t('Advanced repeats')),
+      '#default_value' => $field['multiple'],
+      '#description' => t('Choose an option for handling multiple values. Manual entry will allow the user to manually add multiple dates one at a time. Simple repeats provide basic automatic repeating options. Advanced repeats have complex options to allow the user to select when and how often the date will repeat.'),
+    );
+  }
   $form['input']['todate'] = array(
-    '#type' => 'select', '#title' => t('To Date'),
+    '#type' => 'radios', '#title' => t('To Date'),
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
     '#description' => t("Display a matching second date field as a 'To date'. If marked 'Optional' field will be presented but not required. If marked 'Required' the 'To date' will be required if the 'From date' is required or filled in."),
     '#default_value' => $field['todate'] ? $field['todate'] : '',

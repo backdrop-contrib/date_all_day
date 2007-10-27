@@ -120,6 +120,7 @@ function date_popup_process($element) {
  */
 function date_popup_process_date(&$element) {
   $date_granularity = array_intersect($element['#date_settings']['granularity'], array('month', 'day', 'year'));
+  $time_granularity = array_intersect($element['#date_settings']['granularity'], array('hour', 'minute', 'second'));
   $date_format = (date_limit_format($element['#date_settings']['format'], $date_granularity));
   if (empty($date_granularity)) return array();
 
@@ -131,9 +132,10 @@ function date_popup_process_date(&$element) {
     "firstDate:". variable_get('date_first_day', 0) .", \n".
     "dayNames: new Array('". implode("','", date_week_days_abbr(TRUE, TRUE, 1)) ."'), \n".
     "monthNames:new Array('". implode("','", date_month_names(TRUE)) ."'), \n".
-    "buttonImage: '". base_path() . drupal_get_path('module', 'date_api') ."/images/calendar.png', \n".
-    "buttonImageOnly: false, \n".
-    "autoPopUp: 'both', \n".
+    // Can't get the image to float to the right of the input element, so turning it off for now.
+    //"buttonImage: '". base_path() . drupal_get_path('module', 'date_api') ."/images/calendar.png', \n".
+    //"buttonImageOnly: false, \n".
+    "autoPopUp: 'focus', \n".
     "closeAtTop:false, \n".
     "speed: 'immediate', \n".
     "dateFormat:'". date_popup_format_to_popup($date_format) ."', \n".
@@ -155,12 +157,14 @@ function date_popup_process_date(&$element) {
   // Create a unique class for each element so we can use custom settings.
   $sub_element = array(
     '#type' => 'textfield',
-    '#title' => t('Date'),
     '#default_value' => is_object($element['#date']) ? date_format($element['#date'], $date_format) : '',
     '#attributes' => array('class' => 'jquery-calendar-'. $element['#id']),
     '#size' => 20,
     '#maxlength' => 20,
     );
+  if ($time_granularity) {
+    $sub_element['#title'] = t('Date');
+  }
   $element['#description'] = t('Format: @date', array('@date' => date($date_format, time())));
   return $sub_element;
 }

@@ -106,7 +106,6 @@ function date_text_process($element) {
   $element['#date_settings'] = array_merge($info['date_text']['#date_settings'], $element['#date_settings']);
 
   $date =  date_default_date($element);
-  echo 'DATE IS '.date_format($date, 'm/d/Y H:i');
   $element['#date'] = $date;
 
   $element['#tree'] = TRUE;
@@ -114,7 +113,6 @@ function date_text_process($element) {
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.
   $element['date']['#type'] = 'textfield';
-  $element['date']['#title'] = !empty($element['date']['#title']) ? $element['date']['#title'] : $element['#title'];
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date, date_input_format($element)) : '';
   $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] . ' date-date';
@@ -143,7 +141,6 @@ function date_select_process($element) {
   $element['#date_settings'] = array_merge($info['date_select']['#date_settings'], $element['#date_settings']);
 
   $date =  date_default_date($element);
-  echo 'DATE IS '.date_format($date, 'm/d/Y H:i');
   $element['#tree'] = TRUE;
   $element['#date'] = $date;
 
@@ -226,13 +223,11 @@ function date_parts_element($element, $date, $granularity, $format) {
       $sub_element[$field]['#theme'] = 'date_select_element';
     }
   }
-  if (strtolower($hours_format) == 'g') {
+  if (strtolower($hours_format) == 'g' && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
-      '#type' => 'select',
-      '#theme' => 'date_select_element',
-      '#default_value' => is_object($date) ? (date_format($date, 'G') < 12 ? 'am' : 'pm') : '',
-      '#options' => drupal_map_assoc(date_ampm($element['#required'])),
-      '#title' => theme('date_select_label_ampm', 'select', $element),
+      '#type' => 'radios',
+      '#return_value' => is_object($date) ? (date_format($date, 'G') < 12 ? 'am' : 'pm') : '',
+      '#options' => drupal_map_assoc(date_ampm(TRUE)),
       '#weight' => 8,
       '#attributes' => array('class' => 'date-ampm'),
     );

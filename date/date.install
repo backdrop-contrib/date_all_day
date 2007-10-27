@@ -426,6 +426,7 @@ function date_update_5201() {
   return (date_data_integrity('5201'));
 }
 
+
 function date_db_integrity($name) {
   $ret = array();
   include_once(drupal_get_path('module', 'content') .'/content.module');
@@ -443,12 +444,17 @@ function date_db_integrity($name) {
 
       // alter the start column values to invalid values to force the new columns to be reset.
       $columns_start['value']['length'] = 90;
+      $columns_start['repeat']['length'] = 90;
       if ($field['todate']) {
         $columns_start['value2']['length'] = 80;
       }
       if ($field['tz_handling'] == 'date') {
         $columns_start['timezone']['length'] = 80;
         $columns_start['offset']['length'] = 80;
+        if ($field['todate']) $columns_start['offset2']['length'] = 80;
+      }
+      if ($field['multiple'] > 1) {
+        $columns_start['repeat']['length'] = 80;
       }
       content_alter_db_field($field, $columns_start, $field, $columns_end);
       $message = 'Date database integrity check. Updated table '. $table .' to set all columns to accept NULL values.';

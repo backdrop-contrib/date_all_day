@@ -3,12 +3,12 @@
 /**
  * Test Date API date handling against valid PHP 5 date handling.
  */
-class DateAPI extends DrupalTestCase {
+class DateAPIConversion extends DrupalTestCase {
   function get_info() {
     return array('name' => t('Date API conversions'), 'desc' => t('Test Date API date converstions against valid PHP5 results. Tests only provide meaningful results when run in PHP5 environment.') , 'group' => 'Date tests');
   }
 
-  function testDateAPI() {
+  function testDateAPIConversion() {
     include_once(drupal_get_path('module', 'date_api') .'/date_api.module');
     include_once(drupal_get_path('module', 'date_api') .'/date.inc');
     include_once(drupal_get_path('module', 'date_api') .'/date_timezones.inc');

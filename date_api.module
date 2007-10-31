@@ -556,17 +556,65 @@ function date_default_timezone_name($check_user = TRUE) {
 }
 
 /**
- * Find the last day of a month
+ * Identify the number of days in a month for a date.
  *
- * @param mixed $month
- * @param mixed $year
- * @return last day of the specified month and year
+ * @param mixed $date
+ * @return integer
  */
-function date_last_day_of_month($month, $year) {
-  $string = date_pad($year, 4) .'-'. date_pad($month) .'-01 00:00:00';
-  if (date_is_valid($string, DATE_DATETIME)) {
-    $date = date_create($string, timezone_open('UTC'));
-    return date_format($date, 't');
+function date_days_in_month($date = NULL, $type = DATE_OBJECT) {
+  if (empty($date)) {
+    $date = date_now();
+    $type = DATE_OBJECT;
+  }
+  $date = date_convert($date, $type, DATE_OBJECT);
+  if (is_object($date)) {
+    return date_format($year_end, 't');
+  }
+  return DATE_ERROR;
+}
+
+/**
+ * Identify the number of days in a year for a date.
+ *
+ * @param mixed $date
+ * @param string $type
+ * @return integer
+ */
+function date_days_in_year($date = NULL, $type = DATE_OBJECT) {
+  if (empty($date)) {
+    $date = date_now();
+    $type = DATE_OBJECT;
+  }
+  $date = date_convert($date, $type, DATE_OBJECT);
+  if (is_object($date)) {
+    if (date_format($date, 'L')) {
+      return 366;
+    }
+    else {
+      return 365;
+    }
+  }
+  return DATE_ERROR;
+}
+
+/**
+ * Identify the number of ISO weeks in a year for a date.
+ *
+ * December 28 is always in the last ISO week of the year.
+ *
+ * @param mixed $date
+ * @param string $type
+ * @return integer
+ */
+function date_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
+  if (empty($date)) {
+    $date = date_now();
+    $type = DATE_OBJECT;
+  }
+  $date = date_convert($date, $type, DATE_OBJECT);
+  if (is_object($date)) {
+    date_date_set($date, date_format($date, 'Y'), 12, 28);
+    return date_format($date, 'W');
   }
   return DATE_ERROR;
 }
@@ -581,13 +629,16 @@ function date_last_day_of_month($month, $year) {
  * @return
  *    the number of the day in the week
  */
-function date_day_of_week($date = NULL, $type = DATE_DATETIME) {
+function date_day_of_week($date = NULL, $type = DATE_OBJECT) {
   if (empty($date)) {
     $date = date_now();
     $type = DATE_OBJECT;
   }
   $date = date_convert($date, $type, DATE_OBJECT);
-  return date_format($date, 'w');
+  if (is_object($date)) {
+    return date_format($date, 'w');
+  }
+  return DATE_ERROR;
 }
 
 /**
@@ -612,79 +663,159 @@ function date_day_of_week_name($date = NULL, $abbr = TRUE, $type = DATE_DATETIME
  * Helper function to find previous day, week, month, or year,
  * even when crossing months and years.
  *
- * @param mixed $date
- *   A date to start with.
+ * @param object $date
+ *   A date object to start with. Provided by reference so you can
+ *   run the same date object through multiple adjustments without
+ *   creating a new object each time.
  * @param int $count
  *   The number of days, weeks, months, or years to go backward.
  * @param string $period
  *   The time period to move by - day, week, month, or year
- * @param string $type
- *   DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
- * @return the previous day
+ * @return a date object for the previous day
  */
-function date_prev($date, $count = 1, $period = 'day', $type = DATE_DATETIME) {
-  $date = date_convert($date, $type, DATE_OBJECT);
-  date_modify($date, '-'. $count .' '. $period);
-  return date_convert(date_format($date, 'Y-m-d'), DATE_DATETIME, $type);
+function date_prev(&$date, $count = 1, $period = 'day') {
+  if (is_object($date)) {
+    date_modify($date, '-'. $count .' '. $period);
+    return $date;
+  }
+  return DATE_ERROR;
 }
 
 /**
  * Helper function to find next day, week, month, or year,
  *
- * @param mixed $date
- *   A date to start with.
+ * @param object $date
+ *   A date object to start with. Provided by reference so you can
+ *   run the same date object through multiple adjustments without
+ *   creating a new object each time.
  * @param int $count
  *   The number of days, weeks, months, or years to go forward.
  * @param string $period
  *   The time period to move by - day, week, month, or year
- * @param string $type
- *   DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
- * @return the next day
+ * @return a date object for the next day
  */
-function date_next($date, $count = 1, $period = 'day', $type = DATE_DATETIME) {
-  $date = date_convert($date, $type, DATE_OBJECT);
-  date_modify($date, '+'. $count .' '. $period);
-  return date_convert(date_format($date, 'Y-m-d'), DATE_DATETIME, $type);
+function date_next(&$date, $count = 1, $period = 'day') {
+  if (is_object($date)) {
+    date_modify($date, '+'. $count .' '. $period);
+    return $date;
+  }
+  return DATE_ERROR;
 }
 
 /**
- * Helper function to find previous day by dow, like the previous Sunday.
+ * Helper function to find a specific occurence of a day of the month.
  *
- * @param mixed $date
- *   A date to start with.
- * @param int $dow
- *   The number of the day of week to search for, 0 = Sunday
+ * Example, $day = 'Sunday', $count = 2, $direction = '-' will reset
+ * the date to the second to last Sunday in the month.
+ *
+ * @param object $date
+ *   A date object for any day in the month to be examined. Tracked
+ *   by reference so you can run the same date object through multiple
+ *   adjustments without creating a new object each time.
+ * @param string $day
+ *   The name of the day to search for
  * @param int $count
- *   The number of weeks to go backward.
- * @param string $type
- *   DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
- * @return the day that matches the search
+ *   The occurence of this day to look for.
+ * @param string $direction
+ *   + to start from beginning of month,
+ *   - to start from end of month.
+ * @return
+ *   a date object that matches the search.
  */
-function date_prev_day_of_week($date, $dow = 0, $count = 1, $type = DATE_DATETIME) {
-  $days = date_week_days_untranslated();
-  $date = date_convert($date, $type, DATE_OBJECT);
-  date_modify($date, '-'. $count .' '. $days[$dow]);
-  return date_convert(date_format($date, 'Y-m-d'), DATE_DATETIME, $type);
+function date_position_in_month(&$date, $day, $count = 1, $direction = '+') {
+  if (is_object($date)) {
+    // Reset to the start of the month.
+    // We should be able to do this with date_date_set(),
+    // but for some reason that isn't working reliably if we
+    // iterate through this function multiple times.
+    $datetime = date_format($date, DATE_FORMAT_DATETIME);
+    $datetime = substr_replace($datetime, '01', 8, 2);
+    $start = date_create($datetime, timezone_open('UTC'));
+    $date = drupal_clone($start);
+    if ($direction == '-') {
+      // For negative search, start from the end of the month.
+      date_modify($date, '+1 month');
+    }
+    else {
+      // For positive search, back up one day to get outside the
+      // current month, so we can catch the first of the month.
+      date_modify($date, '-1 day');
+    }
+    date_modify($date, $direction. $count .' '. $day);
+    return $date;
+  }
+  return DATE_ERROR;
 }
 
 /**
- * Helper function to find next day by dow, like the next Sunday.
+ * Compute difference between two days.
  *
- * @param mixed $date
- *   A date to start with.
- * @param int $dow
- *   The number of the day of week to search for, 0 = Sunday
- * @param int $count
- *   The number of weeks to go forward.
+ * @param mixed $date1
+ *   the starting date
+ * @param mixed $date2
+ *   the ending date
+ * @param string $measure
+ *   'years', 'months', 'weeks', 'days', 'seconds'
  * @param string $type
- *   DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
- * @return the day that matches the search
+ *   the type of dates provided:
+ *   DATE_OBJECT, DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
  */
-function date_next_day_of_week($date, $dow = 0, $count = 1, $type = DATE_DATETIME) {
-  $days = date_week_days_untranslated();
-  $date = date_convert($date, $type, DATE_OBJECT);
-  date_modify($date, '+'. $count .' '. $days[$dow]);
-  return date_convert(date_format($date, 'Y-m-d'), DATE_DATETIME, $type);
+function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
+  $date1 = date_convert($date1, $type, DATE_OBJECT);
+  $date2 = date_convert($date2, $type, DATE_OBJECT);
+  if (is_object($date1) && is_object($date2)) {
+    // If date2 is not greater than date1, this is an error.
+    $diff = date_format($date2, 'U') - date_format($date1, 'U');
+    if ($diff < 0) {
+      return DATE_ERROR;
+    }
+    $year_diff = intval(date_format($date2, 'Y') - date_format($date1, 'Y'));
+    switch ($measure) {
+      case 'seconds':
+        return $diff;
+      case 'years':
+        return $year_diff;
+      case 'months':
+      case 'weeks':
+      case 'days':
+        switch ($measure) {
+          case 'months':
+            $format = 'n';
+            $last_day = 31;
+            break;
+          case 'weeks':
+            $format = 'W';
+            // December 28 always is the last ISO week of the year,
+            // the 31st is sometimes the first ISO week of the following year.
+            $last_day = 28;
+            break;
+          case 'days':
+            $format = 'j';
+            $last_day = 31;
+            break;
+        }
+        $item1 = date_format($date1, $format);
+        $item2 = date_format($date2, $format);
+        if ($year_diff == 0) {
+          return intval($item2 - $item1);
+        }
+        else {
+          // When measuring days and weeks between two dates, we must
+          // iterate through each of the intervening years to see how
+          // many days or weeks are in them.
+          $year = date_format($date1, 'Y');
+          date_date_set($date1, $year, 12, $last_day);
+          $item_diff = date_format($date1, $format) - $item1;
+          for($i = 1; $i < intval($year_diff - 1); $i++) {
+            date_modify($date1, '+1 year');
+            $item_diff += date_format($date1, $format);
+          }
+          $item_diff += $item2;
+        }
+        return $item_diff;
+    }
+  }
+  return DATE_ERROR;
 }
 
 /**

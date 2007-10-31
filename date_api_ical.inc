@@ -245,7 +245,7 @@ function date_ical_import($filename) {
 
       default:
         unset ($field, $data, $prop_pos, $property);
-        ereg ("([^:]+):(.*)", $line, $reg);
+        $reg = date_api_ical_split($line);
         $field = $reg[1];
         $data = $reg[2];
         $property = $field;
@@ -314,6 +314,11 @@ function date_ical_import($filename) {
   // Store the original text in the array for reference.
   $items['VCALENDAR'] = $vcal;
   return $items;
+}
+
+function date_api_ical_split($line) {
+  ereg ("([^:]+):(.*)", $line, $reg);
+  return $reg;
 }
 
 /**
@@ -426,7 +431,13 @@ function date_ical_parse_rule($field, $data) {
     else {
       $values = explode(',', $param[1]);
     }
-    $items[$param[0]] = $values;
+    // Different treatment for items that can have multiple values and those that cannot.
+    if (in_array($param[0], array('FREQ', 'INTERVAL', 'COUNT', 'WKST'))) {
+      $items[$param[0]] = $param[1];
+    }
+    else {
+      $items[$param[0]] = $values;
+    }
   }
   return $items;
 }
@@ -516,7 +527,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
     $from_tz = $ical_date['tz'];
   }
   $date = date_create($ical_date['datetime'], timezone_open($from_tz));
-  if ($ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
+  if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     $date = date_timezone_set($date, date_make_timezone($to_tz));
   }
   return $date;

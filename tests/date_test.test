@@ -10,7 +10,7 @@ class DatePHP4LibTest extends DrupalTestCase {
 
   function testPHP4DateLibrary() {
 
-  include_once(drupal_get_path('module', 'date_api') .'/includes/date_php4.inc');
+  include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4.inc');
 
 	@set_time_limit(0);
 	$fail = false;

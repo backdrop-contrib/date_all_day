@@ -9,7 +9,7 @@ class PHP4Dates extends DrupalTestCase {
   }
 
   function testPHP4Timezone() {
-    include_once(drupal_get_path('module', 'date_api') .'/includes/date_php4.inc');
+    include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4.inc');
 
     $date = date_create('2007-03-11 01:59:59');
     $this->assertEqual($date->value, '2007-03-11 01:59:59', 'Create the a date 2007-03-11 01:59:59');

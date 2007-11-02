@@ -126,7 +126,7 @@ if (!function_exists('date_format')) {
         $date_string .= gmdate($c, $timestamp);
       }
       else{
-        date_api_load('includes/date_php4_calc.inc');
+        include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_calc.inc');
         switch ($c) {
           case 'U':
             $date_string .= $timestamp;
@@ -348,7 +348,7 @@ if (!function_exists('date_modify')) {
     else {
       // Date is too old for strtotime(), use date_calc instead.
 
-      date_api_load('includes/date_php4_calc.inc');
+      include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_calc.inc');
 
       $time = date_gmdate('H:i', $date->value);
       $days = date_week_days_untranslated();
@@ -756,7 +756,7 @@ function date_getdate($timestamp = false, $is_gmt = false, $test = false) {
       unset($array['mon'], $array['mday'], $array['hours'], $array['minutes'], $array['seconds']);
     }
   }
-  date_api_load('includes/date_php4_lib.inc');
+  include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc');
   return _date_getdate($timestamp, $is_gmt);
 }
 
@@ -792,7 +792,7 @@ function date_date($format, $timestamp = false, $is_gmt = false, $test = false) 
       return ($is_gmt)? @gmdate($format, $timestamp): @date($format, $timestamp);
     }
   }
-  date_api_load('includes/date_php4_lib.inc');
+  include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc');
   return _date_date($format, $timestamp, $is_gmt);
 }
 
@@ -836,7 +836,7 @@ function date_mktime($hr, $min, $sec, $mon = false, $day = false,
   $mon = intval($mon) > 0 ? intval($mon) : 1;
   $day = intval($day) > 0 ? intval($day) : 1;
   $year = intval($year);
-  date_api_load('includes/date_php4_lib.inc');
+  include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc');
   return _date_mktime($hr, $min, $sec, $mon, $day, $year, $is_gmt);
 }
 

@@ -33,7 +33,7 @@ define('DATE_CALC_FORMAT', '%Y-%m-%d');
 
 // Some functions from the low level library are needed here, make sure
 // they are available.
-date_api_load('includes/date_php4_lib.inc');
+include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc');
 
 /**
  * The default value for each method's $format parameter

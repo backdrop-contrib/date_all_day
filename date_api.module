@@ -799,14 +799,12 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
           $year = date_format($date1, 'Y');
           date_date_set($date1, $year, 12, 31);
           $item_diff = date_format($date1, $format) - $item1;
-          $item_diff += $year_diff * 12;
+          $item_diff += intval(($year_diff - 1) * 12);
           return $item_diff + $item2;
        }
        break;
 
       case 'days':
-        // The 'z' format starts with zero instead of one,
-        // so needs +1 added to the days in year count.
         $format = 'z';
         $item1 = date_format($date1, $format);
         $item2 = date_format($date2, $format);
@@ -814,12 +812,10 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
           return intval($item2 - $item1);
         }
         else {
-          $year = date_format($date1, 'Y');
-          date_date_set($date1, $year, 12, 31);
-          $item_diff = date_format($date1, $format) - $item1;
+          $item_diff = date_days_in_year($date1) - $item1;
           for($i = 1; $i < $year_diff; $i++) {
             date_modify($date1, '+1 year');
-            $item_diff += date_format($date1, $format) + 1;
+            $item_diff += date_days_in_year($date1);
           }
           return $item_diff + $item2;
        }
@@ -834,15 +830,17 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
         if (date_format($date1, 'o') < $year) {
           $item1 = 0;
         }
-        // Use ISO weeks to get a correct week count. December 28 is
-        // always the last ISO week of the year, the 31st may not be.
-        date_date_set($date1, $year, 12, 28);
-        $item_diff = date_format($date1, $format) - $item1;
-        for($i = 1; $i < $year_diff; $i++) {
-          date_modify($date1, '+1 year');
-          $item_diff += date_format($date1, $format);
+        if ($year_diff == 0) {
+          return intval($item2 - $item1);
         }
-        return $item_diff + $item2;
+        else {
+         $item_diff = date_weeks_in_year($date1) - $item1;
+          for($i = 1; $i < $year_diff; $i++) {
+            date_modify($date1, '+1 year');
+            $item_diff += date_weeks_in_year($date1);
+          }
+          return $item_diff + $item2;
+        }
     }
   }
   return DATE_ERROR;

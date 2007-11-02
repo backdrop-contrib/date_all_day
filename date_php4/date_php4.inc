@@ -24,6 +24,7 @@
  *       '+1 day|week|month|year|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday'
  *       '-3 day|week|month|year|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday'
  *   date_format()
+ *   date_date_set()
  *   date_timezone_set()
  *   date_offset_get()
  *   timezone_open()
@@ -195,6 +196,31 @@ if (!function_exists('date_format')) {
       }
     }
     return $date_string;
+  }
+}
+
+/**
+ *  PHP 4 equivalent for date_date_set().
+ *
+ *  @param $date
+ *    a date object returned by date_create().
+ *  @param $year
+ *    a new year.
+ *  @param $month
+ *    a new month.
+ *  @param $day
+ *    a new day.
+ *  @return $date
+ *    the date objected updated for the new timezone.
+ *
+ */
+if (!function_exists('date_date_set')) {
+  function date_date_set(&$date, $year, $month, $day) {
+    $new_date = substr_replace($date->value, date_pad($year, 4), 0, 4);
+    $new_date = substr_replace($new_date, date_pad($month), 5, 2);
+    $new_date = substr_replace($new_date, date_pad($day), 9, 2);
+    $date = date_create($new_date, $date->timezone);
+    return $date;
   }
 }
 

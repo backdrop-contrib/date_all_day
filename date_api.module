@@ -796,9 +796,7 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
           return intval($item2 - $item1);
         }
         else {
-          $year = date_format($date1, 'Y');
-          date_date_set($date1, $year, 12, 31);
-          $item_diff = date_format($date1, $format) - $item1;
+          $item_diff = 12 - $item1;
           $item_diff += intval(($year_diff - 1) * 12);
           return $item_diff + $item2;
        }

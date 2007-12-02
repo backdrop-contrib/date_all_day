@@ -467,6 +467,7 @@ function date_convert_from_custom($date, $format, $to_type = DATE_DATETIME) {
       case 'j':
         $final_date['day'] = intval($value);
         break;
+      case 'n':
       case 'm':
         $final_date['month'] = intval($value);
         break;

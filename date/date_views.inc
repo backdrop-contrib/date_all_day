@@ -4,7 +4,7 @@
 /**
  * Views field filters
  */
-function date_views_filters($field) {
+function _date_views_filters($field) {
   switch ($field['type']) {
     case(DATE_ISO):
       $handler = 'date_views_filter_handler';
@@ -130,11 +130,11 @@ function date_views_filters($field) {
  *  Handler for date filter.
  */
 
-function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
+function _date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
   // this is just a wrapper function that sets the date type
-  return date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
+  return _date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
-function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
+function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
   date_api_load('date_api_sql.inc');
 
   $value = $filter['value'];
@@ -185,7 +185,7 @@ function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_ty
 /**
  * Provide a form gadget for dates.
  */
-function date_views_handler_filter_date_value_form($field) {
+function _date_views_handler_filter_date_value_form($field) {
   include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
   $format = strtr($field['widget']['input_format'], date_jscalendar_replacements());
 
@@ -220,7 +220,7 @@ function date_views_offset($field) {
 /**
  * Implementation of hook_views_arguments().
  */
-function date_views_arguments() {
+function _date_views_arguments() {
   $field_types = _content_field_types();
   $arguments = array();
   foreach (content_fields() as $field) {
@@ -278,11 +278,11 @@ function date_views_arguments() {
  * grouped by the selected range, with a link to the complete query for each range
  *
  */
-function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
+function _date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
   // this is just a wrapper function that sets the date type
-  return date_views_argument_range_handler($op, $query, $argtype, $arg, 'int');
+  return _date_views_argument_range_handler($op, $query, $argtype, $arg, 'int');
 }
-function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
+function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
 
   date_api_load('date_api_sql.inc');
@@ -379,7 +379,7 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
   }
 }
 
-function date_views_date_range($arg, $field) {
+function date_views_date_range($arg, $field = NULL) {
   if (stristr($arg, 'P')) {
     // for a date plus value, get the min and max values
     $range = date_plus_period_range($arg);
@@ -398,8 +398,10 @@ function date_views_date_range($arg, $field) {
     $min_date = date_range_value($range[0], 'min');
     $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
   }
-  $min_date = date_limit_value($min_date, date_granularity_array($field), $field['type']);
-  $max_date = date_limit_value($max_date, date_granularity_array($field), $field['type']);
+  if (!empty($field)) {
+    $min_date = date_limit_value($min_date, date_granularity_array($field), $field['type']);
+    $max_date = date_limit_value($max_date, date_granularity_array($field), $field['type']);
+  }
   return array($min_date, $max_date);
 }
 /**
@@ -517,7 +519,7 @@ function date_range_arg_options() {
 /**
  * Implementation of hook_views_style_plugins()
  */
-function date_views_style_plugins() {
+function _date_views_style_plugins() {
 
   $items = array();
   $items['date_views_browser'] = array(
@@ -555,7 +557,7 @@ function date_browser_validate($type, $view, $form) {
  *  Implementation of hook_views_query()
  *  Used to make sure view defaults to current date if no date selected
  */
-function date_views_query_alter(&$query, &$view) {
+function _date_views_query_alter(&$query, &$view) {
   $date_views_browser_views = date_views_browser_get_views();
   if (in_array($view->name, array_keys($date_views_browser_views))) {
     $path = explode('/', $view->url);

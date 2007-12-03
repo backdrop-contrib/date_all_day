@@ -373,7 +373,7 @@ function date_help($section) {
 
 function date_views_query_alter(&$query, &$view) {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_query_alter(&$query, &$view);
+  return _date_views_query_alter($query, $view);
 }
 
 /**
@@ -435,11 +435,11 @@ function date_views_filters($field) {
 }
 function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query);
+  return _date_views_timestamp_filter_handler($op, $filter, $filterinfo, $query);
 }
 function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type);
+  return _date_views_filter_handler($op, $filter, $filterinfo, $query, $field_type);
 }
 function date_views_handler_filter_date_value_form($field) {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
@@ -447,11 +447,11 @@ function date_views_handler_filter_date_value_form($field) {
 }
 function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg);
+  return _date_views_timestamp_argument_range_handler($op, $query, $argtype, $arg);
 }
 function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_argument_range_handler($op, &$query, $argtype, $arg, $field_type);
+  return _date_views_argument_range_handler($op, $query, $argtype, $arg, $field_type);
 }
 function date_views_style_plugins() {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');

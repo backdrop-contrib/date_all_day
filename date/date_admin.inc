@@ -251,7 +251,8 @@ function _date_field_settings($op, $field) {
       return date_columns($field);
 
     case 'arguments':
-      return date_views_arguments($field);
+      include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
+      return _date_views_arguments();
 
     case 'filters':
       return date_views_filters($field);

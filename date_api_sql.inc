@@ -15,7 +15,7 @@
  *
  *  example:          date_sql('WEEK', 'MYFIELD', 'int', 'MYOFFSETFIELD', '+')
  *  mysql returns:    WEEK(FROM_UNIXTIME(MYFIELD) + INTERVAL MYOFFSETFIELD SECOND, 3)
- *  postgres returns: EXTRACT(WEEK FROM(TIMESTAMP(MYFIELD::ABSTIME::INT4) + INTERVAL MYOFFSETFIELD SECONDS))
+ *  postgres returns: EXTRACT(WEEK FROM((MYFIELD::ABSTIME) + INTERVAL MYOFFSETFIELD SECONDS))
  */
 function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offset_op = '+') {
   global $db_type;
@@ -110,7 +110,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
         // php date functions and postgres use 0 for Sunday and 6 for Saturday
         return "INTEGER(DAYOFWEEK($field) - 1)";
       case('pgsql'):
-        return "EXTRACT (DOW FROM($field))";
+        return "EXTRACT(DOW FROM($field))";
     }
   case('DOY'):
     switch ($db_type) {
@@ -118,7 +118,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       case('mysqli'):
         return "DAYOFYEAR($field)";
       case('pgsql'):
-        return "EXTRACT (DOY FROM ($field))";
+        return "EXTRACT(DOY FROM($field))";
     }
   }
 }

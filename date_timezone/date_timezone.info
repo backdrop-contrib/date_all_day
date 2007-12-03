@@ -2,3 +2,4 @@
 name = Date Timezone
 description = Overrides site and user timezone handling to set timezone names instead of offsets.
 package = Date/Time
+dependencies = date_api

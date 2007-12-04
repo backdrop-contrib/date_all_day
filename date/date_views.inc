@@ -608,7 +608,7 @@ function date_views_browser_get_views($reset = FALSE) {
     }
     else {
       $date_views_browser_views = array();
-      $arguments = date_views_arguments();
+      $arguments = _date_views_arguments();
       $argument_list = "'". implode("','", array_keys($arguments)) ."'";
       if (!$argument_list) {
         return array();

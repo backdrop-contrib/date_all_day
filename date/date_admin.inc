@@ -289,16 +289,22 @@ function date_columns($field) {
 function date_field_settings_form($field) {
   $form = array();
   $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : (date_has_time($field['granularity']) ? 'site' : 'none');
+
   // Override the normal multiple checkbox when using date repeat.
+  $options = array(0 => t('Never'), 1 => t('Unlimited'));
+  $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create multiple dates one at a time.');
   if (module_exists('date_repeat')) {
-    $form['multiple'] = array(
-      '#type' => 'radios',
-      '#title' => t('Multiple'),
-      '#options' => array(0 => t('No multiples'), 1 => t('Manual entry'), 2 => t('Simple repeats'), 3 => t('Advanced repeats')),
-      '#default_value' => $field['multiple'],
-      '#description' => t('Choose an option for handling multiple values. Manual entry will allow the user to manually add multiple dates one at a time. Simple repeats provide basic automatic repeating options. Advanced repeats have complex options to allow the user to select when and how often the date will repeat.'),
-    );
+    $options += array(2 => t('Repeating'));
+    $description += t(' Repeating dates display options to allow the user to select when and how often the date will repeat.');
   }
+  $form['multiple'] = array(
+    '#type' => 'radios',
+    '#title' => t('Multiple'),
+    '#options' => $options,
+    '#default_value' => $field['multiple'],
+    '#description' => $description,
+  );
+
   $form['input']['todate'] = array(
     '#type' => 'radios', '#title' => t('To Date'),
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),

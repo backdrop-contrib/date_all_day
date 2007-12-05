@@ -543,7 +543,10 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
 
   // Get event tz handling, could be event, site, or user.
   $event_tz_handling = variable_get('event_timezone_display', 'event');
-  $timezones = date_get_timezones();
+
+  // The array that maps event timezone zids to timezone names is in date_php4_tz_map.inc;
+  include_once(drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
+  $timezones = $timezone_map;
 
   $rows = array();
   if ($start_nid) {

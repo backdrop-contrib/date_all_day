@@ -12,73 +12,59 @@
  * Parameters for date form elements, designed to have sane defaults so any
  * or all can be omitted.
  *
+ * Fill the element #default_value with a date object adjusted to the
+ * proper timezone.
+ *
  * date_select will create a collection of form elements, with a separate
  * select or textfield for each date part. The whole collection will get
- * re-formatted into the type of date in ['#date_settings']['type'] during validation.
+ * re-formatted back into a date object during validation.
  *
  * date_text will create a textfield that can contain a whole
- * date or any part of a date as text. The input value will be re-formatted
- * into the type of date in ['#date_settings']['type'] date during validation.
+ * date or any part of a date as text. The user input value will be re-formatted
+ * back into a date object during validation.
  *
- * ['#date_settings']['type']
- *   the type of the date value that will be stored in the database,
- *   DATE_UNIX, DATE_ISO, or DATE_DATETIME
- * ['#date_settings']['format']
- *   a format string that describes the format and order of date parts to
+ * #date
+ *   Pass in a date object set to the timezone used in the form display,
+ *   generally the site or user timezone.
+ *
+ * #date_type
+ *   The type of date to be created from this element, could be
+ *   DATE_UNIX, DATE_DATETIME, or DATE_ISO
+ *
+ * #date_format
+ *   A format string that describes the format and order of date parts to
  *   display in the edit form for this element, be sure to add 'A' or 'a'
- *   to get an am/pm selector, defaults to short site default format
- * ['#date_settings']['timezone_handling']
- *   the way to determine the 'local' timezone for this date,
- *   Allows dynamic handling so dates can adapt to user timezones when needed.
- *   Allowed values are 'site', 'user', 'date', or 'none'
- * ['#date_settings']['timezone_db
- *   the timezone of the date/time value being passed in from the database,
- *   default is UTC.
- * ['#date_settings']['timezone_local']
- *   Used only if timezone handling is set to 'date', otherwise ignored.
- *   The timezone to be used for date-specific timezones, the default is
- *   date site timezone, if set, or UTC. Valid timezones are
- *   standard timezone ids like US/Central, America/New_York, UTC
- * ['#date_settings']['granularity']
- *   an array of date parts to be collected, default is (M, D, Y),
- *   Allowed values are:
- *    Y (year), M (month), D (day), H (hours), N (minutes), S (seconds)
- * ['#date_settings']['increment']
- *   increment minutes and seconds by this amount, default is 1
- * ['#date_settings']['year_range']
- *   the number of years to go back and forward in the year selector,
- *   default is -3:+3 (3 back and 3 forward)
- * ['#date_settings']['text_parts']
- *   array of date parts that should use textfield instead of select
- *   like array('year') to show the year as textfield
- * ['#date_settings']['empty']
- *   handling for empty date values:
- *     'blank' to show blank value
- *     'now' to show current time
- *     'strtotime' to use strtotime to adjust the current time
- *     'date' to insert a specific date
- * ['#date_settings']['empty_code']
- *   if ['#date_settings']['empty'] is 'strtotime' use the value in ['#date_settings']['empty_code'], like:
- *     [+-][##] [years|months|days|hours|minutes|seconds], i.e. '+90 days'
- *   if ['#date_settings']['empty'] is 'date' use the value in #date_empty_code as the date
- *     should be formatted as #date_type, using timezone from #date_timezone_db
+ *   to get an am/pm selector, defaults to short site default format.
+ *
+ * #date_granularity
+ *   An array of date parts to be collected, default is ('month', 'day', 'year'),
+ *   Allowed values are: year, month, day, hour, inute, second.
+ *
+ * #date_increment
+ *   Increment minutes and seconds by this amount, default is 1.
+ *
+ * #date_year_range
+ *   The number of years to go back and forward in the year selector,
+ *   default is -3:+3 (3 back and 3 forward).
+ *
+ * #date_text_parts
+ *   Array of date parts that should use textfield instead of select
+ *   i.e. array('year') will format the year as a textfield and other
+ *   date parts as drop-down selects.
+ *
+ * #date_empty
+ *   handling for empty date values, can be 'blank' or 'now'.
  */
 function _date_api_elements() {
   $date_base = array(
-    '#input' => TRUE, '#tree' => TRUE,
-    '#date_settings' => array(
-      'type' => DATE_DATETIME,
-      'format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-      'timezone_handling' => variable_get('configurable_timezones', 1) ? 'user' : 'site',
-      'timezone_db' => 'UTC',
-      'timezone_local' => variable_get('date_default_timezone_name', NULL),
-      'granularity' => array('month', 'day', 'year'),
-      'text_parts' => array(),
-      'increment' => 1,
-      'year_range' => '-3:+3',
-      'empty' => 'now',
-      'empty_code' => '',
-      ),
+    '#input' => TRUE, '#tree' => TRUE, '#date' => NULL,
+    '#date_type' => DATE_UNIX,
+    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+    '#date_granularity' => array('month', 'day', 'year'),
+    '#date_text_parts' => array(),
+    '#date_increment' => 1,
+    '#date_year_range' => '-3:+3',
+    '#date_empty' => 'now',
     );
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_process' => array()),
@@ -88,7 +74,33 @@ function _date_api_elements() {
     '#process' => array('date_text_process' => array()),
     '#validate' => array('date_text_validate' => array()),
     ));
+  $type['date_timezone'] = array(
+    '#input' => TRUE, '#tree' => TRUE,
+    '#process' => array('date_timezone_process' => array()),
+    '#validate' => array('date_timezone_validate' => array()),
+    );
   return $type;
+}
+
+/**
+ * Create a timezone form element.
+ *
+ * @param array $element
+ * @return array
+ *   the timezone form element
+ */
+function date_timezone_process($element, $edit = NULL) {
+  $element['timezone'] = array(
+    '#type' => 'select',
+    '#title' => theme('date_select_label_timezone', 'select', $element),
+    '#default_value' => $element['#value'],
+    '#options' => date_timezone_names($element['#required']),
+    '#weight' => $element['#weight'],
+    '#required' => $element['#required'],
+    '#attributes' => array('class' => 'date-timezone'),
+    '#theme' => 'date_select_element',
+  );
+  return $element;
 }
 
 /**
@@ -98,29 +110,21 @@ function _date_api_elements() {
  *
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from #date_format.
- * A timezone selector is added if #date_timezone_handling' == 'date'.
  */
-function date_text_process($element) {
-  // Make sure default settings are there if nothing else was declared.
-  $info = date_api_elements();
-  $element['#date_settings'] = array_merge($info['date_text']['#date_settings'], $element['#date_settings']);
-
-  $date =  date_default_date($element);
-  $element['#date'] = $date;
-
-  $element['#tree'] = TRUE;
+function date_text_process($element, $edit = NULL) {
+  if (empty($element['#date']) && $element['#date_empty'] == 'now') {
+    $element['#date'] = date_now();
+  }
 
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.
+  $element['#tree'] = TRUE;
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
-  $element['date']['#default_value'] = is_object($date) ? date_format($date, date_input_format($element)) : '';
+  $element['date']['#default_value'] = is_object($element['#date'] ) ? date_format($element['#date'] , date_input_format($element)) : '';
   $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] . ' date-date';
   $element['date']['#required'] = $element['#required'];
   $element['date']['#theme'] = 'date_textfield_element';
-  if ($element['#date_settings']['timezone_handling'] == 'date') {
-    $element['timezone'] = date_timezone_element($element);
-  }
   return $element;
 }
 
@@ -133,21 +137,13 @@ function date_text_process($element) {
  *
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from ['#date_settings']['format'].
- * A timezone selector is added if ['#date_settings']['timezone_handling'] == 'date'.
  */
-function date_select_process($element) {
-  // Make sure default settings are there if nothing else was declared.
-  $info = date_api_elements();
-  $element['#date_settings'] = array_merge($info['date_select']['#date_settings'], $element['#date_settings']);
-
-  $date =  date_default_date($element);
-  $element['#tree'] = TRUE;
-  $element['#date'] = $date;
-
-  $element += date_parts_element($element, $date, $element['#date_settings']['granularity'], $element['#date_settings']['format']);
-  if ($element['#date_settings']['timezone_handling'] == 'date') {
-    $element['timezone'] = date_timezone_element($element);
+function date_select_process($element, $edit = NULL) {
+  if (empty($element['#date']) && $element['#date_empty'] == 'now') {
+    $element['#date'] = date_now();
   }
+  $element['#tree'] = TRUE;
+  $element += date_parts_element($element, $element['#date'], $element['#date_granularity'], $element['#date_format']);
   return $element;
 }
 
@@ -178,7 +174,7 @@ function date_parts_element($element, $date, $granularity, $format) {
   $increment = min(intval($field['widget']['increment']), 1);
   foreach ($granularity as $field) {
     $part_required = $element['#required'];
-    $part_type = in_array($field, $element['#date_settings']['text_parts']) ? 'textfield' : 'select';
+    $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
       '#title' => theme('date_select_label_'. $field, $part_type, $element),
       '#weight' => $order[$part],
@@ -188,7 +184,7 @@ function date_parts_element($element, $date, $granularity, $format) {
     switch ($field) {
       case 'year':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'Y') : '';
-        $range = explode(':', $element['#date_settings']['year_range']);
+        $range = explode(':', $element['#date_year_range']);
         $sub_element[$field]['#options'] = drupal_map_assoc(date_years($year + $range[0], $year + $range[1], $part_required));
         break;
       case 'month':
@@ -204,15 +200,15 @@ function date_parts_element($element, $date, $granularity, $format) {
         $sub_element[$field]['#options'] = drupal_map_assoc(date_hours($hours_format, $part_required));
         break;
       case 'minute':
-        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 'i')) / $element['#date_settings']['increment']) * $element['#date_settings']['increment'])) : '';
-        $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_settings']['increment']));
+        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 'i')) / $element['#date_increment']) * $element['#date_increment'])) : '';
+        $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_increment']));
         break;
       case 'second':
-        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 's')) / $element['#date_settings']['increment']) * $element['#date_settings']['increment'])) : '';
-        $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_settings']['increment']));
+        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 's')) / $element['#date_increment']) * $element['#date_increment'])) : '';
+        $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
         break;
     }
-    if (in_array($field, $element['#date_settings']['text_parts'])) {
+    if (in_array($field, $element['#date_text_parts'])) {
       $sub_element[$field]['#type'] = 'textfield';
       $sub_element[$field]['#theme'] = 'date_textfield_element';
       $sub_element[$field]['#maxlength'] = 4;
@@ -236,31 +232,10 @@ function date_parts_element($element, $date, $granularity, $format) {
 }
 
 /**
- * Create a timezone form element.
- *
- * @param array $element
- * @return array
- *   the timezone form element
- */
-function date_timezone_element($element) {
-  $sub_element = array(
-    '#type' => 'select',
-    '#title' => theme('date_select_label_timezone', 'select', $element),
-    '#default_value' => date_element_timezone($element),
-    '#options' => date_timezone_names($element['#required']),
-    '#weight' => 9,
-    '#required' => $element['#required'],
-    '#attributes' => array('class' => 'date-timezone'),
-    '#theme' => 'date_select_element',
-  );
-  return $sub_element;
-}
-
-/**
  *  Validation function for date selector
  *  $params = an array of the values from date_select_input.
  */
-function  date_select_validate($element) {
+function date_select_validate($element) {
   $field = $element['#field'];
   if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
     $element['#value']['hour'] += 12;
@@ -284,19 +259,13 @@ function  date_select_validate($element) {
   if (!form_get_errors()) {
     // Convert the array back to a value.
     $value = date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME);
-    $date = date_element_date($element, $value, 'local2db');
 
     // If it creates a valid date, store it.
-    if (date_is_valid($date, DATE_OBJECT)) {
-      $value = date_convert($date, DATE_OBJECT, $field['type']);
+    if (date_is_valid($value, DATE_DATETIME)) {
+      $timezone = date_timezone_get($element['#date']);
+      $date = date_create($value, $timezone);
+      $value = date_convert($date, DATE_OBJECT, $element['#date_type']);
       form_set_value($element, $value);
-      form_set_value($element['year'], NULL);
-      form_set_value($element['month'], NULL);
-      form_set_value($element['day'], NULL);
-      form_set_value($element['hour'], NULL);
-      form_set_value($element['minute'], NULL);
-      form_set_value($element['second'], NULL);
-      form_set_value($element['ampm'], NULL);
     }
     else {
       form_set_error($element, t('A valid date cannot be constructed from %m-%d-%year.', array(
@@ -316,102 +285,18 @@ function  date_text_validate($element) {
   $input = $element['date']['#value'];
   if (!$element['#required'] && trim($input) == '') return TRUE;
 
-  $value = date_convert_from_custom($input, $element['#date_settings']['format'], $element['#date_settings']['type']);
-  $value = date_limit_value($value, $element['#date_settings']['granularity'], DATE_DATETIME);
-  $date = date_element_date($element, $value, 'local2db');
+  $value = date_convert_from_custom($input, $element['#date_format']);
 
   // If it creates a valid date, store it.
-  if (date_is_valid($date, DATE_OBJECT)) {
-    $value = date_convert($date, DATE_OBJECT, $field['type']);
-    form_set_value($element['date'], NULL);
+  if (date_is_valid($value, DATE_DATETIME)) {
+    $timezone = date_timezone_get($element['#date']);
+    $date = date_create($value, $timezone);
+    $value = date_convert($date, DATE_OBJECT, $element['#date_type']);
     form_set_value($element, $value);
   }
   else {
     form_set_error($element, t('A valid date cannot be created from %date', array('%date' => $value)));
   }
-}
-
-/**
- * Create a default date from the database value.
- *
- * Use ['#date_settings']['empty'] to determine what to do with empty values,
- * adjust the date to the right timezone for this element.
- */
-function date_default_date($element) {
-  if (empty($element['#value'])) {
-    if (empty($element['#date_settings']['empty']) || $element['#date_settings']['empty'] == 'blank') {
-      return NULL;
-    }
-    elseif ($element['#date_settings']['empty'] == 'date' && !empty($element['#date_settings']['empty_code'])) {
-      $value = $element['#date_settings']['empty_code'];
-    }
-    else {
-      $value = 'now';
-    }
-  }
-  else {
-    $value = $element['#value'];
-  }
-  if (!empty($value)) {
-    if ($value != 'now') {
-      $value = date_convert($value, $element['#date_type'], DATE_DATETIME);
-    }
-    $date = date_create($value, timezone_open(date_element_timezone($element)));
-  }
-  if ($date === DATE_ERROR) {
-    return NULL;
-  }
-  if (empty($element['#value']) && $element['#date_settings']['empty'] == 'strtotime' && !empty($element['#date_settings']['empty_code'])) {
-    date_modify($date, $element['#date_settings']['empty_code']);
-  }
-  return $date;
-}
-
-/**
- * Helper function to create a date object for an element.
- *
- * @param $element
- *   the date element
- * @param $value
- *   the value to set the date to
- * @param $direction
- *   'db2local' or 'local2db'
- * @return
- *   a valid date object, adjusted to the right timezone
- */
-function date_element_date($element, $value, $direction = 'db2local') {
-  if (empty($element['#date_settings']['timezone_db'])) {
-    $element['#date_settings']['timezone_db'] = 'UTC';
-  }
-  $timezone_in  = $direction == 'db2local' ? $element['#date_settings']['timezone_db'] : date_element_timezone($element);
-  $timezone_out = $direction == 'db2local' ? date_element_timezone($element) : $element['#date_settings']['timezone_db'];
-
-  $date = date_create($value, timezone_open($timezone_in));
-  if (!empty($timezone_out) && $timezone_out != $timezone_in) {
-    date_timezone_set($date, timezone_open($timezone_out));
-  }
-  return $date;
-}
-
-/**
- *  Helper function to figure out which local timezone applies
- *  to a date element and select it
- */
-function date_element_timezone($element) {
-  switch ($element['#date_settings']['timezone_handling']) {
-    case('site'):
-      $timezone = date_default_timezone_name(FALSE);
-      break;
-    case('date'):
-      $timezone = !empty($element['#date_settings']['timezone_local']) ? $element['#date_settings']['timezone_local'] :  $element['#date_settings']['timezone_db'];
-      break;
-    case('user'):
-      $timezone = date_default_timezone_name();
-      break;
-    default:
-      $timezone = $element['#date_settings']['timezone_db'];
-  }
-  return !empty($timezone) ? $timezone : 'UTC';
 }
 
 /**
@@ -428,13 +313,10 @@ function date_element_timezone($element) {
  *   a date value
  * @param string $format
  *   a date format string that describes the format of the input value
- * @param string $to_type
- *   the date type to be created from the custom input value
- *   DATE_DATETIME, DATE_ISO, DATE_UNIX, or DATE_ARRAY
  * @return mixed
- *   input value converted to $to_type
+ *   input value converted to a DATE_DATETIME value
  */
-function date_convert_from_custom($date, $format, $to_type = DATE_DATETIME) {
+function date_convert_from_custom($date, $format) {
   $array = date_format_patterns();
   foreach ($array as $key => $value) {
     $patterns[] = "`(^|[^\\\\\\\\])".$key."`"; // the letter with no preceding '\'
@@ -502,31 +384,14 @@ function date_convert_from_custom($date, $format, $to_type = DATE_DATETIME) {
         $final_date['second'] = intval($value);
         break;
       case 'U':
-        $final_date = date_convert($value, DATE_UNIX, DATE_ARRAY);
+        return date_convert($value, DATE_UNIX, DATE_DATETIME);
         break;
     }
   }
   if ($ampm == 'pm' && $final_date['hour'] != 12) {
     $final_date['hour'] += 12;
   }
-  if ($to_type == DATE_ARRAY) {
-    // If returning a date array, get the remaining array values for the
-    // input year/month/day/hours/minutes/seconds, like the day of week.
-    $obj = date_create(date_convert($final_date, DATE_ARRAY, DATE_DATETIME), timezone_open('UTC'));
-    $dow = date_format($obj, 'w');
-    $days = date_week_days();
-    $final_date['wday'] = $dow;
-    $final_date['yday'] = date_format($obj, 'z');
-    $final_date['weekday'] = $days[$dow];
-    $final_date['month'] = date_format($obj, 'F');
-    $final_date[0] = date_format($obj, 'U');
-    return $final_date;
-  }
-  else {
-    // If converting array to another type, no need to find additional
-    // array values, they aren't needed by the conversion.
-    return date_convert($final_date, DATE_ARRAY, $to_type);
-  }
+  return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
 }
 
 /**

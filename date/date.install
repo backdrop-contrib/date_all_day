@@ -69,7 +69,7 @@ function date_requirements($phase) {
       if ($tz_name === NULL || $tz_name == 'GMT') {
         $error = TRUE;
         $severity = REQUIREMENT_ERROR;
-        if (!module_exists('date_store_timezones')) {
+        if (!module_exists('date_timezone')) {
           $value = $t('The Date module requires you to set site and user timezone names. Please install the !link.', array('!link' => l($t('Date Timezone module'), 'admin/build/modules')));
         }
         else {
@@ -546,7 +546,7 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             if (empty($item['offset']) || empty($item['timezone']) || $force_recalc) {
               $needs_fix = TRUE;
               $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-              $date = date_make_date($item['value'], 'GMT', 'db', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
+              $date = date_make_date($item['value'], 'GMT', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
               date_convert_timezone($date, 'GMT', $timezone, 'local');
               $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
               $add[$delta]['offset']   = $field['required'] || $item['value'] ? $date->local->offset : NULL;

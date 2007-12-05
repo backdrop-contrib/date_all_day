@@ -468,10 +468,12 @@ function date_t($string) {
 
 /**
  * Reworked from Drupal's format_date function to handle pre-1970 and
- * post-2038 dates and use timezone names instead of offsets.
+ * post-2038 dates and accept a date object instead of a timestamp as input.
  *
- * @param $timestamp
- *   The exact date to format, as a UNIX timestamp.
+ * Translates formatted date results, unlike date_format().
+ *
+ * @param $oject
+ *   A date object, could be created by date_make_date().
  * @param $type
  *   The format to use. Can be "small", "medium" or "large" for the preconfigured
  *   date formats. If "custom" is specified, then $format is required as well.
@@ -479,12 +481,10 @@ function date_t($string) {
  *   A PHP date format string as required by date(). A backslash should be used
  *   before a character to avoid interpreting the character as part of a date
  *   format.
- * @param $timezone
- *   Time zone name; if omitted, the user's time zone is used.
  * @return
  *   A translated date string in the requested format.
  */
-function date_format_date($timestamp, $type = 'medium', $format = '', $timezone = NULL) {
+function date_format_date($object, $type = 'medium', $format = '') {
   switch ($type) {
     case 'small':
       $format = variable_get('date_format_short', 'm/d/Y - H:i');
@@ -499,47 +499,62 @@ function date_format_date($timestamp, $type = 'medium', $format = '', $timezone 
     default:
       $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
   }
-  if (!empty($timezone)) {
-    $timezone = $timezone;
-  }
-  else {
-    $timezone = date_default_timezone_name();
-  }
-  $date = date_create("@$timestamp", timezone_open($timezone ? $timezone : 'UTC'));
   return date_t(date_format($date, $format));
 }
 
 /**
- * A date object for the current time, adjusted for the current site and user.
+ * A date object for the current time.
  *
  * @param $timezone
- *   optional method to force time to a specific timezone,
- *   if none supplied will use user timezone, if available,
- *   otherwise will use the site default timezone
+ *   Optional method to force time to a specific timezone,
+ *   defaults to user timezone, if set, otherwise site timezone.
  * @return object date
  */
 function date_now($timezone = NULL) {
-  $timezone = date_make_timezone($timezone);
+  if (empty($timezone)) {
+    $timezone = date_default_timezone_name();
+  }
   if (!empty($timezone)) {
-    return (date_create('now', $timezone));
+    return (date_create('now', timezone_open($timezone)));
   }
   else {
     return (date_create('now'));
   }
 }
 
-function date_make_timezone($timezone = NULL) {
+/**
+ *  Convert a date of any type or an array of date parts into a valid date
+ *  object.
+
+ *  @param $date
+ *    A date in any format, could be
+ *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
+ *  @param $timezone
+ *    Optional, the name of the timezone this date is in, defaults
+ *    to the user timezone, if set, otherwise the site timezone.
+ *  @param $type
+ *    The type of date provided, could be
+ *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
+ */
+function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
   if (empty($timezone)) {
     $timezone = date_default_timezone_name();
   }
-  if (!empty($timezone)) {
-    return timezone_open($timezone);
+  $datetime = date_convert($date, $type, DATE_DATETIME);
+  if (!date_is_valid($datetime, DATE_DATETIME)) {
+    return DATE_ERROR;
   }
-  return NULL;
+  if (!empty($timezone)) {
+    $date_obj = date_create($datetime, $timezone);
+  }
+  else {
+    $date_obj = date_create($datetime);
+  }
+  return $date_obj;
 }
 
 /**
- * We do this in lots of places, so make it a function.
+ * Return a timezone name to use as a default.
  *
  * @return a timezone name
  *   Identify the default timezone for a user, if available, otherwise the site.

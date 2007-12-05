@@ -478,7 +478,10 @@ function date_ical_parse_duration(&$subgroup) {
 	$items['minute'] = str_replace('M', '', $duration[7]);
 	$items['second'] = str_replace('S', '', $duration[8]);
 	$start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_unix2iso(date_time());
-  $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', 'UTC');
+  $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', NULL);
+  if (empty($timezone)) {
+    $timezone = 'UTC';
+  }
   $date = date_create($start_date, timezone_open($timezone));
 	$date2 = drupal_clone($date);
 	foreach ($items as $item => $count) {
@@ -528,7 +531,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   }
   $date = date_create($ical_date['datetime'], timezone_open($from_tz));
   if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
-    $date = date_timezone_set($date, date_make_timezone($to_tz));
+    $date = date_timezone_set($date, timezone_open($to_tz));
   }
   return $date;
 }

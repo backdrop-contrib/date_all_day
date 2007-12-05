@@ -19,7 +19,7 @@ class DateAPIConversion extends DrupalTestCase {
     $value = '2007-03-11T01:59:59';
     $date = date_create($value, timezone_open($timezone));
     $php5 = date_offset_get($date);
-    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $date = date_make_date($value, $timezone, DATE_ISO);
     $php4 = $date->local->offset;
     // should be -21600
     $this->assertEqual($php4, $php5, 'The offset 1 minute before start of CDT, 2am on Mar 11, 2007 is '. $php5 .', Date API returned '. $php4);
@@ -27,7 +27,7 @@ class DateAPIConversion extends DrupalTestCase {
     $value = '2007-03-11T02:00:00';
     $date = date_create($value, timezone_open($timezone));
     $php5 = date_offset_get($date);
-    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $date = date_make_date($value, $timezone, DATE_ISO);
     $php4 = $date->local->offset;
     // should be -18000
     $this->assertEqual($php4, $php5, 'New DST rules: The offset at start of CDT, 2am on Mar 11, 2007 is '. $php5 .', Date API returned '. $php4);
@@ -35,7 +35,7 @@ class DateAPIConversion extends DrupalTestCase {
     $value = '2001-03-11T02:00:00';
     $date = date_create($value, timezone_open($timezone));
     $php5 = date_offset_get($date);
-    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
+    $date = date_make_date($value, $timezone, DATE_ISO);
     $php4 = $date->local->offset;
     // should be -21600
     $this->assertEqual($php4, $php5, 'Old DST rules: The offset at 2am on Mar 11, 2001 is '. $php5 .', Date API returned '. $php4);
@@ -47,9 +47,9 @@ class DateAPIConversion extends DrupalTestCase {
     $timezone2 = 'Asia/Tokyo';
     date_timezone_set($date, timezone_open($timezone2));
     $php5 = date_format($date, $format);
-    $date = date_make_date($value, $timezone, 'local', DATE_ISO);
-    date_convert_timezone($date, $timezone, $timezone2, 'local');
-    $php4 = date_show_date($date, $format, 'local');
+    $date = date_make_date($value, $timezone, DATE_ISO);
+    date_timezone_set($date, $timezone2);
+    $php4 = date_format($date, $format);
     // should be 01/01/1970 03:00 pm
     $this->assertEqual($php4, $php5, 'Convert timezone, 1970-01-01 00:00:00 in America/Chicago becomes '. $php5 .' in Asia/Tokyo, Date API returned '. $php4);
 
@@ -102,7 +102,7 @@ class DateAPIConversion extends DrupalTestCase {
       $timezone = $val['tz'];
       $date = date_create($val['val'], timezone_open($timezone));
       $php5 = date_offset_get($date);
-      $date = date_make_date($val['val'], $timezone, 'local', DATE_ISO);
+      $date = date_make_date($val['val'], $timezone, DATE_ISO);
       $php4 = $date->local->offset;
       $this->assertEqual($php4, $php5, "Testing date '". $val['val'] ."', timezone'". $val['tz'] ."', offset should be ". $val['offset'] .", Date API result is ". $php4);
     }

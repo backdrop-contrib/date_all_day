@@ -219,7 +219,7 @@ function date_timezone_get_timezone($string, $offset) {
   // 'Daylight Time' or 'Summer Time', so see if either phrase is
   // in the string anywhere. If the string values are in languages other
   // than English, this won't work.
-  if (preg_match('([ daylight time| summer time])', strtolower($string)) ) {
+  if (preg_match('(daylight time|summer time)', strtolower($string), $matches) ) {
     if ($tz = timezone_name_from_abbr(NULL, $offset, 1)) {
       // We found a match, print it and exit
       return $tz;

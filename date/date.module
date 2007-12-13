@@ -18,71 +18,6 @@ function date_menu($may_cache) {
 }
 
 /**
- * Implementation of hook_elements().
- *
- * This code and all the processes it uses are in date_elements.inc.
- */
-function date_elements() {
-  include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
-  return _date_elements();
-}
-
-/**
- * Implementation of hook_widget().
- */
-function date_widget($op, &$node, $field, &$items) {
-  switch ($op) {
-    case 'default value':
-      // Return a blank array, nothing done here but the empty array
-      // will keep the content module from trying to create a default value.
-      // The correct default values are inserted by the date element code.
-      return array(0 => array('value' => NULL, 'value2' => NULL));
-
-    case 'form':
-      include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
-      include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
-      $db_info = content_database_info($field);
-      $columns = array_keys($db_info['columns']);
-      $element = array(
-        $field['field_name'] => array(
-          '#tree' => TRUE,
-          '#weight' => $field['widget']['weight'],
-          '#validate' => array('date_widget_validate' => array()),
-          ));
-
-      // Iterate through the available items, adding as many new ones as needed,
-      // to build out the complete multi-valued field form element.
-      $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
-      foreach (range(0, $max) as $delta) {
-        $element[$field['field_name']][$delta] = array(
-          '#type' => 'date_combo',
-          '#field' => $field,
-          '#columns' => $columns,
-          '#delta' => $delta,
-          '#weight' => $delta,
-          '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
-        );
-        if ($field['tz_handling'] == 'date') {
-          $element[$field['field_name']][$delta]['timezone'] = array(
-            '#type' => $delta == 0 ? 'date_timezone' : 'hidden',
-            '#title' => t('Timezone'),
-            '#default_value' => $items[$delta]['timezone'],
-            );
-        }
-      }
-
-      if (module_exists('date_repeat') && $field['multiple'] > 1) {
-        $element[$field['field_name']]['repeat'] = array(
-          '#type' => 'date_repeat',
-          '#weight' => ($field['widget']['weight'] + .1),
-          '#default_value' => $items['repeat'],
-          );
-      }
-      return $element;
-  }
-}
-
-/**
  * Implementation of hook_field().
  *
  */
@@ -121,12 +56,27 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'insert':
     case 'update':
-      // Don't save empty values.
-      foreach ($items as $delta => $item) {
-        if (empty($item['value']) && $delta > 0) {
+      $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
+      $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
+      $values = $items;
+      foreach ($values as $delta => $item) {
+        // Don't save empty values.
+        if (empty($item['value']) && $delta !== 0) {
           unset($items[$delta]);
         }
+        // Convert input dates back to their UTC values.
+        foreach ($process as $processed) {
+          if (isset($item[$processed]) && !empty($item[$processed]) && $item[$processed] !== DATE_ERROR) {
+            $date = date_make_date($item[$processed], $timezone, $field['type']);
+            date_timezone_set($date, timezone_open('UTC'));
+            $items[$delta][$processed] = date_format($date, $format);
+          }
+          elseif (isset($item[$processed])) {
+            $items[$delta][$processed] = NULL;
+          }
+        }
       }
+      $node->$field['field_name'] = $items;
       break;
   }
 }
@@ -226,7 +176,6 @@ function date_field_formatter($field, $item, $formatter, $node) {
       $dates[$processed]['formatted'] = '';
     }
   }
-
   return theme('date_formatter', $dates, $field, $formatter, $node);
 }
 
@@ -265,6 +214,7 @@ function date_field_object($field, $item) {
     }
     else {
       // create a date object with a gmt timezone from the database value
+      $value = $item[$processed];
       $value = $field['type'] == 'DATE_UNIX' ? "@$value" : $value;
       $date = date_create($value, timezone_open('UTC'));
       $dates[$processed] = array();
@@ -321,7 +271,7 @@ function date_get_timezone($handling, $timezone = '') {
     default:
       $timezone = 'UTC';
   }
-  return $timezone > '' ? $timezone : 'UTC';
+  return $timezone > '' ? $timezone : date_default_timezone_name();
 }
 
 /**
@@ -348,6 +298,26 @@ function date_form_alter($form_id, &$form) {
   if ($form_id == 'views_edit_view') {
     $form['#submit'] = array_merge($form['#submit'], array('date_clear_all' => array()));
   }
+}
+
+/**
+ * Implementation of hook_widget().
+ *
+ * This code and all the processes it uses are in date_elements.inc.
+ */
+function date_widget($op, &$node, $field, &$items) {
+  include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
+  return _date_widget($op, $node, $field, $items);
+}
+
+/**
+ * Implementation of hook_elements().
+ *
+ * This code and all the processes it uses are in date_elements.inc.
+ */
+function date_elements() {
+  include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
+  return _date_elements();
 }
 
 /**

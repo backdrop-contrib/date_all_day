@@ -69,12 +69,6 @@ variable_set('date_min_year', 1);
 variable_set('date_php_min_year', 1901);
 
 /**
- * Indicate errors with DATE_ERROR instead of FALSE because of problems
- * distinguishing between valid 0 and empty values and a FALSE value.
- */
-define('DATE_ERROR', 'DATE_ERROR');
-
-/**
  * Set an API version in a way that other modules can test for compatibility.
  */
 variable_set('date_api_version', '5.2');
@@ -557,7 +551,7 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
   }
   if (!empty($timezone)) {
     $datetime = date_convert($date, $type, DATE_DATETIME);
-    if (!empty($datetime) && $datetime !== DATE_ERROR) {
+    if (!empty($datetime)) {
       return date_create($datetime, timezone_open($timezone));
     }
   }
@@ -597,7 +591,7 @@ function date_days_in_month($date = NULL, $type = DATE_OBJECT) {
   if (is_object($date)) {
     return date_format($date, 't');
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -621,7 +615,7 @@ function date_days_in_year($date = NULL, $type = DATE_OBJECT) {
       return 365;
     }
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -643,7 +637,7 @@ function date_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
     date_date_set($date, date_format($date, 'Y'), 12, 28);
     return date_format($date, 'W');
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -665,7 +659,7 @@ function date_day_of_week($date = NULL, $type = DATE_OBJECT) {
   if (is_object($date)) {
     return date_format($date, 'w');
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -705,7 +699,7 @@ function date_prev(&$date, $count = 1, $period = 'day') {
     date_modify($date, '-'. $count .' '. $period);
     return $date;
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -726,7 +720,7 @@ function date_next(&$date, $count = 1, $period = 'day') {
     date_modify($date, '+'. $count .' '. $period);
     return $date;
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -771,7 +765,7 @@ function date_position_in_month(&$date, $day, $count = 1, $direction = '+') {
     date_modify($date, $direction. $count .' '. $day);
     return $date;
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -868,7 +862,7 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
         }
     }
   }
-  return DATE_ERROR;
+  return NULL;
 }
 
 /**
@@ -886,25 +880,25 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
  *   the type of date to convert to
  */
 function date_convert($date, $from_type, $to_type) {
-  if (empty($date) || $date === DATE_ERROR) return DATE_ERROR;
+  if (empty($date)) return NULL;
   if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_OBJECT:
-      if (!is_object($date)) return DATE_ERROR;
+      if (!is_object($date)) return NULL;
       $obj = $date;
       break;
     case DATE_DATETIME:
     case DATE_ISO:
-      if (!preg_match(DATE_REGEX_LOOSE, $date)) return DATE_ERROR;
+      if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       $date = str_replace('T', ' ', $date);
       $obj = date_create($date, timezone_open('UTC'));
       break;
     case DATE_UNIX:
-      if (!is_numeric($date)) return DATE_ERROR;
+      if (!is_numeric($date)) return NULL;
       $obj = date_create("@$date", timezone_open('UTC'));
       break;
     case DATE_ARRAY:
-      if (!is_array($date)) return DATE_ERROR;
+      if (!is_array($date)) return NULL;
       $datetime = date_pad(intval($date['year']), 4) .
             '-'. date_pad(intval($date['month'])) .
             '-'. date_pad(intval($date['day'])) .
@@ -926,7 +920,7 @@ function date_convert($date, $from_type, $to_type) {
     case DATE_ARRAY:
       return date_array($obj);
     default:
-      return DATE_ERROR;
+      return NULL;
   }
 }
 
@@ -998,7 +992,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
  *    could be DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT
  */
 function date_is_valid($date, $type = DATE_DATETIME) {
-  if ($date === DATE_ERROR) return FALSE;
+  if (empty($date)) return FALSE;
   if (($type == DATE_ISO || $type == DATE_DATETIME) && !preg_match(DATE_REGEX_LOOSE, $date)) return FALSE;
   if ($type == DATE_UNIX and !is_numeric($date)) return FALSE;
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;

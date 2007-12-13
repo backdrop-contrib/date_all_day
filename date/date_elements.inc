@@ -276,7 +276,7 @@ function date_combo_validate($element) {
     $timezone = $form_values['timezone'];
   }
 
-  if (empty($item[$from_field]) || $item[$from_field] == DATE_ERROR || $item[$to_field] == DATE_ERROR) {
+  if (empty($item[$from_field])) {
     $item[$from_field] = NULL;
     $item[$to_field]   = NULL;
     $item[$tz_field]   = $timezone;

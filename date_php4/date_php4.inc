@@ -86,8 +86,8 @@ if (!function_exists('date_create')) {
         $date_out = date_gmdate('Y-m-d H:i', $test);
       }
     }
-    if (empty($date_out) || $date_out === DATE_ERROR) {
-      return DATE_ERROR;
+    if (empty($date_out)) {
+      return NULL;
     }
     $date = new StdClass();
     $date->value = $date_out;
@@ -95,7 +95,7 @@ if (!function_exists('date_create')) {
     $date->timezone = $timezone;
     if (!date_is_valid($date, DATE_OBJECT)) {
       // Must be a value we can't interpret. Throw an error.
-      return DATE_ERROR;
+      return NULL;
     }
     return $date;
   }

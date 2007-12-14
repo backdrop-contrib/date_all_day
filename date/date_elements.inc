@@ -3,8 +3,81 @@
 /**
  * @file
  * Date forms and form themes and validation.
- * This file is only included during form editing to reduce memory usage.
+ *
+ * All code used in form editing and processing is in this file,
+ * included only during form editing.
  */
+
+/**
+ * Private implementation of hook_field validate operation.
+ */
+function _date_field_validate($op, &$node, $field, &$items, $teaser, $page) {
+  $field_name = $field['field_name'];
+
+  // Don't try to validate if there were any errors before this point
+  // since the element won't have been munged back into a date.
+  if (!form_get_errors()) {
+    foreach ($items as $delta => $item) {
+      $process = date_process_values($field);
+      foreach ($process as $processed) {
+        $error_field = $field['field_name'] .']['. $delta .']['. $processed;
+        $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
+        if ($processed == 'value' && $field['todate']
+          && !date_is_valid($item['value'], $field['type'])
+          && (date_is_valid($item['value2'], $field['type']))) {
+          form_set_error($error_field, t("A 'From date' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => t($field['widget']['label']))));
+        }
+        if ($processed == 'value2'
+          && $field['todate'] == 'required' && ($field['required']
+          && date_is_valid($item['value'], $field['type'])
+          && !date_is_valid($item['value2'], $field['type']))) {
+          form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => t($field['widget']['label']))));
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Private implementation of hook_field update and insert operations.
+ */
+function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
+  $field_name = $field['field_name'];
+
+  $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
+  $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
+  $db_info = content_database_info($field);
+  $columns = array_keys($db_info['columns']);
+
+  $values = $items;
+  foreach ($values as $delta => $item) {
+    // Don't save empty values.
+    if (empty($item['value']) && $delta !== 0) {
+      unset($items[$delta]);
+    }
+    // Convert input dates back to their UTC values.
+    $process = date_process_values($field);
+    foreach ($process as $processed) {
+      if (isset($item[$processed]) && !empty($item[$processed])) {
+        $date = date_make_date($item[$processed], $timezone, $field['type']);
+        date_timezone_set($date, timezone_open('UTC'));
+        $items[$delta][$processed] = date_format($date, $format);
+      }
+      elseif (isset($item[$processed])) {
+        $items[$delta][$processed] = NULL;
+      }
+    }
+    // For convenience, we process all possible columns in the element,
+    // but now we need to remove columns not used by this field.
+    $keys = array_keys($item);
+    foreach ($keys as $column => $value) {
+      if (!in_array($column, $columns)) {
+        unset($items[$delta][$column]);
+      }
+    }
+  }
+  $node->$field['field_name'] = $items;
+}
 
 /**
  * Private implementation of hook_widget().
@@ -44,12 +117,6 @@
  *
  */
 function _date_widget($op, &$node, $field, &$items) {
-  if ($field['todate']) {
-    $process = array('value', 'value2');
-  }
-  else {
-    $process = array('value');
-  }
   switch ($op) {
     case 'default value':
       return array(0 => array('value' => NULL, 'value2' => NULL));
@@ -60,13 +127,6 @@ function _date_widget($op, &$node, $field, &$items) {
       $columns = array_keys($db_info['columns']);
       $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
 
-      $element = array(
-        $field['field_name'] => array(
-          '#tree' => TRUE,
-          '#weight' => $field['widget']['weight'],
-          '#validate' => array('date_widget_validate' => array()),
-          ));
-
       // Convert UTC dates to their local values, and adjust the
       // default values as specified in the field settings.
 
@@ -76,6 +136,7 @@ function _date_widget($op, &$node, $field, &$items) {
       // to the timezone of an individual user, so we cache the UTC values
       // instead and do our conversion to local dates in the form and
       // in the formatters.
+      $process = date_process_values($field);
       foreach ($items as $delta => $item) {
         foreach ($process as $processed) {
           $date = date_local_date($delta, $item, $timezone, $field, $processed);
@@ -83,8 +144,19 @@ function _date_widget($op, &$node, $field, &$items) {
         }
       }
 
+      if (module_exists('date_repeat')) {
+        $repeat_rule = $items[0]['repeating'];
+      }
+
       // Iterate through the available items, adding as many new ones as needed,
       // to build out the complete multi-valued field form element.
+      $element = array(
+        $field['field_name'] => array(
+          '#tree' => TRUE,
+          '#weight' => $field['widget']['weight'],
+          '#validate' => array('date_widget_validate' => array()),
+          ));
+
       $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
       foreach (range(0, $max) as $delta) {
 
@@ -112,7 +184,7 @@ function _date_widget($op, &$node, $field, &$items) {
         $element[$field['field_name']]['repeating'] = array(
           '#type' => 'date_repeat',
           '#weight' => ($field['widget']['weight'] + .1),
-          '#default_value' => $items['repeating'],
+          '#default_value' => $repeat_rule,
           );
       }
       return $element;
@@ -120,10 +192,11 @@ function _date_widget($op, &$node, $field, &$items) {
 }
 
 /**
- * Create a default date from the field and widget settings and item values.
+ * Create local date object.
  *
- * Use $widget settings to determine what to do with empty values,
- * adjust the date to the right timezone for this element.
+ * Create a date object set to local time from the field and
+ * widget settings and item values, using field settings to
+ * determine what to do with empty values.
  */
 function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
 
@@ -186,12 +259,6 @@ function date_combo_process($element, $edit = NULL) {
   $from_field = $element['#columns'][0];
   $to_field = $element['#columns'][1];
   $tz_field = $element['#columns'][2];
-  if ($field['todate']) {
-    $process = array($from_field, $to_field);
-  }
-  else {
-    $process = array($from_field);
-  }
 
   if ($field['todate'] != 'required' && !empty($element['#default_value'][$to_field]) && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
     unset($element['#default_value'][$to_field]);

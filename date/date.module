@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Defines date/time field types.
+ * Defines date/time field types for the Content Construction Kit (CCK).
  */
 
 /**
@@ -18,77 +18,38 @@ function date_menu($may_cache) {
 }
 
 /**
- * Implementation of hook_field().
- *
+ * Implementation of hook_field_info().
  */
-function date_field($op, &$node, $field, &$items, $teaser, $page) {
-  $field_name = $field['field_name'];
-  if ($field['todate']) {
-    $process = array('value', 'value2');
-  }
-  else {
-    $process = array('value');
-  }
-  switch ($op) {
-    case 'validate':
-      // Don't try to validate if there were any errors before this point
-      // since the element won't have been munged back into a date.
-      if (!form_get_errors()) {
-        foreach ($items as $delta => $item) {
-          foreach ($process as $processed) {
-            $error_field = $field['field_name'] .']['. $delta .']['. $processed;
-            $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
-            if ($processed == 'value' && $field['todate']
-              && !date_is_valid($item['value'], $field['type'])
-              && (date_is_valid($item['value2'], $field['type']))) {
-              form_set_error($error_field, t("A 'From date' date is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => t($field['widget']['label']))));
-            }
-            if ($processed == 'value2'
-              && $field['todate'] == 'required' && ($field['required']
-              && date_is_valid($item['value'], $field['type'])
-              && !date_is_valid($item['value2'], $field['type']))) {
-              form_set_error($error_field, t("A 'To date' is required for %field %delta", array('%delta' => $field['multiple'] ? intval($delta + 1) : '', '%field' => t($field['widget']['label']))));
-            }
-          }
-        }
-      }
-      break;
+function date_field_info() {
+  return array(
+    'date' => array('label' => 'Date'),
+    'datestamp' => array('label' => 'Datestamp'),
+  );
+}
 
-    case 'insert':
-    case 'update':
-      $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
-      $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
-      $db_info = content_database_info($field);
-      $columns = array_keys($db_info['columns']);
-      $values = $items;
-      foreach ($values as $delta => $item) {
-        // Don't save empty values.
-        if (empty($item['value']) && $delta !== 0) {
-          unset($items[$delta]);
-        }
-        // Convert input dates back to their UTC values.
-        foreach ($process as $processed) {
-          if (isset($item[$processed]) && !empty($item[$processed])) {
-            $date = date_make_date($item[$processed], $timezone, $field['type']);
-            date_timezone_set($date, timezone_open('UTC'));
-            $items[$delta][$processed] = date_format($date, $format);
-          }
-          elseif (isset($item[$processed])) {
-            $items[$delta][$processed] = NULL;
-          }
-        }
-        // For convenience, we process all possible columns in the element,
-        // but now we need to remove columns not used by this field.
-        $keys = array_keys($item);
-        foreach ($keys as $column => $value) {
-          if (!in_array($column, $columns)) {
-            unset($items[$delta][$column]);
-          }
-        }
-      }
-      $node->$field['field_name'] = $items;
-      break;
+/**
+ * Implementation of hook_widget_info().
+ */
+function date_widget_info() {
+  $info = array(
+    'date_select' => array('label' => t('Select List'),
+      'field types' => array('date', 'datestamp'),
+    ),
+    'date_text' => array('label' => t('Text Field with strtotime validation'),
+      'field types' => array('date', 'datestamp'),
+    ),
+  );
+  if (module_exists('jscalendar')) {
+    $info['date_js'] = array('label' => t('Text Field with javascript pop-up calendar'),
+       'field types' => array('date', 'datestamp'),
+     );
   }
+  if (module_exists('date_popup')) {
+    $info['date_popup'] = array('label' => t('Text Field with jquery pop-up calendar'),
+       'field types' => array('date', 'datestamp'),
+     );
+  }
+  return $info;
 }
 
 /**
@@ -152,15 +113,9 @@ function date_formatter_process($field, $item, $node, $format = '', $base = '', 
   $dates = array();
   if (!is_array($field) || !is_array($item)) return $dates;
 
-  if ($field['todate']) {
-    $process = array('value', 'value2');
-  }
-  else {
-    $process = array('value');
-  }
-
   $base = empty($base) ? 'local' : $base;
 
+  $process = date_process_values($field);
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
       $dates[$processed] = NULL;
@@ -240,6 +195,31 @@ function date_get_timezone($handling, $timezone = '') {
 }
 
 /**
+ * Empty or reset cached values.
+ *
+ * @param $remove
+ *   whether or not to completely remove the caches.
+ */
+function date_clear_all($remove = FALSE) {
+  if (module_exists('views')) {
+    if ($remove) {
+      cache_clear_all('date_browser_views', 'cache_views');
+    }
+    else {
+      date_views_browser_get_views(TRUE);
+    }
+  }
+}
+
+/**
+ * Helper function to create an array of the date values in a
+ * field that need to be processed.
+ */
+function date_process_values($field) {
+  return $field['todate'] ? array('value', 'value2') : array('value');
+}
+
+/**
  * Implementation of hook_help().
  */
 function date_help($section) {
@@ -266,9 +246,31 @@ function date_form_alter($form_id, &$form) {
 }
 
 /**
+ * Implementation of hook_field().
+ *
+ * Validation and submission operation code is moved into a separate
+ * file and included only when processing forms.
+ */
+function date_field($op, &$node, $field, &$items, $teaser, $page) {
+  switch ($op) {
+    case 'validate':
+      include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
+      return _date_field_validate($op, $node, $field, $items, $teaser, $page);
+      break;
+
+    case 'insert':
+    case 'update':
+      include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
+      return _date_field_update($op, $node, $field, $items, $teaser, $page);
+      break;
+  }
+}
+
+/**
  * Implementation of hook_widget().
  *
- * This code and all the processes it uses are in date_elements.inc.
+ * This code and all the processes it uses are in a separate file,
+ * included only when processing forms.
  */
 function date_widget($op, &$node, $field, &$items) {
   include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
@@ -278,7 +280,8 @@ function date_widget($op, &$node, $field, &$items) {
 /**
  * Implementation of hook_elements().
  *
- * This code and all the processes it uses are in date_elements.inc.
+ * This code and all the processes it uses are in a separate file,
+ * included only when processing forms.
  */
 function date_elements() {
   include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
@@ -286,38 +289,12 @@ function date_elements() {
 }
 
 /**
- * Empty or reset cached values.
- *
- * @param $remove
- *   whether or not to completely remove the caches.
+ * Wrapper functions for date administration, included only when
+ * processing field settings.
  */
-function date_clear_all($remove = FALSE) {
-  if ($remove) {
-    cache_clear_all('date_browser_views', 'cache_views');
-  }
-  else {
-    if (module_exists('views')) {
-      date_views_browser_get_views(TRUE);
-    }
-  }
-}
-
-/**
- * Wrapper functions for date administration.
- */
-function date_widget_info() {
-  include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
-  return _date_widget_info();
-}
-
 function date_widget_settings($op, $widget) {
   include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
   return _date_widget_settings($op, $widget);
-}
-
-function date_field_info() {
-  include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
-  return _date_field_info();
 }
 
 function date_field_settings($op, $field) {
@@ -368,8 +345,7 @@ function date_pathauto_node($op, $node = NULL) {
 /**
  * @addtogroup themeable
  * @{
- */
-/**
+ *
  * Formatter themes
  */
 function theme_date_format_ical($field, $item, $node) {

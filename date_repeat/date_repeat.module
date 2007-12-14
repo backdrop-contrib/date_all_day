@@ -361,16 +361,24 @@ function date_repeat_build_description($rule) {
 /**
  * Generate the repeat setting form.
  */
-function date_repeat_process($element) {
+function date_repeat_process($element, $edit = NULL) {
   date_api_load('date_api_ical.inc');
+
+  if (!empty($edit)) {
+    $form_values = $edit;
+  }
+  else {
+    $rule_parts = explode('RRULE:', $element['#value']);
+    $form_values = date_ical_parse_rule($rule_parts[0], $rule_parts[1]);
+  }
+
   $element['RRULE'] = array(
     '#type' => 'hidden',
-    '#value' => $element['#value']['RRULE'],
+    '#value' => $form_values['RRULE'],
     );
   $element['RRULE_display'] = array(
-    '#value' => '<div>'. $element['#value']['RRULE'] .'</div>',
+    '#value' => '<div>'. $form_values['RRULE'] .'</div>',
     );
-  $form_values = date_ical_parse_rule(NULL, $element['#value']['RRULE']);
 
   $exception_collapsed = ($repeat['EXDATE']) ? FALSE : TRUE;
   $collapsed = TRUE;
@@ -379,6 +387,7 @@ function date_repeat_process($element) {
   }
   $element['#type'] = 'fieldset';
   $element['#title'] = t('Repeat');
+  $element['#description'] = date_repeat_build_description($element['#value']['RRULE']);
   $element['#collapsible'] = TRUE;
   $element['#collapsed'] = FALSE;
 
@@ -492,10 +501,20 @@ function date_repeat_process($element) {
  * Adds and removes exceptions from the list of current exceptions.
  */
 function date_repeat_validate($element){
-  // Get all the values sub-grouped in fieldsets back into the top level of the array.
-  $form_values = array_merge($element['#value'], $element['#value']['advanced'], $element['#value']['exceptions']);
-  $value = $form_values['exception_date']['date'];
-  $EXDATE = $form_values['EXDATE'];
+  global $form_values;
+
+  $field_name = $element['#parents'][0];
+  $delta = $element['#parents'][1];
+  $item = $form_values[$field_name][$delta]['repeating'];
+
+  // Get all the values sub-grouped in fieldsets back into the
+  // top level of the array.
+  $item = array_merge($item, $item['advanced'], $item['exceptions']);
+  unset($item['advanced']);
+  unset($item['exceptions']);
+
+  $value = $item['exception_date']['date'];
+  $EXDATE = $item['EXDATE'];
   $exceptions_temp = array();
   if(!empty($EXDATE)){
     $exceptions_temp = explode(',', $EXDATE);
@@ -521,10 +540,9 @@ function date_repeat_validate($element){
   // then implode them back to a string and remove the added date
   // from the date edit box.
   asort($exceptions);
+  $rule = date_repeat_build_rule($item);
   $form_values['EXDATE'] = implode(',', $exceptions);
-  form_set_value($element['exceptions']['EXDATE'], $form_values['EXDATE']);
-  form_set_value($element['exceptions']['exception']['date'], NULL);
-  form_set_value($element, date_repeat_build_rule($form_values));
+  form_set_value($element, $rule);
 }
 
 /**

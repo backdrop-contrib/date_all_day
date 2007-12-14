@@ -1,0 +1,6 @@
+// $Id$
+
+variable_set('date_max_year', 3000);
+variable_set('date_min_year', 100);
+variable_set('date_php_min_year', 1971);
+

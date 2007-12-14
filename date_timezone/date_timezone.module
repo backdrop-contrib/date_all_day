@@ -8,23 +8,11 @@
  * This module won't be needed once core starts tracking timezone names
  * instead of offsets.
  */
-/**
- * Set a variable to indicate if user and site timezone forms should be
- * overridden to store timezone names.
- *
- * Some method of storing timezone names in site and user records is
- * required if any timezone conversions are going to be needed or if
- * any of the new date functions, like date_create() are used. This
- * variable tells us whether to automatically add
- * timezone names to those forms.
- */
-variable_set('date_store_timezones', TRUE);
 
 /**
  * Implementation of hook_form_alter().
  *
  * Override system handling of user and site timezone selection.
- * Done if variable date_store_timezones() has been set.
  */
 function date_timezone_form_alter($form_id, &$form) {
   if ($form_id == 'system_date_time_settings') {

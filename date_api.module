@@ -9,15 +9,6 @@
  */
 
 /**
- * NULL is used for the default setting of date_default_timezone_name
- * to have a way to tell that no site timezone name has been implemented.
- * Otherwise, many functions would use 'UTC' incorrectly and
- * produce unreliable and odd results. This way functions can test for a
- * value and not use this if it is not set.
- */
-variable_get('date_default_timezone_name', NULL);
-
-/**
  * Set up some constants.
  *
  * Includes standard date types, format strings, strict regex strings for ISO
@@ -55,23 +46,6 @@ function date_type_format($type) {
       return DATE_FORMAT_DATETIME;
   }
 }
-
-/**
- * Set absolute minimum and maximum year for dates on this site.
- *
- * There is actually no maximum and minimum year in PHP 5, but a date with
- * a year less than 0 would result in negative ISO and DATETIME dates,
- * like -1250-01-01T00:00:00, which probably won't make sense or work
- * correctly anywhere.
- */
-variable_set('date_max_year', 4000);
-variable_set('date_min_year', 1);
-variable_set('date_php_min_year', 1901);
-
-/**
- * Set an API version in a way that other modules can test for compatibility.
- */
-variable_set('date_api_version', '5.2');
 
 /**
  * Helper to include optional files. Use to include files that are not
@@ -867,10 +841,12 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
 
 /**
  * Date conversion helper function.
- *  A variety of ways to convert dates from one type to another.
- *  No timezone conversion is done in this operation!!
  *
- *  Example: date_convert('2007-03-15 08:30', DATE_DATETIME, DATE_UNIX);
+ * A variety of ways to convert dates from one type to another.
+ * No timezone conversion is done in this operation!!
+ *
+ * Example: date_convert('2007-03-15 08:30', DATE_DATETIME, DATE_UNIX);
+ *  will return unix value for the supplied date.
  *
  * @param mixed $date
  *   the date to convert

@@ -182,7 +182,7 @@ function _date_widget($op, &$node, $field, &$items) {
       }
       if (module_exists('date_repeat') && $field['multiple'] > 1) {
         $element[$field['field_name']]['repeating'] = array(
-          '#type' => 'date_repeat',
+          '#type' => 'date_repeat_rule',
           '#weight' => ($field['widget']['weight'] + .1),
           '#default_value' => $repeat_rule,
           );
@@ -313,6 +313,7 @@ function date_combo_process($element, $edit = NULL) {
     $element[$to_field]['#default_value'] = $element['#value'][$to_field];
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
+    $element[$to_field]['#description'] = t('Blank \'To date\' values will use the \'From date\' values.');
   }
   return $element;
 }
@@ -352,17 +353,28 @@ function date_combo_validate($element) {
     form_set_value($element, $item);
   }
   elseif (!form_get_errors()) {
-    if (empty($item[$to_field])) {
-      $item[$to_field] = $item[$from_field];
+
+    // Check todate input for blank values and substitute in fromdate
+    // values where needed, then re-compute the todate with those values.
+
+    if ($field['todate']) {
+      $merged_date = array();
+      foreach ($element['#post'][$field_name][$delta][$to_field] as $part => $value) {
+        $merged_date[$part] = empty($value) ? $element['#post'][$field_name][$delta][$from_field][$part] : $value;
+      }
+      $element[$to_field]['#value'] = $merged_date;
+
+      // Call the right function to turn this altered user input into
+      // a new value for the todate.
+      $function = $field['widget']['type'] .'_input_value';
+      $to_date = $function($element[$to_field]);
+      $item[$to_field] = $to_date;
     }
-    if (!empty($item[$from_field])) {
-      $date = date_make_date($item[$from_field], $timezone, $field['type']);
-      $item[$offset_field] = date_offset_get($date);
-    }
-    if (!empty($item[$to_field])) {
-      $date = date_make_date($item[$to_field], $timezone, $field['type']);
-      $item[$offset_field2] = date_offset_get($date);
-    }
+
+    $date = date_make_date($item[$from_field], $timezone, $field['type']);
+    $item[$offset_field] = date_offset_get($date);
+    $date = date_make_date($item[$to_field], $timezone, $field['type']);
+    $item[$offset_field2] = date_offset_get($date);
     $item[$tz_field] = $timezone;
     form_set_value($element, $item);
   }

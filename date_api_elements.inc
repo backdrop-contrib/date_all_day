@@ -180,10 +180,10 @@ function date_parts_element($element, $date, $format) {
   $granularity = date_format_order($format);
   $order = array_flip($granularity);
 
-  $hours_format  = strpos(strtolower($field['widget']['input_format']), 'a') ? 'g': 'G';
+  $hours_format  = strpos(strtolower($element['#date_format']), 'a') ? 'g': 'G';
   $year = $year > 0 ? $year : date_format(date_now(), 'Y');
   $count = 0;
-  $increment = min(intval($field['widget']['increment']), 1);
+  $increment = min(intval($element['#date_increment']), 1);
   foreach ($granularity as $field) {
     $part_required = $element['#required'];
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
@@ -247,41 +247,38 @@ function date_parts_element($element, $date, $format) {
  *  Validation function for date selector.
  */
 function date_select_validate($element) {
-  $form_values = $element['#value'];
-
-  $field = $element['#field'];
   $error_field = implode('][', $element['#parents']);
 
-  if ($form_values['ampm'] == 'pm' && $form_values['hour'] < 12) {
-    $form_values['hour'] += 12;
+  if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
+    $element['#value']['hour'] += 12;
   }
   if ($element['#required'] || !empty($form_values['year'])) {
-    if ($form_values['year'] < variable_get('date_min_year', 1) || $form_values['year'] > variable_get('date_max_year', 4000)) {
+    if ($element['#value']['year'] < variable_get('date_min_year', 1) || $element['#value']['year'] > variable_get('date_max_year', 4000)) {
       form_set_error($error_field .'][year', t('year must be a number between %min and %max.', array(
         '%min' => variable_get('date_min_year', 1), '%max' => variable_get('date_max_year', 4000))));
     }
   }
-  if ($element['#required'] || !empty($form_values['month'])) {
-    if ($form_values['month'] < 1 || $form_values['month'] > 12) {
+  if ($element['#required'] || !empty($element['#value']['month'])) {
+    if ($element['#value']['month'] < 1 || $element['#value']['month'] > 12) {
       form_set_error($error_field .'][month', t('month must be a number between 1 and 12.'));
     }
   }
-  if ($element['#required'] || !empty($form_values['day'])) {
-    if ($form_values['day'] < 1 || $form_values['day'] > 31) {
+  if ($element['#required'] || !empty($element['#value']['day'])) {
+    if ($element['#value']['day'] < 1 || $element['#value']['day'] > 31) {
       form_set_error($error_field .'][day', t('day must be a number between 1 and 31.'));
     }
   }
   if (!form_get_errors()) {
     // If it creates a valid date, set it.
-    if (date_is_valid($form_values, DATE_ARRAY)) {
-      $value = date_convert($form_values, DATE_ARRAY, $element['#date_type']);
+    $value = date_select_input_value($element);
+    if (!empty($value)) {
       form_set_value($element, $value);
     }
     elseif ($element['#required']) {
       form_set_error($error_field, t('A valid date cannot be constructed from %m-%d-%year.', array(
-        '%m' => $form_values['month'],
-        '%d' => $form_values['day'],
-        '%y' => $form_values['year'],
+        '%m' => $element['#value']['month'],
+        '%d' => $element['#value']['day'],
+        '%y' => $element['#value']['year'],
         )));
     }
     else {
@@ -291,27 +288,48 @@ function date_select_validate($element) {
 }
 
 /**
+ * Helper function for extracting a date value out of user input.
+ */
+function date_select_input_value($element) {
+  if (date_is_valid($element['#value'], DATE_ARRAY)) {
+    return date_convert($element['#value'], DATE_ARRAY, $element['#date_type']);
+  }
+  return NULL;
+}
+
+/**
  *  Validation for text input.
  */
-function  date_text_validate($element) {
+function date_text_validate($element) {
   $form_values = $element['#value'];
+  $value = date_text_input_value($element);
 
+  if (!$element['#required'] && empty($value)) {
+    form_set_value($element, NULL);
+  }
+  elseif (!empty($value)) {
+    form_set_value($element, $value);
+  }
+  else {
+    $error_field = implode('][', $element['#parents']);
+    form_set_error($error_field, t('A valid date cannot be created from %date', array('%date' => $value)));
+  }
+}
+
+/**
+ * Helper function for extracting a date value out of user input.
+ */
+function date_text_input_value($element) {
   $input = $form_values['date'];
-  if (!$element['#required'] && trim($input) == '') return TRUE;
+  if (!$element['#required'] && trim($input) == '') return NULL;
 
   $value = date_convert_from_custom($input, $element['#date_format']);
 
   // If it creates a valid date, store it.
   if (date_is_valid($value, DATE_DATETIME)) {
-    $value = date_convert($value, DATE_DATETIME, $element['#date_type']);
-    form_set_value($element, $value);
+    return date_convert($value, DATE_DATETIME, $element['#date_type']);
   }
-  elseif ($element['#required']) {
-    form_set_error(implode('][', $element['#parents']), t('A valid date cannot be created from %date', array('%date' => $value)));
-  }
-  else {
-    form_set_value($element, NULL);
-  }
+  return NULL;
 }
 
 /**

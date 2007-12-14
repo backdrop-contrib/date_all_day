@@ -100,7 +100,7 @@ function date_widget_settings_form($widget) {
     '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
   );
   if ($widget['type'] == 'date_select' || $widget['type'] == 'date_popup') {
-    $form['input']['advanced']['year_range'] = array(
+    $form['input']['year_range'] = array(
       '#type' => 'textfield',
       '#title' => t('Years back and forward'),
       '#default_value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
@@ -108,7 +108,7 @@ function date_widget_settings_form($widget) {
       '#maxsize' => 10,
       '#description' => t('Number of years to go back and forward in the year selection list, default is -3:+3.'),
       );
-    $form['input']['advanced']['increment'] = array(
+    $form['input']['increment'] = array(
       '#type' => 'select', '#title' => t('Time increment'),
       '#default_value' => isset($widget['increment']) ? $widget['increment'] : 1,
       '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
@@ -125,8 +125,14 @@ function date_widget_settings_form($widget) {
       '#value' => isset($widget['year_range']) ? $widget['year_range'] : 1,
       );
   }
-  $form['input']['advanced']['text_parts'] = array(
+  $form['input']['advanced'] = array(
     '#tree' => TRUE,
+    '#type' => 'fieldset',
+    '#title' => t('Customize Date Parts'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    );
+  $form['input']['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts_theme' : '',
     );
   foreach (date_granularity_names() as $key => $value) {
@@ -244,7 +250,7 @@ function date_columns($field) {
     $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
     if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
   }
-  if ($field['multiple'] == 2) {
+  if ($field['multiple'] == 99) {
     $db_columns['repeating'] = array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE);
   }
   return $db_columns;
@@ -256,10 +262,10 @@ function date_field_settings_form($field) {
 
   // Override the normal multiple checkbox when using date repeat.
   $options = array(0 => t('Never'), 1 => t('Unlimited'));
-  $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create multiple dates one at a time.');
+  $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create unlimited multiple dates one date at a time.');
   if (module_exists('date_repeat')) {
-    $options += array(2 => t('Repeating'));
-    $description += t(' Repeating dates display options to allow the user to select when and how often the date will repeat.');
+    $options += array(99 => t('Repeating'));
+    $description .= t(' Repeating dates display options to allow the user to select when and how often the date will repeat.');
   }
   $form['multiple'] = array(
     '#type' => 'radios',

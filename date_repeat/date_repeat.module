@@ -15,10 +15,10 @@ function date_repeat_help($section) {
  * Implementation of hook_elements().
  */
 function date_repeat_elements() {
-  $type['date_repeat'] = array(
+  $type['date_repeat_rule'] = array(
     '#input' => TRUE, '#tree' => TRUE,
-    '#process' => array('date_repeat_process' => array()),
-    '#validate' => array('date_repeat_validate' => array()),
+    '#process' => array('date_repeat_rule_process' => array()),
+    '#validate' => array('date_repeat_rule_validate' => array()),
   );
   return $type;
 }
@@ -361,7 +361,7 @@ function date_repeat_build_description($rule) {
 /**
  * Generate the repeat setting form.
  */
-function date_repeat_process($element, $edit = NULL) {
+function date_repeat_rule_process($element, $edit = NULL) {
   date_api_load('date_api_ical.inc');
 
   if (!empty($edit)) {
@@ -404,11 +404,7 @@ function date_repeat_process($element, $edit = NULL) {
     '#title' => t('Until'),
     '#description' => t('Date to stop repeating this item, leave blank for unlimited repeats.'),
     '#default_value' => $form_values['UNTIL'],
-    '#date_settings' => array(
-      'granularity' => array('year', 'month', 'day'),
-      'empty' => 'blank',
-      'format' => 'Y-m-d',
-      ),
+    '#date_format' => 'Y-m-d',
   );
 
 	// start the advanced fieldset
@@ -484,11 +480,7 @@ function date_repeat_process($element, $edit = NULL) {
   $element['exceptions']['exception_date'] = array(
     '#title' => t('Except'),
     '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
-    '#date_settings' => array(
-      'granularity' => array('year', 'month', 'day'),
-      'empty' => 'blank',
-      'format' => 'Y-m-d',
-      ),
+    '#date_format' => 'Y-m-d',
     '#description' => t('Enter exception dates here (dates that will not be rendered as part of the repeat sequence).  If you wish to delete an already existing exception, enter the date again. Don\'t forget to press the \'Submit\' button after editing the exception dates!'));
   $element['exceptions']['exception_button'] = array(
     '#type' => 'button',
@@ -500,7 +492,7 @@ function date_repeat_process($element, $edit = NULL) {
 /**
  * Adds and removes exceptions from the list of current exceptions.
  */
-function date_repeat_validate($element){
+function date_repeat_rule_validate($element){
   global $form_values;
 
   $field_name = $element['#parents'][0];

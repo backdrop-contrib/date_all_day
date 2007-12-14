@@ -248,7 +248,6 @@ function date_parts_element($element, $date, $format) {
  */
 function date_select_validate($element) {
   $error_field = implode('][', $element['#parents']);
-
   if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
     $element['#value']['hour'] += 12;
   }

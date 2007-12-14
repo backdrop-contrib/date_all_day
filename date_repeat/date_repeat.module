@@ -405,6 +405,7 @@ function date_repeat_rule_process($element, $edit = NULL) {
     '#description' => t('Date to stop repeating this item, leave blank for unlimited repeats.'),
     '#default_value' => $form_values['UNTIL'],
     '#date_format' => 'Y-m-d',
+    '#date_type' => DATE_DATETIME,
   );
 
 	// start the advanced fieldset
@@ -481,6 +482,7 @@ function date_repeat_rule_process($element, $edit = NULL) {
     '#title' => t('Except'),
     '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
     '#date_format' => 'Y-m-d',
+    '#date_type' => DATE_DATETIME,
     '#description' => t('Enter exception dates here (dates that will not be rendered as part of the repeat sequence).  If you wish to delete an already existing exception, enter the date again. Don\'t forget to press the \'Submit\' button after editing the exception dates!'));
   $element['exceptions']['exception_button'] = array(
     '#type' => 'button',

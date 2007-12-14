@@ -181,7 +181,7 @@ function _date_widget($op, &$node, $field, &$items) {
         }
       }
       if (module_exists('date_repeat') && $field['multiple'] > 1) {
-        $element[$field['field_name']]['repeating'] = array(
+        $element[$field['field_name']][0]['repeating'] = array(
           '#type' => 'date_repeat_rule',
           '#weight' => ($field['widget']['weight'] + .1),
           '#default_value' => $repeat_rule,

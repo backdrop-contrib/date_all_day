@@ -135,7 +135,7 @@ function _date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query
   return _date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
 function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
-  date_api_load('date_api_sql.inc');
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
 
   $value = $filter['value'];
   $type = $filterinfo['type'];
@@ -285,7 +285,7 @@ function _date_views_timestamp_argument_range_handler($op, &$query, $argtype, $a
 function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
 
-  date_api_load('date_api_sql.inc');
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
 
   $name = explode(':', is_array($argtype) ? $argtype['type'] : $argtype);
   $tofield_name = trim($name[1]);
@@ -482,10 +482,10 @@ function date_iso_week_range($value) {
  *  @return an array of ISO dates representing the first and last day in the range
  */
 function date_plus_period_range($value) {
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   $value = str_replace('--P', 'P', $value);
   $range = explode('P', $value);
   $min_date = date_range_value($range[0], 'min');
-  date_api_load('date_api_ical.inc');
   $parsed = date_ical_parse_duration('', $range[1]);
   $max_date = date_create($min_date, timezone_open('UTC'));
   date_modify($max_date, '+'. intval($parsed['DURATION'] - 1) .' seconds');

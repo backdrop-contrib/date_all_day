@@ -92,7 +92,7 @@ function date_repeat_dow_options() {
  * Compute dates that match the requested rule, within a specified date range.
  */
 function date_repeat_calc($rule, $start, $end, $exceptions) {
-  date_api_load('date_api_ical.inc');
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   // Get 'RRULE:' out of the rule data and get the parsed array of rule values.
   $rule_parts = explode('RRULE:', $rule);
@@ -362,7 +362,7 @@ function date_repeat_build_description($rule) {
  * Generate the repeat setting form.
  */
 function date_repeat_rule_process($element, $edit = NULL) {
-  date_api_load('date_api_ical.inc');
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   if (!empty($edit)) {
     $form_values = $edit;

@@ -48,14 +48,6 @@ function date_type_format($type) {
 }
 
 /**
- * Helper to include optional files. Use to include files that are not
- * automatically included, like date_api_ical.inc.
- */
-function date_api_load($file) {
-  include_once('./'. drupal_get_path('module', 'date_api')  .'/'. $file);
-}
-
-/**
  * An untranslated array of month names
  *
  * Needed for css, translation functions, strtotime(), and other places

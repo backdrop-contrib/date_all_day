@@ -58,6 +58,8 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
     case 'update':
       $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
       $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
+      $db_info = content_database_info($field);
+      $columns = array_keys($db_info['columns']);
       $values = $items;
       foreach ($values as $delta => $item) {
         // Don't save empty values.
@@ -73,6 +75,14 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
           }
           elseif (isset($item[$processed])) {
             $items[$delta][$processed] = NULL;
+          }
+        }
+        // For convenience, we process all possible columns in the element,
+        // but now we need to remove columns not used by this field.
+        $keys = array_keys($item);
+        foreach ($keys as $column => $value) {
+          if (!in_array($column, $columns)) {
+            unset($items[$delta][$column]);
           }
         }
       }
@@ -450,8 +460,15 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
     // Don't repeat values in the 'to' date that are in the 'from' date.
     // Will change February 1, 2007 10:00 AM - February 1, 2007 11:00 AM
     // into February 1, 2007 10:00 AM - 11:00 AM.
-    $date2 = str_replace($date1, '', $date2);
-    return '<span class="date-display-start">'. $date1 .'</span><span class="date-display-separator"> - </span><span class="date-display-end">'. $date2 .'</span>';
+    $parts = explode(' ', $date1);
+    foreach ($parts as $part) {
+      if (!in_array($part, array('AM', 'am', 'PM', 'pm'))) {
+        $date2 = str_replace($part, '', $date2);
+      }
+    }
+    return '<span class="date-display-start">'. $date1 .'</span>'.
+      '<span class="date-display-separator"> - </span>'.
+      '<span class="date-display-end">'. $date2 .'</span>';
   }
 }
 

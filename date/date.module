@@ -436,9 +436,16 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
     // Don't repeat values in the 'to' date that are in the 'from' date.
     // Will change February 1, 2007 10:00 AM - February 1, 2007 11:00 AM
     // into February 1, 2007 10:00 AM - 11:00 AM.
+
     $parts = explode(' ', $date1);
-    foreach ($parts as $part) {
-      if (!in_array($part, array('AM', 'am', 'PM', 'pm'))) {
+    $parts2 = explode(' ', $date2);
+    $matching = TRUE;
+    foreach ($parts as $i => $part) {
+      // Stop trying to replace values as soon as the dates begin to vary.
+      if ($parts[$i] != $parts2[$i]) {
+        $matching = FALSE;
+      }
+      if ($matching && !in_array($part, array('AM', 'am', 'PM', 'pm'))) {
         $date2 = str_replace($part, '', $date2);
       }
     }

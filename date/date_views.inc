@@ -354,13 +354,30 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
 
       $query->ensure_table($table);
       $query->add_field($value, $table);
+      if ($field['tz_handling'] == 'date') {
+        $query->add_field($timezone, $table);
+      }
       return $fieldinfo;
       break;
 
     case 'link':
       // links are created from date range groupings
-      $time = $query->$value > '' ? ($field_type == 'iso' ? date_iso2unix($query->$value) : $query->$value) : '';
-      return l(date_format_date($format, $time), $arg .'/'. $query->range);
+      if (empty($query->$value)) return;
+      if ($field['tz_handling'] == 'date') {
+        $tz_name = $query->$timezone;
+      }
+      else {
+        $tz_name = date_default_timezone_name();
+      }
+      if ($field_type == 'iso') {
+        $date = date_create($query->$value, timezone_open('UTC'));
+        date_timezone_set($date, timezone_open($tz_name));
+      }
+      else {
+        $date = date_create("@". $query->$value, timezone_open('UTC'));
+        date_timezone_set($date, timezone_open($tz_name));
+      }
+      return l(date_format($date, $format), $arg .'/'. $query->range);
 
     case 'sort':
       break;
@@ -369,6 +386,9 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
       $range = date_views_date_range($arg, $field);
       $query->ensure_table($table);
       $query->add_field($value, $table);
+      if ($field['tz_handling'] == 'date') {
+        $query->add_field($timezone, $table);
+      }
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
       $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       break;
@@ -399,8 +419,8 @@ function date_views_date_range($arg, $field = NULL) {
     $max_date = date_range_value(($range[1] ? $range[1] : $range[0]), 'max');
   }
   if (!empty($field)) {
-    $min_date = date_limit_value($min_date, date_granularity_array($field), $field['type']);
-    $max_date = date_limit_value($max_date, date_granularity_array($field), $field['type']);
+    $min_date = date_limit_value($min_date, date_granularity($field), $field['type']);
+    $max_date = date_limit_value($max_date, date_granularity($field), $field['type']);
   }
   return array($min_date, $max_date);
 }
@@ -412,7 +432,7 @@ function date_views_date_range($arg, $field = NULL) {
  *  @return complete, validated ISO date
  */
 function date_range_value($value, $value_type = 'min') {
-  $now   = date_date(DATE_FORMAT_ISO, time());
+  $now   = date_format(date_now(), DATE_ISO);
   if (trim($value) == '@' || trim($value) == '') return $now;
 
   switch (strlen($value)) {

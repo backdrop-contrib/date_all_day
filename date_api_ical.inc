@@ -403,7 +403,7 @@ function date_ical_make_date($date, $type) {
       break;
     case DATE_OBJECT:
       $full = date_format($date, DATE_ICAL_FORMAT);
-      barek;
+      break;
   }
   if (substr($full, 9, 6) == '000000') {
     return substr($full, 0, 8);
@@ -421,6 +421,7 @@ function date_ical_make_date($date, $type) {
  *   PROPERTIES include FREQ, INTERVAL, COUNT, BYDAY, BYMONTH, BYYEAR, UNTIL
  */
 function date_ical_parse_rule($field, $data) {
+  $data = str_replace('RRULE:', '', $data);
   $items = array('DATA' => $data);
   $rule = explode(';', $data);
   foreach ($rule as $key => $value) {
@@ -511,7 +512,7 @@ function date_ical_parse_text($field, $data) {
 }
 
 /**
- * Adjust ical date to appropriate timezone and format it.
+ * Return a date object for the ical date, adjusted to its local timezone.
  *
  *  @param $ical_date
  *    an array of ical date information created in the ical import.

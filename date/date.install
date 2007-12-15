@@ -444,7 +444,7 @@ function date_db_integrity($name) {
 
       // alter the start column values to invalid values to force the new columns to be reset.
       $columns_start['value']['length'] = 90;
-      $columns_start['repeating']['length'] = 90;
+      $columns_start['rrule']['length'] = 90;
       if ($field['todate']) {
         $columns_start['value2']['length'] = 80;
       }
@@ -453,8 +453,8 @@ function date_db_integrity($name) {
         $columns_start['offset']['length'] = 80;
         if ($field['todate']) $columns_start['offset2']['length'] = 80;
       }
-      if ($field['multiple'] > 1) {
-        $columns_start['repeating']['length'] = 80;
+      if ($field['multiple'] == 99) {
+        $columns_start['rrule']['length'] = 80;
       }
       content_alter_db_field($field, $columns_start, $field, $columns_end);
       $message = 'Date database integrity check. Updated table '. $table .' to set all columns to accept NULL values.';

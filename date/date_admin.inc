@@ -251,7 +251,7 @@ function date_columns($field) {
     if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
   }
   if ($field['multiple'] == 99) {
-    $db_columns['repeating'] = array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE);
+    $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE);
   }
   return $db_columns;
 }

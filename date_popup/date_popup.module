@@ -160,9 +160,7 @@ function date_popup_system_date_form($element, $edit = NULL) {
  */
 function date_popup_process($element, $edit = NULL) {
   date_popup_load();
-
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
-
   if (!empty($edit)) {
     $input = $edit['date'] . (!empty($edit['time']) ? ' '. $edit['time'] : '');
     $datetime = date_convert_from_custom($input, $element['#date_format']);

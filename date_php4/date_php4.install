@@ -1,3 +1,4 @@
+<?php
 // $Id$
 
 variable_set('date_max_year', 3000);

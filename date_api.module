@@ -921,7 +921,7 @@ function date_array($obj) {
     'year' => date_format($obj, 'Y'),
     'yday' => date_format($obj, 'z'),
     'weekday' => $days[$dow],
-    'month' => date_format($obj, 'F'),
+    'month_name' => date_format($obj, 'F'),
     0 => date_format($obj, 'U'));
 }
 

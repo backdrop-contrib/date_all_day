@@ -478,7 +478,7 @@ function date_ical_parse_duration(&$subgroup) {
 	$items['hour'] = str_replace('H', '', $duration[6]);
 	$items['minute'] = str_replace('M', '', $duration[7]);
 	$items['second'] = str_replace('S', '', $duration[8]);
-	$start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_unix2iso(date_time());
+	$start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_format(date_now(), DATE_FORMAT_ISO);
   $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', NULL);
   if (empty($timezone)) {
     $timezone = 'UTC';

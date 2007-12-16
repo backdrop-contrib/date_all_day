@@ -230,11 +230,6 @@ function date_help($section) {
   }
 }
 
-function date_views_query_alter(&$query, &$view) {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_query_alter($query, $view);
-}
-
 /**
  * Implementation of hook_form_alter().
  * Make sure date information gets updated.
@@ -332,6 +327,10 @@ function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $f
 function date_views_style_plugins() {
   include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
   return _date_views_style_plugins();
+}
+function date_views_query_alter(&$query, &$view) {
+  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
+  return _date_views_query_alter($query, $view);
 }
 
 /**

@@ -161,7 +161,6 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
 
   $field   = $filterinfo['extra']['field'];
   $column = $filterinfo['extra']['column'];
-  $formats = date_get_formats($field);
   $db_info = $filterinfo['content_db_info'];
   $table   = 'node_data_'. $field['field_name'];
   $table_field   = $db_info['columns'][$column]['column'];
@@ -172,7 +171,7 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
   // because the server is going to adjust the value of NOW() for the server timezone.
   switch ($type) {
     case('DATE'):
-      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : "'". str_replace('T', ' ', date_custom2iso($value, $formats['input']['text'])) ."'";
+      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
       break;
     default:
       $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
@@ -394,7 +393,8 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
       break;
 
     case 'title':
-      $item = array(key($db_info['columns']) => $query);
+      $value = explode('P', $query);
+      $item = array(key($db_info['columns']) => $value[0]);
       return content_format($field, $item, 'default');
   }
 }
@@ -432,7 +432,7 @@ function date_views_date_range($arg, $field = NULL) {
  *  @return complete, validated ISO date
  */
 function date_range_value($value, $value_type = 'min') {
-  $now   = date_format(date_now(), DATE_ISO);
+  $now   = date_format(date_now(), DATE_FORMAT_ISO);
   if (trim($value) == '@' || trim($value) == '') return $now;
 
   switch (strlen($value)) {
@@ -505,11 +505,38 @@ function date_plus_period_range($value) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   $value = str_replace('--P', 'P', $value);
   $range = explode('P', $value);
+
+  $period = substr($range[1], -1);
+  switch ($period) {
+    case 'Y':
+      $granularity = array('year');
+      break;
+    case 'M':
+      $granularity = array('year', 'month');
+      break;
+    case 'D':
+      $granularity = array('year', 'month', 'day');
+      break;
+    case 'W':
+      $granularity = array('year');
+      break;
+    case 'H':
+      $granularity = array('year', 'month', 'day', 'hour');
+  }
+
   $min_date = date_range_value($range[0], 'min');
-  $parsed = date_ical_parse_duration('', $range[1]);
-  $max_date = date_create($min_date, timezone_open('UTC'));
-  date_modify($max_date, '+'. intval($parsed['DURATION'] - 1) .' seconds');
-  return array($min_date, date_format($max_date, DATE_FORMAT_ISO));
+  $parsed = array('DURATION' => array(
+    'DATA' => 'P'. $range[1]),
+    'DTSTART' => array(
+      'datetime' => date_convert($min_date, DATE_ISO, DATE_DATETIME),
+      'tz' => 'UTC',
+      'granularity' => $granularity,
+      ),
+    );
+  date_ical_parse_duration($parsed);
+
+  $max_date = date_convert($parsed['DTEND']['datetime'], DATE_DATETIME, DATE_ISO);
+  return array($min_date, $max_date);
 }
 
 /**
@@ -578,6 +605,7 @@ function date_browser_validate($type, $view, $form) {
  *  Used to make sure view defaults to current date if no date selected
  */
 function _date_views_query_alter(&$query, &$view) {
+  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
   $date_views_browser_views = date_views_browser_get_views();
   if (in_array($view->name, array_keys($date_views_browser_views))) {
     $path = explode('/', $view->url);
@@ -660,25 +688,38 @@ function date_views_browser_period($period = 'month') {
     return 'P1M';
   }
 }
+
+function date_views_browser_period_format($period) {
+    switch ($period) {
+    case 'year':
+      $format = 'Y';
+      break;
+    case 'month':
+      $format = 'Y-m';
+      break;
+    case 'week':
+      $format = 'Y-W';
+      break;
+    case 'day':
+      $format = 'Y-m-d';
+      break;
+    case 'hour':
+      $format = 'Y-m-d\TH';
+      break;
+  }
+  return $format;
+}
+
 /**
  *  Format an argument for the date range
  */
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
   $range = date_views_date_range($arg);
   $date = date_create($range[0], timezone_open('UTC'));
-  switch ($period) {
-  case('week'):
-    return date_format($date, 'Y-m-d') . date_views_browser_period($period);
-  case('year'):
-    return date_format($date, 'Y') . date_views_browser_period($period);
-  case('day'):
-    return date_format($date, 'Y-m-d') . date_views_browser_period($period);
-  case('hour'):
-    return date_format($date, 'Y-m-d\TH') . date_views_browser_period($period);
-  default:
-    return date_format($date, 'Y-m') . date_views_browser_period($period);
-  }
+  return date_format($date, date_views_browser_period_format($period) .
+    date_views_browser_period($period));
 }
+
 /**
  *  Return label for current date range
  */
@@ -700,12 +741,21 @@ function date_views_browser_navigation($view, $period) {
   else {
     $arg = arg($pos);
   }
+  // Create a date object for the beginning of the current range.
   $range = date_views_date_range($arg);
   $date = date_create($range[0], timezone_open('UTC'));
-  $prev_date = date_prev($date, 1, $period, DATE_OBJECT);
-  $next_date = date_next($date, 2, $period, DATE_OBJECT);
-  $prev = $view->url .'/'. $prev_date . date_views_browser_period($period);
-  $next = $view->url .'/'. $next_date . date_views_browser_period($period);
+  // Move backwards 1 period and create a link to that date.
+  date_prev($date, 1, $period);
+  $prev = $view->url .'/'.
+    date_format($date, date_views_browser_period_format($period)) .
+    date_views_browser_period($period);
+  // Move forward 2 periods (back to the current period and to the next period)
+  // and create a link to that date.
+  date_next($date, 2, $period);
+  $next = $view->url .'/'.
+    date_format($date, date_views_browser_period_format($period)) .
+    date_views_browser_period($period);
+
   $label = date_views_browser_period_label($arg, $period);
   return theme('date_views_browser_navigation', $label, $period, $prev, $next, $view);
 }

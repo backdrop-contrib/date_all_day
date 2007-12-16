@@ -381,39 +381,6 @@ function date_ical_parse_date($field, $data) {
 }
 
 /**
- * Turn an iso date, a datetime date, a timestamp, or an array into an iCal date.
- *
- * @param unknown_type $date
- * @param unknown_type $type
- * @return unknown
- */
-function date_ical_make_date($date, $type) {
-  switch ($type) {
-    case DATE_ISO:
-    case DATE_DATETIME:
-      preg_match (DATE_REGEX_LOOSE, $date, $regs);
-      $full = date_pad($regs[1], 4) . date_pad($regs[2]) . date_pad($regs[3]) .'T'. date_pad($regs[5]) . date_pad($regs[6]) . date_pad($regs[7]);
-      break;
-    case DATE_UNIX:
-      $obj = date_create("@$date", timezone_open('UTC'));
-      $full = date_format($obj, DATE_ICAL_FORMAT);
-      break;
-    case DATE_ARRAY:
-      $full = date_pad($date['year'], 4) . date_pad($date['month']) . date_pad($date['day']) .'T'. date_pad($date['hour']) . date_pad($date['minute']) . date_pad($date['second']);
-      break;
-    case DATE_OBJECT:
-      $full = date_format($date, DATE_ICAL_FORMAT);
-      break;
-  }
-  if (substr($full, 9, 6) == '000000') {
-    return substr($full, 0, 8);
-  }
-  else {
-    return $full;
-  }
-}
-
-/**
  * Parse an ical repeat rule.
  *
  * @return array

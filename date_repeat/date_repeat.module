@@ -280,13 +280,13 @@ function date_repeat_build_rule($form_values) {
     $RRULE .= ';BYMONTH='. implode(",", $form_values['BYMONTH']);
   }
   if ($form_values['UNTIL']) {
-    $RRULE .= ';UNTIL='. date_ical_make_date($form_values['UNTIL'], DATE_DATETIME);
+    $RRULE .= ';UNTIL='. date_convert($form_values['UNTIL']['datetime'], DATE_DATETIME, DATE_ICAL);
   }
   //process the EXDATE values by looping through and recomposing them to iCal format
   if ($form_values['EXDATE']) {
     $EXDATE = array();
     foreach ($form_values['EXDATE'] as $key => $value) {
-      $EXDATE[$key] = date_ical_make_date($value, DATE_DATETIME);
+      $EXDATE[$key] = date_convert($value, DATE_DATETIME, DATE_ICAL);
     }
     $RRULE .= chr(13).chr(10).'EXDATE:'.implode(',', $EXDATE);
   }

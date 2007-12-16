@@ -17,30 +17,23 @@ You should end up with a structure like:
    /drupal/sites/all/modules/date/date_forms.inc
    /drupal/sites/all/modules/date/date_ical.inc
 
-   /drupal/sites/all/modules/date/contrib/date_field/date.info
-   /drupal/sites/all/modules/date/contrib/date_field/date.install
-   /drupal/sites/all/modules/date/contrib/date_field/date.module
+   /drupal/sites/all/modules/date/date/date.info
+   /drupal/sites/all/modules/date/date/date.install
+   /drupal/sites/all/modules/date/date/date.module
 
-   /drupal/sites/all/modules/date/contrib/date_copy/date_copy.info
-   /drupal/sites/all/modules/date/contrib/date_copy/date_copy.module
+   /drupal/sites/all/modules/date/date_copy/date_copy.info
+   /drupal/sites/all/modules/date/date_copy/date_copy.module
 
-   /drupal/sites/all/modules/date/includes/date_php4.inc
-   /drupal/sites/all/modules/date/includes/date_php4_lib.inc
-   /drupal/sites/all/modules/date/includes/date_php4_calc.inc
-   /drupal/sites/all/modules/date/includes/date_php4_tz_identifiers.inc
-   /drupal/sites/all/modules/date/includes/date_php4_tz_abbreviations.inc
-   /drupal/sites/all/modules/date/includes/date_php4_tz_map.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4_lib.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4_calc.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4_tz_identifiers.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4_tz_abbreviations.inc
+   /drupal/sites/all/modules/date/date_php4/date_php4_tz_map.inc
 
 
-PHP 4 substitutions are made for PHP 5 date handling when needed. All files needed for PHP 4 
-substitutions are in date/includes/ and are ignored and can be removed if no PHP 4 substitution 
-is required. No action is required to substitute PHP 4 date handling, it will be done 
-automatically by the Date API module when necessary.
-
-The contrib folders contain optional modules and can be removed if not needed.
-
-More documentation is available at http://drupal.org/node/92460.
-
+PHP 4 substitutions are made for PHP 5 date handling when needed by enabling the Date PHP4
+module. 
 
 CCK Date Field installation instructions:
 

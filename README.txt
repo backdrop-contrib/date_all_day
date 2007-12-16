@@ -31,7 +31,7 @@ Timezone handling uses native PHP 5 functions when available and degrades
 automatically for PHP 4 to use substitutions like those 
 provided in previous versions of the Date and Event modules.
 
-Read the documentation in date/includes/date_php4.inc for more information 
+Read the documentation in date/date_php4 for more information 
 about using the functions in ways that will work in PHP 4.
 
 Simpletest tests for the PHP 4 equivalent functions are included in the package.
@@ -106,6 +106,7 @@ DATE_ISO
 DATE_UNIX
 DATE_ARRAY
 DATE_OBJECT
+DATE_ICAL
 
 date_convert()
 date_is_valid();
@@ -119,23 +120,37 @@ prev() and next() will do things like find the second Saturday of the month
 or the previous or following day, even when it crosses months or years,
 for any year from 100 to 3000 in both PHP 4 and PHP 5, in any OS.
 
+date_position_in_month() will return the date that matches position criteria
+like the second Saturday or last Friday of a month.
+
+date_diff() will find the time difference between any two days, measured
+in seconds, minutes, hours, days, months, weeks, or years.
+
 date_next();
 date_prev();
-date_next_day_of_week();
-date_prev_day_of_week();
+date_position_in_month();
+date_days_in_month();
+date_days_in_years();
+date_weeks_in_year();
 date_last_day_of_month();
 date_day_of_week();
 date_day_of_week_name();
+date_diff();
 
 ============================================================================
 Date regex and format helpers 
 ============================================================================
 Pre-defined constants, an array of date format strings and their 
 equivalent regex strings, and a function to translate date values
-returned by date_format(), date(), and gmdate():
+returned by date_format(), date(), and gmdate().
+
+DATE_REGEX_LOOSE is a very loose regex that will pull date parts out
+of an ISO date with or without separators, using either 'T' or a space
+to separate date and time, and with or without time.
 
 DATE_FORMAT_ISO
 DATE_FORMAT_DATETIME
+DATE_FORMAT_UNIX
 DATE_FORMAT_ICAL
 
 DATE_REGEX_ISO
@@ -147,21 +162,6 @@ date_short_formats();
 date_medium_formats();
 date_long_formats();
 date_format_patterns();
-
-============================================================================
-Wrapper functions for native php date functions.
-============================================================================
-These functions will handle pre-1970 and post-2038 dates in both PHP 4 and 
-PHP 5, in any OS. Uses native PHP 5 functions when available and degrades 
-automatically for PHP 4 to use substitutions like those provided in ADODB's 
-date library.
-
-date_getdate();
-date_gmgetdate();
-date_date();
-date_gmdate();
-date_mktime();
-date_gmmktime();
 
 ============================================================================
 Standardized ical parser and creator 
@@ -196,18 +196,37 @@ date_sql_pad();
 ============================================================================
 Date forms and validators
 ============================================================================
-Found in date_api_forms.inc, which is not included by default. Include it
-if you want to use these functions:
+Found in date_api_elements.inc, which is not included by default. Include it
+if you want to use these elements. To use them, create a form element
+and set the '#type' to one of the following:
 
-Flexible forms and their validators allow various kinds of input
-and convert the results to any date format.
+date_select 
+  The date_select element will create a collection of form elements, with a
+  separate select or textfield for each date part. The whole collection will
+  get re-formatted back into a date value of the requested type during validation.
 
-date_select_input();
-date_text_input();
-date_jscalendar_input();
-date_select_validate();
-date_text_validate();
-date_jscalendar_validate();
+date_text
+ The date_text element will create a textfield that can contain a whole
+ date or any part of a date as text. The user input value will be re-formatted
+ back into a date value of the requested type during validation.
+
+date_timezone
+ The date_timezone element will create a drop-down selector to pick a
+ timezone name.
+
+The custom date elements require a few other pieces of information to work
+correctly, like #date_format and #date_type. See the internal documentation
+for more information.
+
+============================================================================
+Date Popup Module
+============================================================================
+
+A new module is included in the package that will enable a popup jQuery 
+calendar date picker and timepicker in date and time fields.
+
+It is implemented as a custom form element, so set '#type' to 'date_popup'
+to use this element. See the internal documentation for more information.
 
 ============================================================================
 Install file for dependent modules

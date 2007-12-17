@@ -66,6 +66,7 @@
 */
 function _date_getdate($timestamp = false, $is_gmt = false) {
   static $YRS;
+  $timestamp_in = $timestamp;
   $timestamp =  $timestamp - ($is_gmt ? 0 : date_get_gmt_diff());
   $_day_power = 86400;
   $_hour_power = 3600;
@@ -195,12 +196,14 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
     'hour' => $hour,
     'day' => $day,
     'wday' => $dow,
-    'mon' => $month,
+    'month' => $month,
     'year' => $year,
     'yday' => floor($secsInYear / $_day_power),
     'weekday' => gmdate('l', ($_day_power * (3 + $dow))),
-    'month' => gmdate('F', mktime(0, 0, 0, $month, 2, 1971)),
-    0 => $origd
+    'leap' => $leap,
+    'ndays' => $ndays,
+    'month_name' => gmdate('F', mktime(0, 0, 0, $month, 2, 1971)),
+    0 => $timestamp_in
   );
 }
 
@@ -220,7 +223,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
   $_day_power = 86400;
   $arr = _date_getdate($timestamp, true, $is_gmt);
   $year = $arr['year'];
-  $month = $arr['mon'];
+  $month = $arr['month'];
   $day = $arr['day'];
   $hour = $arr['hour'];
   $min = $arr['minute'];

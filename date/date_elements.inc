@@ -143,7 +143,6 @@ function _date_widget($op, &$node, $field, &$items) {
           $items[$delta][$processed] = is_object($date) ? date_format($date, date_type_format($field['type'])) : '';
         }
       }
-
       if (module_exists('date_repeat')) {
         $repeat_rule = $items[0]['rrule'];
       }

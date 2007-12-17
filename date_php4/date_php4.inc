@@ -116,7 +116,7 @@ if (!function_exists('date_format')) {
  *   return formatted date
  */
   function date_format($date, $format) {
-    $php5_formats = array('N', 'o', 'e', 'P', 'c');
+    $php5_formats = array('N', 'o', 'e', 'P', 'c', '\\');
     $timestamp = $date->timestamp;
     $date_string = '';
     $max = strlen($format);
@@ -774,6 +774,7 @@ function date_getdate($timestamp = false, $is_gmt = false, $test = false) {
     if ($timestamp >= 0) {
       $array = (array) @getdate($timestamp);
       // Make the array match our custom granularity array.
+      $array['month_name'] = $array['month'];
       $array['month'] = $array['mon'];
       $array['day'] = $array['mday'];
       $array['hour'] = $array['hours'];

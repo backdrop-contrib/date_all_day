@@ -73,38 +73,6 @@ class DatePHP4LibTest extends DrupalTestCase {
 	$s2 = date_date($fmt, 0);
 	$this->assertEqual($s1, $s2, "Comparing all format strings between date() and date_date() for a zero timestamp");
 	flush();
-	$fail = 0;
-	$fail_getdate = 0;
-	$except_getdate = array();
-	for ($i=100; --$i > 0; ) {
-
-		$ts = 3600.0*((rand()%60000)+(rand()%60000))+(rand()%60000);
-		$s1 = date($fmt, $ts);
-		$s2 = date_date($fmt, $ts);
-		// print "$s1 \n$s2\n";
-		$pos = strcmp($s1, $s2);
-
-		if (($s1) != ($s2)) {
-			for ($j = 0, $k = strlen($s1); $j < $k; $j++) {
-				if ($s1[$j] != $s2[$j]) {
-					$except[] = substr($s1, $j);
-					break;
-				}
-			}
-			$fail = 1;
-		}
-    $a1 = getdate($ts);
-		$a2 = date_getdate($ts);
-		$rez = array_diff($a1, $a2);
-		if (sizeof($rez)>0) {
-			$except_getdate[] = $ts .', '. date_date('m/d/Y H:i', $ts);
-			$fail_getdate = 1;
-		}
-	}
-  $passed = 100 - sizeof($except);
-	$this->assertEqual($fail, 0, 'Comparing all format strings for 100 dates between date() and date_date(), '. $passed .' passed, '. sizeof($except). ' failed');
-	$passed = 100 - sizeof($except_getdate);
-	$this->assertEqual($fail_getdate, 0, 'Comparing getdate() and date_getdate() on 100 timestamps, '. $passed .' passed, '. sizeof($except_getdate). ' failed');
 
 	// Test generation of dates outside 1901-2038
 	$errors = array();

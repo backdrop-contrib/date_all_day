@@ -224,6 +224,31 @@ if (!function_exists('date_date_set')) {
   }
 }
 
+/**
+ *  PHP 4 equivalent for date_date_set().
+ *
+ *  @param $date
+ *    a date object returned by date_create().
+ *  @param $year
+ *    a new year.
+ *  @param $month
+ *    a new month.
+ *  @param $day
+ *    a new day.
+ *  @return $date
+ *    the date objected updated for the new timezone.
+ *
+ */
+if (!function_exists('date_time_set')) {
+  function date_time_set(&$date, $hour, $minute, $second) {
+    $new_date = substr_replace($date->value, date_pad($hour), 11, 2);
+    $new_date = substr_replace($new_date, date_pad($minute), 14, 2);
+    $new_date = substr_replace($new_date, date_pad($second), 16, 2);
+    $date = date_create($new_date, $date->timezone);
+    return $date;
+  }
+}
+
 if (!function_exists('date_timezone_set')) {
 /**
  *  PHP 4 equivalent for date_timezones_set().

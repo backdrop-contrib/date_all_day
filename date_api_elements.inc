@@ -156,6 +156,7 @@ function date_select_process($element, $edit = NULL) {
     $date = date_now($element['#date_timezone']);
   }
   $element['#tree'] = TRUE;
+  date_increment_round($date, $element['#date_increment']);
   $element += date_parts_element($element, $date, $element['#date_format']);
   return $element;
 }
@@ -212,11 +213,11 @@ function date_parts_element($element, $date, $format) {
         $sub_element[$field]['#options'] = drupal_map_assoc(date_hours($hours_format, $part_required));
         break;
       case 'minute':
-        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 'i')) / $element['#date_increment']) * $element['#date_increment'])) : '';
+        $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'i') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_increment']));
         break;
       case 'second':
-        $sub_element[$field]['#default_value'] = is_object($date) ? date_pad(intval(round(intval(date_format($date, 's')) / $element['#date_increment']) * $element['#date_increment'])) : '';
+        $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 's') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
         break;
     }
@@ -241,6 +242,37 @@ function date_parts_element($element, $date, $format) {
     );
   }
   return $sub_element;
+}
+
+/**
+ * Helper function to round minutes and seconds to requested value.
+ */
+function date_increment_round(&$date, $increment) {
+  // Round minutes and seconds, if necessary.
+  if (is_object($date) && $increment > 1) {
+    $day = intval(date_format($date, 'j'));
+    $hour = intval(date_format($date, 'H'));
+    $second = intval(round(intval(date_format($date, 's')) / $increment) * $increment);
+    $minute = intval(date_format($date, 'i'));
+    if ($second == 60) {
+      $minute += 1;
+      $second = 0;
+    }
+    $minute = intval(round($minute / $increment) * $increment);
+    if ($minute == 60) {
+      $hour += 1;
+      $minute = 0;
+    }
+    date_time_set($date, $hour, $minute, $second);
+    if ($hour == 24) {
+      $day += 1;
+      $hour = 0;
+      $year = date_format($date, 'Y');
+      $month = date_format($date, 'n');
+      date_date_set($date, $year, $month, $day);
+    }
+  }
+  return $date;
 }
 
 /**

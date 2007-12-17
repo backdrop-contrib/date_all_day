@@ -171,7 +171,7 @@ function date_popup_process($element, $edit = NULL) {
   elseif ($element['#required']) {
     $date = date_now($element['#date_timezone']);
   }
-
+  date_increment_round($date, $element['#date_increment']);
   $element['date'] = date_popup_process_date($element, $edit, $date);
   $element['time'] = date_popup_process_time($element, $edit, $date);
   return $element;

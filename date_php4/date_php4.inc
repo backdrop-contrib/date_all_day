@@ -524,7 +524,7 @@ if (!function_exists('timezone_abbreviations_list')) {
  * PHP 4 emulation  because it creates endless loops.
  */
 function date_datetime2timestamp($datetime) {
-  preg_match (DATE_REGEX_LOOSE, $datetime, $regs);
+  preg_match(DATE_REGEX_LOOSE, $datetime, $regs);
   return date_gmmktime($regs[5], $regs[6], $regs[7], $regs[2], $regs[3], $regs[1]);
 }
 

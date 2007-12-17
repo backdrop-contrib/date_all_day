@@ -140,7 +140,6 @@ function date_popup_system_date_form($element, $edit = NULL) {
 
   // Wipe out the description to use the popup description instead.
   $element['#description'] = '';
-
   if (!empty($element['#default_value'])) {
     $value = strtotime($element['#default_value']);
     $date = date_make_date($value, 'GMT', DATE_UNIX);

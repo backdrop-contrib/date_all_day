@@ -2,8 +2,38 @@
 // $Id$
 
 /**
- *  Cross-database date SQL wrapper function
- *  allows use of normalized native date functions in both mysql and postgres.
+ * Helper function to test if the database is set up to do timezone
+ * conversions natively.
+ */
+function date_sql_db_timezone_support() {
+  global $db_type;
+
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      // If the timezone tables are empty, there is no support.
+      $tables = db_result(db_query("SELECT COUNT(*) FROM mysql.time_zone_name;"));
+      // Make sure the function returns a valid value and the data is current.
+      $test = db_result(db_query("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central')"));
+      if (empty($tables)) {
+        return FALSE;
+      }
+      elseif ($test == '2007-03-11 01:00:00') {
+        return TRUE;
+      }
+      return FALSE;
+
+    case 'postgres':
+      // TODO, need to find a way to test this for sure in postgres, but it
+      // seems to be the default situation.
+      return TRUE;
+  }
+}
+
+/**
+ *  Cross-database date SQL wrapper function for fields that are not native
+ *  datetime fields and databases that don't support native timezone handling.
+ *  Allows use of normalized native date functions in both mysql and postgres.
  *  Designed to be extensible to other databases.
  *
  *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
@@ -74,6 +104,49 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
       break;
     }
   }
+  return date_sql_extract($result_type, $field);
+}
+
+/**
+ *  Cross-database date SQL wrapper function for fields that are native
+ *  datetime fields and databases that support native timezone handling.
+ *  Allows use of normalized native date functions in both mysql and postgres.
+ *  Designed to be extensible to other databases.
+ *
+ *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
+ *  @param $field - the name of the date field to be analyzed
+ *  @param $timezone_to - the name of the timezone to convert the date to
+ *  @param $timezone_from - the timezone that the date in the db is stored in.
+ *  @return a SQL statement appropriate for the $db_type
+ */
+function date_db_sql($result_type, $field, $timezone_to, $timezone_from = 'UTC') {
+  global $db_type;
+
+  switch ($db_type) {
+    case('mysql'):
+    case('mysqli'):
+      $field = "(CONVERT_TZ('$field', '$timezone_from', '$timezone_to'))";
+      break;
+    case('pgsql'):
+      $field = "(SELECT TIMESTAMP WITH TIME ZONE '$field $timezone_from' AT TIME ZONE '$timezone_to')";
+      break;
+  }
+  return date_sql_extract($result_type, $field);
+}
+
+
+/**
+ *  Cross-database method of extracting date information from datetime fields.
+ *  Allows use of normalized native date functions in both mysql and postgres.
+ *  Designed to be extensible to other databases.
+ *
+ *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
+ *  @param $field - the name of the date field to be analyzed
+ *  @return a SQL statement appropriate for the $db_type
+ */
+function date_sql_extract($result_type, $field) {
+  global $db_type;
+
   // Return requested sql.
   // Note there is no space after FROM to avoid db_rewrite problems
   // see http://drupal.org/node/79904.

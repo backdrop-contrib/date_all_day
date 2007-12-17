@@ -1,5 +1,6 @@
 <?php
 // $Id$
+
 /**
  * @file
  * Include PHP 4 date handling files on systems where native date and
@@ -10,4 +11,4 @@
  * Drupal requires PHP 5.2.
  */
 
-include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc');
+include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4.inc');

@@ -293,7 +293,7 @@ if (!function_exists('timezone_offset_get')) {
     }
     $timestamp = $date->timestamp;
     if ($offsets['dst'] == 1) {
-      include(drupal_get_path('module', 'date_api') .'/includes/date_php4_tz_map.inc');
+      include(drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
       if (date_is_dst($timezone_map[$timezone]['dst_region'], $timestamp)) {
         return $offsets['dst_offset'];
       }
@@ -335,7 +335,7 @@ if (!function_exists('date_offset_get')) {
       cache_set('date_timezone_offsets:'. $timezone, 'cache', serialize($offsets));
     }
     if ($offsets['dst'] == 1) {
-      include(drupal_get_path('module', 'date_api') .'/includes/date_php4_tz_map.inc');
+      include(drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
       if (date_is_dst($timezone_map[$date->timezone]['dst_region'], $date->timestamp)) {
         return $offsets['dst_offset'];
       }
@@ -486,7 +486,7 @@ if (!function_exists('timezone_identifiers_list')) {
  *   ...
  */
   function timezone_identifiers_list() {
-    include(drupal_get_path('module', 'date_api') .'/includes/date_php4_tz_identifiers.inc');
+    include(drupal_get_path('module', 'date_php4') .'/date_php4_tz_identifiers.inc');
     return $timezone_identifiers_list;
   }
 }
@@ -512,7 +512,7 @@ if (!function_exists('timezone_abbreviations_list')) {
  *
  */
   function timezone_abbreviations_list() {
-    include(drupal_get_path('module', 'date_api') .'/includes/date_php4_tz_abbreviations_list.inc');
+    include(drupal_get_path('module', 'date_php4') .'/date_php4_tz_abbreviations_list.inc');
     return $timezone_abbreviations_list;
   }
 }
@@ -771,7 +771,7 @@ function date_getdate($timestamp = false, $is_gmt = false, $test = false) {
   // Check if test or number in 32-bit signed range
   // Below PHP 5.2 in windows, must be positive integer
   if (!$test && abs($timestamp) <= 0x7FFFFFFF) {
-    if (date_handle_timezones() || $timestamp >= 0) {
+    if ($timestamp >= 0) {
       $array = (array) @getdate($timestamp);
       // Make the array match our custom granularity array.
       $array['month'] = $array['mon'];
@@ -814,7 +814,7 @@ function date_date($format, $timestamp = false, $is_gmt = false, $test = false) 
   if ($timestamp === false) return ($is_gmt)? @gmdate($format): @date($format);
   if (!$test && abs($timestamp) <= 0x7FFFFFFF) {
     // Below PHP 5.2 in windows, must be positive integer
-    if (date_handle_timezones() || $timestamp >= 0) {
+    if ($timestamp >= 0) {
       return ($is_gmt)? @gmdate($format, $timestamp): @date($format, $timestamp);
     }
   }

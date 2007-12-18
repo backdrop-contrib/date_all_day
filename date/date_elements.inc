@@ -175,7 +175,7 @@ function _date_widget($op, &$node, $field, &$items) {
             '#columns' => $columns,
             '#delta' => $delta,
             '#default_value' => $timezone,
-            '#weight' => $delta + .1,
+            '#weight' => $delta + .2,
             );
         }
       }
@@ -267,7 +267,7 @@ function date_combo_process($element, $edit = NULL) {
     '#field'         => $field,
     '#title'         => t($field['widget']['label']),
     '#weight'        => $field['widget']['weight'],
-    '#description'   => t($field['widget']['description']),
+    '#description'   => empty($field['todate']) ? t($field['widget']['description']) : '',
     '#required'      => ($field['required'] && $delta == 0) ? 1 : 0,
     '#default_value' => $element['#value'][$from_field],
     '#field'         => $field,
@@ -313,6 +313,7 @@ function date_combo_process($element, $edit = NULL) {
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
     $element[$to_field]['#description'] = t('Blank \'To date\' values will use the \'From date\' values.');
+    $element['#fieldset_description'] = t($field['widget']['description']);
   }
   return $element;
 }
@@ -430,6 +431,7 @@ function theme_date_combo($element) {
     '#value' => $element['#children'],
     '#collapsible' => TRUE,
     '#collapsed' => empty($element['#value']) && $element['#delta'] > 0 ? TRUE : FALSE,
+    '#description' => $element['#fieldset_description'],
   );
   return theme('fieldset', $fieldset);
 }

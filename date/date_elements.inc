@@ -360,6 +360,9 @@ function date_combo_validate($element) {
       $merged_date = array();
       foreach ($element['#post'][$field_name][$delta][$to_field] as $part => $value) {
         $merged_date[$part] = empty($value) ? $element['#post'][$field_name][$delta][$from_field][$part] : $value;
+        if ($part == 'ampm' && $merged_date['ampm'] == 'pm' && $merged_date['hour'] < 12) {
+          $merged_date['hour'] += 12;
+        }
       }
       $element[$to_field]['#value'] = $merged_date;
 

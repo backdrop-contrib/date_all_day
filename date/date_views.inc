@@ -320,14 +320,14 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
         case('month'):
           $format = 'F Y';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
               date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
         case('day'):
           $format = 'F j Y';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
               date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)), "'-'",
               date_sql_pad(date_sql('DAY', $table .'.'. $value, $field_type, $offset)),
               ));
@@ -335,7 +335,7 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
         case('hour'):
           $format = 'F j Y - H';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_sql('YEAR', $table .'.'. $value, $field_type), "'-'",
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
               date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)), "'-'",
               date_sql_pad(date_sql('DAY', $table .'.'. $value, $field_type, $offset)), "'T'",
               date_sql_pad(date_sql('HOUR', $table .'.'. $value, $field_type, $offset)),

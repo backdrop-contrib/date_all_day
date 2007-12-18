@@ -157,6 +157,7 @@ function date_formatter_process($field, $item, $node, $format = '', $base = '', 
       }
     }
   }
+  $dates['format'] = $format;
   return $dates;
 }
 
@@ -414,7 +415,10 @@ function theme_date_format_default($field, $item, $node){
  *  Useful values:
  *    $field['type_name'] is the content type
  *    $field['type'] is the field type
+ *
  *    $node->nid is the node nid, get other node values using node_load($node->nid)
+ *
+ *    $dates['format'] - the format string used on these dates
  *    $dates['value']['local']['object'] - the local date object for the From date
  *    $dates['value2']['local']['object'] - the local date object for the To date
  *    $dates['value']['local']['datetime'] - the datetime value of the From date database (GMT) value
@@ -432,22 +436,6 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
     return '<span class="date-display-single">'. $date1 .'</span>';
   }
   else {
-    // Don't repeat values in the 'to' date that are in the 'from' date.
-    // Will change February 1, 2007 10:00 AM - February 1, 2007 11:00 AM
-    // into February 1, 2007 10:00 AM - 11:00 AM.
-
-    $parts = explode(' ', $date1);
-    $parts2 = explode(' ', $date2);
-    $matching = TRUE;
-    foreach ($parts as $i => $part) {
-      // Stop trying to replace values as soon as the dates begin to vary.
-      if ($parts[$i] != $parts2[$i]) {
-        $matching = FALSE;
-      }
-      if ($matching && !in_array($part, array('AM', 'am', 'PM', 'pm'))) {
-        $date2 = str_replace($part, '', $date2);
-      }
-    }
     return '<span class="date-display-start">'. $date1 .'</span>'.
       '<span class="date-display-separator"> - </span>'.
       '<span class="date-display-end">'. $date2 .'</span>';

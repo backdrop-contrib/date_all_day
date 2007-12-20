@@ -217,7 +217,12 @@ function date_years($min = 0, $max = 0, $required = FALSE) {
  *   an array of days for the selected month.
  */
 function date_days($required = FALSE, $month = NULL, $year = NULL) {
-  if (!empty($month)) $max = date_last_day_of_month($month, $year);
+  // If we have a month and year, find the right last day of the month.
+  if (!empty($month) && !empty($year)) {
+    $date = date_create($year .'-'. $month .'-01 00:00:00', timezone_open('UTC'));
+    $max = date_format('t', $date);
+  }
+  // If there is no month and year given, default to 31.
   if (empty($max)) $max = 31;
   $none = array(0 => '');
   return !$required ? $none + drupal_map_assoc(range(1, $max)) : drupal_map_assoc(range(1, $max));
@@ -543,6 +548,16 @@ function date_default_timezone_name($check_user = TRUE) {
   else {
     return variable_get('date_default_timezone_name', '');
   }
+}
+
+/**
+ * A timezone object for the default timezone.
+ *
+ * @return a timezone name
+ *   Identify the default timezone for a user, if available, otherwise the site.
+ */
+function date_default_timezone($check_user = TRUE) {
+  return timezone_open(date_default_timezone_name($check_user));
 }
 
 /**

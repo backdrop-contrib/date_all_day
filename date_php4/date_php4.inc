@@ -37,7 +37,6 @@
  *   timezone_ transitions_ get()
  *    - we just don't have all those historical transitions available in PHP 4
  */
-
 if (!function_exists('date_create')) {
 /**
  *  PHP 4 equivalent for date_create().
@@ -389,11 +388,11 @@ if (!function_exists('date_modify')) {
  *   the date that matches the phrase.
  *
  */
-  function date_modify($date, $change) {
+  function date_modify(&$date, $change) {
 
     $cdate = $date->value;
     if (1971 < date_part_extract($cdate, 'year') && date_part_extract($cdate, 'year') < 2038) {
-      $cdate = strtotime($date .' UTC '. $change);
+      $cdate = strtotime($cdate .' UTC '. $change);
       $date->value = date_gmdate(DATE_FORMAT_DATETIME, $cdate);
     }
     else {
@@ -495,6 +494,7 @@ if (!function_exists('date_modify')) {
         $date->value = $year .'-'. $mon .'-'. $mday .' '. $time;
       }
     }
+    $date->timestamp = date_datetime2timestamp($date->value);
     return $date;
   }
 }

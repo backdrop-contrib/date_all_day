@@ -765,9 +765,11 @@ function date_position_in_month(&$date, $day, $count = 1, $direction = '+') {
  *   the type of dates provided:
  *   DATE_OBJECT, DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
  */
-function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
-  $date1 = date_convert($date1, $type, DATE_OBJECT);
-  $date2 = date_convert($date2, $type, DATE_OBJECT);
+function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJECT) {
+  // Create cloned objects or original dates will be impacted by
+  // the date_modify() operations done in this code.
+  $date1 = drupal_clone(date_convert($date1_in, $type, DATE_OBJECT));
+  $date2 = drupal_clone(date_convert($date2_in, $type, DATE_OBJECT));
   if (is_object($date1) && is_object($date2)) {
     $diff = date_format($date2, 'U') - date_format($date1, 'U');
     if ($diff == 0 ) {
@@ -825,25 +827,13 @@ function date_diff($date1, $date2, $measure = 'seconds', $type = DATE_OBJECT) {
        break;
 
       case 'weeks':
-        $format = 'W';
-        $item1 = date_format($date1, $format);
-        $item2 = date_format($date2, $format);
-        // Dates in the first week of the year could be
-        // from week 53 of previous ISO year, so test for that.
-        if (date_format($date1, 'o') < $year) {
-          $item1 = 0;
+        $week_diff = date_format($date2, 'W') - date_format($date1, 'W');
+        $year_diff = date_format($date2, 'o') - date_format($date1, 'o');
+        for($i = 1; $i <= $year_diff; $i++) {
+          date_modify($date1, '+1 year');
+          $week_diff += date_weeks_in_year($date1);
         }
-        if ($year_diff == 0) {
-          return intval($item2 - $item1);
-        }
-        else {
-         $item_diff = date_weeks_in_year($date1) - $item1;
-          for($i = 1; $i < $year_diff; $i++) {
-            date_modify($date1, '+1 year');
-            $item_diff += date_weeks_in_year($date1);
-          }
-          return $item_diff + $item2;
-        }
+        return $week_diff;
     }
   }
   return NULL;

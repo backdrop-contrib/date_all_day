@@ -64,13 +64,9 @@ if (!function_exists('date_create')) {
       // Create a current date for an empty value or 'now'.
       $date_out = date_gmdate('Y-m-d H:i', date_time());
     }
-    elseif (preg_match(DATE_REGEX_DATETIME, $date_in)) {
-      // If it's an DATETIME date, just use it.
-      $date_out = $date_in;
-    }
-    elseif (preg_match(DATE_REGEX_ISO, $date_in)) {
-      // If it's an ISO date, get rid of the 'T' and use it.
-      $date_out = str_replace('T', ' ', $date_in);
+    elseif (preg_match(DATE_REGEX_LOOSE, $date_in, $regs)) {
+      $date_out = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
+        'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.

@@ -64,13 +64,13 @@ if (!function_exists('date_create')) {
       // Create a current date for an empty value or 'now'.
       $date_out = date_gmdate('Y-m-d H:i', date_time());
     }
-    elseif (preg_match(DATE_REGEX_LOOSE, $date_in, $regs)) {
-      $date_out = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
-        'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
-    }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.
-      $date_out = date_gmdate('Y-m-d H:i', substr($date_in, 1));
+      $date_out = $date_out = date_gmdate('Y-m-d H:i', substr($date_in, 1));
+    }
+    elseif (preg_match(DATE_REGEX_LOOSE, $date_in, $regs)) {
+      $date_out = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
+        ' '. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
     }
     else {
       // Try to use strtotime, will only work on post-1970 dates.
@@ -385,7 +385,6 @@ if (!function_exists('date_modify')) {
  *
  */
   function date_modify(&$date, $change) {
-
     $cdate = $date->value;
     if (1971 < date_part_extract($cdate, 'year') && date_part_extract($cdate, 'year') < 2038) {
       $cdate = strtotime($cdate .' UTC '. $change);

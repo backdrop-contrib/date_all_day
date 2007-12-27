@@ -222,7 +222,7 @@ function _date_field_settings($op, $field) {
 
     case 'arguments':
       include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-      return _date_views_arguments();
+      return _date_views_arguments($field);
 
     case 'filters':
       return date_views_filters($field);

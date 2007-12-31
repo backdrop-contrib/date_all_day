@@ -57,8 +57,8 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
     }
     // Convert input dates back to their UTC values.
     $process = date_process_values($field);
-    if (date_timezone_convert($field)) {
-      foreach ($process as $processed) {
+    foreach ($process as $processed) {
+      if (date_timezone_convert($field, $item[$processed])) {
         if (isset($item[$processed]) && !empty($item[$processed])) {
           $date = date_make_date($item[$processed], $timezone, $field['type']);
           date_timezone_set($date, timezone_open('UTC'));
@@ -225,7 +225,7 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     $value = $item[$part];
     $value = date_convert($value, $field['type'], DATE_DATETIME);
     $date = date_create($value, timezone_open('UTC'));
-    if (date_timezone_convert($field)) {
+    if (date_timezone_convert($field, $item)) {
       date_timezone_set($date, timezone_open($timezone));
     }
   }

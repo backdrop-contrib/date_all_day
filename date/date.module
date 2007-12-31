@@ -130,7 +130,7 @@ function date_formatter_process($field, $item, $node, $formatter = 'default', $b
       $dates[$processed]['db']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
 
       // For no timezone handling, set local value to the same as the db value.
-      if (!date_timezone_convert($field)) {
+      if (!date_timezone_convert($field, $item[$processed])) {
           $obj->local = $obj->db;
       }
       else {
@@ -190,7 +190,11 @@ function date_get_timezone($handling, $timezone = '') {
   return $timezone > '' ? $timezone : date_default_timezone_name();
 }
 
-function date_timezone_convert($field) {
+/**
+ * Helper function to determine if any timezone conversion should be
+ * done on this field.
+ */
+function date_timezone_convert($field, $item = array()) {
   if ($field['tz_handling'] == 'none'
     || !in_array('hour', date_granularity($field))
     || $field['tz_handling'] == 'date' && empty($item['timezone'])) {

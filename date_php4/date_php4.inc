@@ -293,6 +293,9 @@ if (!function_exists('timezone_offset_get')) {
  *    the offset in seconds for the supplied date object.
  */
   function timezone_offset_get($timezone, $date) {
+    if (empty($date->timezone)) {
+      return '';
+    }
     $cached = cache_get('date_timezone_offsets:'. $date->timezone);
     $offsets = unserialize($cached->data);
     if (empty($offsets)) {
@@ -336,6 +339,9 @@ if (!function_exists('date_offset_get')) {
  *    the offset in seconds for the supplied date object.
  */
   function date_offset_get($date) {
+    if (empty($date->timezone)) {
+      return '';
+    }
     $cached = cache_get('date_timezone_offsets:'. $date->timezone);
     $offsets = unserialize($cached->data);
     if (empty($offsets)) {

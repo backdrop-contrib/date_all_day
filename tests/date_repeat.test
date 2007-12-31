@@ -5,7 +5,9 @@
  */
 class DateRepeat extends DrupalTestCase {
   function get_info() {
-    return array('name' => t('Date repeat processes'), 'desc' => t('Test Date Repeat processes to create arrays of dates from iCal rules.') , 'group' => 'Date tests');
+    if (module_exists('date_repeat')) {
+      return array('name' => t('Date repeat processes'), 'desc' => t('Test Date Repeat processes to create arrays of dates from iCal rules.') , 'group' => 'Date tests');
+    }
   }
 
   function testDateRepeat() {

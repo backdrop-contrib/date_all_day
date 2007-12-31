@@ -57,14 +57,16 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
     }
     // Convert input dates back to their UTC values.
     $process = date_process_values($field);
-    foreach ($process as $processed) {
-      if (isset($item[$processed]) && !empty($item[$processed])) {
-        $date = date_make_date($item[$processed], $timezone, $field['type']);
-        date_timezone_set($date, timezone_open('UTC'));
-        $items[$delta][$processed] = date_format($date, $format);
-      }
-      elseif (isset($item[$processed])) {
-        $items[$delta][$processed] = NULL;
+    if (date_timezone_convert($field)) {
+      foreach ($process as $processed) {
+        if (isset($item[$processed]) && !empty($item[$processed])) {
+          $date = date_make_date($item[$processed], $timezone, $field['type']);
+          date_timezone_set($date, timezone_open('UTC'));
+          $items[$delta][$processed] = date_format($date, $format);
+        }
+        elseif (isset($item[$processed])) {
+          $items[$delta][$processed] = NULL;
+        }
       }
     }
     // For convenience, we process all possible columns in the element,
@@ -223,7 +225,9 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     $value = $item[$part];
     $value = date_convert($value, $field['type'], DATE_DATETIME);
     $date = date_create($value, timezone_open('UTC'));
-    date_timezone_set($date, timezone_open($timezone));
+    if (date_timezone_convert($field)) {
+      date_timezone_set($date, timezone_open($timezone));
+    }
   }
   if (empty($item[$part]) && $default_value == 'strtotime' && !empty($default_value_code)) {
     date_modify($date, $default_value_code);

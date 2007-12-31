@@ -117,11 +117,12 @@ function date_text_process($element, $edit = NULL) {
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);
   }
   elseif (!empty($element['#value'])) {
-    $date = date_make_date($element['#value']['date'], $element['#date_timezone'], $element['#date_type']);
+    $date = date_make_date($element['#value'], $element['#date_timezone'], $element['#date_type']);
   }
   elseif ($element['#required']) {
     $date = date_now($element['#date_timezone']);
   }
+
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.
   $element['#tree'] = TRUE;

@@ -113,16 +113,15 @@ function date_timezone_process($element, $edit = NULL) {
  */
 function date_text_process($element, $edit = NULL) {
   if (!empty($edit)) {
-    $datetime = date_convert_from_custom($edit, $element['#date_format']);
+    $datetime = date_convert_from_custom($edit['date'], $element['#date_format']);
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);
   }
   elseif (!empty($element['#value'])) {
-    $date = date_make_date($element['#value'], $element['#date_timezone'], $element['#date_type']);
+    $date = date_make_date($element['#value']['date'], $element['#date_timezone'], $element['#date_type']);
   }
   elseif ($element['#required']) {
     $date = date_now($element['#date_timezone']);
   }
-
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.
   $element['#tree'] = TRUE;
@@ -351,6 +350,7 @@ function date_text_validate($element) {
  * Helper function for extracting a date value out of user input.
  */
 function date_text_input_value($element) {
+  $form_values = $element['#value'];
   $input = $form_values['date'];
   if (!$element['#required'] && trim($input) == '') return NULL;
 

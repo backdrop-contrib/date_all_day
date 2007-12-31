@@ -284,6 +284,9 @@ function date_select_validate($element) {
   if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
     $element['#value']['hour'] += 12;
   }
+  elseif ($element['#value']['ampm'] == 'am' && $element['#value']['hour'] == 12) {
+    $element['#value']['hour'] -= 12;
+  }
   if ($element['#required'] || !empty($form_values['year'])) {
     if ($element['#value']['year'] < variable_get('date_min_year', 1) || $element['#value']['year'] > variable_get('date_max_year', 4000)) {
       form_set_error($error_field .'][year', t('year must be a number between %min and %max.', array(
@@ -471,8 +474,11 @@ function date_convert_from_custom($date, $format) {
         break;
     }
   }
-  if ($ampm == 'pm' && $final_date['hour'] != 12) {
+  if ($ampm == 'pm' && $final_date['hour'] < 12) {
     $final_date['hour'] += 12;
+  }
+  elseif ($ampm == 'am' && $final_date['hour'] == 12) {
+    $final_date['hour'] -= 12;
   }
   return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
 }

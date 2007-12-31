@@ -368,6 +368,9 @@ function date_combo_validate($element) {
         if ($part == 'ampm' && $merged_date['ampm'] == 'pm' && $merged_date['hour'] < 12) {
           $merged_date['hour'] += 12;
         }
+        elseif ($part == 'ampm' && $merged_date['ampm'] == 'am' && $merged_date['hour'] == 12) {
+          $merged_date['hour'] -= 12;
+        }
       }
       $element[$to_field]['#value'] = $merged_date;
 
@@ -383,7 +386,12 @@ function date_combo_validate($element) {
     $date = date_make_date($item[$to_field], $timezone, $field['type']);
     $item[$offset_field2] = date_offset_get($date);
     $item[$tz_field] = $timezone;
-    form_set_value($element, $item);
+    if ($item[$from_field] > $item[$to_field]) {
+      form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
+    }
+    else {
+      form_set_value($element, $item);
+    }
   }
 }
 

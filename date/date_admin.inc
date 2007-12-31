@@ -351,26 +351,11 @@ function date_formatter_setup_form($field, $delta) {
   $form = array(
     '#type' => 'fieldset', '#title' => $label,
     );
-  $formats = array_merge(date_short_formats(), date_medium_formats(), date_long_formats());
-  $options = array();
-  $now = date_example_date();
-  foreach ($formats as $format) {
-    // Create an option that shows date only without time, along with the
-    // default string which has both date and time.
-    $no_time = date_limit_format($format, array('month', 'day', 'year'));
-    $zones = array('', 'O', 'P', 'e');
-    foreach ($zones as $zone) {
-      $time_format = !empty($zone) ? $format .' '. $zone : $format;
-      $options[$no_time] = date_format($now, $no_time);
-      $options[$time_format] = date_format($now, $time_format);
-    }
-  }
-  asort($options);
 
   $form['output_format_date'. $append] = array(
     '#type' => 'select', '#title' => t('Date display'),
     '#default_value' => $field['output_format_date'. $append] ? $field['output_format_date'. $append] : $default,
-    '#options' => $options,
+    '#options' => date_format_options(),
     '#multiple' => false,
   );
   $form['output_format_custom'. $append] = array(
@@ -378,6 +363,39 @@ function date_formatter_setup_form($field, $delta) {
     '#default_value' => $field['output_format_custom'. $append] ? $field['output_format_custom'. $append] : '',
   );
   return $form;
+}
+
+/**
+ * Store personalized format options for each user.
+ *
+ * Store to avoid work of re-creating it over and over,
+ * personalize for each user to preserve translation.
+ *
+ * @return array
+ */
+function date_format_options() {
+  global $user;
+  $cached = cache_get('date_format_options:'. $user->uid);
+  $options = unserialize($cached->data);
+  if (empty($options)) {
+    $formats = array_merge(date_short_formats(), date_medium_formats(), date_long_formats());
+    $options = array();
+    $now = date_example_date();
+    foreach ($formats as $format) {
+      // Create an option that shows date only without time, along with the
+      // default string which has both date and time.
+      $no_time = date_limit_format($format, array('month', 'day', 'year'));
+      $zones = array('', 'O', 'P', 'e');
+      foreach ($zones as $zone) {
+        $time_format = !empty($zone) ? $format .' '. $zone : $format;
+        $options[$no_time] = date_format($now, $no_time);
+        $options[$time_format] = date_format($now, $time_format);
+      }
+    }
+    asort($options);
+    cache_set('date_format_options:'. $user->uid, 'cache', serialize($options), CACHE_TEMPORARY);
+  }
+  return $options;
 }
 
 /**

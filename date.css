@@ -19,12 +19,7 @@
   clear:both;
   }
 
-/* A little trick to force the am/pm buttons to line up with the rest of the date select elements */
-.date-ampm {
-  border-top:1.5em transparent solid;
-}
-
- /* Fixes for date popup css so it will behave in Drupal */
+/* Fixes for date popup css so it will behave in Drupal */
 #calendar_div, #calendar_div td, #calendar_div th {
   margin:0;
   padding:0;

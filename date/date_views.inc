@@ -359,15 +359,10 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
       else {
         $tz_name = date_default_timezone_name();
       }
-      if ($field_type == 'iso') {
-        $date = date_create($query->$value, timezone_open('UTC'));
-        date_timezone_set($date, timezone_open($tz_name));
-      }
-      else {
-        $date = date_create("@". $query->$value, timezone_open('UTC'));
-        date_timezone_set($date, timezone_open($tz_name));
-      }
-      return l(date_format($date, $format), $arg .'/'. $query->range);
+      $date_type = $field_type == 'iso' ? DATE_ISO : DATE_UNIX;
+      $date = date_make_date($query->$value, 'UTC', $date_type);
+      date_timezone_set($date, timezone_open($tz_name));
+      return l(date_format_date($date, 'custom', $format), $arg .'/'. $query->range);
 
     case 'sort':
       break;
@@ -470,7 +465,7 @@ function date_iso_week_range($value) {
   $parts = explode('-W', $value);
   $year = $parts[0];
   $week = $parts[1];
-  $date = date_create($year .'-01-04 00:00:00', timezone_open('UTC'));
+  $date = date_make_date($year .'-01-04 00:00:00', 'UTC');
   date_modify($date, '+'. $week .' weeks');
   date_modify($date, '-1 Monday');
   $min_date = date_format($date, DATE_FORMAT_ISO);
@@ -721,8 +716,8 @@ function date_views_browser_period_format($period) {
  */
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
   $range = date_views_date_range($arg);
-  $date = date_create($range[0], timezone_open('UTC'));
-  return date_format($date, date_views_browser_period_format($period) .
+  $date = date_make_date($range[0], 'UTC');
+  return date_format_date($date, 'custom', date_views_browser_period_format($period) .
     date_views_browser_period($period));
 }
 
@@ -731,7 +726,7 @@ function date_views_browser_period_arg($arg = NULL, $period = 'month') {
  */
 function date_views_browser_period_label($arg = NULL, $period = 'month') {
   $range = date_views_date_range($arg);
-  $date = date_create($range[0], timezone_open('UTC'));
+  $date = date_make_date($range[0], 'UTC');
   return theme('date_views_browser_period_label', $period, $date);
 }
 
@@ -749,17 +744,17 @@ function date_views_browser_navigation($view, $period) {
   }
   // Create a date object for the beginning of the current range.
   $range = date_views_date_range($arg);
-  $date = date_create($range[0], timezone_open('UTC'));
+  $date = date_make_date($range[0], 'UTC');
   // Move backwards 1 period and create a link to that date.
-  date_prev($date, 1, $period);
+  date_modify($date, '-1'. $period);
   $prev = $view->url .'/'.
-    date_format($date, date_views_browser_period_format($period)) .
+    date_format_date($date, 'custom', date_views_browser_period_format($period)) .
     date_views_browser_period($period);
   // Move forward 2 periods (back to the current period and to the next period)
   // and create a link to that date.
   date_next($date, 2, $period);
   $next = $view->url .'/'.
-    date_format($date, date_views_browser_period_format($period)) .
+    date_format_date($date, 'custom', date_views_browser_period_format($period)) .
     date_views_browser_period($period);
 
   $label = date_views_browser_period_label($arg, $period);
@@ -787,7 +782,7 @@ function theme_date_views_browser_period_label($period, $date) {
       // Use just the year/month/day/hour part of the short date format.
       $format = date_limit_format(variable_get('date_format_short', 'm/d/Y - H:i'), array('month', 'day', 'year', 'hour'));
   }
-  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_format($date, $format)));
+  return t('%period of %date', array('%period' => ucwords($period), '%date' => date_format_date($date, 'custom', $format)));
 }
 /**
  *  Theme for page navigation

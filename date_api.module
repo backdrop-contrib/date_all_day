@@ -219,7 +219,7 @@ function date_years($min = 0, $max = 0, $required = FALSE) {
 function date_days($required = FALSE, $month = NULL, $year = NULL) {
   // If we have a month and year, find the right last day of the month.
   if (!empty($month) && !empty($year)) {
-    $date = date_create($year .'-'. $month .'-01 00:00:00', timezone_open('UTC'));
+    $date = date_make_date($year .'-'. $month .'-01 00:00:00', 'UTC');
     $max = date_format('t', $date);
   }
   // If there is no month and year given, default to 31.
@@ -482,7 +482,7 @@ function date_format_date($object, $type = 'medium', $format = '') {
     default:
       $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
   }
-  return date_t(date_format($date, $format));
+  return date_t(date_format($object, $format));
 }
 
 /**
@@ -494,15 +494,7 @@ function date_format_date($object, $type = 'medium', $format = '') {
  * @return object date
  */
 function date_now($timezone = NULL) {
-  if (empty($timezone)) {
-    $timezone = date_default_timezone_name();
-  }
-  if (!empty($timezone)) {
-    return (date_create('now', timezone_open($timezone)));
-  }
-  else {
-    return (date_create('now'));
-  }
+  return date_make_date('now', $timezone);
 }
 
 /**
@@ -510,11 +502,11 @@ function date_now($timezone = NULL) {
  *  object.
 
  *  @param $date
- *    A date in any format, could be
- *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
+ *    A date in any format or the string 'now'.
  *  @param $timezone
  *    Optional, the name of the timezone this date is in, defaults
  *    to the user timezone, if set, otherwise the site timezone.
+ *    Accepts either a timezone name or a timezone object as input.
  *  @param $type
  *    The type of date provided, could be
  *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
@@ -524,9 +516,17 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
     $timezone = date_default_timezone_name();
   }
   if (!empty($timezone)) {
-    $datetime = date_convert($date, $type, DATE_DATETIME);
-    if (!empty($datetime)) {
-      return date_create($datetime, timezone_open($timezone));
+    if (!is_object($timezone)) {
+      $timezone = timezone_open($timezone);
+    }
+    if ($date == 'now') {
+      return date_create('now', $timezone);
+    }
+    elseif ($type == DATE_UNIX) {
+      return date_create("@$date", $timezone);
+    }
+    elseif ($datetime = date_convert($date, $type, DATE_DATETIME)) {
+      return date_create($datetime, $timezone);
     }
   }
   return NULL;
@@ -541,7 +541,6 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
  */
 function date_default_timezone_name($check_user = TRUE) {
   global $user;
-  return 'US/Central';
   if ($check_user && variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
     return $user->timezone_name;
   }
@@ -665,95 +664,7 @@ function date_day_of_week_name($date = NULL, $abbr = TRUE, $type = DATE_DATETIME
 }
 
 /**
- * Helper function to find previous day, week, month, or year,
- * even when crossing months and years.
- *
- * @param object $date
- *   A date object to start with. Provided by reference so you can
- *   run the same date object through multiple adjustments without
- *   creating a new object each time.
- * @param int $count
- *   The number of days, weeks, months, or years to go backward.
- * @param string $period
- *   The time period to move by - day, week, month, or year
- * @return a date object for the previous day
- */
-function date_prev(&$date, $count = 1, $period = 'day') {
-  if (is_object($date)) {
-    date_modify($date, '-'. $count .' '. $period);
-    return $date;
-  }
-  return NULL;
-}
-
-/**
- * Helper function to find next day, week, month, or year,
- *
- * @param object $date
- *   A date object to start with. Provided by reference so you can
- *   run the same date object through multiple adjustments without
- *   creating a new object each time.
- * @param int $count
- *   The number of days, weeks, months, or years to go forward.
- * @param string $period
- *   The time period to move by - day, week, month, or year
- * @return a date object for the next day
- */
-function date_next(&$date, $count = 1, $period = 'day') {
-  if (is_object($date)) {
-    date_modify($date, '+'. $count .' '. $period);
-    return $date;
-  }
-  return NULL;
-}
-
-/**
- * Helper function to find a specific occurence of a day of the month.
- *
- * Example, $day = 'Sunday', $count = 2, $direction = '-' will reset
- * the date to the second to last Sunday in the month.
- *
- * @param object $date
- *   A date object for any day in the month to be examined. Tracked
- *   by reference so you can run the same date object through multiple
- *   adjustments without creating a new object each time.
- * @param string $day
- *   The name of the day to search for
- * @param int $count
- *   The occurence of this day to look for.
- * @param string $direction
- *   + to start from beginning of month,
- *   - to start from end of month.
- * @return
- *   a date object that matches the search.
- */
-function date_position_in_month(&$date, $day, $count = 1, $direction = '+') {
-  if (is_object($date)) {
-    // Reset to the start of the month.
-    // We should be able to do this with date_date_set(),
-    // but for some reason that isn't working reliably if we
-    // iterate through this function multiple times.
-    $datetime = date_format($date, DATE_FORMAT_DATETIME);
-    $datetime = substr_replace($datetime, '01', 8, 2);
-    $start = date_create($datetime, timezone_open('UTC'));
-    $date = drupal_clone($start);
-    if ($direction == '-') {
-      // For negative search, start from the end of the month.
-      date_modify($date, '+1 month');
-    }
-    else {
-      // For positive search, back up one day to get outside the
-      // current month, so we can catch the first of the month.
-      date_modify($date, '-1 day');
-    }
-    date_modify($date, $direction. $count .' '. $day);
-    return $date;
-  }
-  return NULL;
-}
-
-/**
- * Compute difference between two days.
+ * Compute difference between two days using a given measure.
  *
  * @param mixed $date1
  *   the starting date
@@ -846,7 +757,7 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
  * No timezone conversion is done in this operation!!
  *
  * Example: date_convert('2007-03-15 08:30', DATE_DATETIME, DATE_UNIX);
- *  will return unix value for the supplied date.
+ *  returns unix value for the supplied date.
  *
  * @param mixed $date
  *   the date to convert
@@ -867,24 +778,24 @@ function date_convert($date, $from_type, $to_type) {
     case DATE_ISO:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       $date = str_replace('T', ' ', $date);
-      $obj = date_create($date, timezone_open('UTC'));
+      $obj = date_make_date($date, 'UTC');
       break;
     case DATE_ICAL:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       preg_match (DATE_REGEX_LOOSE, $date, $regs);
       $datetime = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
         'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
-      $obj = date_create($datetime, timezone_open('UTC'));
+      $obj = date_make_date($datetime, 'UTC');
     case DATE_UNIX:
       if (!is_numeric($date)) return NULL;
-      $obj = date_create("@$date", timezone_open('UTC'));
+      $obj = date_make_date($date, 'UTC', DATE_UNIX);
       break;
     case DATE_ARRAY:
       if (!is_array($date)) return NULL;
       $datetime = date_pad(intval($date['year']), 4) .'-'. date_pad(intval($date['month'])) .
             '-'. date_pad(intval($date['day'])) .' '. date_pad(intval($date['hour'])) .
             ':'. date_pad(intval($date['minute'])) .':'. date_pad(intval($date['second']));
-      $obj = date_create($datetime, timezone_open('UTC'));
+      $obj = date_make-date($datetime, 'UTC');
       break;
   }
   switch ($to_type) {
@@ -931,10 +842,11 @@ function date_array($obj) {
 }
 
 /**
- * Helper function to extract any date part from any type of date.
+ * Extract integer value of any date part from any type of date.
  *
- * Example: date_part_extract('2007-03-15 00:00', 'month', DATE_DATETIME)
- * returns: 3
+ * Example:
+ *   date_part_extract('2007-03-15 00:00', 'month', DATE_DATETIME)
+ *   returns: 3
  *
  * @param mixed $date
  *   the date value to analyze.
@@ -961,7 +873,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
     case DATE_ICAL:
       return (integer) substr($date, $ipositions[$part], $part == 'year' ? 4 : 2);
     case DATE_UNIX:
-      $date = date_create("@$date", timezone_open('UTC'));
+      $date = date_make_date($date, 'UTC', DATE_UNIX);
       return date_format($date, $formats[$part]);
     case DATE_OBJECT:
       return date_format($date, $formats[$part]);
@@ -1022,6 +934,7 @@ function date_pad($value, $size = 2) {
 
 /**
  *  Function to figure out if any time data is to be collected or displayed.
+ *
  *  @param granularity
  *    an array like ('year', 'month', 'day', 'hour', 'minute', 'second');
  */
@@ -1035,9 +948,9 @@ function date_has_time($granularity) {
  * array. Helps prevent errors when unwanted values round up and ensures
  * that unwanted date part values don't get stored in the database.
  *
- * Example, turn '2007-05-15 04:45:59' into '2007-05-15 00:00:00' with:
- *   $date = '2007-05-15 04:45:59';
- *   print date_limit_value($date, array('year', 'month', 'day'));
+ * Example:
+ *   date_limit_value('2007-05-15 04:45:59', array('year', 'month', 'day'))
+ *   returns '2007-05-15 00:00:00'
  *
  * @param $date
  *   a date value
@@ -1083,9 +996,9 @@ function date_limit_value($date, $granularity, $type = DATE_DATETIME) {
  * Rewrite a format string so it only inludes elements from a
  * specified granularity array.
  *
- * Example, turn 'F j, Y - H:i' into 'F j, Y' with:
- *   $format = 'F j, Y - H:i';
- *   print date_limit_format($format, array('year', 'month', 'day'));
+ * Example:
+ *   date_limit_format('F j, Y - H:i', array('year', 'month', 'day'));
+ *   returns 'F j, Y'
  *
  * @param $format
  *   a format string
@@ -1137,6 +1050,17 @@ function date_limit_format($format, $granularity) {
 
 /**
  * Convert a format to an ordered array of granularity parts.
+ *
+ * Example:
+ *   date_format_order('m/d/Y H:i')
+ *   returns
+ *     array(
+ *       0 => 'month',
+ *       1 => 'day',
+ *       2 => 'year',
+ *       3 => 'hour',
+ *       4 => 'minute',
+ *     );
  *
  * @param string $format
  * @return array of ordered granularity elements in this format string

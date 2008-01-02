@@ -44,6 +44,12 @@
  *   Be sure to add 'A' or 'a' to get an am/pm selector. Defaults to the
  *   short site default format.
  *
+ * #date_label_position
+ *   Handling option for date part labels, like 'Year', 'Month', and 'Day',
+ *   can be 'above' the date part, 'within' it, or 'none', default is 'above'.
+ *   The 'within' option shows the label as the first option in a select list
+ *   or the default value for an empty textfield, taking up less screen space.
+ *
  * #date_increment
  *   Increment minutes and seconds by this amount, default is 1.
  *
@@ -92,7 +98,7 @@ function _date_api_elements() {
 function date_timezone_process($element, $edit = NULL) {
   $element['timezone'] = array(
     '#type' => 'select',
-    '#title' => theme('date_select_label_timezone', 'select', $element),
+    '#title' => theme('date_part_label_timezone', 'select', $element),
     '#default_value' => $element['#value'],
     '#options' => date_timezone_names($element['#required']),
     '#weight' => $element['#weight'],
@@ -182,6 +188,7 @@ function date_parts_element($element, $date, $format) {
   $order = array_flip($granularity);
 
   $hours_format  = strpos(strtolower($element['#date_format']), 'a') ? 'g': 'G';
+  $month_function  = strpos($element['#date_format'], 'F') ? 'date_month_names' : 'date_month_names_abbr';
   $year = $year > 0 ? $year : date_format(date_now(), 'Y');
   $count = 0;
   $increment = min(intval($element['#date_increment']), 1);
@@ -189,9 +196,8 @@ function date_parts_element($element, $date, $format) {
     $part_required = $element['#required'];
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
-      '#title' => theme('date_select_label_'. $field, $part_type, $element),
       '#weight' => $order[$part],
-      '#required' => $part_required,
+      '#required' => $element['#required'],
       '#attributes' => array('class' => $element['#attributes']['class'] . ' date-'. $field),
       );
     switch ($field) {
@@ -202,7 +208,7 @@ function date_parts_element($element, $date, $format) {
         break;
       case 'month':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'n') : '';
-        $sub_element[$field]['#options'] = (date_month_names($part_required));
+        $sub_element[$field]['#options'] = $month_function($part_required);
         break;
       case 'day':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'j') : '';
@@ -221,26 +227,48 @@ function date_parts_element($element, $date, $format) {
         $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
         break;
     }
+    $label = theme('date_part_label_'. $field, $part_type, $element);
     if (in_array($field, $element['#date_text_parts'])) {
       $sub_element[$field]['#type'] = 'textfield';
       $sub_element[$field]['#theme'] = 'date_textfield_element';
-      $sub_element[$field]['#maxlength'] = 4;
-      $sub_element[$field]['#size'] = 4;
+      $sub_element[$field]['#size'] = 7;
+      if ($element['#date_label_position'] == 'within') {
+        $sub_element[$field]['#options'] = array(
+          '-'. $label => '-'. $label) + $sub_element[$field]['#options'];
+        if (empty($sub_element[$field]['#default_value'])) {
+          $sub_element[$field]['#default_value'] = '-'. $label;
+        }
+      }
+      elseif ($element['#date_label_position'] != 'none') {
+        $sub_element[$field]['#title'] = $label;
+      }
     }
     else {
       $sub_element[$field]['#type'] = 'select';
       $sub_element[$field]['#theme'] = 'date_select_element';
+      if ($element['#date_label_position'] == 'within') {
+        $sub_element[$field]['#options'] = array(
+          '' => '-'. $label) + $sub_element[$field]['#options'];
+      }
+      elseif ($element['#date_label_position'] != 'none') {
+        $sub_element[$field]['#title'] = $label;
+      }
     }
   }
   if (strtolower($hours_format) == 'g' && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
-      '#title' => theme('date_select_label_ampm', 'ampm', $element),
       '#type' => 'select',
       '#default_value' => is_object($date) ? (date_format($date, 'G') > 12 ? 'pm' : 'am') : '',
       '#options' => drupal_map_assoc(date_ampm()),
       '#weight' => 8,
       '#attributes' => array('class' => 'date-ampm'),
     );
+    if ($element['#date_label_position'] == 'within') {
+      $sub_element['ampm']['#options'] = array('' => theme('date_part_label_ampm', 'ampm', $element)) + $sub_element['ampm']['#options'];
+    }
+    elseif ($element['#date_label_position'] != 'none') {
+      $sub_element['ampm']['#title'] = theme('date_part_label_ampm', 'ampm', $element);
+    }
   }
   return $sub_element;
 }
@@ -281,6 +309,13 @@ function date_increment_round(&$date, $increment) {
  */
 function date_select_validate($element) {
   $error_field = implode('][', $element['#parents']);
+
+  // Strip field labels out of the results.
+  foreach ($element['#value'] as $field => $value) {
+    if (substr($value, 0, 1) == '-') {
+      $element['#value'][$field] = '';
+    }
+  }
   if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
     $element['#value']['hour'] += 12;
   }
@@ -544,27 +579,27 @@ function theme_date_textfield_element($element) {
  *   An associative array containing the properties of the element.
  *   Properties used: title, value, options, description, required and attributes.
  */
-function theme_date_select_label_year($part_type, $element) {
+function theme_date_part_label_year($part_type, $element) {
   return t('Year');
 }
-function theme_date_select_label_month($part_type, $element) {
+function theme_date_part_label_month($part_type, $element) {
   return t('Month');
 }
-function theme_date_select_label_day($part_type, $element) {
+function theme_date_part_label_day($part_type, $element) {
   return t('Day');
 }
-function theme_date_select_label_hour($part_type, $element) {
+function theme_date_part_label_hour($part_type, $element) {
   return t('Hour');
 }
-function theme_date_select_label_minute($part_type, $element) {
+function theme_date_part_label_minute($part_type, $element) {
   return t('Minute');
 }
-function theme_date_select_label_second($part_type, $element) {
+function theme_date_part_label_second($part_type, $element) {
   return t('Second');
 }
-function theme_date_select_label_ampm($part_type, $element) {
+function theme_date_part_label_ampm($part_type, $element) {
   return t('am/pm');
 }
-function theme_date_select_label_timezone($part_type, $element) {
+function theme_date_part_label_timezone($part_type, $element) {
   return t('Timezone');
 }

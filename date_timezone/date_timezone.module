@@ -76,7 +76,7 @@ function date_timezone_update_site($element) {
   }
   else {
     variable_set('date_default_timezone_name', $timezone);
-    $date = date_create('now', timezone_open($timezone));
+    $date = date_make_date('now', $timezone);
     form_set_value($element, date_offset_get($date));
   }
 }
@@ -88,7 +88,7 @@ function date_timezone_update_site($element) {
 function date_timezone_update_user($element) {
   $timezone = $element['timezone_name']['#value'];
   if (!empty($timezone)) {
-    $date = date_create('now', timezone_open($timezone));
+    $date = date_make_date('now', $timezone);
     $offset = date_offset_get($date);
     form_set_value($element['timezone'], $offset);
   }

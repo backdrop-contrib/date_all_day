@@ -215,16 +215,16 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
       return NULL;
     }
     elseif ($part == 'value2' && $default_value == 'same') {
-      $date = date_create($item['value'], timezone_open($timezone));
+      $date = date_make_date($item['value'], $timezone);
     }
     else {
-      $date = date_create('now', timezone_open($timezone));
+      $date = date_make_date('now', $timezone);
     }
   }
   else {
     $value = $item[$part];
     $value = date_convert($value, $field['type'], DATE_DATETIME);
-    $date = date_create($value, timezone_open('UTC'));
+    $date = date_make_date($value, 'UTC');
     if (date_timezone_convert($field, $item)) {
       date_timezone_set($date, timezone_open($timezone));
     }
@@ -282,6 +282,7 @@ function date_combo_process($element, $edit = NULL) {
     '#date_text_parts'  => (array) $field['widget']['text_parts'],
     '#date_increment'   => $field['widget']['increment'],
     '#date_year_range'  => $field['widget']['year_range'],
+    '#date_label_position' => $field['widget']['label_position'],
     );
 
   // Give this element the right type, using a Date API
@@ -316,7 +317,7 @@ function date_combo_process($element, $edit = NULL) {
     $element[$to_field]['#default_value'] = $element['#value'][$to_field];
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
-    $element[$to_field]['#description'] = t('Blank \'To date\' values will use the \'From date\' values.');
+    $element[$to_field]['#description'] = t('Empty \'To date\' values will use the \'From date\' values.');
     $element['#fieldset_description'] = t($field['widget']['description']);
   }
   return $element;

@@ -228,9 +228,6 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     '#size' => 20,
     '#maxlength' => 20,
     );
-  if ($time_granularity) {
-    $sub_element['#title'] = t('Date');
-  }
   $element['#description'] .= t(' Format: @date', array('@date' => date($date_format, time())));
 
   return $sub_element;
@@ -266,7 +263,6 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
   // Create a unique class for each element so we can use custom settings.
   $sub_element = array(
     '#type' => 'textfield',
-    '#title' => t('Time'),
     '#default_value' => is_object($date) ? date_format($date, $time_format) : '',
     '#attributes' => array('class' => 'jquery-timeentry-'. $element['#id']),
     '#size' => 10,

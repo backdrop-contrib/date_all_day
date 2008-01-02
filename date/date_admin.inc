@@ -16,7 +16,7 @@ function _date_widget_settings($op, &$field) {
       return date_widget_settings_form($field);
 
     case 'save':
-      return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range');
+      return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range', 'label_position');
 
     case 'validate':
       if ($field['default_value'] == 'strtotime') {
@@ -35,8 +35,8 @@ function _date_widget_settings($op, &$field) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
       // Munge the table display for text parts back into an array of text parts.
-      if (is_array($field['text_parts'])) {
-        form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['text_parts'])));
+      if (is_array($field['advanced']['text_parts'])) {
+        form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['advanced']['text_parts'])));
       }
       break;
 
@@ -85,7 +85,7 @@ function date_widget_settings_form($widget) {
   }
   $now = date_example_date();
   foreach ($formats as $f) {
-    $options[$f] = date_format($now, $f);
+    $options[$f] = date_format_date($now, 'custom', $f);
   }
   $form['input']['input_format'] = array(
     '#type' => 'select', '#title' => t('Input format'),
@@ -125,6 +125,14 @@ function date_widget_settings_form($widget) {
       '#value' => isset($widget['year_range']) ? $widget['year_range'] : 1,
       );
   }
+
+  $form['input']['label_position'] = array(
+    '#type' => 'radios',
+    '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
+    '#default_value' => $widget['label_position'],
+    '#title' => t('Position of date part labels'),
+    '#description' => t('The location of date part labels, like \'Year\', \'Month\', or \'Day\'. \'Above\' will display them as titles above each date part. \'Within\' will insert the label as the first option in the select list and in blank textfields. \'None\' will not label any of the date parts. The exact text in the label is controlled by themes like \'date_part_label_year\' and \'date_part_label_month\'.'),
+    );
   $form['input']['advanced'] = array(
     '#tree' => TRUE,
     '#type' => 'fieldset',
@@ -388,8 +396,8 @@ function date_format_options() {
       $zones = array('', 'O', 'P', 'e');
       foreach ($zones as $zone) {
         $time_format = !empty($zone) ? $format .' '. $zone : $format;
-        $options[$no_time] = date_format($now, $no_time);
-        $options[$time_format] = date_format($now, $time_format);
+        $options[$no_time] = date_format_date($now, 'custom', $no_time);
+        $options[$time_format] = date_format_date($now, 'custom', $time_format);
       }
     }
     asort($options);

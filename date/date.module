@@ -123,8 +123,7 @@ function date_formatter_process($field, $item, $node, $formatter = 'default', $b
     else {
       // create a date object with a gmt timezone from the database value
       $value = $item[$processed];
-      $value = $field['type'] == 'DATE_UNIX' ? "@$value" : $value;
-      $date = date_create($value, timezone_open('UTC'));
+      $date = date_make_date($value, 'UTC', $field['type']);
       $dates[$processed] = array();
       $dates[$processed]['db']['object'] = $date;
       $dates[$processed]['db']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
@@ -143,9 +142,9 @@ function date_formatter_process($field, $item, $node, $formatter = 'default', $b
       }
 
       if (is_object($date) && !empty($format)) {
-        $dates[$processed]['formatted'] = date_format($date, $format) . $append;
-        $dates[$processed]['formatted_date'] = date_format($date, date_limit_format($format, array('year', 'month', 'day')));
-        $dates[$processed]['formatted_time'] = date_format($date, date_limit_format($format, array('hour', 'minute', 'second'))) . $append;
+        $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format) . $append;
+        $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', date_limit_format($format, array('year', 'month', 'day')));
+        $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second'))) . $append;
       }
       else {
         $dates[$processed]['formatted'] = '';
@@ -511,7 +510,7 @@ function theme_date_format_interval($field, $item, $node = NULL) {
   $dates = date_formatter_process($field, $item, $node);
 
   // Time to compare dates to
-  $now = date_format(date_create('now', date_default_timezone()), 'U');
+  $now = date_format(date_make_date('now', date_default_timezone()), 'U');
 
   // Pull local timestamps out of date objects.
   $start = date_format($dates['value']['local']['object'], 'U');

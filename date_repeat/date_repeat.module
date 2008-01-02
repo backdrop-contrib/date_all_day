@@ -98,8 +98,8 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
   $rule = date_ical_parse_rule('RRULE:', $rule);
 
   // Create a date object for the start and end dates.
-  $start_date = date_create($start, timezone_open('UTC'));
-  $end_date = date_create($end, timezone_open('UTC'));
+  $start_date = date_make_date($start, 'UTC');
+  $end_date = date_make_date($end, 'UTC');
 
   // If the rule has an UNTIL, see if that is earlier than the end date.
   if ($rule['UNTIL']) {
@@ -187,7 +187,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
       while (!$finished) {
         foreach ($month_days as $day) {
           // Find the BYDAY date in the current month.
-          date_position_in_month($current_day, $day['day'], $day['direction_count'], $day['direction']);
+          date_repeat_set_month_day($current_day, $day['day'], $day['direction_count'], $day['direction']);
           date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions);
         }
         // Stop when $current_day is greater than $end_date or $count is reached.
@@ -232,6 +232,48 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
   }
   sort($days);
   return $days;
+}
+
+/**
+ * Set a date object to a specific day of the month.
+ *
+ * Example,
+ *   date_set_month_day($date, 'Sunday', 2, '-')
+ *   will reset $date to the second to last Sunday in the month.
+ *
+ * @param object $date
+ *   A date object for any day in the month to be examined.
+ * @param string $day
+ *   The name of the day to search for
+ * @param int $count
+ *   The occurence of this day to look for, 1 is first, 2 is second, etc.
+ * @param string $direction
+ *   + to start from beginning of month,
+ *   - to start from end of month.
+ */
+function date_repeat_set_month_day(&$date, $day, $count = 1, $direction = '+') {
+  if (is_object($date)) {
+    // Reset to the start of the month.
+    // We should be able to do this with date_date_set(),
+    // but for some reason that isn't working reliably if we
+    // iterate through this function multiple times.
+    $datetime = date_format($date, DATE_FORMAT_DATETIME);
+    $datetime = substr_replace($datetime, '01', 8, 2);
+    $start = date_make_date($datetime, 'UTC');
+    $date = drupal_clone($start);
+    if ($direction == '-') {
+      // For negative search, start from the end of the month.
+      date_modify($date, '+1 month');
+    }
+    else {
+      // For positive search, back up one day to get outside the
+      // current month, so we can catch the first of the month.
+      date_modify($date, '-1 day');
+    }
+    date_modify($date, $direction. $count .' '. $day);
+    return $date;
+  }
+  return NULL;
 }
 
 /**
@@ -324,7 +366,7 @@ function date_repeat_build_description($rule) {
   }
   if ($rule['UNTIL']) {
     $until = date_ical_date($rule['UNTIL']);
-    $description[] = t('until !until', array('!until' => date_format($until, 'D M d Y H:i:s')));
+    $description[] = t('until !until', array('!until' => date_format_date($until, 'custom', 'D M d Y H:i:s')));
   }
   if ($rule['BYDAY']) {
     $days = date_repeat_dow_day_options();

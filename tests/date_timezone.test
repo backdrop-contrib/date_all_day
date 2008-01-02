@@ -18,6 +18,24 @@ class PHP4Dates extends DrupalTestCase {
     $format = date_format($date, 'm/d/Y g:i a');
     $this->assertEqual($format, '03/11/2007 1:59 am', 'Test date_format()');
 
+    $date = date_create('2007-01-01', timezone_open('US/Central'));
+    $this->assertEqual('2007-04-01', date_modify(date_format($date, DATE_FORMAT_DATETIME), '+3 month'), "Check date_next('2007-01-01', 3, 'month'), should be '2007-04-01'");
+    $date = date_create('2007-01-01', timezone_open('US/Central'));
+    $this->assertEqual('2006-12-01', date_modify(date_format($date, DATE_FORMAT_DATETIME), '- 1 month'), "Check date_prev('2007-01-01', 1, 'month'), should be '2006-12-01'");
+
+    $date = date_create('2007-01-01', timezone_open('US/Central'));
+    $this->assertEqual('2006-12-31', date_modify(date_format($date, DATE_FORMAT_DATETIME), '-1 day'), "Check date_prev('2007-01-01', 1, 'day'), should be '2006-12-31'");
+
+    $date = date_create('2005-02-28', timezone_open('US/Central'));
+    $this->assertEqual('2005-03-01', date_modify(date_format($date, DATE_FORMAT_DATETIME), '+1 day'), "Check date_next('2005-02-28', 1, 'day'), should be '2005-03-01'");
+    $date = date_create('2004-02-28', timezone_open('US/Central'));
+    $this->assertEqual('2004-02-29', date_modify(date_format($date, DATE_FORMAT_DATETIME), '+1 day'), "Check date_next('2004-02-28', 1, 'day'), should be '2004-02-29'");
+
+    $date = date_create('2004-03-01', timezone_open('US/Central'));
+    $this->assertEqual('2004-02-29', date_modify(date_format($date, DATE_FORMAT_DATETIME), '-1 day'), "Check date_prev('2004-03-01', 1, 'day'), should be '2004-02-29'");
+    $date = date_create('2005-03-01', timezone_open('US/Central'));
+    $this->assertEqual('2005-02-28', date_modify(date_format($date, DATE_FORMAT_DATETIME), '-1 day'), "Check date_prev('2005-03-01', 1, 'day'), should be '2005-02-28'");
+
     $timezone = timezone_open('America/Chicago');
     $date = date_create('2007-03-11 01:59:59', $timezone);
     $this->assertEqual(date_offset_get($date), -21600, 'The offset 1 minute before start of CDT, 2am on Mar 11, 2007 is -21600, returned '. date_offset_get($date));

@@ -77,7 +77,7 @@ function date_requirements($phase) {
         }
       }
       elseif (function_exists('date_create')) {
-        $date = date_create('now', timezone_open($tz_name));
+        $date = date_make_date('now', $tz_name);
         if (date_offset_get($date) != variable_get('date_default_timezone', 0)) {
           $error = TRUE;
           $value = $t('The !link may not be correct.', array('!link' => l($t('site timezone name'), 'admin/settings/date-time')));

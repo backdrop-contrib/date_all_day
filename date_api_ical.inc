@@ -450,7 +450,7 @@ function date_ical_parse_duration(&$subgroup) {
   if (empty($timezone)) {
     $timezone = 'UTC';
   }
-  $date = date_create($start_date, timezone_open($timezone));
+  $date = date_make_date($start_date, $timezone);
 	$date2 = drupal_clone($date);
 	foreach ($items as $item => $count) {
 	  if ($count > 0) {
@@ -497,7 +497,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   else {
     $from_tz = $ical_date['tz'];
   }
-  $date = date_create($ical_date['datetime'], timezone_open($from_tz));
+  $date = date_make_date($ical_date['datetime'], $from_tz);
   if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     $date = date_timezone_set($date, timezone_open($to_tz));
   }

@@ -189,7 +189,6 @@ function date_parts_element($element, $date, $format) {
 
   $hours_format  = strpos(strtolower($element['#date_format']), 'a') ? 'g': 'G';
   $month_function  = strpos($element['#date_format'], 'F') ? 'date_month_names' : 'date_month_names_abbr';
-  $year = $year > 0 ? $year : date_format(date_now(), 'Y');
   $count = 0;
   $increment = min(intval($element['#date_increment']), 1);
   foreach ($granularity as $field) {
@@ -202,9 +201,17 @@ function date_parts_element($element, $date, $format) {
       );
     switch ($field) {
       case 'year':
-        $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'Y') : '';
+        // Center the range around the current year, but expand it far
+        // enough so it will pick up the year value in the field.
+        // Do this in case the value in the field is outside the initial
+        // range, which could happen, for instance, if the value was
+        // created in a prior year.
         $range = explode(':', $element['#date_year_range']);
-        $sub_element[$field]['#options'] = drupal_map_assoc(date_years($year + $range[0], $year + $range[1], $part_required));
+        $value_year = is_object($date) ? date_format($date, 'Y') : '';
+        $min_year = min($value_year, date_format(date_now(), 'Y') + $range[0]);
+        $max_year = max($value_year, date_format(date_now(), 'Y') + $range[1]);
+        $sub_element[$field]['#default_value'] = $value_year;
+        $sub_element[$field]['#options'] = drupal_map_assoc(date_years($min_year, $max_year, $part_required));
         break;
       case 'month':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'n') : '';

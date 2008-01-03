@@ -62,7 +62,7 @@ if (!function_exists('date_create')) {
   function date_create($date_in = NULL, $timezone = NULL) {
     if (empty($date_in) || strtolower($date_in) == 'now') {
       // Create a current date for an empty value or 'now'.
-      $date_out = date_gmdate('Y-m-d H:i', date_time());
+      $date_out = date_gmdate('Y-m-d H:i', time() - date('Z'));
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.

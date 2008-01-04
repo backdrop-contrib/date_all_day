@@ -205,10 +205,14 @@ function date_parts_element($element, $date, $format) {
         // enough so it will pick up the year value in the field in case
         // the value in the field is outside the initial range.
         $this_year = date_format(date_now(), 'Y');
-        $value_year = is_object($date) ? date_format($date, 'Y') : $this_year;
+        $value_year = is_object($date) ? date_format($date, 'Y') : '';
         $range = explode(':', $element['#date_year_range']);
-        $min_year = min($value_year, $this_year + $range[0]);
-        $max_year = max($value_year, $this_year + $range[1]);
+        $min_year = $this_year + $range[0];
+        $max_year = $this_year + $range[1];
+        if (!empty($value_year)) {
+          $min_year = min($value_year, $min_year);
+          $max_year = max($value_year, $max_year);
+        }
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'Y') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_years($min_year, $max_year, $part_required));
         break;

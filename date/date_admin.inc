@@ -31,7 +31,7 @@ function _date_widget_settings($op, &$field) {
           form_set_error('default_value_code2', t('The Strtotime default value for the To Date is invalid.'));
         }
       }
-      if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:\+[0-9]*@', $field['year_range'])) {
+      if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $field['year_range'])) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
       // Munge the table display for text parts back into an array of text parts.

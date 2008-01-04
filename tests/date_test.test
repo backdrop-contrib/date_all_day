@@ -89,9 +89,10 @@ class DatePHP4LibTest extends DrupalTestCase {
 		if (!empty($error)) $errors[] = $error;
 
 	}
-	//print_r($errors);
 	$passed = 201 - sizeof($errors);
 	$this->assertEqual(sizeof($errors), 0, 'Tested 201 random dates outside 1901-2038 between 100 and 4000, '. $passed .' passed, '. sizeof($errors) .' failed');
+
+	//dsm($errors);
 
 	$start = 1960+rand(0, 10);
 	$yrs = 12;
@@ -129,6 +130,7 @@ class DatePHP4LibTest extends DrupalTestCase {
 function date_test_date($y1, $m, $d = 13) {
 	$t =   date_gmmktime(0, 0, 0, $m, $d, $y1, 0, 1);
 	$rez = date_gmdate('Y-n-j H:i:s', $t, 0, 1);
+	$y1 = date_pad($y1, 4);
 	if ("$y1-$m-$d 00:00:00" != $rez) {
 		return "$y1 error, expected=$y1-$m-$d 00:00:00, date=$rez<";
 	}

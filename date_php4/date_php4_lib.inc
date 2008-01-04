@@ -249,7 +249,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
       if ($secs < 10) $dates .= ':0'. $secs; else $dates .= ':'.$secs;
       $gmt = date_get_gmt_diff();
       $dates .= sprintf(' %s%04d', ($gmt < 0) ? '+' : '-', abs($gmt) / 36); break;
-    case 'Y': $dates .= $year; break;
+    case 'Y': $dates .= date_pad($year, 4); break;
     case 'y': $dates .= substr($year, strlen($year)-2, 2); break;
     // MONTH
     case 'm': if ($month<10) $dates .= '0'.$month; else $dates .= $month; break;

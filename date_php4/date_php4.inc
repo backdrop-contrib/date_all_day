@@ -66,7 +66,7 @@ if (!function_exists('date_create')) {
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.
-      $date_out = $date_out = date_gmdate('Y-m-d H:i', substr($date_in, 1));
+      $date_out = date_gmdate('Y-m-d H:i', substr($date_in, 1));
     }
     elseif (preg_match(DATE_REGEX_LOOSE, $date_in, $regs)) {
       $date_out = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .

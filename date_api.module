@@ -32,7 +32,7 @@ define('DATE_FORMAT_ICAL', "YmdTHis");
 
 define('DATE_REGEX_ISO', '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2})?/');
-define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
+define('DATE_REGEX_LOOSE', '/(\d{3,4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
 
 /**
  * Helper function for getting the format string for a date type.
@@ -767,7 +767,7 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
  *   the type of date to convert to
  */
 function date_convert($date, $from_type, $to_type) {
-  if (empty($date)) return NULL;
+  if (empty($date) && !$date === 0) return NULL;
   if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_OBJECT:

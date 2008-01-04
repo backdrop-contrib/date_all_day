@@ -188,6 +188,21 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
 
   if (empty($date_granularity)) return array();
 
+  // Center the range around the current year, but expand it far
+  // enough so it will pick up the year value in the field in case
+  // the value in the field is outside the initial range.
+  $this_year = date_format(date_now(), 'Y');
+  $value_year = is_object($date) ? date_format($date, 'Y') : $this_year;
+  if (!empty($value_year) && $this_year != $value_year) {
+    $range = explode(':', $element['#date_year_range']);
+    $min_year = min($value_year, $this_year + $range[0]);
+    $max_year = max($value_year, $this_year + $range[1]);
+    $yearRange = sprintf('%+d', $min_year - $this_year) .':'. sprintf('%+d', $max_year - $this_year);
+  }
+  else {
+    $yearRange = $element['#date_year_range'];
+  }
+
   $settings =  "\n". //"prevText:'&lt;". t('Prev') ."', \n".
     "nextText:'". t('Next') ."&gt;', \n".
     "currentText:'". t('Today') ."', \n".
@@ -205,7 +220,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     "closeAtTop:false, \n".
     "speed: 'immediate', \n".
     "dateFormat:'". date_popup_format_to_popup($date_format) ."', \n".
-    "yearRange:'". $element['#date_year_range'] ."'\n".
+    "yearRange:'". $yearRange ."'\n".
     "\n";
 
   // This is just a placeholder to indicate the method to constrain from and to dates.

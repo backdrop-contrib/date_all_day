@@ -8,6 +8,10 @@
   display: inline-block;
  }
 
+.container-inline-date .date-spacer {
+  margin-left:-.5em;
+}
+
 /* force IE to display the jscalendar icon in date fieldsets */
 .container-inline-date .jscalendar-icon {
   text-indent: 0;

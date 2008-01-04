@@ -202,15 +202,14 @@ function date_parts_element($element, $date, $format) {
     switch ($field) {
       case 'year':
         // Center the range around the current year, but expand it far
-        // enough so it will pick up the year value in the field.
-        // Do this in case the value in the field is outside the initial
-        // range, which could happen, for instance, if the value was
-        // created in a prior year.
+        // enough so it will pick up the year value in the field in case
+        // the value in the field is outside the initial range.
+        $this_year = date_format(date_now(), 'Y');
+        $value_year = is_object($date) ? date_format($date, 'Y') : $this_year;
         $range = explode(':', $element['#date_year_range']);
-        $value_year = is_object($date) ? date_format($date, 'Y') : '';
-        $min_year = min($value_year, date_format(date_now(), 'Y') + $range[0]);
-        $max_year = max($value_year, date_format(date_now(), 'Y') + $range[1]);
-        $sub_element[$field]['#default_value'] = $value_year;
+        $min_year = min($value_year, $this_year + $range[0]);
+        $max_year = max($value_year, $this_year + $range[1]);
+        $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'Y') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_years($min_year, $max_year, $part_required));
         break;
       case 'month':
@@ -224,16 +223,21 @@ function date_parts_element($element, $date, $format) {
       case 'hour':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, $hours_format) : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_hours($hours_format, $part_required));
+        $sub_element[$field]['#prefix'] = theme('date_part_hour_prefix', $element);
         break;
       case 'minute':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 'i') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_increment']));
+        $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
         break;
       case 'second':
         $sub_element[$field]['#default_value'] = is_object($date) ? date_format($date, 's') : '';
         $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
+        $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
         break;
     }
+
+    // Add handling for the date part label.
     $label = theme('date_part_label_'. $field, $part_type, $element);
     if (in_array($field, $element['#date_text_parts'])) {
       $sub_element[$field]['#type'] = 'textfield';
@@ -262,6 +266,7 @@ function date_parts_element($element, $date, $format) {
       }
     }
   }
+
   if (strtolower($hours_format) == 'g' && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
       '#type' => 'select',
@@ -575,6 +580,14 @@ function theme_date_select_element($element) {
 function theme_date_textfield_element($element) {
   $part = array_pop($element['#parents']);
   return '<div class="date-'. $part .'">'. theme('textfield', $element, $element['#children']) .'</div>';
+}
+
+function theme_date_part_hour_prefix($element) {
+  return '<span class="form-item date-spacer">&nbsp;-&nbsp;</span>';
+}
+
+function theme_date_part_minsec_prefix($element) {
+  return '<span class="form-item date-spacer">:</span>';
 }
 
 /**

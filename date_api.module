@@ -795,7 +795,7 @@ function date_convert($date, $from_type, $to_type) {
       $datetime = date_pad(intval($date['year']), 4) .'-'. date_pad(intval($date['month'])) .
             '-'. date_pad(intval($date['day'])) .' '. date_pad(intval($date['hour'])) .
             ':'. date_pad(intval($date['minute'])) .':'. date_pad(intval($date['second']));
-      $obj = date_make-date($datetime, 'UTC');
+      $obj = date_make_date($datetime, 'UTC');
       break;
   }
   switch ($to_type) {

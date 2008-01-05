@@ -457,7 +457,7 @@ if (!function_exists('date_modify')) {
         // Construct a new date with the current day of the month and the new month and year.
         $mon = date_part_extract($cdate, 'month');
         $year = date_part_extract($cdate, 'year');
-        $date->value = date_pad($year, 4) .'-'. date_pad($mon) .'-'. date_pad($mday) .' '. $time;
+        $date->value = date_pad($year, 4) .'-'. date_pad($mon) .'-'. date_pad($day) .' '. $time;
       }
       elseif ($item == 'week') {
         $dow = date_day_of_week($date);
@@ -493,9 +493,9 @@ if (!function_exists('date_modify')) {
           }
         }
         // Construct a new date with the current day and month and the new year.
-        $mday = date_part_extract($cdate, 'day');
+        $day = date_part_extract($cdate, 'day');
         $mon = date_part_extract($cdate, 'month');
-        $date->value = $year .'-'. $mon .'-'. $mday .' '. $time;
+        $date->value = date_pad($year, 4) .'-'. date_pad($mon) .'-'. date_pad($day) .' '. $time;
       }
     }
     $date->timestamp = date_datetime2timestamp($date->value);

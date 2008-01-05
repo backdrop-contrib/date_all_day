@@ -187,7 +187,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
       while (!$finished) {
         foreach ($month_days as $day) {
           // Find the BYDAY date in the current month.
-          date_repeat_set_month_day($current_day, $day['day'], $day['direction_count'], $day['direction']);
+          $current_day = date_repeat_set_month_day($current_day, $day['day'], $day['direction_count'], $day['direction']);
           date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions);
         }
         // Stop when $current_day is greater than $end_date or $count is reached.
@@ -251,16 +251,16 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
  *   + to start from beginning of month,
  *   - to start from end of month.
  */
-function date_repeat_set_month_day(&$date, $day, $count = 1, $direction = '+') {
-  if (is_object($date)) {
+function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+') {
+  if (is_object($date_in)) {
     // Reset to the start of the month.
-    // We should be able to do this with date_date_set(),
-    // but for some reason that isn't working reliably if we
-    // iterate through this function multiple times.
-    $datetime = date_format($date, DATE_FORMAT_DATETIME);
+    // We should be able to do this with date_date_set(), but
+    // for some reason the date occasionally gets confused if run
+    // through this function multiple times. It seems to work
+    // reliably if we create a new object each time.
+    $datetime = date_format($date_in, DATE_FORMAT_DATETIME);
     $datetime = substr_replace($datetime, '01', 8, 2);
-    $start = date_make_date($datetime, 'UTC');
-    $date = drupal_clone($start);
+    $date = date_make_date($datetime, 'UTC');
     if ($direction == '-') {
       // For negative search, start from the end of the month.
       date_modify($date, '+1 month');
@@ -271,9 +271,8 @@ function date_repeat_set_month_day(&$date, $day, $count = 1, $direction = '+') {
       date_modify($date, '-1 day');
     }
     date_modify($date, $direction . $count .' '. $day);
-    return $date;
   }
-  return NULL;
+  return $date;
 }
 
 /**

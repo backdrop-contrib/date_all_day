@@ -140,7 +140,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
 
     $finished = FALSE;
     while (!$finished) {
-      date_next($current_day, $jump);
+      date_modify($current_day, $jump);
       date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions);
 
       // Stop when $current_day is greater than $end_date or $count is reached.
@@ -455,10 +455,11 @@ function date_repeat_rule_process($element, $edit = NULL) {
         '#date_timezone' => $element['#date_timezone'],
         '#date_format' => 'Y-m-d',
         '#date_type' => DATE_DATETIME,
+        '#date_label_position' => 'within',
         ),
      'tz' => array('#type' => 'hidden', '#value' => $element['#date_timezone']),
      'all_day' => array('#type' => 'hidden', '#value' => 1),
-     'granularity' => array('#type' => 'hidden', '#value' => array('year', 'month', 'day')),
+     'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
      );
 
 	// start the advanced fieldset
@@ -550,10 +551,11 @@ function date_repeat_rule_process($element, $edit = NULL) {
         '#date_timezone' => $element['#date_timezone'],
         '#date_format' => 'Y-m-d',
         '#date_type' => DATE_DATETIME,
+        '#date_label_position' => 'within',
         ),
      'tz' => array('#type' => 'hidden', '#value' => $element['#date_timezone']),
      'all_day' => array('#type' => 'hidden', '#value' => 1),
-     'granularity' => array('#type' => 'hidden', '#value' => array('year', 'month', 'day')),
+     'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
      );
   $element['exceptions']['exception_button'] = array(
     '#type' => 'button',

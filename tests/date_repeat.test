@@ -12,7 +12,6 @@ class DateRepeat extends DrupalTestCase {
 
   function testDateRepeat() {
     include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
-
     // Examples adapted from http://www.kanzaki.com/docs/ical/rrule.html.
 
     //  Daily for 10 occurrences:

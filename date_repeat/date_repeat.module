@@ -170,7 +170,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
         // Convert parameters into full day name, count, and direction.
         $month_days[] = array(
           'day' => $day_names[$regs[3]],
-          'direction' => $regs[1],
+          'direction' => !empty($regs[1]) ? $regs[1] : '+',
           'direction_count' => $regs[2],
           );
       }
@@ -270,7 +270,7 @@ function date_repeat_set_month_day(&$date, $day, $count = 1, $direction = '+') {
       // current month, so we can catch the first of the month.
       date_modify($date, '-1 day');
     }
-    date_modify($date, $direction. $count .' '. $day);
+    date_modify($date, $direction . $count .' '. $day);
     return $date;
   }
   return NULL;

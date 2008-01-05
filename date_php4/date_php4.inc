@@ -442,7 +442,7 @@ if (!function_exists('date_modify')) {
             date_part_extract($cdate, 'month'),
             date_part_extract($cdate, 'year'));
         }
-        $date->value = $cdate;
+        $date->value = $cdate .' '. $time;
       }
       elseif ($item == 'month') {
         if ($direction == '+') {
@@ -453,8 +453,7 @@ if (!function_exists('date_modify')) {
         }
         // Find the next end or beginning of month that matches the search.
         $day = date_part_extract($cdate, 'day');
-        $cdate = $function($count, $day, date_part_extract($cdate, 'month'),
-          date_part_extract($cdate, 'year'));
+        $cdate = $function($count, date_part_extract($cdate, 'month'), date_part_extract($cdate, 'year'));
         // Construct a new date with the current day of the month and the new month and year.
         $mon = date_part_extract($cdate, 'month');
         $year = date_part_extract($cdate, 'year');

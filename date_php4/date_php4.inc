@@ -392,22 +392,26 @@ if (!function_exists('date_modify')) {
  */
   function date_modify(&$date, $change) {
     $cdate = $date->value;
-    if (1971 < date_part_extract($cdate, 'year') && date_part_extract($cdate, 'year') < 2038) {
-      $cdate = strtotime($cdate .' UTC '. $change);
+    // Date is too old for strtotime(), or looking for custom +/- values, use date_calc instead.
+    if (substr($change, 0, 1) != '+' && substr($change, 0, 1) != '-'
+    && 1971 < date_part_extract($cdate, 'year')
+    && date_part_extract($cdate, 'year') < 2038) {
+      $cdate = strtotime($change, strtotime($cdate .' UTC'));
       $date->value = date_gmdate(DATE_FORMAT_DATETIME, $cdate);
     }
     else {
-      // Date is too old for strtotime(), use date_calc instead.
-
       include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_calc.inc');
 
-      $time = date_gmdate('H:i', $date->value);
+      $time = substr($date->value, 11, 8);
       $days = date_week_days_untranslated();
       $dows = array_flip($days);
       preg_match('/([+|-])([0-9]{1,4}).([day(s)?|week(s)?|month(s)?|year(s)?|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]{1,10})/', $change, $results);
       $direction = $results[1];
       $count = $results[2];
       $item = $results[3];
+      if (substr($item, -1) == 's') {
+        $item = substr($item, 0, strlen($item) - 1);
+      }
 
       // Process +/- Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday
       if (in_array($item, $days)) {
@@ -454,10 +458,10 @@ if (!function_exists('date_modify')) {
         // Construct a new date with the current day of the month and the new month and year.
         $mon = date_part_extract($cdate, 'month');
         $year = date_part_extract($cdate, 'year');
-        $date->value = $year .'-'. $mon .'-'. $mday .' '. $time;
+        $date->value = date_pad($year, 4) .'-'. date_pad($mon) .'-'. date_pad($mday) .' '. $time;
       }
       elseif ($item == 'week') {
-        $dow = date_day_of_week($cdate);
+        $dow = date_day_of_week($date);
         if ($direction == '+') {
           $function = 'date_calc_begin_of_next_week';
         }

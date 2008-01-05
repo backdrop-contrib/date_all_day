@@ -85,7 +85,7 @@ include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_lib.inc')
  * @return string
  *   The date in the desired format.
  */
-function date_calc_format($day, $month, $year, $format) {
+function date_calc_format($day, $month, $year, $format = DATE_CALC_FORMAT) {
   if (!date_calc_is_valid($day, $month, $year)) {
     $year  = date_calc_date_now('%Y');
     $month = date_calc_date_now('%m');
@@ -137,10 +137,10 @@ function date_calc_format($day, $month, $year, $format) {
           $output .= date_calc_week_of_year($day, $month, $year);
           break;
         case 'y':
-          $output .= substr($year, 2, 2);
+          $output .= substr(date_pad($year, 4), 2, 2);
           break;
         case 'Y':
-          $output .= $year;
+          $output .= date_pad($year, 4);
           break;
         case '%':
           $output .= '%';
@@ -172,7 +172,7 @@ function date_calc_format($day, $month, $year, $format) {
  * @return boolean
  */
 function date_calc_is_valid($day, $month, $year) {
-  if ($year < variable_get('date_max_year', 4000) || $year > variable_get('date_min_year', 1)) {
+  if ($year > variable_get('date_max_year', 4000) || $year < variable_get('date_min_year', 1)) {
     return false;
   }
   if (!checkdate($month, $day, $year)) {
@@ -1135,8 +1135,7 @@ function date_calc_end_of_week($day = 0, $month = 0, $year = 0,
  * @return string
  *   The date in the desired format.
  */
-function date_calc_begin_of_prev_week($day = 0, $month = 0, $year = 0,
-  $format = DATE_CALC_FORMAT) {
+function date_calc_begin_of_prev_week($day = 0, $month = 0, $year = 0, $format = DATE_CALC_FORMAT) {
   if (empty($year)) {
     $year = date_calc_get_year();
   }
@@ -1146,13 +1145,11 @@ function date_calc_begin_of_prev_week($day = 0, $month = 0, $year = 0,
   if (empty($day)) {
     $day = date_calc_get_day();
   }
-  $date = date_calc_days_to_date(date_calc_date_to_days($day-7, $month, $year),
-    '%Y%m%d');
-  $prev_week_year  = substr($date, 0, 4);
-  $prev_week_month = substr($date, 4, 2);
-  $prev_week_day   = substr($date, 6, 2);
-  return date_calc_begin_of_week($prev_week_day, $prev_week_month,
-    $prev_week_year, $format);
+  $date = date_calc_days_to_date(date_calc_date_to_days($day-7, $month, $year), '%Y%m%d');
+  $prev_week_year  = intval(substr($date, 0, 4));
+  $prev_week_month = intval(substr($date, 4, 2));
+  $prev_week_day   = intval(substr($date, 6, 2));
+  return date_calc_begin_of_week($prev_week_day, $prev_week_month, $prev_week_year, $format);
 }
 
 /**
@@ -1182,9 +1179,9 @@ function date_calc_begin_of_next_week($day = 0, $month = 0, $year = 0,
     $day = date_calc_get_day();
   }
   $date = date_calc_days_to_date(date_calc_date_to_days($day + 7, $month, $year), '%Y%m%d');
-  $next_week_year  = substr($date, 0, 4);
-  $next_week_month = substr($date, 4, 2);
-  $next_week_day   = substr($date, 6, 2);
+  $next_week_year  = intval(substr($date, 0, 4));
+  $next_week_month = intval(substr($date, 4, 2));
+  $next_week_day   = intval(substr($date, 6, 2));
   return date_calc_begin_of_week($next_week_day, $next_week_month, $next_week_year, $format);
 }
 
@@ -1303,8 +1300,7 @@ function date_calc_end_of_month_by_span($months = 0, $month = 0, $year = 0, $for
       $year  = $year + floor($tmp_mo / 12);
     }
   }
-  return date_calc_format(date_calc_days_in_month($month, $year),
-    $month, $year, $format);
+  return date_calc_format(date_calc_days_in_month($month, $year), $month, $year, $format);
 }
 
 /**

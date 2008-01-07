@@ -3,6 +3,19 @@
 /**
  * @file
  * Implementation of Date Repeat API calculations for the CCK Date field.
+ *
+ * Current implementation adds a repeat form to the date field so the user
+ * can select the repeat rules. That selection is built into an RRULE
+ * which is stored in the zero position of the field values. During widget
+ * validation, the rule is parsed to see what dates it will create,
+ * and multiple values are added to the field, one for each repeat date.
+ * That update only happens when the rule, the from date, or the to date
+ * change, no need to waste processing cycles for other changes to the node
+ * values.
+ *
+ * Lots of possible TODOs, the biggest one is figuring out the best
+ * way to handle dates with no UNTIL date. For now, we require the
+ * UNTIL date and set the code up to compute only one year out.
  */
 
 /**
@@ -48,20 +61,33 @@ function _date_repeat_widget_validate($element) {
 
   $field_name = $element['#parents'][0];
   $field = $element[0]['#field'];
-  $rrule = $form_values[$field_name]['rrule'];
+
+  // Require the UNTIL date for now.
+  // The RRULE has already been created by this point, so go back
+  // to the posted values to see if this was filled out.
+  $values = date_repeat_merge($element['#post'][$field_name]['rrule']);
+  $error_field = implode('][', $element['#parents']) .'][rrule][UNTIL][datetime][date';
+  if ($values['FREQ'] != 'NONE' && empty($values['UNTIL']['datetime'])) {
+    form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
+  }
+  if (form_get_errors()) {
+    return;
+  }
 
   // If the rule, the start date, or the end date have changed, re-calculate
   // the repeating dates.
-  if (!empty($rrule) && ($rrule != $form_values[$field_name][0]['#prev_rrule']
-    || $form_values[$field_name][0]['value'] != $element['#prev_value']
-    || $form_values[$field_name][0]['value2'] != $element['#prev_value2'])) {
+  $rrule = $form_values[$field_name]['rrule'];
+  if (!empty($rrule) && ($rrule != $element['rrule']['#prev_rrule']
+    || $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
+    || $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])) {
+
     $parsed = date_ical_parse_rrule($field, $rrule);
     $item = $form_values[$field_name][0];
     $timezone = date_get_timezone($field['tz_handling'], $item[0]['timezone']);
-    $start = date_convert($item['value'], $field['type'], DATE_OBJECT);
+    $start = date_make_date($item['value'], $timezone, $field['type']);
     $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
     if (!empty($item['value2']) && $new_field['value2'] != $item['value']) {
-      $end = date_convert($item['value2'], $field['type'], DATE_OBJECT);
+      $end = date_make_date($item['value2'], $timezone, $field['type']);
       $duration = date_diff($start, $end);
     }
     else {
@@ -69,10 +95,7 @@ function _date_repeat_widget_validate($element) {
       $duration = 0;
     }
 
-    // TODO - figure out a better way to handle dates with no UNTIL date
-    // and how far out to set outside date. For now, set a final date for
-    // the repeat for dates with no UNTIL to 1 year from the end date.
-    date_modify($end, '+1 year');
+    $end = date_ical_date($values['UNTIL'], $timezone);
     $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
 
     $exceptions = explode(',', $parsed['EXDATE']);
@@ -93,6 +116,8 @@ function _date_repeat_widget_validate($element) {
     form_set_value($element, $value[$field_name]);
   }
   else {
+    // If no changes are needed, move the RRULE back to the zero value
+    // item of the field.
     form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule);
     form_set_value($element['rrule'], NULL);
   }

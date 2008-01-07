@@ -417,24 +417,23 @@ function date_repeat_rrule_process($element, $edit = NULL) {
   else {
     $rrule = $element['#value'];
   }
+  // Unset the original string value of the RRULE so we can create
+  // an array of values for the form from the RRULE's contents.
+  unset($element['#value']);
+
   $parts = explode("\n", $rrule);
   foreach ($parts as $part) {
     if (strstr($part, 'RRULE')) {
-      $RRULE = $part;
-      $rrule = (array) date_ical_parse_rrule('RRULE:', $part);
+      $RRULE = str_replace('RRULE:', '', $part);
+      $rrule = (array) date_ical_parse_rrule('RRULE:', $RRULE);
     }
     elseif (strstr($part, 'EXDATE')) {
-      $EXDATE = $part;
-      $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $part);
+      $EXDATE = str_replace('EXDATE:', '', $part);
+      $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $EXDATE);
       unset($exceptions['DATA']);
     }
   }
   $form_values = $rrule;
-  $element['prev_value'] = array(
-    '#type' => 'hidden',
-    '#value' => $element['#value'],
-    );
-  unset($element['#value']);
 
   $collapsed = TRUE;
   if(!empty($form_values['BYDAY']) || !empty($form_values['BYMONTH'])
@@ -479,7 +478,7 @@ function date_repeat_rrule_process($element, $edit = NULL) {
     'datetime' => array(
       '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
       '#title' => t('Until'),
-      '#description' => t('Date to stop repeating this item, leave blank for unlimited repeats.'),
+      '#description' => t('Date to stop repeating this item.'),
       '#default_value' => $UNTIL,
       '#date_timezone' => $element['#date_timezone'],
       '#date_format' => 'Y-m-d',
@@ -559,11 +558,14 @@ function date_repeat_rrule_process($element, $edit = NULL) {
      'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
      );
 
-  //if there's any exception date data, display it
+  //If there's any exception date data, store the value and format
+  //display of the current values.
+
   $element['advanced']['EXDATE'] = array(
     '#type' => 'hidden',
     '#value' => $EXDATE,
     );
+
   if (!empty($exceptions)) {
     //parse out the individual exception dates, and put them in human-readable format
     $element['advanced']['exceptions']['current']['#theme'] = 'date_repeat_current_exceptions';
@@ -626,8 +628,6 @@ function date_repeat_rrule_validate($element){
   $field_name = $element['#parents'][0];
   $delta = $element['#parents'][1];
   $item = $form_values[$field_name]['rrule'];
-  $prev_value = $item['prev_value'];
-  unset($item['prev_value']);
   $item = date_repeat_merge($item);
 
   // Remove exception dates that need to be deleted.

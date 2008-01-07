@@ -71,10 +71,12 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
     }
     // For convenience, we process all possible columns in the element,
     // but now we need to remove columns not used by this field.
-    $keys = array_keys($item);
-    foreach ($keys as $column => $value) {
-      if (!in_array($column, $columns)) {
-        unset($items[$delta][$column]);
+    if (is_array($item)) {
+      $keys = array_keys($item);
+      foreach ($keys as $column => $value) {
+        if (!in_array($column, $columns)) {
+          unset($items[$delta][$column]);
+        }
       }
     }
   }
@@ -126,7 +128,11 @@ function _date_widget($op, &$node, $field, &$items) {
     case 'form':
       include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
       $db_info = content_database_info($field);
-      $columns = array_keys($db_info['columns']);
+      $columns = $db_info['columns'];
+      if (isset($columns['rrule'])) {
+        unset($columns['rrule']);
+      }
+      $columns = array_keys($columns);
       $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
 
       // Convert UTC dates to their local values, and adjust the
@@ -144,9 +150,6 @@ function _date_widget($op, &$node, $field, &$items) {
           $date = date_local_date($delta, $item, $timezone, $field, $processed);
           $items[$delta][$processed] = is_object($date) ? date_format($date, date_type_format($field['type'])) : '';
         }
-      }
-      if (module_exists('date_repeat')) {
-        $repeat_rule = $items[0]['rrule'];
       }
 
       // Iterate through the available items, adding as many new ones as needed,
@@ -181,12 +184,11 @@ function _date_widget($op, &$node, $field, &$items) {
             );
         }
       }
-      if (module_exists('date_repeat') && $field['multiple'] > 1) {
-        $element[$field['field_name']][0]['rrule'] = array(
-          '#type' => 'date_repeat_rule',
-          '#weight' => ($field['widget']['weight'] + .1),
-          '#default_value' => $repeat_rule,
-          );
+
+      // Add a date repeat form element, if needed.
+      if (module_exists('date_repeat') && $field['multiple'] == 99) {
+        include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
+        _date_repeat_widget($element, $node, $field, $items);
       }
       return $element;
   }
@@ -216,6 +218,11 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     }
     elseif ($part == 'value2' && $default_value == 'same') {
       $date = date_make_date($item['value'], $timezone);
+    }
+    // Special case for 'now' when using dates with no timezone,
+    // make sure 'now' isn't adjusted to UTC value of 'now'.
+    elseif ($field['tz_handling'] == 'none') {
+      $date = date_make_date('now', date_default_timezone_name());
     }
     else {
       $date = date_make_date('now', $timezone);
@@ -345,8 +352,8 @@ function date_combo_validate($element) {
   // Update the timezone, if changed.
   $timezone = $element['#date_timezone'];
   if (!empty($form_values['timezone']) &&
-    $form_values['timezone'] != $element['#date_timezone']) {
-    $timezone = $form_values['timezone'];
+    $form_values[$field_name]['timezone'] != $element['#date_timezone']) {
+    $timezone = $form_values[$field_name]['timezone'];
   }
 
   if (empty($item[$from_field])) {
@@ -387,6 +394,7 @@ function date_combo_validate($element) {
     $date = date_make_date($item[$to_field], $timezone, $field['type']);
     $item[$offset_field2] = date_offset_get($date);
     $item[$tz_field] = $timezone;
+    $item['rrule'] = $rrule;
     if ($item[$from_field] > $item[$to_field]) {
       form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
     }
@@ -398,10 +406,16 @@ function date_combo_validate($element) {
 
 /**
  * Handle widget processing.
- *
- * Just a placeholder for now.
  */
 function date_widget_validate($element) {
+  global $form_values;
+  $field_name = $element['#parents'][0];
+  $field = $element[0]['#field'];
+
+  if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
+    include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
+    return _date_repeat_widget_validate($element);
+  }
 }
 
 /**

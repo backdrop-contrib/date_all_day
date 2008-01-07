@@ -9,7 +9,7 @@
  * Turn an array of events into a valid iCalendar file
  *
  * @param $events
- *   An array of events where each event is an array with:
+ *   An array of events where each event is an array keyed on the uid:
  *    'start'         => UTC start date in YYYYMMDDTHHMMSS format,
  *                         omit time for all day event.
  *    'end'           => UTC end date in YYYYMMDDTHHMMSS format,
@@ -39,7 +39,7 @@ function date_ical_export($events, $calname = NULL) {
     // Skip any items with empty dates.
     if (!empty($event['start'])  && ereg ('^(\d{4})(\d{2})(\d{2})$', $event['start'])) {
       $output .= "BEGIN:VEVENT\n";
-      $output .= "DTSTAMP;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", time()) ."\n";
+      $output .= "DTSTAMP;VALUE=DATE-TIME:". date("Ymd\THis\Z", time()) ."\n";
       if ($event['start'] && $event['end']) {
         $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
         $output .= "DTEND;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
@@ -157,7 +157,6 @@ function date_ical_escape_text($text) {
  */
 function date_ical_import($filename) {
   $items = array();
-  include_once('./'. drupal_get_path('module', 'date_api') .'/date.inc');
 
   // Fetch the iCal data. If file is a URL, use drupal_http_request. fopen
   // isn't always configured to allow network connections.
@@ -192,6 +191,8 @@ function date_ical_import($filename) {
     $out = array();
     // See if this looks like the beginning of a new property or value.
     // If not, it is a continuation of the previous line.
+    // The regex is to ensure that wrapped QUOTED-PRINTABLE data
+    // is kept intact.
     ereg ("([A-Z]+)[:|;](.*)", $line, $out);
     if (empty($out)) {
       $line = array_pop($icaldata) . ($line);
@@ -288,7 +289,7 @@ function date_ical_import($filename) {
 
           case 'RRULE':
           case 'EXRULE':
-	          $subgroup[$property] = date_ical_parse_rule($field, $data);
+	          $subgroup[$property] = date_ical_parse_rrule($field, $data);
 	          break;
 
           case 'SUMMARY':
@@ -387,11 +388,11 @@ function date_ical_parse_date($field, $data) {
  *   Array in the form of PROPERTY => array(VALUES)
  *   PROPERTIES include FREQ, INTERVAL, COUNT, BYDAY, BYMONTH, BYYEAR, UNTIL
  */
-function date_ical_parse_rule($field, $data) {
+function date_ical_parse_rrule($field, $data) {
   $data = str_replace('RRULE:', '', $data);
   $items = array('DATA' => $data);
-  $rule = explode(';', $data);
-  foreach ($rule as $key => $value) {
+  $rrule = explode(';', $data);
+  foreach ($rrule as $key => $value) {
     $param = explode('=', $value);
     if ($param[0] == 'UNTIL') {
       $values = date_ical_parse_date('', $param[1]);

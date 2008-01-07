@@ -2,23 +2,13 @@
 // $Id$
 
 /**
- * Implementation of hook_help()
- */
-function date_repeat_help($section) {
-  switch ($section) {
-    case 'admin/help#date_repeat':
-      return t("<p>date_repeat enables the creation of repeating event patterns. </p><ol>   <li>Set 'Repeat type'&nbsp; to the type of repeating pattern you wish to create</li>   <li>&nbsp;Set 'Until' date to control how many repeating events will be created. If you want the pattern to be indefinite, then leave 'Until' empty.</li>   <li>Set any other parameters for the repeat pattern</li>   <li>Set any exception dates to the pattern using the exception editor.&nbsp; Exception dates are dates where a repeat event will not be created even if it falls within the repeat sequence<br />   </li> </ol> <p> All other parameters operate as follows:<br /> </p><p>Multiple selections within the same parameter use an OR comparison for determining the pattern (ex. Monday OR Tuesday OR Wednesday).&nbsp; Choosing multiple parameters uses an AND comparison between the parameters (ex. on Monday AND in March).</p><p><br /> So, setting the days parameter to Monday, Wednesday--and the month parameter to July, August would result in this comparison logic: </p><p>Occurs on (Monday OR Wednesday) AND (July OR August)&nbsp;</p> <p>date_repeat's pattern creation was largely modeled on the iCal RRULE specification.</p>");
-  }
-}
-
-/**
  * Implementation of hook_elements().
  */
 function date_repeat_elements() {
-  $type['date_repeat_rule'] = array(
+  $type['date_repeat_rrule'] = array(
     '#input' => TRUE,
-    '#process' => array('date_repeat_rule_process' => array()),
-    '#validate' => array('date_repeat_rule_validate' => array()),
+    '#process' => array('date_repeat_rrule_process' => array()),
+    '#validate' => array('date_repeat_rrule_validate' => array()),
   );
   return $type;
 }
@@ -28,12 +18,23 @@ function date_repeat_elements() {
  */
 function FREQ_options() {
   return array(
-    'NONE' => t('Never'),
-    'DAILY' => t('Daily'),
-    'WEEKLY' => t('Weekly'),
-    'MONTHLY' => t('Monthly'),
-    'YEARLY' => t('Yearly')
+    'NONE' => t('-- Period'),
+    'DAILY' => t('Day'),
+    'WEEKLY' => t('Week'),
+    'MONTHLY' => t('Month'),
+    'YEARLY' => t('Year'),
   );
+}
+
+function INTERVAL_options() {
+  return array(
+    0 => t('-- Frequency'),
+    1 => t('Every'),
+    2 => t('Every other'),
+    3 => t('Every third'),
+    4 => t('Every fourth'),
+    5 => t('Every fifth'),
+    );
 }
 
 /**
@@ -60,16 +61,17 @@ function date_repeat_dow_day_options($translated = TRUE) {
  */
 function date_repeat_dow_count_options() {
   return array(
-    '1' => t('1st'),
-    '2' => t('2nd'),
-    '3' => t('3rd'),
-    '4' => t('4th'),
-    '5' => t('5th'),
+    '' => t('Every'),
+    '1' => t('First'),
+    '2' => t('Second'),
+    '3' => t('Third'),
+    '4' => t('Fourth'),
+    '5' => t('Fifth'),
     '-1' => t('Last'),
     '-2' => t('Next to last'),
-    '-3' => t('2nd from last'),
-    '-4' => t('3rd from last'),
-    '-5' => t('4th from last')
+    '-3' => t('Second from last'),
+    '-4' => t('Third from last'),
+    '-5' => t('Fourth from last')
   );
 }
 
@@ -80,8 +82,8 @@ function date_repeat_dow_count_options() {
  */
 function date_repeat_dow_options() {
   $options = array();
-  foreach (date_repeat_dow_day_options() as $dow_key => $dow_value) {
-    foreach (date_repeat_dow_count_options() as $count_key => $count_value) {
+  foreach (date_repeat_dow_count_options() as $count_key => $count_value) {
+    foreach (date_repeat_dow_day_options() as $dow_key => $dow_value) {
       $options[$count_key.$dow_key] = $count_value.' '.$dow_value;
     }
   }
@@ -91,34 +93,34 @@ function date_repeat_dow_options() {
 /**
  * Compute dates that match the requested rule, within a specified date range.
  */
-function date_repeat_calc($rule, $start, $end, $exceptions) {
+function date_repeat_calc($rrule, $start, $end, $exceptions) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   // Get the parsed array of rule values.
-  $rule = date_ical_parse_rule('RRULE:', $rule);
+  $rrule = date_ical_parse_rrule('RRULE:', $rrule);
 
   // Create a date object for the start and end dates.
   $start_date = date_make_date($start, 'UTC');
   $end_date = date_make_date($end, 'UTC');
 
   // If the rule has an UNTIL, see if that is earlier than the end date.
-  if ($rule['UNTIL']) {
-    $until_date = date_ical_date($rule['UNTIL']);
+  if ($rrule['UNTIL']) {
+    $until_date = date_ical_date($rrule['UNTIL']);
     if (date_format($until_date, 'U') < date_format($end_date, 'U')) {
       $end_date = $until_date;
     }
   }
 
   // Get an integer value for the interval, if none given, '1' is implied.
-  $interval = max(1, $rule['INTERVAL']);
-  $count = $rule['COUNT'];
+  $interval = max(1, $rrule['INTERVAL']);
+  $count = $rrule['COUNT'];
 
   // The start date always goes into the results.
   $days = array();
   date_repeat_add_dates($days, $start_date, $start_date, $end_date, $exceptions);
 
   // Find the time period to jump forward between dates.
-  switch ($rule['FREQ']) {
+  switch ($rrule['FREQ']) {
    case 'DAILY':
      $jump = $interval .' days';
      break;
@@ -134,7 +136,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
   }
 
   // The simple cases.
-  if (!$rule['BYDAY']) {
+  if (!$rrule['BYDAY']) {
     // $current_day will keep track of where we are in the calculation.
     $current_day = drupal_clone($start_date);
 
@@ -164,7 +166,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
     // depending on whether they have parameters like -1SU or 2TH.
     $month_days = array();
     $week_days = array();
-    foreach ($rule['BYDAY'] as $day) {
+    foreach ($rrule['BYDAY'] as $day) {
       ereg("(-)?([1-5])?([SU|MO|TU|WE|TH|FR|SA]{2})", $day, $regs);
       if (!empty($regs[2])) {
         // Convert parameters into full day name, count, and direction.
@@ -204,7 +206,7 @@ function date_repeat_calc($rule, $start, $end, $exceptions) {
     // are are processed one week at a time.
     if (!empty($week_days)) {
       $finished = FALSE;
-      $week_start_day = $rule['WKST'] ? $day_names[$rule['WKST']] : $day_names['MO'];
+      $week_start_day = $rrule['WKST'] ? $day_names[$rrule['WKST']] : $day_names['MO'];
       $current_day = drupal_clone($start_date);
       // Move the current day back to the beginning of the week.
       date_modify($current_day, '+1 '. $week_start_day);
@@ -305,248 +307,248 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
 /**
  * Build an iCal RULE from $form_values.
  */
-function date_repeat_build_rule($form_values) {
-
-  $form_values = array_merge($form_values, $form_values['advanced'], $form_values['exceptions']);
-  unset($form_values['advanced']);
-  unset($form_values['exceptions']);
+function date_repeat_build_rrule($form_values) {
+  $form_values = date_repeat_merge($form_values);
 
   //grab the RRULE data and put them into iCal RRULE format
   $RRULE = 'RRULE:FREQ='.$form_values['FREQ'];
   $RRULE .= ';INTERVAL='. $form_values['INTERVAL'];
+
+  // Unset the empty 'All' values.
+  unset($form_values['BYDAY']['']);
+  unset($form_values['BYMONTH']['']);
+  unset($form_values['BYMONTHDAY']['']);
+
   if ($form_values['BYDAY']) {
-      $RRULE .= ';BYDAY='. implode(",", $form_values['BYDAY']);
+    $RRULE .= ';BYDAY='. implode(",", $form_values['BYDAY']);
   }
   if ($form_values['BYMONTH']) {
     $RRULE .= ';BYMONTH='. implode(",", $form_values['BYMONTH']);
   }
-  if ($form_values['UNTIL']) {
+  if ($form_values['BYMONTHDAY']) {
+    $RRULE .= ';BYMONTHDAY='. implode(",", $form_values['BYMONTHDAY']);
+  }
+  if ($form_values['UNTIL']['datetime']) {
     $RRULE .= ';UNTIL='. date_convert($form_values['UNTIL']['datetime'], DATE_DATETIME, DATE_ICAL);
   }
-  //process the EXDATE values by looping through and recomposing them to iCal format
   if ($form_values['EXDATE']) {
-    $EXDATE = array();
-    foreach ($form_values['EXDATE'] as $key => $value) {
-      $EXDATE[$key] = date_convert($value, DATE_DATETIME, DATE_ICAL);
-    }
-    $RRULE .= chr(13).chr(10).'EXDATE:'.implode(',', $EXDATE);
+    $RRULE .= chr(13).chr(10).'EXDATE:'. $form_values['EXDATE'];
   }
   return $RRULE;
 }
 
 /**
  * Build a description of an iCal rule.
+ *
+ * Constructs a human-readable description of the rule.
  */
-function date_repeat_build_description($rule) {
+function date_repeat_rrule_description($rrule) {
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  $rrule = date_ical_parse_rrule('RRULE:', $rrule);
+  $description = array();
 
-  $rule = date_ical_parse_rule('RRULE:', $rule);
-  if ($rule['FREQ'] != 'NONE') {
-    $freq = FREQ_options();
-    $description[] = t('!freq ', array('!freq' => $freq[$rule['FREQ']]));
-  }
-  if ((int) $rule['INTERVAL'] > 1) {
-    switch ($rule['FREQ']) {
-      case 'WEEKLY':
-        $description[] = t('every !interval weeks ', array('!interval' => $rule['INTERVAL']));
-        break;
-      case 'MONTHLY':
-        $description[] = t('every !interval months ', array('!interval' => $rule['INTERVAL']));
-        break;
-      case 'YEARLY':
-        $description[] = t('every !interval years ', array('!interval' => $rule['INTERVAL']));
-        break;
-      default:
-        $description[] = t('every !interval days ', array('!interval' => $rule['INTERVAL']));
-        break;
-    }
-  }
-  if ($rule['COUNT']) {
-    $description[] = t('for !times occurences ', array('!times' => $rule['COUNT']));
-  }
-  if ($rule['UNTIL']) {
-    $until = date_ical_date($rule['UNTIL']);
-    $description[] = t('until !until', array('!until' => date_format_date($until, 'custom', 'D M d Y H:i:s')));
-  }
-  if ($rule['BYDAY']) {
+  if ($rrule['BYDAY']) {
     $days = date_repeat_dow_day_options();
     $counts = date_repeat_dow_count_options();
     $results = array();
-    foreach ($rule['BYDAY'] as $byday) {
+    foreach ($rrule['BYDAY'] as $byday) {
       $day = substr($byday, -2);
       if ($count = intval(str_replace(' '. $day, '', $byday))) {
-        $results[] = t('the !count !day ', array('!count' => $counts[$count], '!day' => $days[$day]));
+        $results[] = t('the !count !day ', array('!count' => strtolower($counts[$count]), '!day' => $days[$day]));
       }
       else {
-        $results[] = t('!day ', array('!day' => $days[$day]));
+        $results[] = t('every !day ', array('!day' => $days[$day]));
       }
     }
-    $description[] = t('on !days', array('!days' => implode(t(' and '), $results)));
+    $description[] = t('!days', array('!days' => implode(t(' and '), $results)));
   }
-  if ($rule['BYMONTH']) {
+  if ($rrule['BYMONTH']) {
     $results = array();
     $months = date_calc_month_options();
-    foreach ($rule['BYMONTH'] as $month) {
+    foreach ($rrule['BYMONTH'] as $month) {
       $results[] = t('of !month ', array('!month' => $months[$month]));
     }
     $description[] = implode(t(' and '), $results);
   }
-  if ($rule['EXDATE']) {
-    $results = explode(',', $rule['EXDATE']);
+  if ((int) $rrule['INTERVAL'] > 0) {
+    $interval = INTERVAL_options();
+    switch ($rrule['FREQ']) {
+      case 'WEEKLY':
+        $description[] = t('!interval week ', array('!interval' => strtolower($interval[$rrule['INTERVAL']])));
+        break;
+      case 'MONTHLY':
+        $description[] = t('!interval month ', array('!interval' => strtolower($interval[$rrule['INTERVAL']])));
+        break;
+      case 'YEARLY':
+        $description[] = t('!interval year ', array('!interval' => strtolower($interval[$rrule['INTERVAL']])));
+        break;
+      default:
+        $description[] = t('!interval day ', array('!interval' => strtolower($interval[$rrule['INTERVAL']])));
+        break;
+    }
+  }
+  if ($rule['COUNT']) {
+    $description[] = t('for !times occurences ', array('!times' => $rrule['COUNT']));
+  }
+  if ($rule['UNTIL']) {
+    $until = date_ical_date($rrule['UNTIL']);
+    $description[] = t('until !until ', array('!until' => date_format_date($until, 'custom', 'D M d Y')));
+  }
+  if ($rrule['EXDATE']) {
+    $results = explode(',', $rrule['EXDATE']);
     $description[] = t('except !dates ', array('!dates' => implode(', ', $results)));
   }
-  if ($rule['WKST']) {
+  if ($rrule['WKST']) {
     $day_names = date_repeat_dow_day_options();
     $description[] = t('where the week starts on !start ', array('!start' => $day_names[$rule['WKST']]));
   }
-  return implode('', $description);
+  return implode($description);
 }
 
 /**
  * Generate the repeat setting form.
  */
-function date_repeat_rule_process($element, $edit = NULL) {
+function date_repeat_rrule_process($element, $edit = NULL) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   if (!empty($edit)) {
-   $rule = date_repeat_build_rule($edit);
+    $rrule = date_repeat_build_rrule($edit);
   }
   else {
-    $rule = $element['#value'];
+    $rrule = $element['#value'];
   }
-
-  $form_values = (array) date_ical_parse_rule('RRULE:', $rule);
-
-  $element['RRULE'] = array(
+  $parts = explode("\n", $rrule);
+  foreach ($parts as $part) {
+    if (strstr($part, 'RRULE')) {
+      $RRULE = $part;
+      $rrule = (array) date_ical_parse_rrule('RRULE:', $part);
+    }
+    elseif (strstr($part, 'EXDATE')) {
+      $EXDATE = $part;
+      $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $part);
+      unset($exceptions['DATA']);
+    }
+  }
+  $form_values = $rrule;
+  $element['prev_value'] = array(
     '#type' => 'hidden',
-    '#value' => $form_values['RRULE'],
+    '#value' => $element['#value'],
     );
-  $element['RRULE_display'] = array(
-    '#value' => '<div>'. $form_values['RRULE'] .'</div>',
-    );
+  unset($element['#value']);
 
-  $exception_collapsed = ($repeat['EXDATE']) ? FALSE : TRUE;
   $collapsed = TRUE;
-  if((!empty($form_values['FREQ']) != '' && $form_values['FREQ'] != 'NONE') || $exception_collapsed == FALSE){
+  if(!empty($form_values['BYDAY']) || !empty($form_values['BYMONTH'])
+  || !empty($exceptions) || !empty($form_values['EXCEPT'])){
     $collapsed = FALSE;
   }
 
   $element['#type'] = 'fieldset';
   $element['#title'] = t('Repeat');
-  $element['#description'] = date_repeat_build_description($element['#value']['RRULE']);
+  $element['#description'] = t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.');
   $element['#collapsible'] = TRUE;
   $element['#collapsed'] = FALSE;
 
-  $element['FREQ'] = array(
+  $element['INTERVAL'] = array(
     '#type' => 'select',
-    '#title' => t('Frequency'),
-    '#default_value' => !empty($form_values['FREQ']) ? $form_values['FREQ'] : 'NONE',
-    '#options' => FREQ_options(),
-    '#description' => t('Select \'Never\' to disable repeats for this event.')
+    //'#title' => t('Interval'),
+    '#default_value' => (!empty($form_values['INTERVAL']) ? $form_values['INTERVAL'] : 0),
+    '#options' => INTERVAL_options(),
+    '#prefix' => '<div class="date-repeat-input">',
+    '#suffix' => '</div>',
   );
 
+  $element['FREQ'] = array(
+    '#type' => 'select',
+    //'#title' => t('Frequency'),
+    '#default_value' => !empty($form_values['FREQ']) ? $form_values['FREQ'] : 'NONE',
+    '#options' => FREQ_options(),
+    '#prefix' => '<div class="date-repeat-input">',
+    '#suffix' => '</div>',
+  );
+
+  if (!empty($form_values['UNTIL']['datetime'])) {
+    if (!is_array(!empty($form_values['UNTIL']['datetime']))) {
+      $UNTIL = $form_values['UNTIL']['datetime'];
+    }
+    else {
+      $UNTIL = $form_values['UNTIL']['datetime']['date'];
+    }
+  }
   $element['UNTIL'] = array(
     '#tree' => TRUE,
     'datetime' => array(
-       '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
-        '#title' => t('Until'),
-        '#description' => t('Date to stop repeating this item, leave blank for unlimited repeats.'),
-        '#default_value' => !empty($form_values['UNTIL']['datetime']) ? $form_values['UNTIL']['datetime'] : '',
-        '#date_timezone' => $element['#date_timezone'],
-        '#date_format' => 'Y-m-d',
-        '#date_type' => DATE_DATETIME,
-        '#date_label_position' => 'within',
-        ),
-     'tz' => array('#type' => 'hidden', '#value' => $element['#date_timezone']),
-     'all_day' => array('#type' => 'hidden', '#value' => 1),
-     'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
-     );
+      '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
+      '#title' => t('Until'),
+      '#description' => t('Date to stop repeating this item, leave blank for unlimited repeats.'),
+      '#default_value' => $UNTIL,
+      '#date_timezone' => $element['#date_timezone'],
+      '#date_format' => 'Y-m-d',
+      '#date_type' => DATE_DATETIME,
+      '#date_label_position' => 'within',
+      ),
+    'tz' => array('#type' => 'hidden', '#value' => $element['#date_timezone']),
+    'all_day' => array('#type' => 'hidden', '#value' => 1),
+    'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
+    );
 
 	// start the advanced fieldset
   $element['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced'),
     '#collapsible' => TRUE,
-    '#collapsed' => $exception_collapsed,
+    '#collapsed' => $collapsed,
+    '#description' => t('Limit the date range selected above to the following criteria and identify dates that should be omitted from the results. '),
     );
 
-  $options = array ();
-  for ($i = 1; $i <= 60; $i++) {
-    $options[$i] = $i;
-  }
-  $element['advanced']['INTERVAL'] = array(
+  $element['advanced']['BYMONTH'] = array(
     '#type' => 'select',
-    '#title' => t('Interval'),
-    '#default_value' => (!empty($form_values['INTERVAL']) ? $form_values['INTERVAL'] : 1),
-    '#options' => $options,
-   '#description' => t('Frequency of repeat: 1 = every, 2 = every other, 3 = every 3rd, etc.')
+    '#title' => t('Month'),
+    '#default_value' => !empty($form_values['BYMONTH']) ? $form_values['BYMONTH'] : '',
+    '#options' => array('' => t('-- Any')) + date_month_names(TRUE),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#prefix' => '<div class="date-repeat-input">',
+    '#suffix' => '</div>',
+  );
+
+  $element['advanced']['BYMONTHDAY'] = array(
+    '#type' => 'select',
+    '#title' => t('Day of Month'),
+    '#default_value' => !empty($form_values['BYMONTHDAY']) ? $form_values['BYMONTHDAY'] : '',
+    '#options' => array('' => t('-- Any')) + drupal_map_assoc(range(1, 31)) + drupal_map_assoc(range(-1, -31)),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#prefix' => '<div class="date-repeat-input">',
+    '#suffix' => '</div>',
   );
 
   $element['advanced']['BYDAY'] = array(
     '#type' => 'select',
-    '#title' => t('Day(s)'),
+    '#title' => t('Day of Week'),
     '#default_value' => !empty($form_values['BYDAY']) ? $form_values['BYDAY'] : '',
-    '#options' => date_repeat_dow_options(),
-    '#description' => t('Determines what day(s) of the week/month this event repeats on (by day of the week).  Lots of options available, scroll down!'),
-    '#attributes' => array('size' => '7'),
-    '#multiple' => TRUE
+    '#options' => array('' => t('-- Any')) + date_repeat_dow_options(),
+    //'#attributes' => array('size' => '5'),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#prefix' => '<div class="date-repeat-input">',
+    '#suffix' => '</div>',
   );
 
-  $element['advanced']['BYMONTH'] = array(
-    '#type' => 'select',
-    '#title' => t('Month(s)'),
-    '#default_value' => !empty($form_values['BYMONTH']) ? $form_values['BYMONTH'] : '',
-    '#options' => date_month_names(TRUE),
-    '#description' => t('Selects what month(s) of the year this event repeats on'),
-    '#multiple' => TRUE,
-    '#size' => 5,
-    );
-
-	// start the exception fieldset
-  $element['exceptions'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Exceptions'),
-    '#collapsible' => TRUE,
-    '#collapsed' => $exception_collapsed,
-    );
-
-  //if there's any exception date data, display it
-  $exceptions = array();
-  foreach ((array) $form_values['EXDATE'] as $value) {
-    $exceptions[] = $value['datetime'];
-  }
-  $element['exceptions']['EXDATE'] = array(
-    '#type' => 'hidden',
-    '#value' => implode(', ', $exceptions),
-    );
-  if ($form_values['EXDATE']) {
-    //parse out the individual exception dates, and put them in human-readable format
-    foreach ($form_values['EXDATE'] as $key => $value) {
-      $date = date_convert($value, DATE_ICAL, DATE_OBJECT);
-      $date_value = date_format($date, 'Y-m-d');
-      $element['exceptions']['current'][$date_value]['display'] = array(
-        '#type' => 'markup',
-        '#value' => '<div>'. $date_value .'</div>',
-        );
-      $element['exceptions']['current'][$date_value]['action'] = array(
-        '#name' => 'remove_exception_'. str_replace(' ', '_', $date_value),
-        '#type' => 'button',
-        '#value' => 'Remove',
-        );
-    }
-    $element['exceptions']['current'] = array(
-      '#theme' => 'date_repeat_current_exceptions',
-      $element['current'],
-      );
-  }
-
   //exception editor date box
-  $element['exceptions']['EXCEPT'] = array(
+  if (!empty($form_values['EXCEPT']['datetime'])) {
+    if (!is_array(!empty($form_values['EXCEPT']['datetime']))) {
+      $EXCEPT = $form_values['EXCEPT']['datetime'];
+    }
+    else {
+      $EXCEPT = $form_values['EXCEPT']['datetime']['date'];
+    }
+  }
+  $element['advanced']['EXCEPT'] = array(
     '#tree' => TRUE,
     'datetime' => array(
        '#type' => module_exists('date_popup') ? 'date_popup' : 'date_select',
         '#title' => t('Except'),
-        '#description' => t('Enter exception dates here (dates that will not be rendered as part of the repeat sequence).  If you wish to delete an already existing exception, enter the date again. Don\'t forget to press the \'Submit\' button after editing the exception dates!'),
-        '#default_value' => !empty($form_values['exceptions']['EXCEPT']['datetime']) ? $form_values['exceptions']['EXCEPT']['datetime'] : '',
+        '#default_value' => $EXCEPT,
         '#date_timezone' => $element['#date_timezone'],
         '#date_format' => 'Y-m-d',
         '#date_type' => DATE_DATETIME,
@@ -556,30 +558,81 @@ function date_repeat_rule_process($element, $edit = NULL) {
      'all_day' => array('#type' => 'hidden', '#value' => 1),
      'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
      );
-  $element['exceptions']['exception_button'] = array(
-    '#type' => 'button',
-    '#value' => t('Add Exception'),
+
+  //if there's any exception date data, display it
+  $element['advanced']['EXDATE'] = array(
+    '#type' => 'hidden',
+    '#value' => $EXDATE,
     );
+  if (!empty($exceptions)) {
+    //parse out the individual exception dates, and put them in human-readable format
+    $element['advanced']['exceptions']['current']['#theme'] = 'date_repeat_current_exceptions';
+
+    foreach ($exceptions as $key => $value) {
+      $date = date_ical_date($value, date_default_timezone_name());
+      $date_value = date_format($date, 'Y-m-d');
+      $element['advanced']['exceptions']['current'][$date_value]['action'] = array(
+        '#return_value' => 'remove_exception_'. str_replace(' ', '_', $date_value),
+        '#type' => 'checkbox',
+        );
+      $element['advanced']['exceptions']['current'][$date_value]['display'] = array(
+        '#type' => 'markup',
+        '#value' => '<div>'. $date_value .'</div>',
+        );
+    }
+  }
+
+  $element['advanced']['help'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Help'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('<p>Dates will match any selection within the same box [January OR June]. When more than one box has criteria selected, all of them are combined to create repeats [[January OR June] AND [Day 1 OR Day 15]]. Positive numbers count from the beginning of the period. Negative numbers count from the end of the period, i.e. -1 is the last, -2 is the next to last, etc.</p><ul><li>If you select \'Every Year\' above, and \'March\' from \'Month\' and \'15\' from \'Day of Month\' in the Advanced options you will be selecting March 15 of every year.</li><li>If you select \'Every other Month\' above, and \'Second Tuesday\' in the Advanced options you will be selecting the second Tuesday of every other month.</li><li>If you select \'Every Year\' above, and \'Second Tuesday\' in the Advanced options you will be selecting the second Tuesday of every year.</li><li>If you select \'Every Month\' above, and \'January\' and \'June\' and \'First Saturday\' in the Advanced options, you will be selecting the first Saturday in January or June.</li><li>If you select \'Every Month\' above, and \'-1\' from \'Day of Month\' in the Advanced options you will be selecting the last day of every month.</li></ul>' ),
+    );
+
   return $element;
+}
+
+/**
+ * Regroup values back into a consistant array, no matter what state it is in.
+ */
+function date_repeat_merge($form_values) {
+  if (empty($form_values) || !is_array($form_values)) {
+    return $form_values;
+  }
+  if (array_key_exists('advanced', $form_values)) {
+    $form_values = array_merge($form_values, $form_values['advanced']);
+    unset($form_values['advanced']);
+  }
+  unset($form_values['BYDAY']['']);
+  unset($form_values['BYMONTH']['']);
+  unset($form_values['BYMONTHDAY']['']);
+
+  if (is_array($form_values['UNTIL']['datetime']) && array_key_exists('date', $form_values['UNTIL']['datetime'])) {
+    $form_values['UNTIL']['datetime'] = $form_values['UNTIL']['datetime']['date'];
+  }
+  if (is_array($form_values['EXCEPT']['datetime']) && array_key_exists('date', $form_values['EXCEPT']['datetime'])) {
+    $form_values['EXCEPT']['datetime'] = $form_values['EXCEPT']['datetime']['date'];
+  }
+  return $form_values;
 }
 
 /**
  * Adds and removes exceptions from the list of current exceptions.
  */
-function date_repeat_rule_validate($element){
+function date_repeat_rrule_validate($element){
   global $form_values;
 
   $field_name = $element['#parents'][0];
   $delta = $element['#parents'][1];
-  $item = $form_values[$field_name][$delta]['rrule'];
-
-  $rule = date_repeat_build_rule($item);
-
-  $value = $item['EXCEPT'];
+  $item = $form_values[$field_name]['rrule'];
+  $prev_value = $item['prev_value'];
+  unset($item['prev_value']);
+  $item = date_repeat_merge($item);
 
   // Remove exception dates that need to be deleted.
   $exceptions = array();
-  foreach($item['EXDATE'] as $e){
+  foreach((array) $item['EXDATE'] as $e){
   	$removecheck = 'remove_exception_'. str_replace(' ', '_', $e);
   	if (!$_POST[$removecheck]) {
   	  $exceptions[] = $e;
@@ -587,7 +640,8 @@ function date_repeat_rule_validate($element){
   }
 
   // See if a new date needs to be added.
-  if(!empty($value)){
+  if(!empty($item['EXCEPT']['datetime'])){
+    $value = date_convert($item['EXCEPT']['datetime'], DATE_DATETIME, DATE_ICAL);
     if (!in_array($value, $exceptions)) {
       $exceptions[] = $value;
     }
@@ -598,8 +652,9 @@ function date_repeat_rule_validate($element){
   // from the date edit box.
   asort($exceptions);
   $item['EXDATE'] = implode(',', $exceptions);
-  $rule = date_repeat_build_rule($item);
-  form_set_value($element, $rule);
+  $rrule = date_repeat_build_rrule($item);
+  form_set_value($element['advanced']['EXCEPT'], NULL);
+  form_set_value($element, $rrule);
 }
 
 /**
@@ -607,12 +662,12 @@ function date_repeat_rule_validate($element){
  */
 function theme_date_repeat_current_exceptions($rows = array()){
   $rows_info = array();
-  foreach($rows[0] as $key => $value){
-    if(is_numeric($key)){
-      $rows_info[] = array(drupal_render($value['display']), drupal_render($value['action']));
+  foreach($rows as $key => $value){
+    if(substr($key, 0, 1) != '#'){
+      $rows_info[] = array(drupal_render($value['action']), drupal_render($value['display']));
     }
   }
-  return theme('table', array(t('Current Exceptions'), ''), $rows_info);
+  return theme('table', array(t('Delete'), t('Current Exceptions')), $rows_info);
 }
 
 /**

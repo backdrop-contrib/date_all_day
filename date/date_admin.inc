@@ -271,6 +271,7 @@ function date_field_settings_form($field) {
   // Override the normal multiple checkbox when using date repeat.
   $options = array(0 => t('Never'), 1 => t('Unlimited'));
   $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create unlimited multiple dates one date at a time.');
+
   if (module_exists('date_repeat')) {
     $options += array(99 => t('Repeating'));
     $description .= t(' Repeating dates display options to allow the user to select when and how often the date will repeat.');

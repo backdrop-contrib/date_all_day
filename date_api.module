@@ -28,7 +28,7 @@ define('DATE_ICAL', 'ical');
 define('DATE_FORMAT_ISO', "Y-m-d\TH:i:s");
 define('DATE_FORMAT_UNIX', "U");
 define('DATE_FORMAT_DATETIME', "Y-m-d H:i:s");
-define('DATE_FORMAT_ICAL', "YmdTHis");
+define('DATE_FORMAT_ICAL', "Ymd\THis");
 
 define('DATE_REGEX_ISO', '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2})?/');

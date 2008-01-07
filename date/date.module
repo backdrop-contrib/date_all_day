@@ -83,7 +83,12 @@ function date_field_formatter_info() {
  */
 function date_field_formatter($field, $item, $formatter, $node) {
   // Call the right theme for this formatter.
-  return theme('date_format_'. $formatter, $field, $item, $node);
+  $output = theme('date_format_'. $formatter, $field, $item, $node);
+  if (module_exists('date_repeat') && !empty($item['rrule'])) {
+    include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
+    $output .= theme('date_repeat_display', $field, $item, $node);
+  }
+  return $output;
 }
 
 /**
@@ -181,10 +186,11 @@ function date_get_timezone($handling, $timezone = '') {
     case('user'):
       $timezone = date_default_timezone_name();
     case('none'):
+    case('gmt'):
       $timezone = 'UTC';
       break;
     default:
-      $timezone = 'UTC';
+      $timezone = date_default_timezone_name();
   }
   return $timezone > '' ? $timezone : date_default_timezone_name();
 }
@@ -474,25 +480,26 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
   $date2 = $dates['value2']['formatted'];
   // No date values, display nothing.
   if (empty($date1) && empty($date2)) {
-    return '';
+    $output .= '';
   }
   // From and To dates match or there is no To date, display a complete single date.
   elseif ($date1 == $date2 || empty($date2)) {
-    return '<span class="date-display-single">'. $date1 .'</span>';
+    $output .= '<span class="date-display-single">'. $date1 .'</span>';
   }
   // Same day, different times, don't repeat the date but show both From and To times.
   elseif ($dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {
-    return '<span class="date-display-single">'. $dates['value']['formatted_date'] .'</span> '.
+    $output .= '<span class="date-display-single">'. $dates['value']['formatted_date'] .'</span> '.
       '<span class="date-display-start">'. $dates['value']['formatted_time'] .'</span>'.
       '<span class="date-display-separator"> - </span>'.
       '<span class="date-display-end">'. $dates['value2']['formatted_time'] .'</span>';
   }
   // Different days, display both in their entirety.
   else {
-    return '<span class="date-display-start">'. $date1 .'</span>'.
+    $output .= '<span class="date-display-start">'. $date1 .'</span>'.
       '<span class="date-display-separator"> - </span>'.
       '<span class="date-display-end">'. $date2 .'</span>';
   }
+  return $output;
 }
 
 /**

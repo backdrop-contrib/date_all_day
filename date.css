@@ -36,3 +36,12 @@
 .calendar td {
   padding: 0;
 }
+
+.date-repeat-input {
+  float:left;
+  width:auto;
+  margin-right:5px;
+}
+.date-repeat-input select {
+  min-width:7em;
+}

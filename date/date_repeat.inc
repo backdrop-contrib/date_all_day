@@ -4,7 +4,10 @@
  * @file
  * Implementation of Date Repeat API calculations for the CCK Date field.
  *
- * Current implementation adds a repeat form to the date field so the user
+ * Consolidated here so the code isn't parsed if repeats aren't being used
+ * or processed, and to make it easier to maintain.
+ *
+ * The current implementation adds a repeat form to the date field so the user
  * can select the repeat rules. That selection is built into an RRULE
  * which is stored in the zero position of the field values. During widget
  * validation, the rule is parsed to see what dates it will create,
@@ -14,8 +17,8 @@
  * values.
  *
  * Lots of possible TODOs, the biggest one is figuring out the best
- * way to handle dates with no UNTIL date. For now, we require the
- * UNTIL date and set the code up to compute only one year out.
+ * way to handle dates with no UNTIL date since we can't add an infinite
+ * number of values to the field. For now, we require the UNTIL date.
  */
 
 /**
@@ -75,7 +78,8 @@ function _date_repeat_widget_validate($element) {
   }
 
   // If the rule, the start date, or the end date have changed, re-calculate
-  // the repeating dates.
+  // the repeating dates, wipe out the previous values, and populate the
+  // field with the new values.
   $rrule = $form_values[$field_name]['rrule'];
   if (!empty($rrule) && ($rrule != $element['rrule']['#prev_rrule']
     || $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
@@ -125,6 +129,8 @@ function _date_repeat_widget_validate($element) {
 
 /**
  * Clean up Date Repeat column information.
+ *
+ * To be used for uninstalls, not currently implemented anywhere.
  */
 function _date_repeat_remove() {
   $types = content_types();

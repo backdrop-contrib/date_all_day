@@ -83,10 +83,11 @@ function date_field_formatter_info() {
  */
 function date_field_formatter($field, $item, $formatter, $node) {
   // Call the right theme for this formatter.
-  $output = theme('date_format_'. $formatter, $field, $item, $node);
+  $dates = date_formatter_process($field, $item, $node, $formatter);
+  $output = theme('date_format_'. $formatter, $field, $item, $node, $dates);
   if (module_exists('date_repeat') && !empty($item['rrule'])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-    $output .= theme('date_repeat_display', $field, $item, $node);
+    $output .= theme('date_repeat_display', $field, $item, $node, $dates);
   }
   return $output;
 }
@@ -114,11 +115,10 @@ function date_field_formatter($field, $item, $formatter, $node) {
  *         )
  *      )
  */
-function date_formatter_process($field, $item, $node, $formatter = 'default', $base = '', $append = '') {
+function date_formatter_process($field, $item, $node, $formatter = 'default') {
   $dates = array();
   if (!is_array($field) || !is_array($item)) return $dates;
 
-  $base = empty($base) ? 'local' : $base;
   $format = date_formatter_format($formatter, $field);
   $process = date_process_values($field);
   foreach ($process as $processed) {
@@ -135,7 +135,7 @@ function date_formatter_process($field, $item, $node, $formatter = 'default', $b
 
       // For no timezone handling, set local value to the same as the db value.
       if (!date_timezone_convert($field, $item[$processed])) {
-          $obj->local = $obj->db;
+          $dates[$processed]['local'] = $dates[$processed]['db'];
       }
       else {
         $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
@@ -149,7 +149,7 @@ function date_formatter_process($field, $item, $node, $formatter = 'default', $b
       if (is_object($date) && !empty($format)) {
         $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format) . $append;
         $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', date_limit_format($format, array('year', 'month', 'day')));
-        $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second'))) . $append;
+        $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second')));
       }
       else {
         $dates[$processed]['formatted'] = '';
@@ -405,46 +405,35 @@ function date_formatter_format($formatter, $field) {
  *
  * Formatter themes
  */
-function theme_date_format_ical($field, $item, $node) {
-  // for ical, send the db value with Z appended to indicate it is the gmt value
-  $append = 'Z';
-  $base = 'db';
-  $dates = date_formatter_process($field, $item, $node, 'ical', $base, $append);
+function theme_date_format_ical($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_timestamp($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'timestamp', $base, $append);
+function theme_date_format_timestamp($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_long($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'long', $base, $append);
+function theme_date_format_long($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_medium($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'medium', $base, $append);
+function theme_date_format_medium($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_short($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'short', $base, $append);
+function theme_date_format_short($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_iso($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'iso', $base, $append);
+function theme_date_format_iso($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_feed($field, $item, $node) {
-  $dates = date_formatter_process($field, $item, $node, 'feed', $base, $append);
+function theme_date_format_feed($field, $item, $node, $dates) {
   return theme('date_display_combination', $field, $dates, $node);
 }
 
-function theme_date_format_default($field, $item, $node){
-  $dates = date_formatter_process($field, $item, $node, 'default', $base, $append);
+function theme_date_format_default($field, $item, $node, $dates){
   return theme('date_display_combination', $field, $dates, $node);
 }
 

@@ -29,9 +29,9 @@
  * the rule instead of the whole list of repeating dates. No easy
  * way to do this in D5, it will work better in D6.
  */
-function theme_date_repeat_display($field, $item, $node = NULL) {
-  $output = date_repeat_rrule_description($item['rrule']);
-  $output = '<div>Repeats '. $output .'</div>';
+function theme_date_repeat_display($field, $item, $node = NULL, $dates) {
+  $output = date_repeat_rrule_description($item['rrule'], $dates['value']['local']['object']);
+  $output = '<div>'. $output .'</div>';
   return $output;
 }
 
@@ -65,12 +65,20 @@ function _date_repeat_widget_validate($element) {
   $field_name = $element['#parents'][0];
   $field = $element[0]['#field'];
 
+  $values = date_repeat_merge($element['#post'][$field_name]['rrule']);
+
+  // If no repeats are set, clean up the form and return.
+  if ($values['FREQ'] == 'NONE') {
+    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), NULL);
+    form_set_value($element['rrule'], NULL);
+    return;
+  }
+
   // Require the UNTIL date for now.
   // The RRULE has already been created by this point, so go back
   // to the posted values to see if this was filled out.
-  $values = date_repeat_merge($element['#post'][$field_name]['rrule']);
   $error_field = implode('][', $element['#parents']) .'][rrule][UNTIL][datetime][date';
-  if ($values['FREQ'] != 'NONE' && empty($values['UNTIL']['datetime'])) {
+  if (empty($values['UNTIL']['datetime'])) {
     form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
   }
   if (form_get_errors()) {

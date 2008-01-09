@@ -2,90 +2,10 @@
 /* $Id$ */
 /**
  * @file
- * Parse iCal imports and create iCal exports.
+ * Parse iCal data.
+ *
  * This file must be included when these functions are needed.
  */
-/**
- * Turn an array of events into a valid iCalendar file
- *
- * @param $events
- *   An array of events where each event is an array keyed on the uid:
- *    'start'         => UTC start date in YYYYMMDDTHHMMSS format,
- *                         omit time for all day event.
- *    'end'           => UTC end date in YYYYMMDDTHHMMSS format,
- *                         optional, omit for all day event.
- *    'summary'       => Title of event (Text)
- *    'description'   => Description of event (Text)
- *    'location'      => Location of event (Text)
- *    'uid'           => ID of the event for use by calendaring program.
- *                         Recommend the url of the node
- *    'url'           => URL of event information
- *
- * @param $calname
- *   Name of the calendar.  Will use site name if none is specified.
- *
- * @return
- *   Text of a date_icalendar file.
- *
- * @todo
- *   add folding and more ical elements
- */
-function date_ical_export($events, $calname = NULL) {
-  $output .= "BEGIN:VCALENDAR\nVERSION:2.0\n";
-  $output .= "METHOD:PUBLISH\n";
-  $output .= 'X-WR-CALNAME:'. date_ical_escape_text($calname ? $calname : variable_get('site_name', '')) ."\n";
-  $output .= "PRODID:-//Drupal iCal API//EN\n";
-  foreach ($events as $uid => $event) {
-    // Skip any items with empty dates.
-    if (!empty($event['start'])  && ereg ('^(\d{4})(\d{2})(\d{2})$', $event['start'])) {
-      $output .= "BEGIN:VEVENT\n";
-      $output .= "DTSTAMP;VALUE=DATE-TIME:". date("Ymd\THis\Z", time()) ."\n";
-      if ($event['start'] && $event['end']) {
-        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
-        $output .= "DTEND;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
-      }
-      else {
-        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
-      }
-      $output .= "UID:". ($event['uid'] ? $event['uid'] : $uid) ."\n";
-      if ($event['url']) {
-        $output .= "URL;VALUE=URI:". $event['url'] ."\n";
-      }
-      if ($event['location']) {
-        $output .= "LOCATION:" . date_ical_escape_text($event['location']) . "\n";
-      }
-      $output .= "SUMMARY:". date_ical_escape_text($event['summary']) ."\n";
-      if ($event['description']) {
-        $output .= "DESCRIPTION:". date_ical_escape_text($event['description']) ."\n";
-      }
-      $output .= "END:VEVENT\n";
-    }
-  }
-  $output .= "END:VCALENDAR\n";
-  return $output;
-}
-
-/**
- * Escape #text elements for safe iCal use
- *
- * @param $text
- *   Text to escape
- *
- * @return
- *   Escaped text
- *
- */
-function date_ical_escape_text($text) {
-  //$text = strip_tags($text);
-  $text = str_replace('"', '\"', $text);
-  $text = str_replace("\\", "\\\\", $text);
-  $text = str_replace(",", "\,", $text);
-  $text = str_replace(":", "\:", $text);
-  $text = str_replace(";", "\;", $text);
-  $text = str_replace("\n", "\n ", $text);
-  return $text;
-}
-
 /**
  * Return an array of iCalendar information from an iCalendar file.
  *
@@ -504,4 +424,158 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
     $date = date_timezone_set($date, timezone_open($to_tz));
   }
   return $date;
+}
+
+/**
+ * Turn an array of events into a valid iCalendar file
+ *
+ * @param $events
+ *   An array of events where each event is an array keyed on the uid:
+ *    'start'         => UTC start date in YYYYMMDDTHHMMSS format,
+ *                         omit time for all day event.
+ *    'end'           => UTC end date in YYYYMMDDTHHMMSS format,
+ *                         optional, omit for all day event.
+ *    'summary'       => Title of event (Text)
+ *    'description'   => Description of event (Text)
+ *    'location'      => Location of event (Text)
+ *    'uid'           => ID of the event for use by calendaring program.
+ *                         Recommend the url of the node
+ *    'url'           => URL of event information
+ *
+ * @param $calname
+ *   Name of the calendar.  Will use site name if none is specified.
+ *
+ * @return
+ *   Text of a date_icalendar file.
+ *
+ * @todo
+ *   add folding and more ical elements
+ */
+function date_ical_export($events, $calname = NULL) {
+  $output .= "BEGIN:VCALENDAR\nVERSION:2.0\n";
+  $output .= "METHOD:PUBLISH\n";
+  $output .= 'X-WR-CALNAME:'. date_ical_escape_text($calname ? $calname : variable_get('site_name', '')) ."\n";
+  $output .= "PRODID:-//Drupal iCal API//EN\n";
+  foreach ($events as $uid => $event) {
+    // Skip any items with empty dates.
+    if (!empty($event['start'])  && ereg ('^(\d{4})(\d{2})(\d{2})$', $event['start'])) {
+      $output .= "BEGIN:VEVENT\n";
+      $output .= "DTSTAMP;VALUE=DATE-TIME:". date("Ymd\THis\Z", time()) ."\n";
+      if ($event['start'] && $event['end']) {
+        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
+        $output .= "DTEND;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
+      }
+      else {
+        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
+      }
+      $output .= "UID:". ($event['uid'] ? $event['uid'] : $uid) ."\n";
+      if ($event['url']) {
+        $output .= "URL;VALUE=URI:". $event['url'] ."\n";
+      }
+      if ($event['location']) {
+        $output .= "LOCATION:" . date_ical_escape_text($event['location']) . "\n";
+      }
+      $output .= "SUMMARY:". date_ical_escape_text($event['summary']) ."\n";
+      if ($event['description']) {
+        $output .= "DESCRIPTION:". date_ical_escape_text($event['description']) ."\n";
+      }
+      $output .= "END:VEVENT\n";
+    }
+  }
+  $output .= "END:VCALENDAR\n";
+  return $output;
+}
+
+/**
+ * Escape #text elements for safe iCal use
+ *
+ * @param $text
+ *   Text to escape
+ *
+ * @return
+ *   Escaped text
+ *
+ */
+function date_ical_escape_text($text) {
+  //$text = strip_tags($text);
+  $text = str_replace('"', '\"', $text);
+  $text = str_replace("\\", "\\\\", $text);
+  $text = str_replace(",", "\,", $text);
+  $text = str_replace(":", "\:", $text);
+  $text = str_replace(";", "\;", $text);
+  $text = str_replace("\n", "\n ", $text);
+  return $text;
+}
+
+/**
+ * Build an iCal RULE from $form_values.
+ *
+ * @param $form_values
+ *   an array constructed like the one created by date_ical_parse_rrule()
+ *
+ *     [RRULE] => Array (
+ *       [FREQ] => Array (
+ *         [0] => MONTHLY
+ *       )
+ *       [BYDAY] => Array (
+ *         [0] => 1SU
+ *         [1] => -1SU
+ *       )
+ *       [UNTIL] => Array (
+ *         [datetime] => 1997-21-31 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *     )
+ *     [EXDATE] => Array (
+ *       [0] = Array (
+ *         [datetime] => 1997-09-21 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *       [1] = Array (
+ *         [datetime] => 1997-10-05 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *     )
+ *
+ */
+function date_api_ical_build_rrule($form_values) {
+  //grab the RRULE data and put them into iCal RRULE format
+  $RRULE = 'RRULE:FREQ='.$form_values['FREQ'];
+  $RRULE .= ';INTERVAL='. $form_values['INTERVAL'];
+
+  // Unset the empty 'All' values.
+  unset($form_values['BYDAY']['']);
+  unset($form_values['BYMONTH']['']);
+  unset($form_values['BYMONTHDAY']['']);
+
+  if ($form_values['BYDAY']) {
+    $RRULE .= ';BYDAY='. implode(",", $form_values['BYDAY']);
+  }
+  if ($form_values['BYMONTH']) {
+    $RRULE .= ';BYMONTH='. implode(",", $form_values['BYMONTH']);
+  }
+  if ($form_values['BYMONTHDAY']) {
+    $RRULE .= ';BYMONTHDAY='. implode(",", $form_values['BYMONTHDAY']);
+  }
+  if ($form_values['UNTIL']['datetime']) {
+    $RRULE .= ';UNTIL='. date_convert($form_values['UNTIL']['datetime'], DATE_DATETIME, DATE_ICAL);
+  }
+
+  // iCal rules presume the week starts on Monday unless otherwise specified,
+  // so we'll specify it.
+  if (isset($form_values['WKST'])) {
+    $RRULE .= ';WKST='. $form_values['WKST'];
+  }
+  else {
+    $RRULE .= ';WKST='. date_repeat_dow2day(variable_get('date_first_day', 1));
+  }
+
+  // Exceptions dates go last, on their own line.
+  if ($form_values['EXDATE']) {
+    $RRULE .= chr(13).chr(10).'EXDATE:'. $form_values['EXDATE'];
+  }
+  return $RRULE;
 }

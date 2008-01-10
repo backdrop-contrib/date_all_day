@@ -81,28 +81,66 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
   $days = array(date_format($start_date, DATE_FORMAT_DATETIME));
 
   // BYMONTHDAY will look for specific days of the month in one or more months.
-  // This test is only valid when frequency is monthly or yearly.
+  // This process is only valid when frequency is monthly or yearly.
 
   if ($rrule['BYMONTHDAY']) {
-    if (!in_array($rrule['FREQ'], array('MONTHLY', 'WEEKLY', 'YEARLY'))) {
+    if (!in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
       return $days;
     }
     $finished = FALSE;
     $current_day = drupal_clone($start_date);
-    if (empty($rrule['BYMONTH'])) {
-      $rrule['BYMONTH'] = drupal_map_assoc(range(1, 12));
+    $time = date_format($start_date, 'H:i:s');
+    $direction_days = array();
+    // Deconstruct the day in case it has a negative modifier.
+    foreach ($rrule['BYMONTHDAY'] as $day) {
+      ereg("(-)?([0-9]{1,2})", $day, $regs);
+      if (!empty($regs[2])) {
+        // Convert parameters into full day name, count, and direction.
+        $direction_days[$day] = array(
+          'direction' => !empty($regs[1]) ? $regs[1] : '+',
+          'direction_count' => $regs[2],
+          );
+      }
     }
     while(!$finished) {
-      foreach ($rrule['BYMONTH'] as $month) {
+      $period_finished = FALSE;
+      while (!$period_finished) {
         foreach ($rrule['BYMONTHDAY'] as $monthday) {
-          $datetime = date_format($current_day, 'Y') .'-'. date_pad($month) .'-'. date_pad($monthday);
-          $current_day = date_make_date($datetime, $timezone);
+          $day = $direction_days[$monthday];
+          $current_day = date_repeat_set_month_day($current_day, NULL, $day['direction_count'], $day['direction']);
           date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions, $rrule);
-          $finished = date_repeat_is_finished($current_day, $days, $count, $end_date);
+          if ($finished = date_repeat_is_finished($current_day, $days, $count, $end_date)) {
+            $period_finished = TRUE;
+          }
+        }
+        // If it's monthly, keep looping through months, one INTERVAL at a time.
+        if ($rrule['FREQ'] == 'MONTHLY') {
+          if ($finished = date_repeat_is_finished($current_day, $days, $count, $end_date)) {
+            $period_finished = TRUE;
+          }
+          // Back up to first of month and jump.
+          $current_day = date_repeat_set_month_day($current_day, NULL, 1);
+          date_modify($current_day, $jump);
+        }
+        // If it's yearly, break out of the loop at the
+        // end of every year, and jump one INTERVAL in years.
+        else {
+          if (date_format($current_day, 'n') == 12) {
+            $period_finished = TRUE;
+          }
+          else {
+            // Back up to first of month and jump.
+            $current_day = date_repeat_set_month_day($current_day, NULL, 1);
+            date_modify($current_day, '+1 month');
+          }
         }
       }
+      if ($rrule['FREQ'] == 'YEARLY') {
+        // Back up to first of year and jump.
+        $current_day = date_repeat_set_year_day($current_day, NULL, 1);
+        date_modify($current_day, $jump);
+      }
       $finished = date_repeat_is_finished($current_day, $days, $count, $end_date);
-      date_modify($current_day, $jump);
     }
   }
 
@@ -225,12 +263,14 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
               date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions, $rrule);
             }
           }
+          $finished = date_repeat_is_finished($current_day, $days, $count, $end_date);
+
           // If this is a WEEKLY frequency, stop after each week,
           // otherwise, stop when we've moved outside the current period.
           // Jump to the end of the week, then test the period.
           date_modify($current_day, '+1 '. $week_start_day);
           date_modify($current_day, '-1 day');
-          if ($rrule['FREQ'] == 'WEEKLY') {
+          if ($finished || $rrule['FREQ'] == 'WEEKLY') {
             $period_finished = TRUE;
           }
           elseif ($rrule['FREQ'] != 'WEEKLY' && date_format($current_day, $format) != $current_period) {
@@ -278,9 +318,6 @@ function date_repeat_adjust_rrule($rrule, $start_date) {
   }
   elseif (!$rrule['BYDAY'] && !$rrule['BYMONTHDAY'] && $rrule['FREQ'] == 'MONTHLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
-    if (!$rrule['BYMONTH']) {
-      $rrule['BYMONTH'] = array(date_format($start_date, 'n'));
-    }
   }
   elseif (!$rrule['BYDAY'] && !$rrule['BYMONTHDAY'] && !$rrule['BYYEARDAY'] && $rrule['FREQ'] == 'YEARLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
@@ -336,10 +373,21 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
   if (!empty($rrule['BYMONTH']) && !in_array(date_format($current_day, 'n'), $rrule['BYMONTH'])) {
     return FALSE;
   }
-  if (!empty($rrule['BYMONTHDAY']) && !in_array(date_format($current_day, 'j'), $rrule['BYMONTHDAY'])) {
-    return FALSE;
+  if (!empty($rrule['BYMONTHDAY'])) {
+    // Test month days, but only if there are no negative numbers.
+    $BYMONTHDAYS = array();
+    foreach ($rrule['BYMONTHDAY'] as $day) {
+      if ($day > 0) {
+        $BYMONTHDAYS[] = $day;
+      }
+      else {
+        break;
+      }
+    }
+    if (!empty($BYMONTHDAYS) && !in_array(date_format($current_day, 'j'), $BYMONTHDAYS)) {
+      return FALSE;
+    }
   }
-
   // Don't add a day if it is already saved so we don't throw the count off.
   if (in_array($formatted, $days)) {
     return TRUE;
@@ -368,6 +416,8 @@ function date_repeat_is_finished($current_day, $days, $count, $end_date) {
  * Example,
  *   date_set_month_day($date, 'Sunday', 2, '-')
  *   will reset $date to the second to last Sunday in the month.
+ *   If $day is empty, will set to the number of days from the
+ *   beginning or end of the month.
  */
 function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+') {
   if (is_object($date_in)) {
@@ -388,6 +438,9 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+')
       // current month, so we can catch the first of the month.
       date_modify($date, '-1 day');
     }
+    if (empty($day)) {
+      $day = 'days';
+    }
     date_modify($date, $direction . $count .' '. $day);
   }
   return $date;
@@ -399,6 +452,8 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+')
  * Example,
  *   date_set_year_day($date, 'Sunday', 2, '-')
  *   will reset $date to the second to last Sunday in the year.
+ *   If $day is empty, will set to the number of days from the
+ *   beginning or end of the year.
  */
 function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+') {
   if (is_object($date_in)) {
@@ -415,6 +470,9 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+') 
       // For positive search, back up one day to get outside the
       // current year, so we can catch the first of the year.
       date_modify($date, '-1 day');
+    }
+    if (empty($day)) {
+      $day = 'days';
     }
     date_modify($date, $direction . $count .' '. $day);
   }

@@ -88,10 +88,16 @@ function _date_repeat_widget_validate($element) {
   // If the rule, the start date, or the end date have changed, re-calculate
   // the repeating dates, wipe out the previous values, and populate the
   // field with the new values.
+
+  // TODO
+  // Is it right to not do anything unless there are changes? Will that
+  // confuse anyone? Commenting that out for now...
   $rrule = $form_values[$field_name]['rrule'];
-  if (!empty($rrule) && ($rrule != $element['rrule']['#prev_rrule']
-    || $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
-    || $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])) {
+  if (!empty($rrule)
+    //&& ($rrule != $element['rrule']['#prev_rrule']
+    //|| $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
+    //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
+    ){
 
     $parsed = date_ical_parse_rrule($field, $rrule);
     $item = $form_values[$field_name][0];

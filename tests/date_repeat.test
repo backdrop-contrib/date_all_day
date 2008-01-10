@@ -185,7 +185,7 @@ class DateRepeat extends DrupalTestCase {
     //  Note: Since none of the BYDAY, BYMONTHDAY or BYYEARDAY components
     //  are specified, the day is gotten from DTSTART
     $dates = date_repeat_calc($rule, $start, $end, array());
-    $shouldbe = '1997-06-10 09:00:00, 1997-07-10 00:00:00, 1998-06-10 00:00:00, 1998-07-10 00:00:00, 1999-06-10 00:00:00, 1999-07-10 00:00:00, 2000-06-10 00:00:00, 2000-07-10 00:00:00, 2001-06-10 00:00:00, 2001-07-10 00:00:00';
+    $shouldbe = '1997-06-10 09:00:00, 1997-07-10 09:00:00, 1998-06-10 09:00:00, 1998-07-10 09:00:00, 1999-06-10 09:00:00, 1999-07-10 09:00:00, 2000-06-10 09:00:00, 2000-07-10 09:00:00, 2001-06-10 09:00:00, 2001-07-10 09:00:00';
     $result = implode(', ', $dates);
     $this->assertEqual($result, $shouldbe, $rule .'; Starting '.$start .';  results: '. $result);
 
@@ -198,7 +198,7 @@ class DateRepeat extends DrupalTestCase {
     //      (2001 9:00 AM EST)January 10;February 10;March 10
     //      (2003 9:00 AM EST)January 10;February 10;March 10
     $dates = date_repeat_calc($rule, $start, $end, array());
-    $shouldbe = '1997-03-10 09:00:00, 1999-01-10 00:00:00, 1999-02-10 00:00:00, 1999-03-10 00:00:00, 2001-01-10 00:00:00, 2001-02-10 00:00:00, 2001-03-10 00:00:00, 2003-01-10 00:00:00, 2003-02-10 00:00:00, 2003-03-10 00:00:00';
+    $shouldbe = '1997-03-10 09:00:00, 1999-01-10 09:00:00, 1999-02-10 09:00:00, 1999-03-10 09:00:00, 2001-01-10 09:00:00, 2001-02-10 09:00:00, 2001-03-10 09:00:00, 2003-01-10 09:00:00, 2003-02-10 09:00:00, 2003-03-10 09:00:00';
     $result = implode(', ', $dates);
     $this->assertEqual($result, $shouldbe, $rule .'; Starting '.$start .';  results: '. $result);
 
@@ -222,22 +222,16 @@ class DateRepeat extends DrupalTestCase {
     $result = implode(', ', $dates);
     $this->assertEqual($result, $shouldbe, $rule .'; Starting '.$start .';  results: '. $result);
 
-    return;
-
-//An example where the days generated makes a difference because of WKST:
-$date = "DTSTART;TZID=US-Eastern:19970805T090000";
-$rule = "RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO";
-//  ==> (1997 EDT)Aug 5,10,19,24
-//changing only WKST from MO to SU, yields different results...
-$date = "DTSTART;TZID=US-Eastern:19970805T090000";
-$rule = "RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU";
-// Result: 1997 EDT August 5,17,19,31;
-
-//Every 18 months on the 10th thru 15th of the month for 10 occurrences:
-$date = "DTSTART;TZID=US-Eastern:19970910T090000";
-$rule = "RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,13,14,15";
-//  ==> (1997 9:00 AM EDT)September 10,11,12,13,14,15
-//      (1999 9:00 AM EST)March 10,11,12,13
+    //Every 18 months on the 10th thru 15th of the month for 10 occurrences:
+    $start = "1997-09-10 09:00:00";
+    $end = "2004-01-01 09:00:00";
+    $rule = "RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,13,14,15";
+    //  ==> (1997 9:00 AM EDT)September 10,11,12,13,14,15
+    //      (1999 9:00 AM EST)March 10,11,12,13
+    $dates = date_repeat_calc($rule, $start, $end, array());
+    $shouldbe = '1997-09-10 09:00:00, 1997-09-11 09:00:00, 1997-09-12 09:00:00, 1997-09-13 09:00:00, 1997-09-14 09:00:00, 1997-09-15 09:00:00, 1999-03-10 09:00:00, 1999-03-11 09:00:00, 1999-03-12 09:00:00, 1999-03-13 09:00:00';
+    $result = implode(', ', $dates);
+    $this->assertEqual($result, $shouldbe, $rule .'; Starting '.$start .';  results: '. $result);
 
     //Monthly on the third to the last day of the month, forever:
     $start = "1997-09-28 09:00:00";
@@ -247,9 +241,11 @@ $rule = "RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,13,14,15";
     //      (1997 9:00 AM EST)October 29;November 28;December 29
     //      (1998 9:00 AM EST)January 29;February 26
     $dates = date_repeat_calc($rule, $start, $end, array());
-    $shouldbe = '1997-09-28 09:00:00, 1997-10-28 09:00:00, 1997-11-28 09:00:00, 1997-12-28 09:00:00, 1998-01-28 09:00:00, 1998-02-28 09:00:00, 1998-03-28 09:00:00, 1998-04-28 09:00:00, 1998-05-28 09:00:00, 1998-06-28 09:00:00, 1998-07-28 09:00:00, 1998-08-28 09:00:00, 1998-09-28 09:00:00';
+    $shouldbe = '1997-09-28 09:00:00, 1997-10-29 09:00:00, 1997-11-28 09:00:00, 1997-12-29 09:00:00, 1998-01-29 09:00:00, 1998-02-26 09:00:00';
     $result = implode(', ', $dates);
     $this->assertEqual($result, $shouldbe, $rule .'; Starting '.$start .';  results: '. $result);
+
+    return;
 
 //Every Thursday in March, forever:
 $date = "DTSTART;TZID=US-Eastern:19970313T090000";

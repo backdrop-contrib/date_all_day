@@ -122,7 +122,7 @@ function _date_repeat_rrule_process($element, $edit = NULL) {
     '#title' => t('Advanced'),
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
-    '#description' => t('If no advanced options are selected, the date will repeat on the month and day of the start date. Use the options below to override that behavior to select specific months and days to repeat on. Use the \'Except\' box to input dates that should be omitted from the results. '),
+    '#description' => t('If no advanced options are selected, the date will repeat on the day of week of the start date for weekly repeats, otherwise on the month and day of the start date. Use the options below to override that behavior to select specific months and days to repeat on. Use the \'Except\' box to input dates that should be omitted from the results. '),
     );
 
   $element['advanced']['BYMONTH'] = array(

@@ -101,8 +101,6 @@ function date_timezone_menu($may_cache) {
   global $user;
   $items = array();
   if (!$may_cache) {
-    drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
-
     if (!function_exists('throttle_status') || !throttle_status()) { //Don't do anything if the throttle is active.
       // See if the user needs to have their timezone name set.
       if (variable_get('configurable_timezones', 1) && $user->uid > 0 && empty($user->timezone_name)) {

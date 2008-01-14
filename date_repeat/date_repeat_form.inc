@@ -194,25 +194,6 @@ function _date_repeat_rrule_process($element) {
 }
 
 /**
- * Parse an iCal rule into a parsed RRULE array and an EXDATE array.
- */
-function date_repeat_split_rrule($rrule) {
-  $parts = explode("\n", $rrule);
-  foreach ($parts as $part) {
-    if (strstr($part, 'RRULE')) {
-      $RRULE = str_replace('RRULE:', '', $part);
-      $rrule = (array) date_ical_parse_rrule('RRULE:', $RRULE);
-    }
-    elseif (strstr($part, 'EXDATE')) {
-      $EXDATE = str_replace('EXDATE:', '', $part);
-      $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $EXDATE);
-      unset($exceptions['DATA']);
-    }
-  }
-  return array($rrule, $exceptions);
-}
-
-/**
  * Regroup values back into a consistant array, no matter what state it is in.
  */
 function date_repeat_merge($form_values) {

@@ -84,11 +84,11 @@ function date_field_formatter_info() {
 function date_field_formatter($field, $item, $formatter, $node) {
   // Call the right theme for this formatter.
   $dates = date_formatter_process($field, $item, $node, $formatter);
-  $output = theme('date_format_'. $formatter, $field, $item, $node, $dates);
   if (module_exists('date_repeat') && !empty($item['rrule'])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
     $output .= theme('date_repeat_display', $field, $item, $node, $dates);
   }
+  $output .= theme('date_format_'. $formatter, $field, $item, $node, $dates);
   return $output;
 }
 

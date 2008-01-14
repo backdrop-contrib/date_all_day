@@ -149,12 +149,13 @@ function date_repeat_days_ordered($week_start_day) {
  *
  * Constructs a human-readable description of the rule.
  */
-function date_repeat_rrule_description($rrule, $start_date) {
+function date_repeat_rrule_description($rrule, $start_date, $format = 'D M d Y') {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   include_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
 
-  $rrule = date_ical_parse_rrule('RRULE:', $rrule);
-  $rrule = date_repeat_adjust_rrule($rrule, $start_date);
+  $parts = date_repeat_split_rrule($rrule);
+  $exceptions = $parts[1];
+  $rrule = date_repeat_adjust_rrule($parts[0], $start_date);
   $description = array(t('Repeats '));
 
   if ($rrule['BYDAY']) {
@@ -182,7 +183,7 @@ function date_repeat_rrule_description($rrule, $start_date) {
       foreach ($rrule['BYMONTH'] as $month) {
         $results[] = $months[$month];
       }
-      $description[] = implode(', ', $results);
+      $description[] = implode(', ', $results) .' ';
     }
   }
   if ($rrule['INTERVAL'] < 1) {
@@ -208,17 +209,39 @@ function date_repeat_rrule_description($rrule, $start_date) {
   }
   if ($rrule['UNTIL']) {
     $until = date_ical_date($rrule['UNTIL']);
-    $description[] = t('until !until ', array('!until' => date_format_date($until, 'custom', 'D M d Y')));
+    $description[] = t('until !until ', array('!until' => date_format_date($until, 'custom', $format)));
   }
-  if ($rrule['EXDATE']) {
-    $results = explode(',', $rrule['EXDATE']);
-    $description[] = t('except !dates ', array('!dates' => implode(', ', $results)));
+  if ($exceptions) {
+    $values = array();
+    foreach ($exceptions as $exception) {
+      $values[] = date_format_date(date_ical_date($exception), 'custom', $format);
+    }
+    $description[] = t('except !dates ', array('!dates' => implode(', ', $values)));
   }
   if ($rrule['WKST']) {
     $day_names = date_repeat_dow_day_options();
     //$description[] = t('where the week starts on !start ', array('!start' => $day_names[$rrule['WKST']]));
   }
   return implode($description);
+}
+
+/**
+ * Parse an iCal rule into a parsed RRULE array and an EXDATE array.
+ */
+function date_repeat_split_rrule($rrule) {
+  $parts = explode("\n", $rrule);
+  foreach ($parts as $part) {
+    if (strstr($part, 'RRULE')) {
+      $RRULE = str_replace('RRULE:', '', $part);
+      $rrule = (array) date_ical_parse_rrule('RRULE:', $RRULE);
+    }
+    elseif (strstr($part, 'EXDATE')) {
+      $EXDATE = str_replace('EXDATE:', '', $part);
+      $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $EXDATE);
+      unset($exceptions['DATA']);
+    }
+  }
+  return array($rrule, $exceptions);
 }
 
 /**

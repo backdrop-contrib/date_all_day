@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+// Updates happen in random order, whether or not the module is enabled,
+// so include critical code here just to be sure.
+include_once('./'. drupal_get_path('module', 'content') .'/content.module');
+include_once('./'. drupal_get_path('module', 'content') .'/content_admin.inc');
+include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.module');
+include_once('./'. drupal_get_path('module', 'date') .'/date.module');
+include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
+
 /**
  * Implementation of hook_install().
  */
@@ -11,8 +19,6 @@
  */
 function date_install() {
   $ret = array();
-  include_once(drupal_get_path('module', 'date') .'/date.module');
-  include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   date_clear_all();
   return $ret;
 }
@@ -23,8 +29,6 @@ function date_install() {
  */
 function date_uninstall() {
   $ret = array();
-  include_once(drupal_get_path('module', 'date') .'/date.module');
-  include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   // Empty the date caches.
   date_clear_all(TRUE);
   return $ret;
@@ -35,8 +39,6 @@ function date_uninstall() {
  * Reset the calendar caches.
  */
 function date_enable() {
-  include_once(drupal_get_path('module', 'date') .'/date.module');
-  include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   date_clear_all();
 }
 
@@ -45,54 +47,7 @@ function date_enable() {
  * Empty the date caches.
  */
 function date_disable() {
-  include_once(drupal_get_path('module', 'date') .'/date.module');
-  include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   date_clear_all(TRUE);
-}
-
-/**
- * Implementation of hook_requirements().
- * Make sure a site timezone name has been selected.
- * Allow for other ways to set timezone names by only
- * suggesting and not requiring the installation of the
- * Date Timezone module.
- */
-function date_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-  $error = FALSE;
-  $value = array();
-
-  switch ($phase) {
-    case 'runtime':
-      $tz_name = variable_get('date_default_timezone_name', NULL);
-      if ($tz_name === NULL || $tz_name == 'GMT') {
-        $error = TRUE;
-        $severity = REQUIREMENT_ERROR;
-        if (!module_exists('date_timezone')) {
-          $value = $t('The Date module requires you to set site and user timezone names. Please install the !link.', array('!link' => l($t('Date Timezone module'), 'admin/build/modules')));
-        }
-        else {
-          $value = $t('The Date module requires you to !link.', array('!link' => l($t('set the site timezone name'), 'admin/settings/date-time')));
-        }
-      }
-      elseif (function_exists('date_create')) {
-        $date = date_make_date('now', $tz_name);
-        if (date_offset_get($date) != variable_get('date_default_timezone', 0)) {
-          $error = TRUE;
-          $value = $t('The !link may not be correct.', array('!link' => l($t('site timezone name'), 'admin/settings/date-time')));
-          $severity = REQUIREMENT_WARNING;
-        }
-      }
-  }
-  if ($error) {
-      $requirements['date_default_timezone'] = array(
-        'title' => $t('Date requirements'),
-        'value' => $value,
-        'severity' => $severity,
-        );
-    }
-  return $requirements;
 }
 
 function date_update_1() {
@@ -148,9 +103,6 @@ function date_update_3() {
   if (!db_table_exists('node_field_date_data')) {
     return $ret;
   }
-  include_once(drupal_get_path('module', 'content') .'/content.module');
-  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
-
   content_clear_type_cache();
   $fields = content_fields();
 
@@ -189,10 +141,6 @@ function date_update_3() {
 
 function date_update_4() {
   $ret = array();
-
-  include_once(drupal_get_path('module', 'content') .'/content.module');
-  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
-
   content_clear_type_cache();
   $fields = content_fields();
 
@@ -250,7 +198,6 @@ function date_update_7() {
  */
 function date_update_5100() {
   $ret = array();
-  include_once(drupal_get_path('module', 'content') .'/content.module');
   $fields = content_fields();
   foreach ($fields as $field) {
     if (strstr($field['type'], 'date')) {
@@ -389,10 +336,6 @@ function date_update_5104() {
  */
 function date_update_5200() {
   $ret = array();
-  include_once(drupal_get_path('module', 'content') .'/content.module');
-  if (module_exists('views')) {
-    include_once(drupal_get_path('module', 'views') .'/views.module');
-  }
 
   // Make sure date module loads after date_api.
   $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
@@ -429,9 +372,6 @@ function date_update_5201() {
 
 function date_db_integrity($name) {
   $ret = array();
-  include_once(drupal_get_path('module', 'content') .'/content.module');
-  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
-  include_once(drupal_get_path('module', 'date') .'/date.module');
   $fields = content_fields();
   foreach ($fields as $field) {
     $db_info = content_database_info($field);
@@ -482,10 +422,6 @@ function date_data_integrity($name, $force_recalc = FALSE) {
   if (!module_exists('date_api')) {
     drupal_install_modules(array('date_api'));
   }
-  include_once(drupal_get_path('module', 'content') .'/content.module');
-  include_once(drupal_get_path('module', 'content') .'/content_admin.inc');
-  include_once(drupal_get_path('module', 'date_api') .'/date_api.module');
-  include_once(drupal_get_path('module', 'date') .'/date.module');
   $fields = content_fields();
   // See if being called for the first time
   if (!isset($_SESSION[$update_name]) || empty($_SESSION[$update_name]['tables'])) {

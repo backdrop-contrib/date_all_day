@@ -99,7 +99,6 @@ function _date_repeat_widget_validate($element) {
     //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
     ){
 
-    $parsed = date_ical_parse_rrule($field, $rrule);
     $item = $form_values[$field_name][0];
     $timezone = date_get_timezone($field['tz_handling'], $item[0]['timezone']);
     $start = date_make_date($item['value'], $timezone, $field['type']);
@@ -116,7 +115,14 @@ function _date_repeat_widget_validate($element) {
     $end = date_ical_date($values['UNTIL'], $timezone);
     $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
 
-    $exceptions = explode(',', $parsed['EXDATE']);
+    $parts = date_repeat_split_rrule($rrule);
+    $parsed = $parts[0];
+    $parsed_exceptions = $parts[1];
+    foreach ($parsed_exceptions as $exception) {
+      $date = date_ical_date($exception);
+      $exceptions[] = date_format($date, 'Y-m-d');
+    }
+
     $dates = date_repeat_calc($rrule, $start_datetime, $end_datetime, $exceptions);
     foreach ($dates as $delta => $date) {
       $date_start = date_make_date($date, $timezone, $field['type']);

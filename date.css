@@ -45,3 +45,7 @@
 .date-repeat-input select {
   min-width:7em;
 }
+.date-repeat fieldset {
+  clear:both;
+  float:none;
+}

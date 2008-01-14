@@ -356,7 +356,7 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
   if ($formatted < date_format($start_date, DATE_FORMAT_DATETIME)) {
     return FALSE;
   }
-  if (in_array($formatted, $exceptions)) {
+  if (in_array(date_format($current_day, 'Y-m-d'), $exceptions)) {
     return FALSE;
   }
   if (!empty($rrule['BYDAY'])) {

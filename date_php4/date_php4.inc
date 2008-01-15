@@ -392,17 +392,19 @@ if (!function_exists('date_modify')) {
  */
   function date_modify(&$date, $change) {
     $cdate = $date->value;
-    // Date is too old for strtotime(), or looking for custom +/- values, use date_calc instead.
+    $time = substr($date->value, 11, 8);
+
+    //Date is too old for strtotime(), or looking for custom +/- values, use date_calc instead.
     if (substr($change, 0, 1) != '+' && substr($change, 0, 1) != '-'
     && 1971 < date_part_extract($cdate, 'year')
     && date_part_extract($cdate, 'year') < 2038) {
       $cdate = strtotime($change, strtotime($cdate .' UTC'));
-      $date->value = date_gmdate(DATE_FORMAT_DATETIME, $cdate);
+      // strtotime will sometimes end up with a bogus adjustment for daylight
+      // savings time, so compute the date and force them time back to the original.
+      $date->value = substr_replace(date_gmdate(DATE_FORMAT_DATETIME, $cdate), $time, 11);
     }
     else {
       include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_calc.inc');
-
-      $time = substr($date->value, 11, 8);
       $days = date_week_days_untranslated();
       $dows = array_flip($days);
       preg_match('/([+|-])([0-9]{1,4}).([day(s)?|week(s)?|month(s)?|year(s)?|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]{1,10})/', $change, $results);
@@ -412,7 +414,6 @@ if (!function_exists('date_modify')) {
       if (substr($item, -1) == 's') {
         $item = substr($item, 0, strlen($item) - 1);
       }
-
       // Process +/- Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday
       if (in_array($item, $days)) {
         $dow = $dows[$item];
@@ -453,7 +454,7 @@ if (!function_exists('date_modify')) {
         }
         // Find the next end or beginning of month that matches the search.
         $day = date_part_extract($cdate, 'day');
-        $cdate = $function($count, date_part_extract($cdate, 'month'), date_part_extract($cdate, 'year'));
+        $cdate = $function($direction . $count, date_part_extract($cdate, 'month'), date_part_extract($cdate, 'year'));
         // Construct a new date with the current day of the month and the new month and year.
         $mon = date_part_extract($cdate, 'month');
         $year = date_part_extract($cdate, 'year');

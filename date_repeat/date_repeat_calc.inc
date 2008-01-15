@@ -245,7 +245,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
       // jump to the next week. The date_repeat_add_dates() function will
       // keep dates outside the range from getting added.
       if (date_repeat_dow2day(date_format($current_day, 'w')) != $week_start_day) {
-        date_modify($current_day, '-1'. $week_start_day);
+        date_modify($current_day, '-1 '. $week_start_day);
       }
       while (!$finished) {
         $period_finished = FALSE;

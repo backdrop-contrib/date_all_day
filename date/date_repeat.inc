@@ -24,14 +24,20 @@
 /**
  * Theme the human-readable description for a Date Repeat rule.
  *
- * This is an interim solution, we won't want to repeat this rule on
+ * TODO - This is an interim solution, we won't want to repeat this rule on
  * every repeation of the date, we'll want to optionally display
- * the rule instead of the whole list of repeating dates. No easy
- * way to do this in D5, it will work better in D6.
+ * the rule instead of the whole list of repeating dates or add
+ * in ways to store the description in the date so it isn't regenerated
+ * over and over and find a way to allow it to be shown or hidden.
  */
 function theme_date_repeat_display($field, $item, $node = NULL, $dates) {
-  $output = date_repeat_rrule_description($item['rrule'], $dates['value']['local']['object']);
-  $output = '<div>'. $output .'</div>';
+  // If $field['field_name'] isn't set, this isn't a node, and is
+  // probably on a calendar view. The description is too expensive an
+  // operation to run on every field in a view, so don't do it.
+  if (isset($node->$field['field_name'])) {
+    $output = date_repeat_rrule_description($item['rrule'], $dates['value']['local']['object']);
+    $output = '<div>'. $output .'</div>';
+  }
   return $output;
 }
 

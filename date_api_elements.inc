@@ -531,7 +531,12 @@ function date_convert_from_custom($date, $format) {
   elseif ($ampm == 'am' && $final_date['hour'] == 12) {
     $final_date['hour'] -= 12;
   }
-  return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
+  if (date_is_valid($final_date, DATE_ARRAY)) {
+    return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
+  }
+  else {
+    return NULL;
+  }
 }
 
 /**

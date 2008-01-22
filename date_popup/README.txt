@@ -19,6 +19,17 @@ To include a popup calendar in a form, use the type 'date_popup':
     ....
   );
 
+Set the #type to date_popup and fill the element #default_value with
+a date adjusted to the proper local timezone, or leave it blank.
+
+The element will create two textfields, one for the date and one for the
+time. The date textfield will include a jQuery popup calendar date picker,
+and the time textfield uses a jQuery timepicker.
+
+NOTE - Converting a date stored in the database from UTC to the local zone
+and converting it back to UTC before storing it is not handled by this
+element and must be done in pre-form and post-form processing!!
+
 ==================================================================================
 Customization
 ==================================================================================
@@ -50,37 +61,9 @@ are:
   in year selector, in the format -{years back}:+{years forward},
   like -3:+3
 
-#date_timezone_db
-   The timezone to convert the input value to, default is 'UTC'.
-
-#date_timezone_handling
-  'site', 'user', 'date', 'UTC', or 'none'
-
-#date_timezone_local
-   Only applies if #date_timezone_handling is set to 'date', the timezone name to use
-
-#date_granularity
-   an array of date parts to display, leave out time elements to omit a time selector,
-   include or exclude 'S' to control whether seconds are included
-   Allowed values are:
-   Y (year), M (month), D (day), H (hours), N (minutes), S (seconds)
-
 #date_increment
    increment minutes and seconds by this amount, default is 1
 
-#date_empty
-   handling for empty date values:
-     'blank' to show blank value
-     'now' to show current time
-     'strftime' to use strftime to adjust the current time
-     'date' to insert a specific date
-
-#date_empty_code
-   if #date_empty is 'strftime' use the value in #date_empty_code, like:
-     [+-][##] [years|months|days|hours|minutes|seconds], i.e. '+90 days'
-   if #date_empty is 'date' use the value in #date_empty_code as the date
-     should be formatted as #date_type, using timezone from #date_timezone_db
-  
 ==================================================================================
 Example:
 ==================================================================================
@@ -89,12 +72,10 @@ $form['date'] = array(
   '#type' => 'date_popup',
   '#default_value' => '2007-01-01 10:30:00,
   '#date_type' => DATE_DATETIME,
-  '#date_format' => 'm.d.Y h:ia',
-  '#date_year_range' => -3:+3,
-  '#date_timezone_handling => 'date',
-  '#date_timezone_local' => 'US/Central',
-  '#date_increment' => 15,
-  '#date_granularity' => array('Y', 'M', 'D', 'H', 'N'),
+  '#date_timezone' => date_default_timezone_name(),
+  '#date_format' => 'm/d/Y - H:i',
+  '#date_increment' => 1,
+  '#date_year_range' => '-3:+3',
 );
 
 ==================================================================================

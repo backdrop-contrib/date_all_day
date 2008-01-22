@@ -2,11 +2,10 @@ Installation instructions:
 
 1) Download the whole package of files from http://drupal.org/project/date.
 
-2) Upload the date files to a 'date' folder in the modules directory. The package
-   includes files needed by the Date API, and optional modules to to create
-   CCK date fields.
+2) Upload the date files to the modules directory. The package includes files 
+   needed by the Date API, and optional modules to to create CCK date fields.
 
-3) Go to admin/build/modules and enable the Date API module. 
+3) Go to admin/build/modules and enable the needed modules from the Date/Time group. 
 
 You should end up with a structure like: 
 
@@ -14,12 +13,15 @@ You should end up with a structure like:
    /drupal/sites/all/modules/date/date_api.install
    /drupal/sites/all/modules/date/date_api.module
    /drupal/sites/all/modules/date/date_api.inc
-   /drupal/sites/all/modules/date/date_forms.inc
-   /drupal/sites/all/modules/date/date_ical.inc
+   /drupal/sites/all/modules/date/date_api_elements.inc
+   /drupal/sites/all/modules/date/date_api_ical.inc
 
    /drupal/sites/all/modules/date/date/date.info
    /drupal/sites/all/modules/date/date/date.install
    /drupal/sites/all/modules/date/date/date.module
+   /drupal/sites/all/modules/date/date/date_admin.inc
+   /drupal/sites/all/modules/date/date/date_views.inc
+   /drupal/sites/all/modules/date/date/date_elements.inc
 
    /drupal/sites/all/modules/date/date_copy/date_copy.info
    /drupal/sites/all/modules/date/date_copy/date_copy.module
@@ -32,15 +34,20 @@ You should end up with a structure like:
    /drupal/sites/all/modules/date/date_php4/date_php4_tz_map.inc
 
 
-PHP 4 substitutions are made for PHP 5 date handling when needed by enabling the Date PHP4
-module. 
+If you are using PHP 4 or PHP 5.0 or 5.1, native date handling won't work right.
+Install the Date_PHP4 module to enable wrapper functions so this code will work
+in old PHP versions. 
 
-CCK Date Field installation instructions:
+In most cases, you should enable the Date Timezone module any time you use the
+Date API to be able to set the site and user timezone names. It is not enabled by 
+default in case another module is setting timezone names in the database.
+
+To install CCK Date Fields:
 
 1) The CCK date field is included in the Date files at http://drupal.org/project/date.
 
-2) Go to admin/build/modules and enable the date module. Be sure that the Date API module
-   and the Content module are also installed.
+2) Go to admin/build/modules and enable the Date module. Be sure that the Date API module,
+   the Date Timezone module, and the Content module are also installed.
 
 3) Go to admin/content/types to view cck content types and edit a content type.
 

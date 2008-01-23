@@ -235,6 +235,7 @@ function date_repeat_rrule_validate($element){
   $item = $form_values[$field_name]['rrule'];
   $item = date_repeat_merge($item);
 
+  $exceptions = array();
   foreach($item['EXDATE'] as $delta => $value) {
     if(!empty($value['datetime'])){
       $date = date_make_date($value['datetime'], 'UTC');

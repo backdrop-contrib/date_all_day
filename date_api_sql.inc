@@ -38,7 +38,7 @@ function date_sql_db_timezone_support() {
  *
  *  @param $result_type - NOW, DATE, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, DOW, DOY, WEEK
  *  @param $field - the name of the date field to be analyzed
- *  @param $date_type - the type of date field being analyzed, int or iso
+ *  @param $date_type - the type of date field being analyzed, DATE_UNIX or DATE_ISO
  *  @param $offset - timezone offset in seconds, can be either a value or fieldname
  *  @param $offset_op - the operation to perform on the offset, + or -
  *  @return a SQL statement appropriate for the $db_type
@@ -47,7 +47,7 @@ function date_sql_db_timezone_support() {
  *  mysql returns:    WEEK(FROM_UNIXTIME(MYFIELD) + INTERVAL MYOFFSETFIELD SECOND, 3)
  *  postgres returns: EXTRACT(WEEK FROM((MYFIELD::ABSTIME) + INTERVAL MYOFFSETFIELD SECONDS))
  */
-function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offset_op = '+') {
+function date_sql($result_type, $field, $date_type = DATE_UNIX, $offset = '', $offset_op = '+') {
   global $db_type;
 
   // NOW() is timezone-adjusted by OS, adjust only for the server adj,
@@ -70,7 +70,7 @@ function date_sql($result_type, $field, $date_type = 'int', $offset = '', $offse
   // Convert integer field value to native date format.
   // Since FROM_UNIXTIME() and TIMESTAMP() are timezone adjusted,
   // remove server adj, correct offset will get added back in later step.
-  elseif ($date_type == 'int' && $field) {
+  elseif ($date_type == DATE_UNIX && $field) {
     switch ($db_type) {
       case('mysql'):
       case('mysqli'):

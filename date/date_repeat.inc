@@ -123,7 +123,8 @@ function _date_repeat_widget_validate($element) {
 
     $parts = date_repeat_split_rrule($rrule);
     $parsed = $parts[0];
-    $parsed_exceptions = $parts[1];
+    $parsed_exceptions = (array) $parts[1];
+    $exceptions = array();
     foreach ($parsed_exceptions as $exception) {
       $date = date_ical_date($exception);
       $exceptions[] = date_format($date, 'Y-m-d');

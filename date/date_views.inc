@@ -715,10 +715,14 @@ function date_views_browser_period_format($period) {
  *  Format an argument for the date range
  */
 function date_views_browser_period_arg($arg = NULL, $period = 'month') {
+  if (empty($arg)) {
+    $now = date_now();
+    $arg = date_format($now, date_browser_period_format($period));
+  }
   $range = date_views_date_range($arg);
   $date = date_make_date($range[0], 'UTC');
-  return date_format_date($date, 'custom', date_views_browser_period_format($period) .
-    date_views_browser_period($period));
+  return date_format_date($date, 'custom', date_views_browser_period_format($period)) .
+    date_views_browser_period($period);
 }
 
 /**
@@ -752,7 +756,7 @@ function date_views_browser_navigation($view, $period) {
     date_views_browser_period($period);
   // Move forward 2 periods (back to the current period and to the next period)
   // and create a link to that date.
-  date_next($date, 2, $period);
+  date_modify($date, '+2 '. $period);
   $next = $view->url .'/'.
     date_format_date($date, 'custom', date_views_browser_period_format($period)) .
     date_views_browser_period($period);
@@ -809,7 +813,6 @@ function theme_date_views_browser_summary_view($view, $type, $level, $nodes, $ar
  *  $display -- views_view_list, views_view_table, views_view_teasers, views_view_nodes
  */
 function theme_date_views_browser_full_view($view, $nodes, $type) {
-
   $teasers = true;
   $links   = true;
   drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');

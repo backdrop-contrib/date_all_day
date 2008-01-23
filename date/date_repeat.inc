@@ -22,26 +22,6 @@
  */
 
 /**
- * Theme the human-readable description for a Date Repeat rule.
- *
- * TODO - This is an interim solution, we won't want to repeat this rule on
- * every repeation of the date, we'll want to optionally display
- * the rule instead of the whole list of repeating dates or add
- * in ways to store the description in the date so it isn't regenerated
- * over and over and find a way to allow it to be shown or hidden.
- */
-function theme_date_repeat_display($field, $item, $node = NULL, $dates) {
-  // If $field['field_name'] isn't set, this isn't a node, and is
-  // probably on a calendar view. The description is too expensive an
-  // operation to run on every field in a view, so don't do it.
-  if (isset($node->$field['field_name'])) {
-    $output = date_repeat_rrule_description($item['rrule'], $dates['value']['local']['object']);
-    $output = '<div>'. $output .'</div>';
-  }
-  return $output;
-}
-
-/**
  * Widget processing for date repeat form element.
  *
  * Create the RRULE as a top-level element rather than a delta level

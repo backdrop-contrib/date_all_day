@@ -380,7 +380,7 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
 
     case 'title':
       $value = explode('P', $query);
-      $item = array(key($db_info['columns']) => $value[0]);
+      $item = array(key($db_info['columns']) => date_range_value($value[0]));
       return content_format($field, $item, 'default');
   }
 }
@@ -603,6 +603,19 @@ function _date_views_query_alter(&$query, &$view) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
   $date_views_browser_views = date_views_browser_get_views();
   if (in_array($view->name, array_keys($date_views_browser_views))) {
+    $name       = explode(':', $view->argument[0]['type']);
+    $field_name = trim($name[1]);
+    $field      = content_fields($field_name);
+    $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
+    $db_info    = content_database_info($field);
+    $table      = 'node_data_'. $field['field_name'];
+
+    // Add a combo FROM|TO date field to the query
+    $value      = $db_info['columns']['value']['column'];
+    $value2     = $db_info['columns']['value2']['column'];
+    $combo = date_sql_concat(array($table .'.'. $value, "'|'", $table .'.'. $value2)) .' AS date_combo ';
+    $query->add_field($combo, NULL);
+
     $path = explode('/', $view->url);
     $pos = sizeof($path);
     if ($view->build_type == 'block' || arg($pos) == '') {
@@ -613,15 +626,7 @@ function _date_views_query_alter(&$query, &$view) {
     }
     if ($arg == NULL) {
       // if no argument specified, add the current date range to the query
-      $arg        = date_views_browser_period_arg($arg, $view->argument[0]['options']);
-      $name       = explode(':', $view->argument[0]['type']);
-      $field_name = trim($name[1]);
-      $field      = content_fields($field_name);
-      $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
-      $db_info    = content_database_info($field);
-      $value      = $db_info['columns']['value']['column'];
-      $table      = 'node_data_'. $field['field_name'];
-      $offset     = date_views_offset($field);
+      $arg  = date_views_browser_period_arg($arg, $view->argument[0]['options']);
       if ($range  = date_views_date_range($arg)) {
         $query->ensure_table($table);
         $query->add_field('nid', 'node');
@@ -630,7 +635,6 @@ function _date_views_query_alter(&$query, &$view) {
         $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       }
     }
-
   }
 }
 

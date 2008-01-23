@@ -11,35 +11,35 @@
  * Formatter themes
  */
 function theme_date_format_ical($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_timestamp($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_long($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_medium($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_short($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_iso($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_feed($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 function theme_date_format_default($field, $item, $node, $dates){
-  return theme('date_display_combination', $field, $dates, $node);
+  return theme('date_display_combination', $field, $item, $dates, $node);
 }
 
 /**
@@ -69,7 +69,7 @@ function theme_date_format_default($field, $item, $node, $dates){
  *    $dates['value2']['formatted_date'] - only the date part of the formatted To date
  *    $dates['value2']['formatted_time'] - only the time part of the formatted To date
  */
-function theme_date_display_combination($field, $dates, $node = NULL) {
+function theme_date_display_combination($field, $item, $dates, $node = NULL) {
   $date1 = $dates['value']['formatted'];
   $date2 = $dates['value2']['formatted'];
   // No date values, display nothing.
@@ -92,6 +92,10 @@ function theme_date_display_combination($field, $dates, $node = NULL) {
     $output .= '<span class="date-display-start">'. $date1 .'</span>'.
       '<span class="date-display-separator"> - </span>'.
       '<span class="date-display-end">'. $date2 .'</span>';
+  }
+  if (module_exists('date_repeat') && !empty($item['rrule'])) {
+    include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
+    $output .= theme('date_repeat_display', $field, $item, $node, $dates);
   }
   return $output;
 }
@@ -131,6 +135,24 @@ function theme_date_format_interval($field, $item, $node = NULL) {
   else {
     return t('!time ago', array('!time' => format_interval($now - $end)));
   }
+}
+
+/**
+ * Theme the human-readable description for a Date Repeat rule.
+ *
+ * TODO -
+ * add in ways to store the description in the date so it isn't regenerated
+ * over and over and find a way to allow description to be shown or hidden.
+ */
+function theme_date_repeat_display($field, $item, $node = NULL, $dates) {
+  // If $field['field_name'] isn't set, this isn't a node, and is
+  // probably on a calendar view. The description is too expensive an
+  // operation to run on every field in a view, so don't do it.
+  if (isset($node->$field['field_name'])) {
+    $output = date_repeat_rrule_description($item['rrule'], $dates['value']['local']['object']);
+    $output = '<div>'. $output .'</div>';
+  }
+  return $output;
 }
 
 /**
@@ -175,14 +197,19 @@ function theme_date_views_browser_summary_view($view, $type, $level, $nodes, $ar
   return theme('date_views_browser_full_view', $view, $nodes, $type);
 }
 /**
- *  View, themed so it can be overridden
- *  $display -- views_view_list, views_view_table, views_view_teasers, views_view_nodes
+ * View, themed so it can be overridden
+ *
+ * Set $display to views_view_list, views_view_table, views_view_teasers,
+ * or views_view_nodes
+ *
+ * As an alternative, override this theme and set the display to
+ * date_views_browser_items for a display of only the current item
+ * value to keep multiple value dates from repeating the whole
+ * teaser each time.
  */
 function theme_date_views_browser_full_view($view, $nodes, $type) {
   $teasers = true;
   $links   = true;
-  drupal_add_css(drupal_get_path('module', 'date_api') .'/date.css');
-
   $date_views_browser_views = date_views_browser_get_views();
   $period = $date_views_browser_views[$view->name]->options;
   switch ($type) {
@@ -198,8 +225,49 @@ function theme_date_views_browser_full_view($view, $nodes, $type) {
       break;
   }
   $output .= theme($display, $view, $nodes, $type, $teasers, $links);
-
   return $output;
+}
+
+/**
+ * Alternative Date Browser Display
+ *
+ * Display only the selected browser items instead of teasers or nodes,
+ * use for multiple date values to keep the entire teaser or node from being
+ * repeated for every multiple value of the date.
+ */
+function theme_date_views_browser_items($view, $nodes, $type, $teasers, $links) {
+  $fields = _views_get_fields();
+  $items = array();
+  foreach ($nodes as $node) {
+    $item = '';
+    foreach ($view->field as $field) {
+      if ($fields[$field['id']]['visible'] !== FALSE) {
+        if ($field['label']) {
+          $item .= "<div class='view-label ". views_css_safe('view-label-'. $field['queryname']) ."'>" . $field['label'] . "</div>";
+        }
+        // If this is the date field, format and display the current value.
+        if (strstr($field['handler'], 'content_views_')) {
+          $field_name = explode('_value', $field['field']);
+          if (!empty($node->date_combo)) {
+            $values = explode('|', $node->date_combo);
+            $node_item = array('value' => $values[0], 'value2' => $values[1]);
+          }
+          else {
+            $node_item = array('value' => $node->$field['field']);
+          }
+          $item .=  "<div class='view-field ". views_css_safe('view-data-'. $field['queryname']) ."'>" . content_format($field_name[0], $node_item, $field['options'], $node) . "</div>";
+        }
+        // If this is a non-date field, just display it normally.
+        else {
+          $item .= "<div class='view-field ". views_css_safe('view-data-'. $field['queryname']) ."'>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node, $view) . "</div>";
+        }
+      }
+    }
+    $items[] = "<div class='view-item ". views_css_safe('view-item-'. $view->name) ."'>$item</div>\n";
+  }
+  if ($items) {
+   	return theme('item_list', $items);
+  }
 }
 
 /** @} End of addtogroup themeable */

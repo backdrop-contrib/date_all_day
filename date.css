@@ -37,6 +37,16 @@
   padding: 0;
 }
 
+/* formatting for from/to dates in nodes and views */
+span.date-display-single {
+}
+span.date-display-start {
+}
+span.date-display-end {
+}
+span.date-display-separator {
+}
+
 .date-repeat-input {
   float:left;
   width:auto;

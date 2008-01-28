@@ -86,7 +86,7 @@ function date_ical_import($filename) {
     // Check the return result
     if ($icaldatafetch->error) {
       drupal_set_message('Request Error: ' . $icaldatafetch->error, 'error');
-      return array();
+      return false;
     }
     // Break the return result into one array entry per lines
     $icaldatafolded = explode("\n", $icaldatafetch->data);
@@ -95,15 +95,16 @@ function date_ical_import($filename) {
     $icaldatafolded = @file($filename, FILE_IGNORE_NEW_LINES);
     if ($icaldatafolded === FALSE) {
       drupal_set_message('Failed to open file: ' . $filename, 'error');
-      return array();
+      return false;
     }
   }
 
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
     drupal_set_message('Invalid calendar file:' . $filename, 'error');
-    return array();
+    return false;
   }
+
 
   // "unfold" wrapped lines
   $icaldata = array();
@@ -113,133 +114,160 @@ function date_ical_import($filename) {
     // If not, it is a continuation of the previous line.
     // The regex is to ensure that wrapped QUOTED-PRINTABLE data
     // is kept intact.
-    ereg ("([A-Z]+)[:|;](.*)", $line, $out);
-    if (empty($out)) {
+    if (!preg_match('/([A-Z]+)[:;](.*)/', $line, $out)) {
       $line = array_pop($icaldata) . ($line);
     }
     $icaldata[] = $line;
   }
-  $icaldatafolded = NULL;
+  unset($icaldatafolded);
 
   // Parse the iCal information
-  $is_subgroup = FALSE;
-  $skip = FALSE;
+  $parents = array();
+  $subgroups = array();
   foreach ($icaldata as $line) {
     $line = trim($line);
     $vcal .= $line ."\n";
-
-    switch ($line) {
-
-    	case 'BEGIN:VEVENT':
-    	case 'BEGIN:VALARM':
-    	case 'BEGIN:VTODO':
-    	case 'BEGIN:VJOURNAL':
-    	case 'BEGIN:VVENUE':
-    	case 'BEGIN:VFREEBUSY':
-    	case 'BEGIN:VTIMEZONE':
-    		unset($subgroup);
-    		$type = str_replace('BEGIN:', '', $line);
-	      $subgroup['TYPE'] = $type;
-        $is_subgroup = TRUE;
-	      break;
-
-	    case 'END:VEVENT':
-	    case 'END:VALARM':
-	    case 'END:VTODO':
-    	case 'END:VJOURNAL':
-    	case 'END:VVENUE':
-    	case 'END:VFREEBUSY':
-    	case 'END:VTIMEZONE':
-    	  // Can't be sure whether DTSTART is before or after DURATION,
-    	  // so parse DURATION at the end.
-	      if (array_key_exists('DURATION', $subgroup)) {
-	        date_ical_parse_duration($subgroup);
-	      }
-        // Check for all-day events.
-    	  if (array_key_exists('DTSTART', $subgroup) && !array_key_exists(DTEND, $subgroup)) {
-    	    $subgroup['DTSTART']['all_day'] = 1;
-    	  }
-    	  $items[] = $subgroup;
-        unset($subgroup);
-    		$is_subgroup = FALSE;
-    		break;
-
-      default:
-        unset ($field, $data, $prop_pos, $property);
-        $reg = date_api_ical_split($line);
-        $field = $reg[1];
-        $data = $reg[2];
-        $property = $field;
-        $prop_pos = strpos($property,';');
-        if ($prop_pos !== false) $property = substr($property, 0, $prop_pos);
-        $property = strtoupper(trim($property));
-        switch ($property) {
-          // Keep blank lines out of the results.
-          case '':
+    // Deal with begin/end tags separately
+    if (preg_match('/(BEGIN|END):(\S+)/', $line, $matches)) {
+      $closure = $matches[1];
+      $type = $matches[2];
+      if ($closure == 'BEGIN') {
+        array_push($parents, $type);
+        array_push($subgroups, array());
+      }
+      else if ($closure == 'END') {
+        end($subgroups);
+        $subgroup =& $subgroups[key($subgroups)];
+        switch($type) {
+          case 'VCALENDAR':
+            if (prev($subgroups) == false) {
+              $items[] = array_pop($subgroups);
+            }
+            else {
+              $parent[array_pop($parents)][] = array_pop($subgroups);
+            }
             break;
+          // Add the timezones in with their index their TZID
+          case 'VTIMEZONE':
+            $subgroup = end($subgroups);
+            $id = $subgroup['TZID'];
+            unset($subgroup['TZID']);
+
+            // Append this subgroup onto the one above it
+            prev($subgroups);
+            $parent =& $subgroups[key($subgroups)];
+
+            $parent[$type][$id] = $subgroup;
+
+            array_pop($subgroups);
+            array_pop($parents);
+            break;
+          // Do some fun stuff with durations and all_day events
+          // and then append to parent
+          case 'VEVENT':
+          case 'VALARM':
+          case 'VTODO':
+          case 'VJOURNAL':
+          case 'VVENUE':
+          case 'VFREEBUSY':
+          default:
+            // Can't be sure whether DTSTART is before or after DURATION,
+            // so parse DURATION at the end.
+            if (isset($subgroup['DURATION'])) {
+              date_ical_parse_duration($subgroup);
+            }
+            // Check for all-day events setting the 'all_day' property under
+            // the component instead of DTSTART/DTEND subcomponents
+            if ((isset($subgroup['DTSTART']) && !isset($subgroup['DTEND'])) ||
+            ($subgroup['DTSTART']['all_day'] && $subgroup['DTEND']['all_day'])) {
+              $subgroup['all_day'] = true;
+              if (!isset($subgroup['DTEND'])) {
+                $subgroup['DTEND'] = $subgroup['DTSTART'];
+              }
+              unset($subgroup['DTSTART']['all_day']);
+              unset($subgroup['DTEND']['all_day']);
+            }
+          // Add this element to the parent as an array under the
+          // component name
+          default:
+            prev($subgroups);
+            $parent =& $subgroups[key($subgroups)];
+
+            $parent[$type][] = $subgroup;
+
+            array_pop($subgroups);
+            array_pop($parents);
+            break;
+        }
+      }
+    }
+    // Handle all other possibilities
+    else {
+      // Grab current subgroup
+      end($subgroups);
+      $subgroup =& $subgroups[key($subgroups)];
+
+      // Split up the line into nice pieces for PROPERTYNAME,
+      // PROPERTYATTRIBUTES, and PROPERTYVALUE
+      preg_match('/([^;:]+)(?:;([^:]*))?:(.+)/', $line, $matches);
+      $name = strtoupper(trim($matches[1]));
+      $attributes = $matches[2];
+      $data = $matches[3];
+
+      $parse_result = '';
+      switch ($name) {
+        // Keep blank lines out of the results.
+        case '':
+          break;
 
           // Lots of properties have date values that must be parsed out.
-          case 'CREATED':
-          case 'LAST-MODIFIED':
-          case 'DTSTART':
-          case 'DTEND':
-          case 'DTSTAMP':
-          case 'RDATE':
-          case 'TRIGGER':
-          case 'FREEBUSY':
-          case 'DUE':
-          case 'COMPLETED':
-            if (!$is_subgroup) {
-              $items[$property] = date_ical_parse_date($field, $data);
-            }
-	          else {
-	            $subgroup[$property] = date_ical_parse_date($field, $data);
-	          }
-	          break;
+        case 'CREATED':
+        case 'LAST-MODIFIED':
+        case 'DTSTART':
+        case 'DTEND':
+        case 'DTSTAMP':
+        case 'RDATE':
+        case 'TRIGGER':
+        case 'FREEBUSY':
+        case 'DUE':
+        case 'COMPLETED':
+          $parse_result = date_ical_parse_date($field, $data);
+          break;
 
-          case 'EXDATE':
-            $subgroup[$property] = date_ical_parse_exceptions($field, $data);
-            break;
+        case 'EXDATE':
+          $parse_result = date_ical_parse_exceptions($field, $data);
+          break;
 
-          case 'DURATION':
-            // Can't be sure whether DTSTART is before or after DURATION in
-	          // the VEVENT, so store the data and parse it at the end.
-	          $subgroup['DURATION'] = array('DATA' => $data);
-	          break;
+        case 'DURATION':
+          // Can't be sure whether DTSTART is before or after DURATION in
+          // the VEVENT, so store the data and parse it at the end.
+          $subgroup['DURATION'] = array('DATA' => $data);
+          break;
 
-          case 'RRULE':
-          case 'EXRULE':
-	          $subgroup[$property] = date_ical_parse_rrule($field, $data);
-	          break;
+        case 'RRULE':
+        case 'EXRULE':
+          $parse_result = date_ical_parse_rrule($field, $data);
+          break;
 
-          case 'SUMMARY':
-          case 'DESCRIPTION':
-          case 'LOCATION':
-            $subgroup[$property] = date_ical_parse_text($field, $data);
-            break;
+        case 'SUMMARY':
+        case 'DESCRIPTION':
+        case 'LOCATION':
+          $parse_result = date_ical_parse_text($field, $data);
+          break;
 
           // For all other properties, just store the property and the value.
           // This can be expanded on in the future if other properties should
           // be given special treatment.
-          default:
-	          if (!$is_subgroup) {
-              $items[$property] = $data;
-	          }
-	          else {
-	            $subgroup[$property] = $data;
-	          }
-	          break;
-	      }
+        default:
+          $parse_result = $data;
+          break;
+      }
+
+      // Store the result of our parsing
+      $subgroup[$name] = $parse_result;
     }
   }
-  // Store the original text in the array for reference.
-  $items['VCALENDAR'] = $vcal;
   return $items;
-}
-
-function date_api_ical_split($line) {
-  ereg ("([^:]+):(.*)", $line, $reg);
-  return $reg;
 }
 
 /**
@@ -291,13 +319,14 @@ function date_ical_parse_date($field, $data) {
   }
   $data = str_replace(array('T', 'Z'), '', $data);
   preg_match (DATE_REGEX_LOOSE, $data, $regs);
+  $items['type'] = 'DATE';
   if (!empty($regs[5])) {
+    $items['type'] = 'DATE-TIME';
     $time = ' '.date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
   }
   $items['datetime'] = $regs[1] .'-'. $regs[2] .'-'. $regs[3] . $time;
   $items['all_day'] = empty($time) ? 1 : 0;
   $items['tz'] = $tz;
-  $items['granularity'] = empty($time) ? array('year', 'month', 'day') : array('year', 'month', 'day', 'hour', 'minute', 'second');
   return $items;
 }
 
@@ -379,7 +408,7 @@ function date_ical_parse_duration(&$subgroup) {
 	    date_modify($date2, '+'. $count .' '. $item);
 	  }
 	}
-	$format = date_limit_format('Y-m-d H:i:s', $subgroup['DTSTART']['granularity']);
+	$format = $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
 	$subgroup['DTEND'] = array(
 	  'datetime' => date_format($date2, DATE_FORMAT_DATETIME),
 	  'all_day' => $subgroup['DTSTART']['all_day'],

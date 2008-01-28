@@ -116,7 +116,7 @@ function date_formatter_process($field, $item, $node, $formatter = 'default') {
   $dates = array();
   if (!is_array($field) || !is_array($item)) return $dates;
 
-  $format = date_formatter_format($formatter, $field);
+  $format = date_formatter_format($formatter, $field['field_name']);
   $process = date_process_values($field);
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
@@ -355,7 +355,9 @@ function date_pathauto_node($op, $node = NULL) {
 /**
  * Helper function to return the date format used by a specific formatter.
  */
-function date_formatter_format($formatter, $field) {
+function date_formatter_format($formatter, $field_name) {
+  $fields = content_fields();
+  $field = $fields[$field_name];
   switch ($formatter) {
     case 'ical':
       return 'Ymd\THis';

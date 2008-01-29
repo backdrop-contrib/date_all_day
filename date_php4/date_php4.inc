@@ -415,7 +415,7 @@ if (!function_exists('date_modify')) {
     $time = substr($date->value, 11, 8);
 
     //Date is too old for strtotime(), or looking for custom +/- values, use date_calc instead.
-    if ((substr($change, 0, 1) != '+' || substr($change, 0, 1) != '-')
+    if (substr($change, 0, 1) != '+' && substr($change, 0, 1) != '-'
     && 1971 < date_part_extract($cdate, 'year')
     && date_part_extract($cdate, 'year') < 2038) {
       $cdate = strtotime($change, strtotime($cdate .' UTC'));
@@ -428,7 +428,7 @@ if (!function_exists('date_modify')) {
       include_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_calc.inc');
       $days = date_week_days_untranslated();
       $dows = array_flip($days);
-      preg_match('/([+|-])([0-9]{1,4}).([day(s)?|week(s)?|month(s)?|year(s)?|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]{1,10})/', $change, $results);
+      preg_match('/([+|-])([0-9]{1,4}).([day(s)?|week(s)?|month(s)?|year(s)?|hour(s)?|minute(s)?}second(s)?|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]{1,10})/', $change, $results);
       $direction = $results[1];
       $count = $results[2];
       $item = $results[3];
@@ -518,6 +518,24 @@ if (!function_exists('date_modify')) {
         $day = date_part_extract($cdate, 'day');
         $mon = date_part_extract($cdate, 'month');
         $date->value = date_pad($year, 4) .'-'. date_pad($mon) .'-'. date_pad($day) .' '. $time;
+      }
+      else {
+        switch ($item) {
+          case 'hour':
+            $count = $count * 3600;
+            break;
+          case 'minute':
+            $count = $count * 60;
+            break;
+        }
+        switch ($direction) {
+          case '-':
+            $timestamp = $date->timestamp - $count;
+            break;
+          default:
+            $timestamp = $date->timestamp + $count;
+        }
+        $date->value = date_gmdate('Y-m-d H:i:s', $timestamp);
       }
     }
     $date->timestamp = date_datetime2timestamp($date->value);

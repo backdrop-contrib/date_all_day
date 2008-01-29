@@ -279,6 +279,11 @@ function date_copy_import_csv_form() {
  * iCal import form.
  */
 function date_copy_import_ical_form($form_values = NULL) {
+  if (!empty($form_values)) {
+    foreach ($form_values as $key => $value) {
+      $form[$key] = array('#type' => 'hidden', '#default_value' => $value);
+    }
+  }
   $step = intval($form_values['step'] + 1);
   $form['step'] = array(
     '#type' => 'hidden',
@@ -320,37 +325,23 @@ function date_copy_import_ical_form($form_values = NULL) {
       $form['submit'] = array('#type' => 'submit', '#value' => t('Submit'));
       return $form;
   }
+  return $form;
 }
 
-/**
- * iCal import processing.
- */
-function date_copy_import_ical_form_validate($form_id, $form_values) {
+function date_copy_import_ical_form_submit($form_id, $form_values) {
   extract($form_values);
-  if ($step == 2) {
+  if ($step < 2) {
     return;
   }
   include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   $imported_values = date_ical_import($source_file);
   if (empty($imported_values)) {
-    form_set_error('source_file', t('This is an invalid file.'));
-  }
-}
-
-function date_copy_import_ical_form_submit($form_id, $form_values) {
-  extract($form_values);
-  if ($step != 2) {
+    drupal_set_message(t('This is an invalid file.'));
     return;
   }
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
-  $imported_values = date_ical_import($source_file);
 
   // workaround to disable drupal messages when nodes are created or deleted
   $messages = drupal_get_messages();
-
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
-
-  $imported_values = date_ical_import($source_file);
 
   $node_types = node_get_types('names');
   $field = content_fields($date_field, $target_type);
@@ -364,15 +355,21 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
       $format = DATE_FORMAT_ISO;
       break;
   }
-  foreach ($imported_values as $key => $value) {
-    if (is_numeric($key) && !empty($value['SUMMARY']) && !empty($value['DTSTART'])) {
-      $date = date_ical_date($value['DTSTART'], 'UTC');
-      $start = date_limit_value(date_format($date, $format), date_granularity($field),  $field['type']);
+  foreach ($imported_values as $calendars => $calendar) {
+    foreach ($calendar['VEVENT'] as $key => $value) {
       if (empty($value['DTEND'])) {
         $value['DTEND'] = $value['DTSTART'];
       }
-      $date = date_ical_date($value['DTEND'], 'UTC');
-      $end = date_limit_value(date_format($date, $format), date_granularity($field),  $field['type']);
+      $start_date = date_ical_date($value['DTSTART']);
+      $end_date = date_ical_date($value['DTEND']);
+      $timezone = timezone_name_get(date_timezone_get($start_date));
+      $offset = date_offset_get($start_date);
+      $offset2 = date_offset_get($end_date);
+      date_timezone_set($start_date, 'UTC');
+      date_timezone_set($end_date, 'UTC');
+      $start = date_limit_value(date_format($start_date, $format), date_granularity($field),  $field['type']);
+      $end = date_limit_value(date_format($end_date, $format), date_granularity($field),  $field['type']);
+
       $target_node = new StdClass();
       $target_node->nid = 0;
       $target_node->type = $target_type;
@@ -387,18 +384,24 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
         $target_node->og_groups = $og_groups;
       }
       $target_node->title = stripslashes($value['SUMMARY']);
-      $target_node->$date_field = array(0 => array('value' => $start, 'value2' => $end));
+      $target_node->$date_field = array(0 => array(
+        'value' => $start,
+        'value2' => $end,
+        'timezone' => $timezone,
+        'offset' => $offset,
+        'offset2' => $offset2,
+        ));
       if ($description_field == 'body') {
         $target_node->body = stripslashes($value['DESCRIPTION']);
       }
       elseif (!empty($description_field)) {
-    	  $target_node->$description_field = array(0 => array('value' => stripslashes($value['DESCRIPTION'])));
+  	    $target_node->$description_field = array(0 => array('value' => stripslashes($value['DESCRIPTION'])));
       }
       if (!empty($uid_field)) {
-    	  $target_node->$uid_field = array(0 => array('value' => stripslashes($value['UID'])));
+  	    $target_node->$uid_field = array(0 => array('value' => stripslashes($value['UID'])));
       }
       if (!empty($location_field)) {
-    	  $target_node->$location_field = array(0 => array('value' => stripslashes($value['LOCATION'])));
+  	    $target_node->$location_field = array(0 => array('value' => stripslashes($value['LOCATION'])));
       }
       if (!empty($url_field)) {
         $target_node->$url_field = array(0 => array('url' => stripslashes($value['URL']), 'title' => stripslashes($value['SUMMARY'])));

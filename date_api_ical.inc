@@ -460,9 +460,8 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
  *
  * @param $events
  *   An array of events where each event is an array keyed on the uid:
- *    'start'         => UTC start date in YYYYMMDDTHHMMSS format,
- *                         omit time for all day event.
- *    'end'           => UTC end date in YYYYMMDDTHHMMSS format,
+ *    'start'         => start date object,
+ *    'end'           => end date object,
  *                         optional, omit for all day event.
  *    'summary'       => Title of event (Text)
  *    'description'   => Description of event (Text)
@@ -487,15 +486,22 @@ function date_ical_export($events, $calname = NULL) {
   $output .= "PRODID:-//Drupal iCal API//EN\n";
   foreach ($events as $uid => $event) {
     // Skip any items with empty dates.
-    if (!empty($event['start'])  && ereg ('^(\d{4})(\d{2})(\d{2})$', $event['start'])) {
+    if (!empty($event['start'])) {
       $output .= "BEGIN:VEVENT\n";
-      $output .= "DTSTAMP;VALUE=DATE-TIME:". date("Ymd\THis\Z", time()) ."\n";
-      if ($event['start'] && $event['end']) {
-        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
-        $output .= "DTEND;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['end']) ."\n";
+      $output .= "DTSTAMP;TZID=". date_default_timezone_name() .";VALUE=DATE-TIME:". date_format(date_now(), DATE_FORMAT_ICAL) ."\n";
+      $timezone = timezone_name_get(date_timezone_get($event['start']));
+      if (!empty($timezone)) {
+        $timezone = "TZID=$timezone;";
       }
       else {
-        $output .= "DTSTART;VALUE=DATE-TIME:". gmdate("Ymd\THis\Z", $event['start']) ."\n";
+        $timezone = '';
+      }
+      if ($event['start'] && $event['end']) {
+        $output .= "DTSTART;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";
+        $output .= "DTEND;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";
+      }
+      else {
+        $output .= "DTSTART;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";
       }
       $output .= "UID:". ($event['uid'] ? $event['uid'] : $uid) ."\n";
       if ($event['url']) {

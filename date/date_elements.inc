@@ -55,20 +55,6 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
     if (empty($item['value']) && $delta !== 0) {
       unset($items[$delta]);
     }
-    // Convert input dates back to their UTC values.
-    $process = date_process_values($field);
-    foreach ($process as $processed) {
-      if (date_timezone_convert($field, $item[$processed])) {
-        if (isset($item[$processed]) && !empty($item[$processed])) {
-          $date = date_make_date($item[$processed], $timezone, $field['type']);
-          date_timezone_set($date, timezone_open('UTC'));
-          $items[$delta][$processed] = date_format($date, $format);
-        }
-        elseif (isset($item[$processed])) {
-          $items[$delta][$processed] = NULL;
-        }
-      }
-    }
     // For convenience, we process all possible columns in the element,
     // but now we need to remove columns not used by this field.
     if (is_array($item)) {
@@ -253,7 +239,7 @@ function _date_elements() {
   $type['date_combo'] = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#field' => array(), '#delta' => 0,
-    '#columns' => array('value', 'value2', 'timezone', 'offset'),
+    '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
     '#process' => array('date_combo_process' => array()),
     '#validate' => array('date_combo_validate' => array()),
     );
@@ -343,11 +329,11 @@ function date_combo_validate($element) {
 
   $field = $element['#field'];
   $delta = $element['#delta'];
-  $from_field = $element['#columns'][0];
-  $to_field = $element['#columns'][1];
-  $tz_field = $element['#columns'][2];
-  $offset_field = $element['#columns'][3];
-  $offset_field2 = $element['#columns'][4];
+  $from_field = 'value';
+  $to_field = 'value2';
+  $tz_field = 'timezone';
+  $offset_field = 'offset';
+  $offset_field2 = 'offset2';
 
   // Update the timezone, if changed.
   $timezone = $element['#date_timezone'];
@@ -389,16 +375,21 @@ function date_combo_validate($element) {
       $item[$to_field] = $to_date;
     }
 
-    $date = date_make_date($item[$from_field], $timezone, $field['type']);
-    $item[$offset_field] = date_offset_get($date);
-    $date = date_make_date($item[$to_field], $timezone, $field['type']);
-    $item[$offset_field2] = date_offset_get($date);
+    $from_date = date_make_date($item[$from_field], $timezone, $field['type']);
+    $item[$offset_field] = date_offset_get($from_date);
+    $to_date = date_make_date($item[$to_field], $timezone, $field['type']);
+    $item[$offset_field2] = date_offset_get($to_date);
     $item[$tz_field] = $timezone;
     $item['rrule'] = $rrule;
     if ($item[$from_field] > $item[$to_field]) {
       form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
     }
     else {
+      // Convert input dates back to their UTC values.
+      date_timezone_set($from_date, 'UTC');
+      date_timezone_set($to_date, 'UTC');
+      $item[$from_field] = date_format($from_date, date_type_format($field['type']));
+      $item[$to_field] = date_format($to_date, date_type_format($field['type']));
       form_set_value($element, $item);
     }
   }

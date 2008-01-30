@@ -366,7 +366,9 @@ function date_update_5200() {
  * Data integrity update, supercedes most previous data integrity updates.
  */
 function date_update_5201() {
-  return (date_data_integrity('5201'));
+  $ret = date_db_integrity('5201');
+  $ret = array_merge($ret, date_data_integrity('5201'));
+  return $ret;
 }
 
 
@@ -379,22 +381,50 @@ function date_db_integrity($name) {
       $table = $db_info['table'];
 
       // start with the new column patterns.
-      $columns_start = date_columns($field);
-      $columns_end = date_columns($field);
+      $columns_start = $db_info['columns'];
+      $columns_end = $db_info['columns'];
 
-      // alter the start column values to invalid values to force the new columns to be reset.
+
+      // alter the start column values to invalid or empty
+      // values to force the new columns to be reset.
       $columns_start['value']['length'] = 90;
-      $columns_start['rrule']['length'] = 90;
       if ($field['todate']) {
-        $columns_start['value2']['length'] = 80;
+        if (!date_column_exists($table, $columns_start['value2']['column'])) {
+          unset($columns_start['value2']);
+        }
+        else {
+          $columns_start['value2']['length'] = 80;
+        }
       }
       if ($field['tz_handling'] == 'date') {
-        $columns_start['timezone']['length'] = 80;
-        $columns_start['offset']['length'] = 80;
-        if ($field['todate']) $columns_start['offset2']['length'] = 80;
+        if (!date_column_exists($table, $columns_start['timezone']['column'])) {
+          unset($columns_start['timezone']);
+        }
+        else {
+          $columns_start['timezone']['length'] = 80;
+        }
+        if (!date_column_exists($table, $columns_start['offset']['column'])) {
+          unset($columns_start['offset']);
+        }
+        else {
+          $columns_start['offset']['length'] = 80;
+        }
+        if ($field['todate']) {
+          if (!date_column_exists($table, $columns_start['offset2']['column'])) {
+            unset($columns_start['offset2']);
+          }
+          else {
+            $columns_start['offset2']['length'] = 80;
+          }
+        }
       }
       if ($field['multiple'] == 99) {
-        $columns_start['rrule']['length'] = 80;
+        if (!date_column_exists($table, $columns_start['rrule']['column'])) {
+          unset($columns_start['rrule']);
+        }
+        else {
+          $columns_start['rrule']['length'] = 80;
+        }
       }
       content_alter_db_field($field, $columns_start, $field, $columns_end);
       $message = 'Date database integrity check. Updated table '. $table .' to set all columns to accept NULL values.';
@@ -406,6 +436,20 @@ function date_db_integrity($name) {
   return $ret;
 }
 
+/**
+ * See if a table column already exists.
+ */
+function date_column_exists($table, $column) {
+  global $db_type;
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      return (bool) db_fetch_object(db_query("SHOW COLUMNS FROM {". db_escape_table($table) ."} LIKE '". db_escape_table($column) ."'"));
+
+    case 'postgres':
+      return (bool) db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM pg_class, pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{". db_escape_table($table) ."}' AND attname = '". db_escape_table($column) ."'"));
+  }
+}
 /**
  *  Progressive update of date information, integrity checking of all date values.
  *

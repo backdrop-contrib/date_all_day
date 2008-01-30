@@ -85,7 +85,7 @@ function date_ical_import($filename) {
     $icaldatafetch = drupal_http_request($filename);
     // Check the return result
     if ($icaldatafetch->error) {
-      drupal_set_message('Request Error: ' . $icaldatafetch->error, 'error');
+      drupal_set_message('Request Error: '. $icaldatafetch->error, 'error');
       return false;
     }
     // Break the return result into one array entry per lines
@@ -94,14 +94,14 @@ function date_ical_import($filename) {
   else {
     $icaldatafolded = @file($filename, FILE_IGNORE_NEW_LINES);
     if ($icaldatafolded === FALSE) {
-      drupal_set_message('Failed to open file: ' . $filename, 'error');
+      drupal_set_message('Failed to open file: '. $filename, 'error');
       return false;
     }
   }
 
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
-    drupal_set_message('Invalid calendar file:' . $filename, 'error');
+    drupal_set_message('Invalid calendar file:'. $filename, 'error');
     return false;
   }
 
@@ -138,7 +138,7 @@ function date_ical_import($filename) {
       else if ($closure == 'END') {
         end($subgroups);
         $subgroup =& $subgroups[key($subgroups)];
-        switch($type) {
+        switch ($type) {
           case 'VCALENDAR':
             if (prev($subgroups) == false) {
               $items[] = array_pop($subgroups);
@@ -318,11 +318,11 @@ function date_ical_parse_date($field, $data) {
     $tz = str_replace('-', '/', $tmp[1]);
   }
   $data = str_replace(array('T', 'Z'), '', $data);
-  preg_match (DATE_REGEX_LOOSE, $data, $regs);
+  preg_match(DATE_REGEX_LOOSE, $data, $regs);
   $items['type'] = 'DATE';
   if (!empty($regs[5])) {
     $items['type'] = 'DATE-TIME';
-    $time = ' '.date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
+    $time = ' '. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
   }
   $items['datetime'] = $regs[1] .'-'. $regs[2] .'-'. $regs[3] . $time;
   $items['all_day'] = empty($time) ? 1 : 0;
@@ -373,7 +373,7 @@ function date_ical_parse_exceptions($field, $data) {
   foreach ($ex_dates as $ex_date) {
     $items[] = date_ical_parse_date('', $ex_date);
   }
-	return $items;
+ return $items;
 }
 
 /**
@@ -388,34 +388,34 @@ function date_ical_parse_exceptions($field, $data) {
 function date_ical_parse_duration(&$subgroup) {
   $items = $subgroup['DURATION'];
   $data  = $items['DATA'];
-  preg_match ('/^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?/', $data, $duration);
+  preg_match('/^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?/', $data, $duration);
   $items['year'] = str_replace('Y', '', $duration[1]);
-	$items['month'] = str_replace('M', '', $duration[2]);
-	$items['week'] = str_replace('W', '', $duration[3]);
-	$items['day'] = str_replace('D', '', $duration[4]);
-	$items['hour'] = str_replace('H', '', $duration[6]);
-	$items['minute'] = str_replace('M', '', $duration[7]);
-	$items['second'] = str_replace('S', '', $duration[8]);
-	$start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_format(date_now(), DATE_FORMAT_ISO);
+  $items['month'] = str_replace('M', '', $duration[2]);
+  $items['week'] = str_replace('W', '', $duration[3]);
+  $items['day'] = str_replace('D', '', $duration[4]);
+  $items['hour'] = str_replace('H', '', $duration[6]);
+  $items['minute'] = str_replace('M', '', $duration[7]);
+  $items['second'] = str_replace('S', '', $duration[8]);
+  $start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_format(date_now(), DATE_FORMAT_ISO);
   $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', NULL);
   if (empty($timezone)) {
     $timezone = 'UTC';
   }
   $date = date_make_date($start_date, $timezone);
-	$date2 = drupal_clone($date);
-	foreach ($items as $item => $count) {
-	  if ($count > 0) {
-	    date_modify($date2, '+'. $count .' '. $item);
-	  }
-	}
-	$format = $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
-	$subgroup['DTEND'] = array(
-	  'datetime' => date_format($date2, DATE_FORMAT_DATETIME),
-	  'all_day' => $subgroup['DTSTART']['all_day'],
-	  'tz' => $timezone,
-	  );
-	$items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
-	$subgroup['DURATION'] = $items;
+  $date2 = drupal_clone($date);
+  foreach ($items as $item => $count) {
+    if ($count > 0) {
+      date_modify($date2, '+'. $count .' '. $item);
+    }
+  }
+  $format = $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
+  $subgroup['DTEND'] = array(
+    'datetime' => date_format($date2, DATE_FORMAT_DATETIME),
+    'all_day' => $subgroup['DTSTART']['all_day'],
+    'tz' => $timezone,
+    );
+ $items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
+ $subgroup['DURATION'] = $items;
 }
 
 /**
@@ -508,7 +508,7 @@ function date_ical_export($events, $calname = NULL) {
         $output .= "URL;VALUE=URI:". $event['url'] ."\n";
       }
       if ($event['location']) {
-        $output .= "LOCATION:" . date_ical_escape_text($event['location']) . "\n";
+        $output .= "LOCATION:". date_ical_escape_text($event['location']) ."\n";
       }
       $output .= "SUMMARY:". date_ical_escape_text($event['summary']) ."\n";
       if ($event['description']) {
@@ -578,7 +578,7 @@ function date_ical_escape_text($text) {
  */
 function date_api_ical_build_rrule($form_values) {
   //grab the RRULE data and put them into iCal RRULE format
-  $RRULE = 'RRULE:FREQ='.$form_values['FREQ'];
+  $RRULE = 'RRULE:FREQ='. $form_values['FREQ'];
   $RRULE .= ';INTERVAL='. $form_values['INTERVAL'];
 
   // Unset the empty 'All' values.
@@ -610,7 +610,7 @@ function date_api_ical_build_rrule($form_values) {
 
   // Exceptions dates go last, on their own line.
   if ($form_values['EXDATE']) {
-    $RRULE .= chr(13).chr(10).'EXDATE:'. $form_values['EXDATE'];
+    $RRULE .= chr(13) . chr(10) .'EXDATE:'. $form_values['EXDATE'];
   }
   return $RRULE;
 }

@@ -223,14 +223,14 @@ function _date_views_arguments($field) {
   $field_types = _content_field_types();
   $arguments = array();
   $argument = array();
-  $argument['name'] = $field_types[$field['type']]['label'] .($field['todate'] ? t(': From ') : ': '). t($field['widget']['label']) .' ('. $field['field_name'] .')';
+  $argument['name'] = $field_types[$field['type']]['label'] . ($field['todate'] ? t(': From ') : ': ') . t($field['widget']['label']) .' ('. $field['field_name'] .')';
   $argument['handler'] = $field['type'] == 'date' ? 'date_views_argument_range_handler' : 'date_views_timestamp_argument_range_handler';
   $argument['help'] = t("Defines an argument to filter for dates within a range, in the format 'YYYY-MM-DD--YYYY-MM-DD'. Many other options can be used in arguments. See !link for other examples.", array('!link' => l(t('help'), 'admin/help/date')));
   $argument['option'] = 'date_range_arg_options';
   $arguments['content: '. $field['field_name']] = $argument;
 
   if ($field['todate']) {
-    $argument['name'] = $field_types[$field['type']]['label'] .t(': To '). t($field['widget']['label']) .' ('. $field['field_name'] .')';
+    $argument['name'] = $field_types[$field['type']]['label'] . t(': To ') . t($field['widget']['label']) .' ('. $field['field_name'] .')';
     $arguments['content: to|'. $field['field_name']] = $argument;
   }
   return $arguments;
@@ -576,7 +576,7 @@ function date_browser_validate($type, $view, $form) {
     $fields = array_filter(array_keys($view['field']), 'is_numeric');
   }
   if (!$fields) {
-    form_error($form["$type-info"][$type . '_type'], t('The Date Browser requires at least one field.'));
+    form_error($form["$type-info"][$type .'_type'], t('The Date Browser requires at least one field.'));
   }
   // Make sure all arguments are set to 'Display all values'
   // and that a date argument has been provided.

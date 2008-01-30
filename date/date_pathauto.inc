@@ -14,26 +14,26 @@ function date_pathauto_node($op, $node = NULL) {
       foreach (content_fields() as $field) {
         if (($field['type'] == 'date' || $field['type'] == 'datestamp') && is_array($field['granularity'])) {
           if (array_key_exists('year', $field['granularity'])) {
-            $placeholders['['. $field['field_name'] . '_y]'] = t($field['widget']['label'] . ' - year');
+            $placeholders['['. $field['field_name'] .'_y]'] = t($field['widget']['label'] .' - year');
           }
           if (array_key_exists('month', $field['granularity'])) {
-            $placeholders['['. $field['field_name'] . '_m]'] = t($field['widget']['label'] . ' - month');
+            $placeholders['['. $field['field_name'] .'_m]'] = t($field['widget']['label'] .' - month');
           }
           if (array_key_exists('day', $field['granularity'])) {
-    	      $placeholders['['. $field['field_name'] . '_d]'] = t($field['widget']['label'] . ' - day');
+           $placeholders['['. $field['field_name'] .'_d]'] = t($field['widget']['label'] .' - day');
           }
           if (array_key_exists('hour', $field['granularity'])) {
-            $placeholders['['. $field['field_name'] . '_h]'] = t($field['widget']['label'] . ' - hours');
+            $placeholders['['. $field['field_name'] .'_h]'] = t($field['widget']['label'] .' - hours');
           }
           if (array_key_exists('minute', $field['granularity'])) {
-            $placeholders['['. $field['field_name'] . '_n]'] = t($field['widget']['label'] . ' - minutes');
+            $placeholders['['. $field['field_name'] .'_n]'] = t($field['widget']['label'] .' - minutes');
           }
           if (array_key_exists('second', $field['granularity'])) {
-            $placeholders['['. $field['field_name'] . '_s]'] = t($field['widget']['label'] . ' - seconds');
+            $placeholders['['. $field['field_name'] .'_s]'] = t($field['widget']['label'] .' - seconds');
           }
         }
       }
-	return $placeholders;
+ return $placeholders;
       break;
 
     case 'values':
@@ -79,30 +79,30 @@ function date_pathauto_node($op, $node = NULL) {
           if (is_array($field['granularity'])) {
             // we were using the date_iso_field calls, but we'd prefer 01 rather than 1 for january
             if (array_key_exists('year', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_y]'] = pathauto_cleanstring(substr($iso, 0, 4));
+              $results['['. $field['field_name'] .'_y]'] = pathauto_cleanstring(substr($iso, 0, 4));
             }
             if (array_key_exists('month', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_m]'] = pathauto_cleanstring(substr($iso, 5, 2));
+              $results['['. $field['field_name'] .'_m]'] = pathauto_cleanstring(substr($iso, 5, 2));
             }
             if (array_key_exists('day', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_d]'] = pathauto_cleanstring(substr($iso, 8, 2));
+              $results['['. $field['field_name'] .'_d]'] = pathauto_cleanstring(substr($iso, 8, 2));
             }
             if (array_key_exists('hour', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_h]'] = pathauto_cleanstring(substr($iso, 11, 2));
+              $results['['. $field['field_name'] .'_h]'] = pathauto_cleanstring(substr($iso, 11, 2));
             }
             if (array_key_exists('minute', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_n]'] = pathauto_cleanstring(substr($iso, 14, 2));
+              $results['['. $field['field_name'] .'_n]'] = pathauto_cleanstring(substr($iso, 14, 2));
             }
             if (array_key_exists('second', $field['granularity'])) {
-              $results['['. $field['field_name'] . '_s]'] = pathauto_cleanstring(substr($iso, 17, 2));
+              $results['['. $field['field_name'] .'_s]'] = pathauto_cleanstring(substr($iso, 17, 2));
             }
           }
         }
       }
       return $results;
-	break;
+ break;
 
     default:
-	break;
+ break;
   }
 }

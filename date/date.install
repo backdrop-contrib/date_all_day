@@ -155,7 +155,7 @@ function date_update_4() {
         if ($db_info['columns']['value']['default'] != "'0001-01-01T00:00:00'") {
           content_alter_db_field(array(), array(), $field, $columns);
         }
-        $id = $field['field_name']. '_value';
+        $id = $field['field_name'] .'_value';
         $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = CONCAT(SUBSTRING($id,1,4), '-', SUBSTRING($id,5,2), '-', SUBSTRING($id,7)) WHERE SUBSTRING($id, 5, 1) <> '-'");
     }
   }
@@ -541,8 +541,8 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
           }
           if ($field['tz_handling'] == 'date' && isset($date)) {
-            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '.$date->local->timezone.
-            ' > Computed offset: '.$date->local->offset;
+            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. $date->local->timezone .
+            ' > Computed offset: '. $date->local->offset;
           }
         }
         $i++;
@@ -578,7 +578,7 @@ function date_data_integrity($name, $force_recalc = FALSE) {
       // Not done yet. Return the progress and a progress debug message.
       $progress = floatval($_SESSION[$update_name]['counted'] / $_SESSION[$update_name]['count_total']);
       if ($debug) {
-        $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'].
+        $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'] .
           '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
           '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['nids_ok']) .
           '<br>Date Computations:<br>'. implode('<br>', $_SESSION[$update_name]['dates']);

@@ -83,7 +83,7 @@ function _date_repeat_widget_validate($element) {
     //&& ($rrule != $element['rrule']['#prev_rrule']
     //|| $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
     //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
-    ){
+    ) {
 
     $item = $form_values[$field_name][0];
     $timezone = date_get_timezone($field['tz_handling'], $item[0]['timezone']);

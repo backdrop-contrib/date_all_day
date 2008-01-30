@@ -96,7 +96,7 @@ function date_calc_format($day, $month, $year, $format = DATE_CALC_FORMAT) {
     $char = substr($format, $strpos, 1);
     if ($char == '%') {
       $nextchar = substr($format, $strpos + 1, 1);
-      switch($nextchar) {
+      switch ($nextchar) {
         case 'a':
           $output .= date_calc_get_weekday_abbrname($day, $month, $year);
           break;
@@ -146,7 +146,7 @@ function date_calc_format($day, $month, $year, $format = DATE_CALC_FORMAT) {
           $output .= '%';
           break;
         default:
-          $output .= $char.$nextchar;
+          $output .= $char . $nextchar;
       }
       $strpos++;
     }
@@ -277,7 +277,7 @@ function date_calc_days_to_date($days, $format = DATE_CALC_FORMAT) {
  *   The date in ISO Year-WeekNumber-WeekDay format.
  */
 function date_calc_gregorian_to_ISO($day, $month, $year) {
-  $mnth = array (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+  $mnth = array(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
   $y_isleap = date_is_leap_year($year);
   $y_1_isleap = date_is_leap_year($year - 1);
   $day_of_year_number = $day + $mnth[$month - 1];
@@ -293,7 +293,7 @@ function date_calc_gregorian_to_ISO($day, $month, $year) {
   $h = $day_of_year_number + ($jan1_weekday - 1);
   $weekday = 1 + intval(($h - 1) % 7);
   // find if Y M D falls in YearNumber Y-1, WeekNumber 52 or
-  if ($day_of_year_number <= (8 - $jan1_weekday) && $jan1_weekday > 4){
+  if ($day_of_year_number <= (8 - $jan1_weekday) && $jan1_weekday > 4) {
     $yearnumber = $year - 1;
     if ($jan1_weekday == 5 || ($jan1_weekday == 6 && $y_1_isleap)) {
       $weeknumber = 53;
@@ -328,9 +328,9 @@ function date_calc_gregorian_to_ISO($day, $month, $year) {
   }
   // put it all together
   if ($weeknumber < 10) {
-    $weeknumber = '0'.$weeknumber;
+    $weeknumber = '0'. $weeknumber;
   }
-  return $yearnumber . '-' . $weeknumber . '-' . $weekday;
+  return $yearnumber .'-'. $weeknumber .'-'. $weekday;
 }
 
 /**
@@ -586,7 +586,7 @@ function date_calc_get_month_abbrname($month, $length = 3) {
 function date_calc_get_month_from_fullname($month) {
   $month = strtolower($month);
   $months = date_month_names();
-  while(list($id, $name) = each($months)) {
+  while (list($id, $name) = each($months)) {
     if (ereg($month, strtolower($name))) {
       return $id;
     }
@@ -750,7 +750,7 @@ function date_calc_get_calendar_week($day = 0, $month = 0, $year = 0, $format = 
   }
   $week_array = array();
   // date for the column of week
-  $curr_day = date_calc_begin_of_week($day, $month, $year,'%E');
+  $curr_day = date_calc_begin_of_week($day, $month, $year, '%E');
   for ($counter = 0; $counter <= 6; $counter++) {
     $week_array[$counter] = date_calc_days_to_date($curr_day, $format);
     $curr_day++;
@@ -915,9 +915,11 @@ function date_calc_prev_weekday($day = 0, $month = 0, $year = 0, $format = DATE_
   $days = date_calc_date_to_days($day, $month, $year);
   if (date_dow($day, $month, $year) == 1) {
     $days -= 3;
-  } elseif (date_dow($day, $month, $year) == 0) {
+  }
+  elseif (date_dow($day, $month, $year) == 0) {
     $days -= 2;
-  } else {
+  }
+  else {
     $days -= 1;
   }
   return date_calc_days_to_date($days, $format);
@@ -999,9 +1001,11 @@ function date_calc_prev_day_of_week($dow, $day = 0, $month = 0, $year = 0,
     if (!$on_or_before) {
       $days -= 7;
     }
-  } elseif ($curr_weekday < $dow) {
+  }
+  elseif ($curr_weekday < $dow) {
     $days -= 7 - ($dow - $curr_weekday);
-  } else {
+  }
+  else {
     $days -= $curr_weekday - $dow;
   }
   return date_calc_days_to_date($days, $format);

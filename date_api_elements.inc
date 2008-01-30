@@ -135,7 +135,7 @@ function date_text_process($element, $edit = NULL) {
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
-  $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] . ' date-date';
+  $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] .' date-date';
   $element['date']['#required'] = $element['#required'];
   $element['date']['#theme'] = 'date_textfield_element';
   return $element;
@@ -197,7 +197,7 @@ function date_parts_element($element, $date, $format) {
     $sub_element[$field] = array(
       '#weight' => $order[$part],
       '#required' => $element['#required'],
-      '#attributes' => array('class' => $element['#attributes']['class'] . ' date-'. $field),
+      '#attributes' => array('class' => $element['#attributes']['class'] .' date-'. $field),
       );
     switch ($field) {
       case 'year':
@@ -449,11 +449,11 @@ function  date_timezone_validate($element) {
 function date_convert_from_custom($date, $format) {
   $array = date_format_patterns();
   foreach ($array as $key => $value) {
-    $patterns[] = "`(^|[^\\\\\\\\])".$key."`"; // the letter with no preceding '\'
+    $patterns[] = "`(^|[^\\\\\\\\])". $key ."`"; // the letter with no preceding '\'
     $repl1[] = '${1}(.)';                  // a single character
     $repl2[] = '${1}('. $value .')';       // the
   }
-  $patterns[] = "`\\\\\\\\([".implode(array_keys($array))."])`";
+  $patterns[] = "`\\\\\\\\([". implode(array_keys($array)) ."])`";
   $repl1[] = '${1}';
   $repl2[] = '${1}';
 
@@ -479,9 +479,9 @@ function date_convert_from_custom($date, $format) {
   }
   $final_date = array('hour' => 0, 'minute' => 0, 'second' => 0,
     'month' => 0, 'day' => 0, 'year' => 0);
-  foreach($letters as $i => $letter) {
+  foreach ($letters as $i => $letter) {
     $value = $values[$i];
-    switch($letter) {
+    switch ($letter) {
       case 'd':
       case 'j':
         $final_date['day'] = intval($value);

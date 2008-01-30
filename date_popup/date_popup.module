@@ -29,8 +29,8 @@ function date_popup_load() {
     return;
   }
   $path = drupal_get_path('module', 'date_popup');
-  drupal_add_js($path . '/lib/ui.calendar.js');
-  drupal_add_js($path . '/lib/jquery.timeentry.pack.js');
+  drupal_add_js($path .'/lib/ui.calendar.js');
+  drupal_add_js($path .'/lib/jquery.timeentry.pack.js');
   $loaded = TRUE;
 }
 
@@ -199,10 +199,10 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     $range = explode(':', $element['#date_year_range']);
     $min_year = min($value_year, $this_year + $range[0]);
     $max_year = max($value_year, $this_year + $range[1]);
-    $yearRange = sprintf('%+d', $min_year - $this_year) .':'. sprintf('%+d', $max_year - $this_year);
+    $year_range = sprintf('%+d', $min_year - $this_year) .':'. sprintf('%+d', $max_year - $this_year);
   }
   else {
-    $yearRange = $element['#date_year_range'];
+    $year_range = $element['#date_year_range'];
   }
   $settings =  "\n". //"prevText:'&lt;". t('Prev') ."', \n".
     "nextText:'". t('Next') ."&gt;', \n".
@@ -221,7 +221,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     "closeAtTop:false, \n".
     "speed: 'immediate', \n".
     "dateFormat:'". date_popup_format_to_popup($date_format) ."', \n".
-    "yearRange:'". $yearRange ."'\n".
+    "yearRange:'". $year_range ."'\n".
     "\n";
 
   // This is just a placeholder to indicate the method to constrain from and to dates.
@@ -233,7 +233,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
 
   drupal_add_js('// Global Killswitch
     if (Drupal.jsEnabled) {
-      $(document).ready(function() {$(\'.jquery-calendar-'. $element['#id'] .'\').calendar({' .$settings. '});
+      $(document).ready(function() {$(\'.jquery-calendar-'. $element['#id'] .'\').calendar({'. $settings. '});
       })}', 'inline');
 
   // Create a unique class for each element so we can use custom settings.
@@ -260,10 +260,10 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
   if (empty($time_granularity)) return array();
 
   $spinner_text = array(t('Now'), t('Previous field'), t('Next field'), t('Increment'), t('Decrement'));
-  $settings = "\n". "show24Hours: ". (strpos($element['#date_format'], 'H') ? 'true' : 'false') .", \n".
-		"showSeconds: ". (in_array('second', $granularity) ? 'true' : 'false') .", \n".
-		"timeSteps: [1,". $element['#date_increment'] .",". (in_array('second', $granularity) ? $element['#date_increment'] : 0) ."], \n".
-		"spinnerImage: ''\n";
+  $settings = "\n"."show24Hours: ". (strpos($element['#date_format'], 'H') ? 'true' : 'false') .", \n".
+  "showSeconds: ". (in_array('second', $granularity) ? 'true' : 'false') .", \n".
+  "timeSteps: [1,". $element['#date_increment'] .",". (in_array('second', $granularity) ? $element['#date_increment'] : 0) ."], \n".
+  "spinnerImage: ''\n";
 
   // This is just a placeholder to indicate the method to constrain from and to times.
   // Not yet implemented.

@@ -122,7 +122,7 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
     //
     $lastsecs = 0;
     $lastyear = 1970;
-    foreach($YRS as $year => $secs) {
+    foreach ($YRS as $year => $secs) {
       if ($timestamp >= $secs) {
         $a = $lastyear;
         break;
@@ -142,7 +142,7 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
         break;
       }
     }
-    $secsInYear = 86400 * ($leap ? 366 : 365) + $lastd;
+    $secs_in_year = 86400 * ($leap ? 366 : 365) + $lastd;
     $timestamp = $lastd;
     $mtab = ($leap) ? $_month_table_leap : $_month_table_normal;
     for ($a = 13 ; --$a > 0;) {
@@ -169,7 +169,7 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
         break;
       }
     }
-    $secsInYear = $lastd;
+    $secs_in_year = $lastd;
     $timestamp = $lastd;
     $mtab = ($leap) ? $_month_table_leap : $_month_table_normal;
     for ($a = 1 ; $a <= 12; $a++) {
@@ -198,7 +198,7 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
     'wday' => $dow,
     'month' => $month,
     'year' => $year,
-    'yday' => floor($secsInYear / $_day_power),
+    'yday' => floor($secs_in_year / $_day_power),
     'weekday' => gmdate('l', ($_day_power * (3 + $dow))),
     'leap' => $leap,
     'ndays' => $ndays,
@@ -235,24 +235,24 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
     $year, $month, $day, $hour, $min, $secs
   */
   for ($i = 0; $i < $max; $i++) {
-    switch($format[$i]) {
+    switch ($format[$i]) {
     case 'T': $dates .= date('T');break;
     // YEAR
     case 'L': $dates .= $arr['leap'] ? '1' : '0'; break;
     case 'r': // Thu, 21 Dec 2000 16:01:07 +0200
       // 4.3.11 uses '04 Jun 2004'
       // 4.3.8 uses  ' 4 Jun 2004'
-      $dates .= gmdate('D', $_day_power*(3 + date_dow($day, $month, $year))).', '
-        . ($day < 10 ? '0'. $day : $day) . ' '.date('M', mktime(0, 0, 0, $month, 2, 1971)).' '.$year.' ';
-      if ($hour < 10) $dates .= '0'.$hour; else $dates .= $hour;
-      if ($min < 10) $dates .= ':0'. $min; else $dates .= ':'.$min;
-      if ($secs < 10) $dates .= ':0'. $secs; else $dates .= ':'.$secs;
+      $dates .= gmdate('D', $_day_power*(3 + date_dow($day, $month, $year))) .', '.
+      ($day < 10 ? '0'. $day : $day) .' '. date('M', mktime(0, 0, 0, $month, 2, 1971)) .' '. $year .' ';
+      if ($hour < 10) $dates .= '0'. $hour; else $dates .= $hour;
+      if ($min < 10) $dates .= ':0'. $min; else $dates .= ':'. $min;
+      if ($secs < 10) $dates .= ':0'. $secs; else $dates .= ':'. $secs;
       $gmt = date_get_gmt_diff();
       $dates .= sprintf(' %s%04d', ($gmt < 0) ? '+' : '-', abs($gmt) / 36); break;
     case 'Y': $dates .= date_pad($year, 4); break;
     case 'y': $dates .= substr($year, strlen($year)-2, 2); break;
     // MONTH
-    case 'm': if ($month<10) $dates .= '0'.$month; else $dates .= $month; break;
+    case 'm': if ($month<10) $dates .= '0'. $month; else $dates .= $month; break;
     case 'Q': $dates .= ($month + 3)>>2; break;
     case 'n': $dates .= $month; break;
     case 'M': $dates .= date('M', mktime(0, 0, 0, $month, 2, 1971)); break;
@@ -264,7 +264,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
     case 'l': $dates .= gmdate('l', $_day_power*(3 + date_dow($day, $month, $year))); break;
     case 'D': $dates .= gmdate('D', $_day_power*(3 + date_dow($day, $month, $year))); break;
     case 'j': $dates .= $day; break;
-    case 'd': if ($day<10) $dates .= '0'.$day; else $dates .= $day; break;
+    case 'd': if ($day<10) $dates .= '0'. $day; else $dates .= $day; break;
     case 'S':
       $d10 = $day % 10;
       if ($d10 == 1) $dates .= 'st';
@@ -279,7 +279,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
       $gmt = ($is_gmt) ? 0 : date_get_gmt_diff();
       $dates .= sprintf('%s%04d', ($gmt<0)?'+':'-', abs($gmt)/36); break;
     case 'H':
-      if ($hour < 10) $dates .= '0'.$hour;
+      if ($hour < 10) $dates .= '0'. $hour;
       else $dates .= $hour;
       break;
     case 'h':
@@ -288,7 +288,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
         if ($hour == 0) $hh = '12';
         else $hh = $hour;
       }
-      if ($hh < 10) $dates .= '0'.$hh;
+      if ($hh < 10) $dates .= '0'. $hh;
       else $dates .= $hh;
       break;
     case 'G':
@@ -303,10 +303,10 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
       $dates .= $hh;
       break;
     // MINUTES
-    case 'i': if ($min < 10) $dates .= '0'.$min; else $dates .= $min; break;
+    case 'i': if ($min < 10) $dates .= '0'. $min; else $dates .= $min; break;
     // SECONDS
     case 'U': $dates .= $timestamp; break;
-    case 's': if ($secs < 10) $dates .= '0'.$secs; else $dates .= $secs; break;
+    case 's': if ($secs < 10) $dates .= '0'. $secs; else $dates .= $secs; break;
     // AM/PM
     // Note 00:00 to 11:59 is AM, while 12:00 to 23:59 is PM
     case 'a':
@@ -358,7 +358,8 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
     $y = floor($mon / 12);
     $year += $y;
     $mon -= $y*12;
-  } else if ($mon < 1) {
+  }
+  else if ($mon < 1) {
     $y = ceil((1-$mon) / 12);
     $year -= $y;
     $mon += $y*12;
@@ -375,33 +376,38 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
       if ($leap == true) {
         $loop_table = $_month_table_leap;
         $_add_date = 366;
-      } else {
+      }
+      else {
         $loop_table = $_month_table_normal;
         $_add_date = 365;
       }
       if ($a < $year) {
         $_total_date += $_add_date;
-      } else {
-        for($b=1;$b<$mon;$b++) {
+      }
+      else {
+        for ($b=1; $b<$mon; $b++) {
           $_total_date += $loop_table[$b];
         }
       }
     }
     $_total_date +=$day-1;
     $ret = $_total_date * $_day_power + $hr * $_hour_power + $min * $_min_power + $sec + $gmt_different;
-  } else {
+  }
+  else {
     for ($a = 1969 ; $a >= $year; $a--) {
       $leap = date_is_leap_year($a);
       if ($leap == true) {
         $loop_table = $_month_table_leap;
         $_add_date = 366;
-      } else {
+      }
+      else {
         $loop_table = $_month_table_normal;
         $_add_date = 365;
       }
       if ($a > $year) { $_total_date += $_add_date;
-      } else {
-        for($b = 12;$b>$mon;$b--) {
+      }
+      else {
+        for ($b = 12;$b>$mon;$b--) {
           $_total_date += $loop_table[$b];
         }
       }

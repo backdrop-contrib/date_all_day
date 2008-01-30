@@ -102,7 +102,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
           );
       }
     }
-    while(!$finished) {
+    while (!$finished) {
       $period_finished = FALSE;
       while (!$period_finished) {
         foreach ($rrule['BYMONTHDAY'] as $monthday) {

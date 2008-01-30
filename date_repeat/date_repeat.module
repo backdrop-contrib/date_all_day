@@ -108,7 +108,7 @@ function date_repeat_dow_options() {
   $options = array();
   foreach (date_repeat_dow_count_options() as $count_key => $count_value) {
     foreach (date_repeat_dow_day_options() as $dow_key => $dow_value) {
-      $options[$count_key.$dow_key] = $count_value.' '.$dow_value;
+      $options[$count_key . $dow_key] = $count_value .' '. $dow_value;
     }
   }
   return $options;

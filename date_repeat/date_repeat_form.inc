@@ -102,7 +102,7 @@ function _date_repeat_rrule_process($element) {
 
   $collapsed = TRUE;
   $merged_values = date_repeat_merge($rrule);
-  if(!empty($merged_values['BYDAY']) || !empty($merged_values['BYMONTH'])){
+  if (!empty($merged_values['BYDAY']) || !empty($merged_values['BYMONTH'])) {
     $collapsed = FALSE;
   }
 	// start the advanced fieldset
@@ -158,7 +158,7 @@ function _date_repeat_rrule_process($element) {
     '#suffix' => '</div>',
     );
   $max = !empty($exceptions) ? sizeof($exceptions) : 0;
-  for($i = 0; $i <= $max; $i++) {
+  for ($i = 0; $i <= $max; $i++) {
     $EXCEPT = '';
     if (!empty($exceptions[$i]['datetime'])) {
       if (!is_array(!empty($exceptions[$i]['datetime']))) {
@@ -226,7 +226,7 @@ function date_repeat_merge($form_values) {
 /**
  * Adds and removes exceptions from the list of current exceptions.
  */
-function date_repeat_rrule_validate($element){
+function date_repeat_rrule_validate($element) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   global $form_values;
@@ -236,8 +236,8 @@ function date_repeat_rrule_validate($element){
   $item = date_repeat_merge($item);
 
   $exceptions = array();
-  foreach($item['EXDATE'] as $delta => $value) {
-    if(!empty($value['datetime'])){
+  foreach ($item['EXDATE'] as $delta => $value) {
+    if (!empty($value['datetime'])) {
       $date = date_make_date($value['datetime'], 'UTC');
       $exceptions[] = date_format($date, 'Ymd');
     }
@@ -257,10 +257,10 @@ function date_repeat_rrule_validate($element){
 /**
  * Theme the exception list as a table so the buttons line up
  */
-function theme_date_repeat_current_exceptions($rows = array()){
+function theme_date_repeat_current_exceptions($rows = array()) {
   $rows_info = array();
-  foreach($rows as $key => $value){
-    if(substr($key, 0, 1) != '#'){
+  foreach ($rows as $key => $value) {
+    if (substr($key, 0, 1) != '#') {
       $rows_info[] = array(drupal_render($value['action']), drupal_render($value['display']));
     }
   }

@@ -743,7 +743,7 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
         }
         else {
           $item_diff = date_days_in_year($date1) - $item1;
-          for($i = 1; $i < $year_diff; $i++) {
+          for ($i = 1; $i < $year_diff; $i++) {
             date_modify($date1, '+1 year');
             $item_diff += date_days_in_year($date1);
           }
@@ -754,7 +754,7 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
       case 'weeks':
         $week_diff = date_format($date2, 'W') - date_format($date1, 'W');
         $year_diff = date_format($date2, 'o') - date_format($date1, 'o');
-        for($i = 1; $i <= $year_diff; $i++) {
+        for ($i = 1; $i <= $year_diff; $i++) {
           date_modify($date1, '+1 year');
           $week_diff += date_weeks_in_year($date1);
         }
@@ -796,7 +796,7 @@ function date_convert($date, $from_type, $to_type) {
       break;
     case DATE_ICAL:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
-      preg_match (DATE_REGEX_LOOSE, $date, $regs);
+      preg_match(DATE_REGEX_LOOSE, $date, $regs);
       $datetime = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
         'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
       $obj = date_make_date($datetime, 'UTC');
@@ -844,7 +844,7 @@ function date_array($obj) {
   return array(
     'second' => (integer) date_format($obj, 's'),
     'minute' => (integer) date_format($obj, 'i'),
-    'hour' => date_format($obj,'G'),
+    'hour' => date_format($obj, 'G'),
     'day' => date_format($obj, 'j'),
     'wday' => $dow,
     'month' => date_format($obj, 'n'),

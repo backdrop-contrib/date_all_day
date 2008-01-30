@@ -87,7 +87,7 @@ function _date_views_filters($field) {
           'handler' => $handler,
           'type' => 'DATE',
           'extra' => array('column' => 'value2', 'field' => $field),
-          'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the jscalendar module from jstools installed, you can use a popup date picker here.', array('%format' => $format)),
+          'help' => t('This filter allows events to be filtered by their date. Enter dates in the format: %format. Enter \'now\' to use the current time. You may enter a delta (in seconds) to the option that will be added to the time; this is most useful when combined with now. If you have the Date Popup module installed, you can use a popup date picker here.', array('%format' => $format)),
           ),
         'to|year' => array(
           'name' => t('To Year'),
@@ -137,7 +137,7 @@ function _date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query
 function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
 
-  $value = $filter['value'];
+  $value = isset($filter['value']['date']) ? $filter['value']['date'] : $filter['value'];
   $type = $filterinfo['type'];
 
   // Do some validation of input values before creating any SQL.
@@ -171,7 +171,7 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
   // because the server is going to adjust the value of NOW() for the server timezone.
   switch ($type) {
     case('DATE'):
-      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
+      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : "'$value'";
       break;
     default:
       $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
@@ -185,15 +185,12 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
  * Provide a form gadget for dates.
  */
 function _date_views_handler_filter_date_value_form($field) {
-  include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
-  $format = strtr($field['widget']['input_format'], date_jscalendar_replacements());
-
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   $form = array(
-    '#type' => 'textfield',
-    '#attributes' => array('class' => 'jscalendar'),
-    '#jscalendar_ifFormat' => $format,
-    '#jscalendar_showsTime' => date_has_time($field['granularity']) ? 'true' : 'false',
-    '#jscalendar_timeFormat' => $formats['input']['am_pm'] ? '12' : '24',
+    '#type' => 'date_popup',
+    '#date_timezone' => date_default_timezone_name(),
+    '#date_type'   => $field['type'],
+    '#date_format' => 'Y-m-d',
   );
   return $form;
 }

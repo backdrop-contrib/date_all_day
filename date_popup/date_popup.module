@@ -161,7 +161,15 @@ function date_popup_system_date_form($element, $edit = NULL) {
 function date_popup_process($element, $edit = NULL) {
   date_popup_load();
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
-  if (!empty($edit)) {
+  // There are some cases, like when using this as a Views form element,
+  // where $edit is empty and $element['#value']['date'] and ['time']
+  // hold the input values. This happens when the processing bypasses
+  // the element validation step that resets the value from the date and time
+  // subparts.
+  if (!empty($edit) || isset($element['#value']['date'])) {
+    if (empty($edit)) {
+      $edit = $element['#value'];
+    }
     $input = $edit['date'] . (!empty($edit['time']) ? ' '. $edit['time'] : '');
     $datetime = date_convert_from_custom($input, $element['#date_format']);
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);

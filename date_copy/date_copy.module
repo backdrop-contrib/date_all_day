@@ -514,12 +514,23 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   // workaround to disable drupal messages when nodes are created or deleted
   //$messages = drupal_get_messages();
 
+  // The array that maps event timezone zids to timezone names is in
+  // date_php4_tz_map.inc, need to reverse it so the zid is the key.
+  include_once(drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
+  $timezones = array('' => '');
+  $map = $timezone_map;
+  foreach ($map as $zone => $values) {
+    if (!empty($values['zid'])) {
+      $timezones[$values['zid']] = $zone;
+    }
+  }
+
   $rows = array();
   $i = 0;
   // Get $max records, 10 at a time.
   $limit = min(10, intval($max));
   while ($i < intval($max)) {
-    $new_rows = date_copy_convert_events($source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old, $start_nid);
+    $new_rows = date_copy_convert_events($source_type, $target_type, $date_field, $description_field, $limit, $i, $delete_old, $start_nid, $timezones);
     $rows = array_merge($rows, $new_rows);
     $i += $limit;
   }
@@ -537,7 +548,7 @@ function date_copy_import_event_form_submit($form_id, $form_values) {
   return;
 }
 
-function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0, $delete_old, $start_nid) {
+function date_copy_convert_events( $source_type, $target_type, $date_field, $description_field, $limit, $start = 0, $delete_old, $start_nid, $timezones) {
 
   // Get info about the field we are importing into
   $field   = content_fields($date_field);
@@ -548,13 +559,6 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
   // Get event tz handling, could be event, site, or user.
   $event_tz_handling = variable_get('event_timezone_display', 'event');
 
-  // The array that maps event timezone zids to timezone names is in
-  // date_php4_tz_map.inc, need to reverse it so the zid is the key.
-  include_once(drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
-  $map = $timezone_map;
-  foreach ($map as $zone => $values) {
-    $timezones[$values['zid']] = $zone;
-  }
   $rows = array();
   if ($start_nid) {
     $where = " AND n.nid >= $start_nid ";
@@ -587,39 +591,29 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
       unset($target_node->body);
     }
 
-    $timestamp  = $event->event_start;
-    $timestamp2 = $event->event_end;
-    if ($field['type'] == 'date') {
-      $data = array(0 => array(
-        'value' => date_limit_value(date_convert($timestamp, DATE_UNIX, DATE_ISO), date_granularity($field), $field['type']),
-        'value2' => date_limit_value(date_convert($timestamp2, DATE_UNIX, DATE_ISO), date_granularity($field), $field['type']),
-        'timezone' => '',
-        'offset' => '',
-        'offset2' => '',
-        ));
+    $timezone = !empty($event->timezone) && $tz_handling == 'date' && $event_tz_handling == 'event' ? $timezones[$event->timezone] : date_default_timezone_name();
+
+    $date = array(0 => array());
+    $data[0]['timezone'] = $timezone;
+    $start = date_make_date($event->event_start, 'UTC', DATE_UNIX);
+    date_timezone_set($start, timezone_open($timezone));
+    $data[0]['offset'] = date_offset_get($start);
+    $end = date_make_date($event->event_end, 'UTC', DATE_UNIX);
+    date_timezone_set($end, timezone_open($timezone));
+    $data[0]['offset2'] = date_offset_get($end);
+
+    // If the original event had the wrong offset, the 'UTC' value it
+    // created will also be wrong, correct it here.
+    if ($event_node->start_offset != date_offset_get($start) || $event_node->end_offset != date_offset_get($end)) {
+      $adj = $event_node->start_offset - date_offset_get($start);
+      date_timezone_set($start, timezone_open('UTC'));
+      date_modify($start, $adj .' seconds');
+      $adj = $event_node->end_offset - date_offset_get($end);
+      date_timezone_set($end, timezone_open('UTC'));
+      date_modify($end, $adj .' seconds');
     }
-    else {
-      $data = array(0 => array(
-        'value' => date_limit_value($timestamp, date_granularity($field), $field['type']),
-        'value2' => date_limit_value($timestamp2, date_granularity($field), $field['type']),
-        'timezone' => '',
-        'offset' => '',
-        'offset2' => '',
-        ));
-    }
-    if ($tz_handling == 'date' && $event_tz_handling == 'event') {
-      $timezone = $timezones[$event->timezone];
-      $data[0]['timezone'] = $timezone;
-      $start = date_make_date($timestamp, $timezone, DATE_UNIX);
-      $data[0]['offset'] = date_offset_get($start);
-      $end = date_make_date($timestamp2, $timezone, DATE_UNIX);
-      $data[0]['offset2'] = date_offset_get($end);
-    }
-    else {
-      unset($data[0]['timezone']);
-      unset($data[0]['offset']);
-      unset($data[0]['offset2']);
-    }
+    $data[0]['value'] = date_format($start, date_type_format($field['type']));
+    $data[0]['value2'] = date_format($end, date_type_format($field['type']));
 
     $target_node->$date_field = $data;
     $event_fields = array(

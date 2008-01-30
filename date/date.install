@@ -371,6 +371,17 @@ function date_update_5201() {
   return $ret;
 }
 
+/**
+ * Get rid of jscalendar popup and use jQuery popup instead.
+ *
+ * @return unknown
+ */
+function date_update_5202() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {node_field_instance} SET widget_type = 'date_popup' WHERE widget_type = 'date_js'");
+  content_clear_type_cache();
+  return $ret;
+}
 
 function date_db_integrity($name) {
   $ret = array();

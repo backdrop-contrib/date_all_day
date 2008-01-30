@@ -40,11 +40,6 @@ function date_widget_info() {
       'field types' => array('date', 'datestamp'),
     ),
   );
-  if (module_exists('jscalendar')) {
-    $info['date_js'] = array('label' => t('Text Field with javascript pop-up calendar'),
-       'field types' => array('date', 'datestamp'),
-     );
-  }
   if (module_exists('date_popup')) {
     $info['date_popup'] = array('label' => t('Text Field with jquery pop-up calendar'),
        'field types' => array('date', 'datestamp'),

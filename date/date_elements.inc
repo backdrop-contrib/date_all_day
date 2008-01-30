@@ -285,12 +285,6 @@ function date_combo_process($element, $edit = NULL) {
     case 'date_select':
       $element[$from_field]['#type'] = 'date_select';
       break;
-    case 'date_js':
-      $element[$from_field]['#type'] = 'date_text';
-      $element[$from_field]['date']['#attributes'] = array('class' => ' jscalendar');
-      $element[$from_field]['date']['#jscalendar_ifFormat'] = strtr($field['widget']['input_format'], date_jscalendar_replacements());
-      $element[$from_field]['date']['#jscalendar_showsTime'] = 'false';
-      break;
     case 'date_popup':
       $element[$from_field]['#type'] = 'date_popup';
       break;
@@ -407,19 +401,6 @@ function date_widget_validate($element) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
     return _date_repeat_widget_validate($element);
   }
-}
-
-/**
- * Replacement array for date formats to jscalendar formats
- */
-function date_jscalendar_replacements() {
-  return array(
-    'd' => '%d', 'j' => '%e', 'D' => '%a', 'l' => '%A', 'z' => '%j', 'w' => '%w',
-    'W' => '%U', 'm' => '%m', 'n' => '%m', 'F' => '%B', 'M' => '%b',
-    'Y' => '%Y', 'y' => '%y',
-    'g' => '%l', 'G' => '%k', 'h' => '%I', 'H' => '%H',
-    'i' => '%M', 's' => '%S', 'a' => '%P', 'A' => '%p',
-  );
 }
 
 /**

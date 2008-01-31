@@ -498,7 +498,7 @@ function date_ical_export($events, $calname = NULL) {
       }
       if ($event['start'] && $event['end']) {
         $output .= "DTSTART;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";
-        $output .= "DTEND;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";
+        $output .= "DTEND;". $timezone ."VALUE=DATE-TIME:". date_format($event['end'], DATE_FORMAT_ICAL) ."\n";
       }
       else {
         $output .= "DTSTART;". $timezone ."VALUE=DATE-TIME:". date_format($event['start'], DATE_FORMAT_ICAL) ."\n";

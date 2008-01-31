@@ -64,7 +64,7 @@ if (!function_exists('date_create')) {
   function date_create($date_in = NULL, $timezone = NULL) {
     if (empty($date_in) || strtolower($date_in) == 'now') {
       // Create a current date for an empty value or 'now'.
-      $date_out = date_gmdate('Y-m-d H:i', time() - date('Z'));
+      $date_out = date_date('y-m-d H:i:s', time());
     }
     elseif (substr($date_in, 0, 1) == '@' && is_numeric(substr($date_in, 1))) {
       // An number prefixed with '@' is interpreted as a timestamp.
@@ -595,22 +595,6 @@ if (!function_exists('timezone_abbreviations_list')) {
 function date_datetime2timestamp($datetime) {
   preg_match(DATE_REGEX_LOOSE, $datetime, $regs);
   return date_gmmktime($regs[5], $regs[6], $regs[7], $regs[2], $regs[3], $regs[1]);
-}
-
-/**
- * Something like time(), but adjusted to either the user or site offset.
- *
- * @return a local timestamp
- */
-function date_time() {
-  global $user;
-  if (variable_get('configurable_timezones', 1) && !empty($user->timezone)) {
-    $offset = $user->timezone;
-  }
-  else {
-    $offset = variable_get('date_default_timezone', 0);
-  }
-  return time() - date('Z') + $offset;
 }
 
 /**

@@ -1125,7 +1125,7 @@ function date_format_order($format) {
  *   an array like ('year', 'month', 'day', 'hour', 'minute', 'second');
  */
 function date_nongranularity($granularity) {
-  return array_diff(array('year', 'month', 'day', 'hour', 'minute', 'second'), $granularity);
+  return array_diff(array('year', 'month', 'day', 'hour', 'minute', 'second'), (array) $granularity);
 }
 
 /**

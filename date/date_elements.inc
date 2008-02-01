@@ -380,8 +380,8 @@ function date_combo_validate($element) {
     }
     else {
       // Convert input dates back to their UTC values.
-      date_timezone_set($from_date, 'UTC');
-      date_timezone_set($to_date, 'UTC');
+      date_timezone_set($from_date, timezone_open('UTC'));
+      date_timezone_set($to_date, timezone_open('UTC'));
       $item[$from_field] = date_format($from_date, date_type_format($field['type']));
       $item[$to_field] = date_format($to_date, date_type_format($field['type']));
       form_set_value($element, $item);

@@ -161,12 +161,13 @@ function date_popup_system_date_form($element, $edit = NULL) {
 function date_popup_process($element, $edit = NULL) {
   date_popup_load();
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+
   // There are some cases, like when using this as a Views form element,
   // where $edit is empty and $element['#value']['date'] and ['time']
   // hold the input values. This happens when the processing bypasses
   // the element validation step that resets the value from the date and time
   // subparts.
-  if (!empty($edit) || isset($element['#value']['date'])) {
+  if (!empty($edit) || (is_array($element['#value']) && array_key_exists('date', $element['#value']))) {
     if (empty($edit)) {
       $edit = $element['#value'];
     }
@@ -253,8 +254,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     '#maxlength' => 20,
     );
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  //$element['#description'] .= t(' Format: @date', array('@date' => date($date_format, time())));
-
+  $element['#description'] .= t(' Format: @date', array('@date' => date($date_format, time())));
   return $sub_element;
 }
 
@@ -294,7 +294,7 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
     '#maxlength' => 10,
     );
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  //$element['#description'] .= t('  @date', array('@date' => date($time_format, time())));
+  $element['#description'] .= t('  @date', array('@date' => date($time_format, time())));
   return ($sub_element);
 }
 
@@ -323,7 +323,7 @@ function date_popup_validate($element) {
     }
   }
   if (isset($element['#value']['time'])) {
-    if (!empty($element['#value']['time'])) {
+    if (!empty($element['#value']['time']) && !empty($element['#value']['date'])) {
       // We already displayed a message about this, but need another message
       // here just to set the error field, so don't repeat the previous
       // message.

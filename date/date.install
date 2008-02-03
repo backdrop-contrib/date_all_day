@@ -446,7 +446,7 @@ function date_db_integrity($name) {
         }
       }
       content_alter_db_field($field, $columns_start, $field, $columns_end);
-      $message = 'Date database integrity check. Updated table '. $table .' to set all columns to accept NULL values.';
+      $message = 'Date database integrity check for field '. $field['field_name'] .'.';
       $ret[] = array('success' => TRUE, 'query' => $message);
     }
   }
@@ -555,9 +555,6 @@ function date_data_integrity($name, $force_recalc = FALSE) {
           $_SESSION[$update_name]['dates'][$i] = $node->nid .' > Value: '. (!empty($add[$delta]['value']) ? $add[$delta]['value'] : 'set to NULL');
           if (!empty($add[$delta]['value2'])) {
             $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
-          }
-          if ($field['tz_handling'] == 'date' && isset($date)) {
-            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. $date->local->timezone;
           }
         }
         $i++;

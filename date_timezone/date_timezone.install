@@ -12,7 +12,7 @@ include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.module');
  * Implementation of hook_requirements().
  * Make sure a site timezone name has been selected.
  */
-function date_requirements($phase) {
+function date_timezone_requirements($phase) {
   $requirements = array();
   $t = get_t();
   $error = FALSE;

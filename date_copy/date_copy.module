@@ -364,8 +364,6 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
       $start_date = date_ical_date($value['DTSTART']);
       $end_date = date_ical_date($value['DTEND']);
       $timezone = timezone_name_get(date_timezone_get($start_date));
-      $offset = date_offset_get($start_date);
-      $offset2 = date_offset_get($end_date);
       date_timezone_set($start_date, 'UTC');
       date_timezone_set($end_date, 'UTC');
       $start = date_limit_value(date_format($start_date, $format), date_granularity($field),  $field['type']);
@@ -389,8 +387,6 @@ function date_copy_import_ical_form_submit($form_id, $form_values) {
         'value' => $start,
         'value2' => $end,
         'timezone' => $timezone,
-        'offset' => $offset,
-        'offset2' => $offset2,
         ));
       if ($description_field == 'body') {
         $target_node->body = stripslashes($value['DESCRIPTION']);
@@ -597,10 +593,8 @@ function date_copy_convert_events( $source_type, $target_type, $date_field, $des
     $data[0]['timezone'] = $timezone;
     $start = date_make_date($event->event_start, 'UTC', DATE_UNIX);
     date_timezone_set($start, timezone_open($timezone));
-    $data[0]['offset'] = date_offset_get($start);
     $end = date_make_date($event->event_end, 'UTC', DATE_UNIX);
     date_timezone_set($end, timezone_open($timezone));
-    $data[0]['offset2'] = date_offset_get($end);
 
     // If the original event had the wrong offset, the 'UTC' value it
     // created will also be wrong, correct it here.

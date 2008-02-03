@@ -50,6 +50,32 @@ function date_disable() {
   date_clear_all(TRUE);
 }
 
+function date_requirements($phase) {
+  global $db_type;
+  $requirements = array();
+  $t = get_t();
+
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      $link = l('MYSQL Timezone Information', 'http://dev.mysql.com/doc/refman/5.0/en/time-zone-support.html');
+      break;
+    case 'pgsql':
+      $link = l('PostgreSQL Timezone Information', 'http://www.postgresql.org/docs/8.2/interactive/datatype-datetime.html');
+      break;
+      break;
+  }
+  if (!date_sql_db_timezone_support()) {
+    $requirements['date_db'] = array(
+      'title' => $t('Date database requirements'),
+      'value' => $t('The Date module requires a database that has timezone support enabled, and your database does not. See !link for more information.', array('!link' => $link)),
+      'severity' => REQUIREMENT_ERROR,
+      );
+  }
+  return $requirements;
+}
+
 function date_update_1() {
   $ret = array();
   if (!db_table_exists('node_field_date_data')) {
@@ -163,8 +189,6 @@ function date_update_4() {
   return $ret;
 }
 
-// adds in potential for empty dates by allowing date and timezone values to be null
-// add column for timezone offset -- needed for views integration with dates that have date-specific zones
 // Superceded by update 5102, so skip this step and do it then.
 
 function date_update_5() {
@@ -173,7 +197,6 @@ function date_update_5() {
 }
 
 /**
- * Update existing date-specific timezone fields with their offset values
  * Superceded by update 5103, so just skip this step and do it then.
  */
 function date_update_6() {
@@ -395,7 +418,6 @@ function date_db_integrity($name) {
       $columns_start = $db_info['columns'];
       $columns_end = $db_info['columns'];
 
-
       // alter the start column values to invalid or empty
       // values to force the new columns to be reset.
       $columns_start['value']['length'] = 90;
@@ -413,20 +435,6 @@ function date_db_integrity($name) {
         }
         else {
           $columns_start['timezone']['length'] = 80;
-        }
-        if (!date_column_exists($table, $columns_start['offset']['column'])) {
-          unset($columns_start['offset']);
-        }
-        else {
-          $columns_start['offset']['length'] = 80;
-        }
-        if ($field['todate']) {
-          if (!date_column_exists($table, $columns_start['offset2']['column'])) {
-            unset($columns_start['offset2']);
-          }
-          else {
-            $columns_start['offset2']['length'] = 80;
-          }
         }
       }
       if ($field['multiple'] == 99) {
@@ -532,15 +540,12 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             if ((empty($item['value2']) && !empty($item['value'])) || $force_recalc) $needs_fix = TRUE;
             $add[$delta]['value2']   = !empty($item['value2']) ? $item['value2'] : $item['value'];
           }
-          // Check for missing timezone and offset information.
+          // Check for missing timezoneinformation.
           if ($field['tz_handling'] == 'date') {
-            if (empty($item['offset']) || empty($item['timezone']) || $force_recalc) {
+            if (empty($item['timezone']) || $force_recalc) {
               $needs_fix = TRUE;
               $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-              $date = date_make_date($item['value'], 'GMT', ($field['type'] == 'date' ? DATE_ISO : DATE_UNIX));
-              date_convert_timezone($date, 'GMT', $timezone, 'local');
               $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
-              $add[$delta]['offset']   = $field['required'] || $item['value'] ? $date->local->offset : NULL;
             }
           }
         }
@@ -552,8 +557,7 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
           }
           if ($field['tz_handling'] == 'date' && isset($date)) {
-            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. $date->local->timezone .
-            ' > Computed offset: '. $date->local->offset;
+            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. $date->local->timezone;
           }
         }
         $i++;

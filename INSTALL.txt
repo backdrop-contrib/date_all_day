@@ -7,6 +7,8 @@ Installation instructions:
 
 3) Go to admin/build/modules and enable the needed modules from the Date/Time group. 
 
+4) Go to admin/settings/date-time and set the default timezone zone.
+
 You should end up with a structure like: 
 
    /drupal/sites/all/modules/date/date_api.info
@@ -51,7 +53,9 @@ To install CCK Date Fields:
 
 3) Go to admin/content/types to view cck content types and edit a content type.
 
-4) While viewing a content type, select the option to add a new field from the tabs at
+4) Go to admin/settings/date-time and set the default timezone zone.
+
+5) While viewing a content type, select the option to add a new field from the tabs at
    the top of the page. Several options for date fields should be visible.
    
 More documentation is available at http://drupal.org/node/92460.

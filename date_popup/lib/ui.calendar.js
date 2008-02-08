@@ -2,7 +2,7 @@
    Written by Marc Grabanski (m@marcgrabanski.com) and enhanced by Keith Wood (kbwood@iprimus.com.au).
 
    Copyright (c) 2007 Marc Grabanski (http://marcgrabanski.com/code/jquery-calendar)
-   Dual licensed under the GPL (http://www.gnu.org/licenses/gpl-3.0.txt) and 
+   Dual licensed under the GPL (http://www.gnu.org/licenses/gpl-3.0.txt) and
    CC (http://creativecommons.org/licenses/by/3.0/) licenses. "Share or Remix it but please Attribute the authors."
    Date: 09-03-2007  */
 
@@ -69,7 +69,7 @@ function PopUpCal() {
 $.extend(PopUpCal.prototype, {
 	/* Class name added to elements to indicate already configured with a calendar. */
 	markerClassName: 'hasCalendar',
-	
+
 	/* Register a new calendar instance - with custom settings. */
 	_register: function(inst) {
 		var id = this._nextId++;
@@ -82,7 +82,7 @@ $.extend(PopUpCal.prototype, {
 		return this._inst[id] || id;
 	},
 
-	/* Override the default settings for all instances of the calendar. 
+	/* Override the default settings for all instances of the calendar.
 	   @param  settings  object - the new settings to use as defaults (anonymous object)
 	   @return void */
 	setDefaults: function(settings) {
@@ -195,7 +195,7 @@ $.extend(PopUpCal.prototype, {
 		}
 		extendRemove(inst._settings, settings || {});
 		this._dialogInput.val(dateText);
-		
+
 		/*	Cross Browser Positioning */
 		if (self.innerHeight) { // all except Explorer
 			windowWidth = self.innerWidth;
@@ -206,7 +206,7 @@ $.extend(PopUpCal.prototype, {
 		} else if (document.body) { // other Explorers
 			windowWidth = document.body.clientWidth;
 			windowHeight = document.body.clientHeight;
-		} 
+		}
 		this._pos = pos || // should use actual width/height below
 			[(windowWidth / 2) - 100, (windowHeight / 2) - 100];
 
@@ -365,7 +365,7 @@ $.extend(PopUpCal.prototype, {
 			browserWidth = document.documentElement.clientWidth;
 		}
 		if ( document.documentElement && (document.documentElement.scrollLeft)) {
-			browserX = document.documentElement.scrollLeft;	
+			browserX = document.documentElement.scrollLeft;
 		} else {
 			browserX = document.body.scrollLeft;
 		}
@@ -437,7 +437,7 @@ $.extend(PopUpCal.prototype, {
 		var target = $(event.target);
 		if( (target.parents("#calendar_div").length == 0)
 			&& (target.attr('class') != 'calendar_trigger')
-			&& popUpCal._popUpShowing 
+			&& popUpCal._popUpShowing
 			&& !(popUpCal._inDialog && $.blockUI) )
 		{
 			popUpCal.hideCalendar(popUpCal._curInst, '');
@@ -602,7 +602,7 @@ $.extend(PopUpCalInstance.prototype, {
 		this._selectedYear = this._currentYear;
 		this._adjustDate();
 	},
-	
+
 	/* Retrieve the default date shown on opening. */
 	_getDefaultDate: function() {
 		var offsetDate = function(offset) {
@@ -726,7 +726,7 @@ $.extend(PopUpCalInstance.prototype, {
 		var currentDate = new Date(this._currentYear, this._currentMonth, this._currentDay);
 		var selectedDate = new Date(this._selectedYear, this._selectedMonth, this._selectedDay);
 		var printDate = new Date(this._selectedYear, this._selectedMonth, 1 - leadDays);
-		var numRows = Math.ceil((leadDays + daysInMonth) / 7); // calculate the number of rows to generate
+		var numRows = Math.ceil((leadDays + daysInMonth) / 7);
 		var customDate = this._get('customDate');
 		var showOtherMonths = this._get('showOtherMonths');
 		for (var row = 0; row < numRows; row++) { // create calendar rows
@@ -855,7 +855,7 @@ $.fn.calendar = function(settings) {
 			var inst = (inst && !inlineSettings ? inst :
 				new PopUpCalInstance(instSettings, false));
 			popUpCal._connectCalendar(this, inst);
-		} 
+		}
 		else if (nodeName == 'div' || nodeName == 'span') {
 			var instSettings = $.extend($.extend({}, settings || {}),
 				inlineSettings || {}); // clone and customise

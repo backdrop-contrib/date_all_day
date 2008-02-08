@@ -11,15 +11,9 @@ function date_sql_db_timezone_support() {
   switch ($db_type) {
     case 'mysql':
     case 'mysqli':
-      // If the timezone tables are empty, there is no support.
-      $tables = db_result(db_query("SELECT COUNT(*) FROM mysql.time_zone_name;"));
       // Make sure the function returns a valid value and the data is current.
       $test = db_result(db_query("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central')"));
-      if (empty($tables)) {
-        return FALSE;
-      }
-      // This will test that the tables are current.
-      elseif ($test == '2007-03-11 01:00:00') {
+      if ($test == '2007-03-11 01:00:00') {
         return TRUE;
       }
       return FALSE;

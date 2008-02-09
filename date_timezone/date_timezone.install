@@ -3,6 +3,7 @@
 // Updates happen in random order, whether or not the module is enabled,
 // so include critical code here just to be sure.
 include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.module');
+include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
 
 /**
  * @file
@@ -13,6 +14,8 @@ include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.module');
  * Make sure a site timezone name has been selected.
  */
 function date_timezone_requirements($phase) {
+  global $db_type;
+
   $requirements = array();
   $t = get_t();
   $error = FALSE;
@@ -20,6 +23,22 @@ function date_timezone_requirements($phase) {
 
   switch ($phase) {
     case 'runtime':
+      switch ($db_type) {
+        case 'mysql':
+        case 'mysqli':
+          $link = l('MYSQL Timezone Information', 'http://dev.mysql.com/doc/refman/5.0/en/time-zone-support.html');
+          break;
+        case 'pgsql':
+          $link = l('PostgreSQL Timezone Information', 'http://www.postgresql.org/docs/8.2/interactive/datatype-datetime.html');
+          break;
+      }
+      if (!date_sql_db_timezone_support()) {
+        $requirements['date_db'] = array(
+          'title' => $t('Date database requirements'),
+          'value' => $t('The Date Timezone module requires a database that has timezone support enabled, and your database does not. See !link for more information.', array('!link' => $link)),
+          'severity' => REQUIREMENT_ERROR,
+          );
+      }
       $tz_name = variable_get('date_default_timezone_name', NULL);
       if ($tz_name === NULL || $tz_name == 'GMT') {
         $error = TRUE;
@@ -34,13 +53,13 @@ function date_timezone_requirements($phase) {
           $severity = REQUIREMENT_WARNING;
         }
       }
+      if ($error) {
+        $requirements['date_default_timezone'] = array(
+          'title' => $t('Date Timezone requirements'),
+          'value' => $value,
+          'severity' => $severity,
+          );
+      }
   }
-  if ($error) {
-      $requirements['date_default_timezone'] = array(
-        'title' => $t('Date Timezone requirements'),
-        'value' => $value,
-        'severity' => $severity,
-        );
-    }
   return $requirements;
 }

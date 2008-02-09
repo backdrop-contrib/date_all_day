@@ -1,50 +1,87 @@
-Installation instructions:
+==================================================================================
+Date API Installation instructions:
+==================================================================================
+1) If you have an earlier version of the Date module on your system, empty the
+   date folder out completely. The files in version 2 have different names and are
+   located in different places.
 
-1) Download the whole package of files from http://drupal.org/project/date.
+2) Download the whole package of files from http://drupal.org/project/date.
 
-2) Upload the date files to the modules directory. The package includes files 
+3) Upload the date files to the modules directory. The package includes files 
    needed by the Date API, and optional modules to to create CCK date fields.
 
-3) Go to admin/build/modules and enable the needed modules from the Date/Time group. 
-
-4) Go to admin/settings/date-time and set the default timezone zone.
+4) Go to admin/build/modules and enable the needed modules from the Date/Time group. 
 
 You should end up with a structure like: 
 
    /drupal/sites/all/modules/date/date_api.info
    /drupal/sites/all/modules/date/date_api.install
    /drupal/sites/all/modules/date/date_api.module
-   /drupal/sites/all/modules/date/date_api.inc
-   /drupal/sites/all/modules/date/date_api_elements.inc
-   /drupal/sites/all/modules/date/date_api_ical.inc
+   ...
 
    /drupal/sites/all/modules/date/date/date.info
    /drupal/sites/all/modules/date/date/date.install
    /drupal/sites/all/modules/date/date/date.module
-   /drupal/sites/all/modules/date/date/date_admin.inc
-   /drupal/sites/all/modules/date/date/date_views.inc
-   /drupal/sites/all/modules/date/date/date_elements.inc
+   ...
 
    /drupal/sites/all/modules/date/date_copy/date_copy.info
    /drupal/sites/all/modules/date/date_copy/date_copy.module
+   ...
 
    /drupal/sites/all/modules/date/date_php4/date_php4.inc
    /drupal/sites/all/modules/date/date_php4/date_php4_lib.inc
-   /drupal/sites/all/modules/date/date_php4/date_php4_calc.inc
-   /drupal/sites/all/modules/date/date_php4/date_php4_tz_identifiers.inc
-   /drupal/sites/all/modules/date/date_php4/date_php4_tz_abbreviations.inc
-   /drupal/sites/all/modules/date/date_php4/date_php4_tz_map.inc
+   ...
 
-
+==================================================================================
+Older PHP versions
+==================================================================================
 If you are using PHP 4 or PHP 5.0 or 5.1, native date handling won't work right.
 Install the Date_PHP4 module to enable wrapper functions so this code will work
 in old PHP versions. 
 
+==================================================================================
+Enable Date Timezone
+==================================================================================
 In most cases, you should enable the Date Timezone module any time you use the
 Date API to be able to set the site and user timezone names. It is not enabled by 
 default in case another module is setting timezone names in the database.
 
-To install CCK Date Fields:
+Once you have enabled it, go to admin/settings/date-time and set the default 
+site timezone name. If you are using user timezones, go to your account settings
+and set up your own timezone name.
+
+==================================================================================
+MYSQL Timezone Information
+==================================================================================
+The database should have timezone handling enabled. PostgreSQL should always have
+timezone handling enabled. MYSQL has timezone tables available but they must be
+populated with timezone information. If the timezone information is not available,
+you will see a warning when you go to admin/logs/status. If you see no warning
+messages on that page, timezone handling should be working correctly.
+
+If timezone handling is not working and you are on a shared host, contact 
+the host and ask how you can have MYSQL timezone support enabled. If you 
+have your own server, you'll have to populate your tables. 
+
+Local development environments, like XAMPP and WAMP, may not have the MYSQL 
+timezone tables populated. They will be available, but empty, and you'll need 
+to fill them using the data from the following link.
+
+In XAMPP for Windows, stop the mysql server, download the timezone tables
+from the MYSQL link below, extract them into xampp/mysql/data/mysql (or
+whatever the path to those tables is on your system), and restart MYSQL. 
+
+See the following for more information: 
+
+MYSQL Timezone Information 
+- http://dev.mysql.com/doc/refman/5.0/en/time-zone-support.html
+
+PostgreSQL Timezone Information 
+- http://www.postgresql.org/docs/8.2/interactive/datatype-datetime.html
+
+==================================================================================
+Install CCK Date Fields:
+==================================================================================
 
 1) The CCK date field is included in the Date files at http://drupal.org/project/date.
 
@@ -53,12 +90,13 @@ To install CCK Date Fields:
 
 3) Go to admin/content/types to view cck content types and edit a content type.
 
-4) Go to admin/settings/date-time and set the default timezone zone.
+4) Make sure the default timezone name has been set at admin/settings/date-time.
 
 5) While viewing a content type, select the option to add a new field from the tabs at
    the top of the page. Several options for date fields should be visible.
    
+==================================================================================
 More documentation is available at http://drupal.org/node/92460.
-   
+==================================================================================   
    
 

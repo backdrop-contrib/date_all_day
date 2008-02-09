@@ -163,7 +163,7 @@ function date_select_process($element, $edit = NULL) {
   }
   $element['#tree'] = TRUE;
   date_increment_round($date, $element['#date_increment']);
-  $element += date_parts_element($element, $date, $element['#date_format']);
+  $element += (array) date_parts_element($element, $date, $element['#date_format']);
   return $element;
 }
 

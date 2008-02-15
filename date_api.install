@@ -46,10 +46,9 @@ function date_api_uninstall() {
   $ret = array();
   $ret[] = db_query("ALTER TABLE {users} DROP timezone_name");
 
-  cache_delete('date_timezone_identifiers_list', 'cache');
+  cache_clear_all('date_timezone_identifiers_list', 'cache');
   $variables = array(
     'date_api_version',
-    'date_default_timezone_name',
     'date_min_year',
     'date_max_year',
     'date_php_min_year',

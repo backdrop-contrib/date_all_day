@@ -35,7 +35,7 @@ variable_get('date_default_timezone_name', NULL);
  */
 function date_api_install() {
  $ret = array();
- $ret = db_query("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
+ $ret = update_sql("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
  return $ret;
 }
 
@@ -67,8 +67,8 @@ function date_api_uninstall() {
 function date_api_requirements($phase) {
   $requirements = array();
   $t = get_t();
-  switch ($phase) {
-    case 'runtime':
+  //switch ($phase) {
+ //   case 'runtime':
       $tz_name = variable_get('date_default_timezone_name', NULL);
       $error = FALSE;
       if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
@@ -83,10 +83,10 @@ function date_api_requirements($phase) {
           'severity' => $severity,
           );
       }
-      break;
-     case 'install':
-      break;
-  }
+  //    break;
+  //   case 'install':
+  //    break;
+  //}
   return $requirements;
 }
 
@@ -96,7 +96,7 @@ function date_api_requirements($phase) {
  */
 function date_api_update_5000() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
+  $ret[] = db_query("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
   return $ret;
 }
 

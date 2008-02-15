@@ -51,35 +51,6 @@ site timezone name. If you are using user timezones, go to your account settings
 and set up your own timezone name.
 
 ==================================================================================
-MYSQL Timezone Information
-==================================================================================
-The database should have timezone handling enabled. PostgreSQL should always have
-timezone handling enabled. MYSQL has timezone tables available but they must be
-populated with timezone information. If the timezone information is not available,
-you will see a warning when you go to admin/logs/status. If you see no warning
-messages on that page, timezone handling should be working correctly.
-
-If timezone handling is not working and you are on a shared host, contact 
-the host and ask how you can have MYSQL timezone support enabled. If you 
-have your own server, you'll have to populate your tables. 
-
-Local development environments, like XAMPP and WAMP, may not have the MYSQL 
-timezone tables populated. They will be available, but empty, and you'll need 
-to fill them using the data from the following link.
-
-In XAMPP for Windows, stop the mysql server, download the timezone tables
-from the MYSQL link below, extract them into xampp/mysql/data/mysql (or
-whatever the path to those tables is on your system), and restart MYSQL. 
-
-See the following for more information: 
-
-MYSQL Timezone Information 
-- http://dev.mysql.com/doc/refman/5.0/en/time-zone-support.html
-
-PostgreSQL Timezone Information 
-- http://www.postgresql.org/docs/8.2/interactive/datatype-datetime.html
-
-==================================================================================
 Install CCK Date Fields:
 ==================================================================================
 

@@ -132,9 +132,9 @@ function _date_views_filters($field) {
 
 function _date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
   // this is just a wrapper function that sets the date type
-  return _date_views_filter_handler($op, $filter, $filterinfo, $query, DATE_UNIX);
+  return _date_views_filter_handler($op, $filter, $filterinfo, $query, 'int');
 }
-function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = DATE_ISO) {
+function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
 
   $value = isset($filter['value']['date']) ? $filter['value']['date'] : $filter['value'];
@@ -150,7 +150,7 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
       }
       break;
     default:
-      if ($field_type == DATE_UNIX && (empty($value) || !($value == 'now' || date_is_valid($value, DATE_UNIX)))) {
+      if ($field_type == 'int' && (empty($value) || !($value == 'now' || date_is_valid($value, DATE_UNIX)))) {
         return;
       }
       elseif (empty($value) || !($value == 'now' || date_is_valid($value, DATE_ISO))) {
@@ -165,11 +165,20 @@ function _date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_t
   $table   = 'node_data_'. $field['field_name'];
   $table_field   = $db_info['columns'][$column]['column'];
 
-  $adjust = $filter['options'];
-  $date = $value != 'now' ? $value : date_db_sql('NOW', 'NOW()', "'UTC'", date_views_timezone($field), $field_type);
-
+  // When using NOW(), must adjust out the server zone adj which may not match
+  // the offset we really want, and add back the right offset.
+  // This will be necessary any time the server timezone does not match the site or date zone
+  // because the server is going to adjust the value of NOW() for the server timezone.
+  switch ($type) {
+    case('DATE'):
+      $date = $value == 'now' ? date_sql('NOW', 'NOW()', $field_type, intval(date_views_offset($field) + $filter['options'])) : "'$value'";
+      break;
+    default:
+      $date = $value == 'now' ? date_sql($type, "NOW()", $field_type, intval(date_views_offset($field) + $filter['options'])) : $value;
+      break;
+  }
   $query->ensure_table($table);
-  $query->add_where(date_db_sql($type, $table .".". $table_field, "'UTC'", date_views_timezone($field), $field_type) .' '. $filter['operator'] .' '. $date);
+  $query->add_where(date_sql($type, $table .".". $table_field, $field_type, date_views_offset($field)) .' '. $filter['operator'] .' '. $date);
 }
 
 /**
@@ -187,21 +196,21 @@ function _date_views_handler_filter_date_value_form($field) {
 }
 
 /**
- *  Return field or value for a timezone name.
+ *  Return field or value for a timezone offset.
  */
-function date_views_timezone($field) {
+function date_views_offset($field) {
   switch ($field['tz_handling']) {
-  case('date'):
-    $timezone = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_timezone';
+  case(DATE_ISO):
+    $offset = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_offset';
     break;
-  case('gmt'):
-    $timezone = "'UTC'";
+  case('site'):
+    $offset = variable_get('date_default_timezone', 0);
     break;
   default:
-    $timezone = date_default_timezone_name();
-   break;
+    $offset = '';
+    break;
   }
-  return $timezone;
+  return $offset;
 }
 
 /**
@@ -258,9 +267,9 @@ function _date_views_arguments($field) {
  */
 function _date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
   // this is just a wrapper function that sets the date type
-  return _date_views_argument_range_handler($op, $query, $argtype, $arg, DATE_UNIX);
+  return _date_views_argument_range_handler($op, $query, $argtype, $arg, 'int');
 }
-function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = DATE_ISO) {
+function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
   static $format;
 
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
@@ -281,7 +290,7 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
   $timezone   = $db_info['columns']['timezone']['column'];
   $table      = 'node_data_'. $field['field_name'];
 
-  //$timezone = date_views_timezone($field);
+  $offset = date_views_offset($field);
 
   switch ($op) {
     case 'summary':
@@ -293,38 +302,38 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
         case('year'):
           $format = 'Y';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_db_sql('YEAR', $table .'.'. $value, "'UTC'", $timezone, $field_type),
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset),
               ));
           break;
         case('month'):
           $format = 'F Y';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_db_sql('YEAR', $table .'.'. $value, "'UTC'", $timezone, $field_type), "'-'",
-              date_sql_pad(date_db_sql('MONTH', $table .'.'. $value, "'UTC'", $timezone, $field_type)),
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
+              date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
         case('day'):
           $format = 'F j Y';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_db_sql('YEAR', $table .'.'. $value, "'UTC'", $timezone, $field_type), "'-'",
-              date_sql_pad(date_db_sql('MONTH', $table .'.'. $value, "'UTC'", $timezone, $field_type)), "'-'",
-              date_sql_pad(date_db_sql('DAY', $table .'.'. $value, "'UTC'", $timezone, $field_type)),
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
+              date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)), "'-'",
+              date_sql_pad(date_sql('DAY', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
         case('hour'):
           $format = 'F j Y - H';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_db_sql('YEAR', $table .'.'. $value, "'UTC'", $timezone, $field_type), "'-'",
-              date_sql_pad(date_db_sql('MONTH', $table .'.'. $value, "'UTC'", $timezone, $field_type)), "'-'",
-              date_sql_pad(date_db_sql('DAY', $table .'.'. $value, "'UTC'", $timezone, $field_type)), "'T'",
-              date_sql_pad(date_db_sql('HOUR', $table .'.'. $value, "'UTC'", $timezone, $field_type)),
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-'",
+              date_sql_pad(date_sql('MONTH', $table .'.'. $value, $field_type, $offset)), "'-'",
+              date_sql_pad(date_sql('DAY', $table .'.'. $value, $field_type, $offset)), "'T'",
+              date_sql_pad(date_sql('HOUR', $table .'.'. $value, $field_type, $offset)),
               ));
           break;
         case('week'):
           $format = 'F j Y (W)';
           $fieldinfo['field'] = date_sql_concat(array(
-              date_db_sql('YEAR', $table .'.'. $value, "'UTC'", $timezone, $field_type), "'-W'",
-              date_db_sql('WEEK', $table .'.'. $value, "'UTC'", $timezone, $field_type),
+              date_sql('YEAR', $table .'.'. $value, $field_type, $offset), "'-W'",
+              date_sql('WEEK', $table .'.'. $value, $field_type, $offset),
               ));
           break;
       }
@@ -347,7 +356,7 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
       else {
         $tz_name = date_default_timezone_name();
       }
-      $date_type = $field_type;
+      $date_type = $field_type == 'iso' ? DATE_ISO : DATE_UNIX;
       $date = date_make_date($query->$value, 'UTC', $date_type);
       date_timezone_set($date, timezone_open($tz_name));
       return l(date_format_date($date, 'custom', $format), $arg .'/'. $query->range);
@@ -362,8 +371,8 @@ function _date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $
       if ($field['tz_handling'] == 'date') {
         $query->add_field($timezone, $table);
       }
-      $query->add_where(date_db_sql('DATE', $table .'.'. $value, "'UTC'", $timezone, $field_type) .">='". str_replace('T', ' ', $range[0]) ."'");
-      $query->add_where(date_db_sql('DATE', $table .'.'. $value, "'UTC'", $timezone, $field_type) ."<='". str_replace('T', ' ', $range[1]) ."'");
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
+      $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       break;
 
     case 'title':
@@ -594,7 +603,7 @@ function _date_views_query_alter(&$query, &$view) {
     $name       = explode(':', $view->argument[0]['type']);
     $field_name = trim($name[1]);
     $field      = content_fields($field_name);
-    $field_type = $field['type'];
+    $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
     $db_info    = content_database_info($field);
     $table      = 'node_data_'. $field['field_name'];
 
@@ -603,7 +612,6 @@ function _date_views_query_alter(&$query, &$view) {
     $value2     = $db_info['columns']['value2']['column'];
     $combo = date_sql_concat(array($table .'.'. $value, "'|'", $table .'.'. $value2)) .' AS date_combo ';
     $query->add_field($combo, NULL);
-    $timezone = date_views_timezone($field);
 
     $path = explode('/', $view->url);
     $pos = sizeof($path);
@@ -620,8 +628,8 @@ function _date_views_query_alter(&$query, &$view) {
         $query->ensure_table($table);
         $query->add_field('nid', 'node');
         $query->add_field($value, $table);
-        $query->add_where(date_db_sql('DATE', $table .'.'. $value, "'UTC'", $timezone, $field_type) .">='". str_replace('T', ' ', $range[0]) ."'");
-        $query->add_where(date_db_sql('DATE', $table .'.'. $value, "'UTC'", $timezone, $field_type) ."<='". str_replace('T', ' ', $range[1]) ."'");
+        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
+        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
       }
     }
   }

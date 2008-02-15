@@ -163,6 +163,8 @@ function date_update_4() {
   return $ret;
 }
 
+// adds in potential for empty dates by allowing date and timezone values to be null
+// add column for timezone offset -- needed for views integration with dates that have date-specific zones
 // Superceded by update 5102, so skip this step and do it then.
 
 function date_update_5() {
@@ -171,6 +173,7 @@ function date_update_5() {
 }
 
 /**
+ * Update existing date-specific timezone fields with their offset values
  * Superceded by update 5103, so just skip this step and do it then.
  */
 function date_update_6() {
@@ -364,7 +367,7 @@ function date_update_5200() {
  */
 function date_update_5201() {
   $ret = date_db_integrity('5201');
-  $ret = array_merge($ret, date_data_integrity('5201'));
+  $ret = date_data_integrity('5201');
   return $ret;
 }
 
@@ -392,6 +395,7 @@ function date_db_integrity($name) {
       $columns_start = $db_info['columns'];
       $columns_end = $db_info['columns'];
 
+
       // alter the start column values to invalid or empty
       // values to force the new columns to be reset.
       $columns_start['value']['length'] = 90;
@@ -410,6 +414,20 @@ function date_db_integrity($name) {
         else {
           $columns_start['timezone']['length'] = 80;
         }
+        if (!date_column_exists($table, $columns_start['offset']['column'])) {
+          unset($columns_start['offset']);
+        }
+        else {
+          $columns_start['offset']['length'] = 80;
+        }
+        if ($field['todate']) {
+          if (!date_column_exists($table, $columns_start['offset2']['column'])) {
+            unset($columns_start['offset2']);
+          }
+          else {
+            $columns_start['offset2']['length'] = 80;
+          }
+        }
       }
       if ($field['multiple'] == 99) {
         if (!date_column_exists($table, $columns_start['rrule']['column'])) {
@@ -420,12 +438,20 @@ function date_db_integrity($name) {
         }
       }
       content_alter_db_field($field, $columns_start, $field, $columns_end);
-      $message = 'Date database integrity check for field '. $field['field_name'] .'.';
+      $message = 'Date database integrity check. Updated table '. $table .' to set all columns to accept NULL values.';
       $ret[] = array('success' => TRUE, 'query' => $message);
     }
   }
-  drupal_set_message(t('All date module fields were updated to allow empty (NULL) values.'));
   content_clear_type_cache();
+  return $ret;
+}
+
+/**
+ * Data integrity update, supercedes most previous data integrity updates.
+ */
+function date_update_5203() {
+  $ret = date_db_integrity('5203');
+  $ret = date_data_integrity('5203');
   return $ret;
 }
 
@@ -514,12 +540,22 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             if ((empty($item['value2']) && !empty($item['value'])) || $force_recalc) $needs_fix = TRUE;
             $add[$delta]['value2']   = !empty($item['value2']) ? $item['value2'] : $item['value'];
           }
-          // Check for missing timezoneinformation.
+          // Check for missing timezone and offset information.
           if ($field['tz_handling'] == 'date') {
-            if (empty($item['timezone']) || $force_recalc) {
+            if (empty($item['offset']) || empty($item['timezone']) || $force_recalc) {
               $needs_fix = TRUE;
               $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-              $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
+              $date = date_make_date($item['value'], 'GMT', $field['type']);
+              if (!empty($date) && !empty($timezone)) {
+                date_timezone_set($date, timezone_open($timezone));
+                $add[$delta]['timezone'] = $field['required'] || $item['value'] ? $timezone : NULL;
+                $add[$delta]['offset']   = $field['required'] || $item['value'] ? date_offset_get($date) : NULL;
+              }
+              $date = date_make_date($item['value2'], 'GMT', $field['type']);
+              if (!empty($date) && !empty($timezone)) {
+                date_timezone_set($date, timezone_open($timezone));
+                $add[$delta]['offset2']   = $field['required'] || $item['value'] ? date_offset_get($date) : NULL;
+              }
             }
           }
         }
@@ -529,6 +565,10 @@ function date_data_integrity($name, $force_recalc = FALSE) {
           $_SESSION[$update_name]['dates'][$i] = $node->nid .' > Value: '. (!empty($add[$delta]['value']) ? $add[$delta]['value'] : 'set to NULL');
           if (!empty($add[$delta]['value2'])) {
             $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
+          }
+          if ($field['tz_handling'] == 'date' && isset($date)) {
+            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. date_get_timezone($field['tz_handling'], $item['timezone']) .
+            ' > Computed offset: '. date_offset_get($date);
           }
         }
         $i++;

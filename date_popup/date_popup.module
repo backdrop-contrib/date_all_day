@@ -163,11 +163,11 @@ function date_popup_process($element, $edit = NULL) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
 
   // There are some cases, like when using this as a Views form element,
-  // where $edit is empty and $element['#value']['date'] and ['time']
-  // hold the input values. This happens when the processing bypasses
-  // the element validation step that resets the value from the date and time
+  // where $edit is empty and $element['#value'] holds an array of input values.
+  // This happens when the processing bypasses the element validation step
+  // that resets the value from the date and time
   // subparts.
-  if (!empty($edit) || (is_array($element['#value']) && array_key_exists('date', $element['#value']))) {
+  if (!empty($edit) || is_array($element['#value'])) {
     if (empty($edit)) {
       $edit = $element['#value'];
     }

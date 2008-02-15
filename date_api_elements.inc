@@ -118,7 +118,15 @@ function date_timezone_process($element, $edit = NULL) {
  * The display of each part comes from #date_format.
  */
 function date_text_process($element, $edit = NULL) {
-  if (!empty($edit)) {
+  // There are some cases, like when using this as a Views form element,
+  // where $edit is empty and $element['#value'] holds an array of input values.
+  // This happens when the processing bypasses the element validation step
+  // that resets the value from the date and time
+  // subparts.
+  if (!empty($edit) || is_array($element['#value'])) {
+    if (empty($edit)) {
+      $edit = $element['#value'];
+    }
     $datetime = date_convert_from_custom($edit['date'], $element['#date_format']);
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);
   }
@@ -152,7 +160,15 @@ function date_text_process($element, $edit = NULL) {
  * The display of each part comes from ['#date_settings']['format'].
  */
 function date_select_process($element, $edit = NULL) {
-  if (!empty($edit)) {
+  // There are some cases, like when using this as a Views form element,
+  // where $edit is empty and $element['#value'] holds an array of input values.
+  // This happens when the processing bypasses the element validation step
+  // that resets the value from the date and time
+  // subparts.
+  if (!empty($edit) || is_array($element['#value'])) {
+    if (empty($edit)) {
+      $edit = $element['#value'];
+    }
     $date = date_make_date($edit, $element['#date_timezone'], DATE_ARRAY);
   }
   elseif (!empty($element['#value'])) {

@@ -211,7 +211,7 @@ function date_ical_import($filename) {
       // PROPERTYATTRIBUTES, and PROPERTYVALUE
       preg_match('/([^;:]+)(?:;([^:]*))?:(.+)/', $line, $matches);
       $name = strtoupper(trim($matches[1]));
-      $attributes = $matches[2];
+      $field = $matches[2];
       $data = $matches[3];
 
       $parse_result = '';

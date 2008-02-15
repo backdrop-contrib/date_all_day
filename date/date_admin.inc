@@ -75,7 +75,7 @@ function date_widget_settings_form($widget) {
     );
 
   $options = array();
-  if ($widget['type'] == 'date_popup') {
+  if ($widget['type'] == 'date_popup' && module_exists('date_popup')) {
     $formats = date_popup_formats();
   }
   else {

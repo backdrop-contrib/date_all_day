@@ -4,6 +4,12 @@
 // so include critical code here just to be sure.
 include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.module');
 
+function date_timezone_module_uninstall() {
+  $ret = array();
+  variable_del('date_default_timezone_name');
+  return $ret;
+}
+
 /**
  * @file
  * Installation file for Date Timezone

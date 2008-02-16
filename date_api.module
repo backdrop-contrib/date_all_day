@@ -529,7 +529,7 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
   if (empty($timezone)) {
     $timezone = date_default_timezone_name();
   }
-  if (!empty($timezone)) {
+  if (!empty($timezone) && !empty($date)) {
     if (!is_object($timezone)) {
       $timezone = timezone_open($timezone);
     }

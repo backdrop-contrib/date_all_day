@@ -394,7 +394,9 @@ function date_select_validate($element) {
  */
 function date_select_input_value($element) {
   if (date_is_valid($element['#value'], DATE_ARRAY)) {
-    return date_convert($element['#value'], DATE_ARRAY, $element['#date_type']);
+    // When converting from an array to a timestamp, the timezone is
+    // needed to avoid getting a timestamp for the UTC value.
+    return date_convert($element['#value'], DATE_ARRAY, $element['#date_type'], $element['#date_timezone']);
   }
   return NULL;
 }

@@ -2,7 +2,10 @@
 .container-inline-date .form-item {float:left; padding:0; margin:0}
 .container-inline-date .form-item, .container-inline-date .form-item input {width:auto;}
 .container-inline-date .description {clear: both;}
-.container-inline-date .form-item input, .container-inline-date .form-item select {margin-right:.5em;}
+
+.container-inline-date .form-item input,
+.container-inline-date .form-item select,
+.container-inline-date .form-item option {margin-right:.5em;}
 
 .container-inline-date {
   display: inline-block;

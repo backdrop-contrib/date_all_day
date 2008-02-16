@@ -368,6 +368,9 @@ function date_combo_validate($element) {
       $to_date = $function($element[$to_field]);
       $item[$to_field] = $to_date;
     }
+    else {
+      $item[$to_field] = $item[$from_field];
+    }
 
     $from_date = date_make_date($item[$from_field], $timezone, $field['type']);
     $item[$offset_field] = date_offset_get($from_date);

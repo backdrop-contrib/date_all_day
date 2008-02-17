@@ -121,8 +121,8 @@ function _date_widget($op, &$node, $field, &$items) {
       $columns = array_keys($columns);
       $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
 
-      // Convert UTC dates to their local values, and adjust the
-      // default values as specified in the field settings.
+      // Convert UTC dates to their local values in DATETIME format,
+      // and adjust the default values as specified in the field settings.
 
       // It would seem to make sense to do this conversion when the data
       // is loaded instead of when the form is created, but the loaded
@@ -134,7 +134,7 @@ function _date_widget($op, &$node, $field, &$items) {
       foreach ($items as $delta => $item) {
         foreach ($process as $processed) {
           $date = date_local_date($delta, $item, $timezone, $field, $processed);
-          $items[$delta][$processed] = is_object($date) ? date_format($date, date_type_format($field['type'])) : '';
+          $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
         }
       }
 
@@ -270,7 +270,6 @@ function date_combo_process($element, $edit = NULL) {
     '#field'         => $field,
     '#delta'         => $delta,
     '#date_timezone' => $element['#date_timezone'],
-    '#date_type'        => $field['type'],
     '#date_format'      => date_limit_format(date_input_format($element), $field['granularity']),
     '#date_text_parts'  => (array) $field['widget']['text_parts'],
     '#date_increment'   => $field['widget']['increment'],
@@ -372,9 +371,9 @@ function date_combo_validate($element) {
       $item[$to_field] = $item[$from_field];
     }
 
-    $from_date = date_make_date($item[$from_field], $timezone, $field['type']);
+    $from_date = date_make_date($item[$from_field], $timezone);
     $item[$offset_field] = date_offset_get($from_date);
-    $to_date = date_make_date($item[$to_field], $timezone, $field['type']);
+    $to_date = date_make_date($item[$to_field], $timezone);
     $item[$offset_field2] = date_offset_get($to_date);
     $item[$tz_field] = $timezone;
     $item['rrule'] = $rrule;
@@ -382,7 +381,8 @@ function date_combo_validate($element) {
       form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
     }
     else {
-      // Convert input dates back to their UTC values.
+      // Convert input dates back to their UTC values and re-format to ISO
+      // or UNIX instead of the DATETIME format used in element processing.
       date_timezone_set($from_date, timezone_open('UTC'));
       date_timezone_set($to_date, timezone_open('UTC'));
       $item[$from_field] = date_format($from_date, date_type_format($field['type']));

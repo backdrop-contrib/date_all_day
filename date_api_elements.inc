@@ -12,8 +12,8 @@
  * Parameters for date form elements, designed to have sane defaults so any
  * or all can be omitted.
  *
- * Fill the element #default_value with a date adjusted to the proper local
- * timezone.
+ * Fill the element #default_value with a date in datetime format,
+ * (YYYY-MM-DD HH:MM:SS), adjusted to the proper local timezone.
  *
  * NOTE - Converting a date stored in the database from UTC to the local zone
  * and converting it back to UTC before storing it is not handled by this
@@ -32,10 +32,6 @@
  *
  * #date_timezone
  *   The local timezone to be used to create this date.
- *
- * #date_type
- *   The type of date to be created from this element, could be
- *   DATE_UNIX, DATE_DATETIME, or DATE_ISO.
  *
  * #date_format
  *   A format string that describes the format and order of date parts to
@@ -66,7 +62,6 @@ function _date_api_elements() {
   $date_base = array(
     '#input' => TRUE, '#tree' => TRUE, '#date' => NULL,
     '#date_timezone' => date_default_timezone_name(),
-    '#date_type' => DATE_UNIX,
     '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#date_text_parts' => array(),
     '#date_increment' => 1,
@@ -131,7 +126,7 @@ function date_text_process($element, $edit = NULL) {
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);
   }
   elseif (!empty($element['#value'])) {
-    $date = date_make_date($element['#value'], $element['#date_timezone'], $element['#date_type']);
+    $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
   elseif ($element['#required']) {
     $date = date_now($element['#date_timezone']);
@@ -172,7 +167,7 @@ function date_select_process($element, $edit = NULL) {
     $date = date_make_date($edit, $element['#date_timezone'], DATE_ARRAY);
   }
   elseif (!empty($element['#value'])) {
-    $date = date_make_date($element['#value'], $element['#date_timezone'], $element['#date_type']);
+    $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
   elseif ($element['#required']) {
     $date = date_now($element['#date_timezone']);
@@ -394,9 +389,7 @@ function date_select_validate($element) {
  */
 function date_select_input_value($element) {
   if (date_is_valid($element['#value'], DATE_ARRAY)) {
-    // When converting from an array to a timestamp, the timezone is
-    // needed to avoid getting a timestamp for the UTC value.
-    return date_convert($element['#value'], DATE_ARRAY, $element['#date_type'], $element['#date_timezone']);
+    return date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME);
   }
   return NULL;
 }
@@ -430,9 +423,9 @@ function date_text_input_value($element) {
 
   $value = date_convert_from_custom($input, $element['#date_format']);
 
-  // If it creates a valid date, store it.
-  if (date_is_valid($value, DATE_DATETIME)) {
-    return date_convert($value, DATE_DATETIME, $element['#date_type']);
+  // If it creates a valid date, use it.
+  if (date_is_valid($value)) {
+    return $value;
   }
   return NULL;
 }

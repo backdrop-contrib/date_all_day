@@ -192,7 +192,6 @@ function _date_views_handler_filter_date_value_form($field) {
   $form = array(
     '#type' => module_exists('date_popup') ? 'date_popup' : 'date_text',
     '#date_timezone' => date_default_timezone_name(),
-    '#date_type'   => $field['type'],
     '#date_format' => 'Y-m-d',
     '#size' => 20,
   );

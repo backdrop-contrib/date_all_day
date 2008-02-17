@@ -536,9 +536,6 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
     if ($date == 'now') {
       return date_create('now', $timezone);
     }
-    elseif ($type == DATE_UNIX) {
-      return date_create("@$date", $timezone);
-    }
     elseif ($datetime = date_convert($date, $type, DATE_DATETIME)) {
       return date_create($datetime, $timezone);
     }
@@ -780,7 +777,7 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
  * @param string $to_type
  *   the type of date to convert to
  */
-function date_convert($date, $from_type, $to_type, $timezone = 'UTC') {
+function date_convert($date, $from_type, $to_type) {
   if (empty($date) && !$date === 0) return NULL;
   if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
@@ -792,24 +789,24 @@ function date_convert($date, $from_type, $to_type, $timezone = 'UTC') {
     case DATE_ISO:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       $date = str_replace('T', ' ', $date);
-      $obj = date_make_date($date, $timezone);
+      $obj = date_make_date($date, 'UTC');
       break;
     case DATE_ICAL:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       preg_match(DATE_REGEX_LOOSE, $date, $regs);
       $datetime = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
         'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
-      $obj = date_make_date($datetime, $timezone);
+      $obj = date_create($datetime, timezone_open('UTC'));
     case DATE_UNIX:
       if (!is_numeric($date)) return NULL;
-      $obj = date_make_date($date, $timezone, DATE_UNIX);
+      $obj = date_create("@$date", timezone_open('UTC'));
       break;
     case DATE_ARRAY:
       if (!is_array($date)) return NULL;
       $datetime = date_pad(intval($date['year']), 4) .'-'. date_pad(intval($date['month'])) .
             '-'. date_pad(intval($date['day'])) .' '. date_pad(intval($date['hour'])) .
             ':'. date_pad(intval($date['minute'])) .':'. date_pad(intval($date['second']));
-      $obj = date_make_date($datetime, $timezone);
+      $obj = date_create($datetime, timezone_open('UTC'));
       break;
   }
   switch ($to_type) {

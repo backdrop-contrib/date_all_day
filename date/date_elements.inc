@@ -106,78 +106,70 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  *   the local timezone, are converted back to their UTC values and stored.
  *
  */
-function _date_widget($op, &$node, $field, &$items) {
-  switch ($op) {
-    case 'default value':
-      return array(0 => array('value' => NULL, 'value2' => NULL));
-
-    case 'form':
-      include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
-      $db_info = content_database_info($field);
-      $columns = $db_info['columns'];
-      if (isset($columns['rrule'])) {
-        unset($columns['rrule']);
-      }
-      $columns = array_keys($columns);
-      $timezone = date_get_timezone($field['tz_handling'], $items[0]['timezone']);
-
-      // Convert UTC dates to their local values in DATETIME format,
-      // and adjust the default values as specified in the field settings.
-
-      // It would seem to make sense to do this conversion when the data
-      // is loaded instead of when the form is created, but the loaded
-      // field data is cached and we can't cache dates that have been converted
-      // to the timezone of an individual user, so we cache the UTC values
-      // instead and do our conversion to local dates in the form and
-      // in the formatters.
-      $process = date_process_values($field);
-      foreach ($items as $delta => $item) {
-        foreach ($process as $processed) {
-          $date = date_local_date($delta, $item, $timezone, $field, $processed);
-          $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
-        }
-      }
-
-      // Iterate through the available items, adding as many new ones as needed,
-      // to build out the complete multi-valued field form element.
-      $element = array(
-        $field['field_name'] => array(
-          '#tree' => TRUE,
-          '#weight' => $field['widget']['weight'],
-          '#validate' => array('date_widget_validate' => array()),
-          ));
-
-      $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
-      foreach (range(0, $max) as $delta) {
-
-        $element[$field['field_name']][$delta] = array(
-          '#type' => 'date_combo',
-          '#field' => $field,
-          '#columns' => $columns,
-          '#delta' => $delta,
-          '#weight' => $delta,
-          '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
-          '#date_timezone' => $timezone,
-        );
-        if ($field['tz_handling'] == 'date') {
-          $element[$field['field_name']][$delta]['timezone'] = array(
-            '#type' => $delta == 0 ? 'date_timezone' : 'hidden',
-            '#field' => $field,
-            '#columns' => $columns,
-            '#delta' => $delta,
-            '#default_value' => $timezone,
-            '#weight' => $delta + .2,
-            );
-        }
-      }
-
-      // Add a date repeat form element, if needed.
-      if (module_exists('date_repeat') && $field['multiple'] == 99) {
-        include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-        _date_repeat_widget($element, $node, $field, $items);
-      }
-      return $element;
+function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  $db_info = content_database_info($field);
+  $columns = $db_info['columns'];
+  if (isset($columns['rrule'])) {
+    unset($columns['rrule']);
   }
+  $columns = array_keys($columns);
+  $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : '');
+
+  // Convert UTC dates to their local values in DATETIME format,
+  // and adjust the default values as specified in the field settings.
+
+  // It would seem to make sense to do this conversion when the data
+  // is loaded instead of when the form is created, but the loaded
+  // field data is cached and we can't cache dates that have been converted
+  // to the timezone of an individual user, so we cache the UTC values
+  // instead and do our conversion to local dates in the form and
+  // in the formatters.
+  $process = date_process_values($field);
+  foreach ($items as $delta => $item) {
+    foreach ($process as $processed) {
+      $date = date_local_date($delta, $item, $timezone, $field, $processed);
+      $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+    }
+  }
+
+  // Iterate through the available items, adding as many new ones as needed,
+  // to build out the complete multi-valued field form element.
+  $element = array(
+  $field['field_name'] => array(
+    '#tree' => TRUE,
+    '#weight' => $field['widget']['weight'],
+    '#validate' => array('date_widget_validate' => array()),
+    ));
+  $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
+  foreach (range(0, $max) as $delta) {
+    $element[$field['field_name']][$delta] = array(
+      '#type' => 'date_combo',
+      '#field' => $field,
+      '#columns' => $columns,
+      '#delta' => $delta,
+      '#weight' => $delta,
+      '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+      '#date_timezone' => $timezone,
+    );
+    if ($field['tz_handling'] == 'date') {
+      $element[$field['field_name']][$delta]['timezone'] = array(
+        '#type' => $delta == 0 ? 'date_timezone' : 'hidden',
+        '#field' => $field,
+        '#columns' => $columns,
+        '#delta' => $delta,
+        '#default_value' => $timezone,
+        '#weight' => $delta + .2,
+        );
+    }
+  }
+
+  // Add a date repeat form element, if needed.
+  if (module_exists('date_repeat') && $field['multiple'] == 99) {
+    include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
+    _date_repeat_widget($element, $node, $field, $items);
+  }
+  return $element;
 }
 
 /**
@@ -241,7 +233,7 @@ function _date_elements() {
     '#field' => array(), '#delta' => 0,
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
     '#process' => array('date_combo_process' => array()),
-    '#validate' => array('date_combo_validate' => array()),
+    '#element_validate' => array('date_combo_validate' => array()),
     );
   return $type;
 }

@@ -35,15 +35,11 @@ function date_popup_load() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implementation of hook_init().
  */
-function date_popup_menu($may_cache) {
-  $items = array();
-  if (!$may_cache) {
-    drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/white.calendar.css');
-    drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/timeentry.css');
-  }
-  return $items;
+function date_popup_init() {
+  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/white.calendar.css');
+  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/timeentry.css');
 }
 
 /**
@@ -107,7 +103,7 @@ function date_popup_elements() {
  * and the node and comment modules will expect that format when
  * they save the data.
  */
-function date_popup_form_alter($form_id, &$form) {
+function date_popup_form_alter(&$form, &$form_state, $form_id) {
   // jscalendar overloads these fields, so must not try to do this
   // if jscalendar is installed.
   if (!module_exists('jscalendar')) {

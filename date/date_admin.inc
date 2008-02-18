@@ -251,17 +251,20 @@ function date_columns($field) {
   elseif ($field['type'] == 'datestamp') {
     $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'sortable' => TRUE);
   }
+  elseif ($field['type'] == 'datetime') {
+    $db_columns['value'] = array('type' => 'datetime', 'not null' => FALSE, 'sortable' => TRUE);
+  }
   // If a second date is needed for 'To date', just make a copy of the first one.
-  if ($field['todate']) {
+  if (isset($field['todate'])) {
     $db_columns['value2'] = $db_columns['value'];
   }
   // timezone and offset columns are used only if date-specific dates are chosen.
-  if ($field['tz_handling'] == 'date') {
+  if (isset($field['tz_handling']) && $field['tz_handling'] == 'date') {
     $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'sortable' => TRUE);
     $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
     if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
   }
-  if ($field['multiple'] == 99) {
+  if (isset($field['multiple']) && $field['multiple'] == 99) {
     $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE);
   }
   return $db_columns;
@@ -387,8 +390,9 @@ function date_formatter_setup_form($field, $delta) {
  */
 function date_format_options() {
   global $user;
+  $options = array();
   $cached = cache_get('date_format_options:'. $user->uid);
-  $options = unserialize($cached->data);
+  $options = isset($cached->data) ? $cached->data : array();
   if (empty($options)) {
     $formats = array_merge(date_short_formats(), date_medium_formats(), date_long_formats());
     $options = array();
@@ -405,7 +409,7 @@ function date_format_options() {
       }
     }
     asort($options);
-    cache_set('date_format_options:'. $user->uid, 'cache', serialize($options), CACHE_TEMPORARY);
+    cache_set('date_format_options:'. $user->uid, $options, 'cache', CACHE_TEMPORARY);
   }
   return $options;
 }

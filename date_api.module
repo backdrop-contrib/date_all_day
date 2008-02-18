@@ -35,16 +35,10 @@ define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2}
 define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
 
 /**
- * Implementation of hook_menu().
- *
- * @param unknown_type $may_cache
+ * Implementation of hook_init().
  */
-function date_api_menu($may_cache) {
-  global $user;
-  $items = array();
-  if (!$may_cache) {
-    drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
-  }
+function date_api_init() {
+  drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
 }
 
 /**
@@ -405,11 +399,11 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
   static $zonenames;
   if (empty($zonenames)) {
     $zonenames = array();
-    $cached = cache_get('date_timezone_identifiers_list', 'cache');
-    $data = unserialize($cached->data);
+    $cached = cache_get('date_timezone_identifiers_list');
+    $data = isset($cached->data) ? $cached->data : array();
     if (empty($data) || $refresh) {
       $data = timezone_identifiers_list();
-      cache_set('date_timezone_identifiers_list', 'cache', serialize($data));
+      cache_set('date_timezone_identifiers_list', $date);
     }
     foreach ($data as $name) {
       $zonenames[$name] = t($name);
@@ -428,11 +422,11 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
  * @return array
  */
 function date_timezone_abbr($refresh = FALSE) {
-  $cached = cache_get('date_timezone_abbreviations', 'cache');
-  $data = unserialize($cached->data);
+  $cached = cache_get('date_timezone_abbreviations');
+  $data = isset($cached->data) ? $cached->data : array();
   if (empty($data) || $refresh) {
     $data = array_keys(timezone_abbreviations_list());
-    cache_set('date_timezone_abbreviations', 'cache', serialize($data));
+    cache_set('date_timezone_abbreviations', $data);
   }
   return $data;
 }

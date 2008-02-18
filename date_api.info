@@ -2,3 +2,4 @@
 name = Date API
 description = A Date API that can be used by other modules.
 package = Date/Time
+core = 6.x

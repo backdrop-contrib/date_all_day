@@ -7,14 +7,13 @@
  */
 
 /**
- * Implementation of hook_menu().
+ * Implementation of hook_init().
  */
-function date_menu($may_cache) {
-  if (!$may_cache) {
-    include_once(drupal_get_path('module', 'date') .'/date.theme');
-    if (module_exists('views')) {
-      include_once(drupal_get_path('module', 'date') .'/date_views.inc');
-    }
+function date_init() {
+  include_once(drupal_get_path('module', 'date') .'/date.theme');
+  if (module_exists('views')) {
+    // Comment out until Views implementation is working.
+    //include_once(drupal_get_path('module', 'date') .'/date_views.inc');
   }
 }
 
@@ -23,8 +22,30 @@ function date_menu($may_cache) {
  */
 function date_field_info() {
   return array(
-    'date' => array('label' => 'Date'),
-    'datestamp' => array('label' => 'Datestamp'),
+    'date' => array(
+      'label' => 'Date',
+      'description' => t('Store a date in the database as an ISO date, recommended for historical or partial dates.'),
+      'callbacks' => array(
+        'tables' => CONTENT_CALLBACK_DEFAULT,
+        'arguments' => CONTENT_CALLBACK_DEFAULT,
+        ),
+      ),
+    'datestamp' => array(
+      'label' => 'Datestamp',
+      'description' => t('Store a date in the database as a timestamp, deprecated format to suppport legacy data.'),
+      'callbacks' => array(
+        'tables' => CONTENT_CALLBACK_DEFAULT,
+        'arguments' => CONTENT_CALLBACK_DEFAULT,
+        ),
+      ),
+    'datetime' => array(
+      'label' => 'Datetime',
+      'description' => t('Store a date in the database as a datetime field, recommended for complete dates and times that may need timezone conversion.'),
+      'callbacks' => array(
+        'tables' => CONTENT_CALLBACK_DEFAULT,
+        'arguments' => CONTENT_CALLBACK_DEFAULT,
+        ),
+      ),
   );
 }
 
@@ -33,17 +54,32 @@ function date_field_info() {
  */
 function date_widget_info() {
   $info = array(
-    'date_select' => array('label' => t('Select List'),
-      'field types' => array('date', 'datestamp'),
+    'date_select' => array(
+      'label' =>  t('Select List'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+        ),
     ),
-    'date_text' => array('label' => t('Text Field with strtotime validation'),
-      'field types' => array('date', 'datestamp'),
-    ),
-  );
+    'date_text' => array(
+      'label' =>  t('Text Field with strtotime validation'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+        ),
+      ),
+    );
   if (module_exists('date_popup')) {
-    $info['date_popup'] = array('label' => t('Text Field with jquery pop-up calendar'),
-       'field types' => array('date', 'datestamp'),
-     );
+    $info['date_popup'] = array(
+      'label' =>  t('Text Field with jquery pop-up calendar'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+        ),
+    );
   }
   return $info;
 }
@@ -75,11 +111,30 @@ function date_field_formatter_info() {
 }
 
 /**
+ * Implementation of hook_theme().
+ */
+function date_theme() {
+  return array(
+    'date' => array('arguments' => array('element' => NULL)),
+    'date_formatter_default' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_long' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_medium' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_short' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_timestamp' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_iso' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_ical' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_feed' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+  );
+}
+
+/**
  * Implementation of hook_field_formatter().
  */
-function date_field_formatter($field, $item, $formatter, $node) {
+function theme_date_field_formatter($element) {
+  $field = content_fields($element['#field_name'], $element['#type_name']);
+
   // Call the right theme for this formatter.
-  $dates = date_formatter_process($field, $item, $node, $formatter);
+  $dates = date_formatter_process($field, $element['#item'], $node, $formatter);
   $output .= theme('date_format_'. $formatter, $field, $item, $node, $dates);
   return $output;
 }
@@ -240,7 +295,7 @@ function date_help($section) {
  * Implementation of hook_form_alter().
  * Make sure date information gets updated.
  */
-function date_form_alter($form_id, &$form) {
+function date_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'views_edit_view') {
     $form['#submit'] = array_merge($form['#submit'], array('date_clear_all' => array()));
   }

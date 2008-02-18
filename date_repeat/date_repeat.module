@@ -20,8 +20,8 @@
 function date_repeat_elements() {
   $type['date_repeat_rrule'] = array(
     '#input' => TRUE,
-    '#process' => array('date_repeat_rrule_process' => array()),
-    '#validate' => array('date_repeat_rrule_validate' => array()),
+    '#process' => array('date_repeat_rrule_process'),
+    'element_validate' => array('date_repeat_rrule_validate'),
   );
   return $type;
 }
@@ -255,7 +255,7 @@ function date_repeat_calc($rrule, $start, $end, $exceptions = array()) {
 /**
  * Generate the repeat rule setting form.
  */
-function date_repeat_rrule_process($element, $edit = NULL) {
+function date_repeat_rrule_process($element, $edit, $form_state, $form) {
   include_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_form.inc');
-  return _date_repeat_rrule_process($element, $edit = NULL);
+  return _date_repeat_rrule_process($element, $edit, $form_state, $form);
 }

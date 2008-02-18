@@ -45,7 +45,7 @@ function _date_repeat_widget(&$element, &$node, $field, &$items) {
  * Create multiple values from the RRULE results.
  * Lots more work needed here.
  */
-function _date_repeat_widget_validate($element) {
+function _date_repeat_widget_validate($element, $edit, $form_state, $form) {
   global $form_values;
 
   $field_name = $element['#parents'][0];

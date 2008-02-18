@@ -88,8 +88,8 @@ function date_popup_elements() {
       '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',
-      '#process' => array('date_popup_process' => array()),
-      '#validate' => array('date_popup_validate' => array()),
+      '#process' => array('date_popup_process'),
+      '#element_validate' => array('date_popup_validate'),
       ),
     );
 }
@@ -149,7 +149,7 @@ function date_popup_system_date_form($element, $edit = NULL) {
  * Javascript popup element processing.
  * Add popup attributes to $element.
  */
-function date_popup_process($element, $edit = NULL) {
+function date_popup_process($element, $edit, $form_state, $form) {
   date_popup_load();
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
 
@@ -292,7 +292,7 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
 /**
  * Massage the input values back into a single date.
  */
-function date_popup_validate($element) {
+function date_popup_validate($element, $edit, $form_state, $form) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   date_popup_load();
   $valid_value = date_popup_input_value($element);

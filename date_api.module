@@ -1071,8 +1071,9 @@ function date_limit_format($format, $granularity) {
  * @return array of ordered granularity elements in this format string
  */
 function date_format_order($format) {
-  $max = strlen($format);
   $order = array();
+  if (empty($format)) return $order;
+  $max = strlen($format);
   for ($i = 0; $i <= $max; $i++) {
     $c = $format[$i];
     switch ($c) {

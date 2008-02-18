@@ -108,12 +108,6 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  */
 function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
-  $db_info = content_database_info($field);
-  $columns = $db_info['columns'];
-  if (isset($columns['rrule'])) {
-    unset($columns['rrule']);
-  }
-  $columns = array_keys($columns);
   $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : '');
 
   // Convert UTC dates to their local values in DATETIME format,
@@ -126,42 +120,25 @@ function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   // instead and do our conversion to local dates in the form and
   // in the formatters.
   $process = date_process_values($field);
-  foreach ($items as $delta => $item) {
-    foreach ($process as $processed) {
-      $date = date_local_date($delta, $item, $timezone, $field, $processed);
-      $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
-    }
+  foreach ($process as $processed) {
+    $date = date_local_date($delta, $items[$delta], $timezone, $field, $processed);
+    $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
 
-  // Iterate through the available items, adding as many new ones as needed,
-  // to build out the complete multi-valued field form element.
   $element = array(
-  $field['field_name'] => array(
-    '#tree' => TRUE,
-    '#weight' => $field['widget']['weight'],
-    '#validate' => array('date_widget_validate' => array()),
-    ));
-  $max = $field['multiple'] == 1 ? 2 + sizeof($items) : 0;
-  foreach (range(0, $max) as $delta) {
-    $element[$field['field_name']][$delta] = array(
-      '#type' => 'date_combo',
-      '#field' => $field,
-      '#columns' => $columns,
+    '#type' => 'date_combo',
+    '#delta' => $delta,
+    '#weight' => $delta,
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+    '#date_timezone' => $timezone,
+  );
+  if ($field['tz_handling'] == 'date' && $delta == 0) {
+    $element += array(
+      '#type' => $delta == 0 ? 'date_timezone' : 'hidden',
       '#delta' => $delta,
-      '#weight' => $delta,
-      '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
-      '#date_timezone' => $timezone,
-    );
-    if ($field['tz_handling'] == 'date') {
-      $element[$field['field_name']][$delta]['timezone'] = array(
-        '#type' => $delta == 0 ? 'date_timezone' : 'hidden',
-        '#field' => $field,
-        '#columns' => $columns,
-        '#delta' => $delta,
-        '#default_value' => $timezone,
-        '#weight' => $delta + .2,
-        );
-    }
+      '#default_value' => $timezone,
+      '#weight' => $delta + .2,
+      );
   }
 
   // Add a date repeat form element, if needed.
@@ -229,11 +206,11 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
  */
 function _date_elements() {
   $type['date_combo'] = array(
-    '#input' => TRUE, '#tree' => TRUE,
-    '#field' => array(), '#delta' => 0,
+    '#input' => TRUE,
+    '#delta' => 0,
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
-    '#process' => array('date_combo_process' => array()),
-    '#element_validate' => array('date_combo_validate' => array()),
+    '#process' => array('date_combo_process'),
+    '#element_validate' => array('date_combo_validate'),
     );
   return $type;
 }
@@ -241,12 +218,20 @@ function _date_elements() {
 /**
  * Process an individual date element.
  */
-function date_combo_process($element, $edit = NULL) {
-  $field = $element['#field'];
+function date_combo_process($element, $edit, $form_state, $form) {
+  $field_name = $element['#field_name'];
+  $field = $form['#field_info'][$field_name];
   $delta = $element['#delta'];
-  $from_field = $element['#columns'][0];
-  $to_field = $element['#columns'][1];
-  $tz_field = $element['#columns'][2];
+
+  $columns = $element['#columns'];
+  if (isset($columns['rrule'])) {
+    unset($columns['rrule']);
+  }
+  $from_field = 'value';
+  $to_field = 'value2';
+  $tz_field = 'timezone';
+  $offset_field = 'offset';
+  $offset_field2 = 'offset2';
 
   if ($field['todate'] != 'required' && !empty($element['#default_value'][$to_field]) && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
     unset($element['#default_value'][$to_field]);
@@ -262,7 +247,7 @@ function date_combo_process($element, $edit = NULL) {
     '#field'         => $field,
     '#delta'         => $delta,
     '#date_timezone' => $element['#date_timezone'],
-    '#date_format'      => date_limit_format(date_input_format($element), $field['granularity']),
+    '#date_format'      => date_limit_format(date_input_format($element, $field), $field['granularity']),
     '#date_text_parts'  => (array) $field['widget']['text_parts'],
     '#date_increment'   => $field['widget']['increment'],
     '#date_year_range'  => $field['widget']['year_range'],
@@ -305,7 +290,7 @@ function date_combo_process($element, $edit = NULL) {
  * Validate and update a combo element.
  * Don't try this if there were errors before reaching this point.
  */
-function date_combo_validate($element) {
+function date_combo_validate($element, $edit, $form_state, $form) {
   global $form_values;
 
   $field_name = $element['#parents'][0];
@@ -387,22 +372,20 @@ function date_combo_validate($element) {
 /**
  * Handle widget processing.
  */
-function date_widget_validate($element) {
+function date_widget_validate($element, $edit, $form_state, $form) {
   global $form_values;
-  $field_name = $element['#parents'][0];
-  $field = $element[0]['#field'];
+  $field = $form_state['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-    return _date_repeat_widget_validate($element);
+    return _date_repeat_widget_validate($element, $edit, $form_state, $form);
   }
 }
 
 /**
  * Determine the input format for this element.
  */
-function date_input_format($element) {
-  $field = $element['#field'];
+function date_input_format($element, $field) {
   if (!empty($field['widget']['input_format_custom'])) {
     return $field['widget']['input_format_custom'];
   }

@@ -68,17 +68,17 @@ function _date_api_elements() {
     '#date_year_range' => '-3:+3',
     );
   $type['date_select'] = array_merge($date_base, array(
-    '#process' => array('date_select_process' => array()),
-    '#element_validate' => array('date_select_validate' => array()),
+    '#process' => array('date_select_process'),
+    '#element_validate' => array('date_select_validate'),
     ));
   $type['date_text'] = array_merge($date_base, array(
     '#process' => array('date_text_process' => array()),
-    '#element_validate' => array('date_text_validate' => array()),
+    '#element_validate' => array('date_text_validate'),
     ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
-    '#process' => array('date_timezone_process' => array()),
-    '#element_validate' => array('date_timezone_validate' => array()),
+    '#process' => array('date_timezone_process'),
+    '#element_validate' => array('date_timezone_validate'),
     );
   return $type;
 }
@@ -90,7 +90,7 @@ function _date_api_elements() {
  * @return array
  *   the timezone form element
  */
-function date_timezone_process($element, $edit = NULL) {
+function date_timezone_process($element, $edit, $form_state, $form) {
   $element['timezone'] = array(
     '#type' => 'select',
     '#title' => theme('date_part_label_timezone', 'select', $element),
@@ -112,7 +112,7 @@ function date_timezone_process($element, $edit = NULL) {
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from #date_format.
  */
-function date_text_process($element, $edit = NULL) {
+function date_text_process($element, $edit, $form_state, $form) {
   // There are some cases, like when using this as a Views form element,
   // where $edit is empty and $element['#value'] holds an array of input values.
   // This happens when the processing bypasses the element validation step
@@ -154,7 +154,7 @@ function date_text_process($element, $edit = NULL) {
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from ['#date_settings']['format'].
  */
-function date_select_process($element, $edit = NULL) {
+function date_select_process($element, $edit, $form_state, $form) {
   // There are some cases, like when using this as a Views form element,
   // where $edit is empty and $element['#value'] holds an array of input values.
   // This happens when the processing bypasses the element validation step
@@ -195,6 +195,7 @@ function date_select_process($element, $edit = NULL) {
  *   the form array for the submitted date parts
  */
 function date_parts_element($element, $date, $format) {
+  $sub_element = array();
   $granularity = date_format_order($format);
   $order = array_flip($granularity);
 
@@ -334,7 +335,7 @@ function date_increment_round(&$date, $increment) {
 /**
  *  Validation function for date selector.
  */
-function date_select_validate($element) {
+function date_select_validate($element, $edit, $form_state, $form) {
   $error_field = implode('][', $element['#parents']);
 
   // Strip field labels out of the results.
@@ -397,7 +398,7 @@ function date_select_input_value($element) {
 /**
  *  Validation for text input.
  */
-function date_text_validate($element) {
+function date_text_validate($element, $edit, $form_state, $form) {
   $form_values = $element['#value'];
   $value = date_text_input_value($element);
 
@@ -435,7 +436,7 @@ function date_text_input_value($element) {
  *
  *  Move the timezone value from the nested field back to the original field.
  */
-function  date_timezone_validate($element) {
+function  date_timezone_validate($element, $edit, $form_state, $form) {
   form_set_value($element, $element['#value']['timezone']);
 }
 

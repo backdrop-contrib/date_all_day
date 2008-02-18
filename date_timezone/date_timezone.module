@@ -37,7 +37,7 @@ function date_timezone_site_form(&$form) {
     '#options' => date_timezone_names(),
     '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time.'),
     '#weight' => -10,
-    '#validate' => array('date_timezone_update_site' => array()),
+    '#element_validate' => array('date_timezone_update_site'),
     '#offset' => variable_get('date_default_timezone', 0),
   );
 }
@@ -49,7 +49,7 @@ function date_timezone_site_form(&$form) {
  */
 function date_timezone_user_form(&$form) {
   $account = $form['_account']['#value'];
-  $form['timezone']['#validate'] = array('date_timezone_update_user' => array());
+  $form['timezone']['#element_validate'] = array('date_timezone_update_user');
   $form['timezone']['#uid'] = $account->uid;
   $form['timezone']['timezone']['#type'] = 'hidden';
   $form['timezone']['timezone']['#value'] = $form['timezone']['#default_value'];

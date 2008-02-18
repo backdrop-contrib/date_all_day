@@ -34,7 +34,7 @@
 /**
  * Generate the repeat setting form.
  */
-function _date_repeat_rrule_process($element) {
+function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   if (is_array($element['#value'])) {
     $element['#value'] = date_repeat_merge($element['#value']);
@@ -224,7 +224,7 @@ function date_repeat_merge($form_values) {
 /**
  * Adds and removes exceptions from the list of current exceptions.
  */
-function date_repeat_rrule_validate($element) {
+function date_repeat_rrule_validate($element, $edit, $form_state, $form) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
   global $form_values;

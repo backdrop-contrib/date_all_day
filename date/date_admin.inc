@@ -126,19 +126,19 @@ function date_widget_settings_form($widget) {
       );
   }
 
-  $form['input']['label_position'] = array(
-    '#type' => 'radios',
-    '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
-    '#default_value' => $widget['label_position'],
-    '#title' => t('Position of date part labels'),
-    '#description' => t('The location of date part labels, like \'Year\', \'Month\', or \'Day\'. \'Above\' will display them as titles above each date part. \'Within\' will insert the label as the first option in the select list and in blank textfields. \'None\' will not label any of the date parts. The exact text in the label is controlled by themes like \'date_part_label_year\' and \'date_part_label_month\'.'),
-    );
   $form['input']['advanced'] = array(
     '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Customize Date Parts'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
+    );
+  $form['input']['advanced']['label_position'] = array(
+    '#type' => 'radios',
+    '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
+    '#default_value' => $widget['label_position'],
+    '#title' => t('Position of date part labels'),
+    '#description' => t('The location of date part labels, like \'Year\', \'Month\', or \'Day\'. \'Above\' will display them as titles above each date part. \'Within\' will insert the label as the first option in the select list and in blank textfields. \'None\' will not label any of the date parts. The exact text in the label is controlled by themes like \'date_part_label_year\' and \'date_part_label_month\'.'),
     );
   $form['input']['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts_theme' : '',

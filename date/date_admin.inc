@@ -34,6 +34,9 @@ function _date_widget_settings($op, &$field) {
       if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $field['year_range'])) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
+      if (isset($field['advanced']['label_position'])) {
+        form_set_value(array('#parents' => array('label_position')), $field['advanced']['label_position']);
+      }
       // Munge the table display for text parts back into an array of text parts.
       if (is_array($field['advanced']['text_parts'])) {
         form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['advanced']['text_parts'])));

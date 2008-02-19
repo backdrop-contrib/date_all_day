@@ -10,38 +10,6 @@
  *
  * Formatter themes
  */
-function theme_date_format_ical($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_timestamp($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_long($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_medium($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_short($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_iso($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_feed($field, $item, $node, $dates) {
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
-function theme_date_format_default($field, $item, $node, $dates){
-  return theme('date_display_combination', $field, $item, $dates, $node);
-}
-
 /**
  *  Theme from/to date combination in the view.
  *
@@ -69,10 +37,13 @@ function theme_date_format_default($field, $item, $node, $dates){
  *    $dates['value2']['formatted_date'] - only the date part of the formatted To date
  *    $dates['value2']['formatted_time'] - only the time part of the formatted To date
  */
-function theme_date_display_combination($field, $item, $dates, $node = NULL) {
+function theme_date_display_combination($element) {
+  $dates = date_formatter_process($element);
+
   $date1 = $dates['value']['formatted'];
   $date2 = $dates['value2']['formatted'];
   // No date values, display nothing.
+  $output = '';
   if (empty($date1) && empty($date2)) {
     $output .= '';
   }
@@ -111,8 +82,8 @@ function theme_date_display_combination($field, $item, $dates, $node = NULL) {
  *  @return a formatted display
  *
  */
-function theme_date_format_interval($field, $item, $node = NULL) {
-  $dates = date_formatter_process($field, $item, $node);
+function theme_date_format_interval($element) {
+  $dates = date_formatter_process($element);
 
   // Time to compare dates to
   $now = date_format(date_make_date('now', date_default_timezone()), 'U');

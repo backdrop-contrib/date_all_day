@@ -140,27 +140,16 @@ function date_theme() {
     'date_combo' => array('arguments' => array('element' => NULL)),
     'date_text_parts' => array('arguments' => array('element' => NULL)),
     'date' => array('arguments' => array('element' => NULL)),
-    'date_formatter_default' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_long' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_medium' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_short' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_timestamp' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_iso' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_ical' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
-    'date_formatter_feed' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
+    'date_formatter_default' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_long' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_medium' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_short' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_timestamp' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_iso' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_ical' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_feed' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_display_combination'),
+    'date_formatter_format_interval' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_format_interval'),
   );
-}
-
-/**
- * Implementation of hook_field_formatter().
- */
-function theme_date_field_formatter($element) {
-  $field = content_fields($element['#field_name'], $element['#type_name']);
-
-  // Call the right theme for this formatter.
-  $dates = date_formatter_process($field, $element['#item'], $node, $formatter);
-  $output .= theme('date_format_'. $formatter, $field, $item, $node, $dates);
-  return $output;
 }
 
 /**
@@ -188,11 +177,13 @@ function theme_date_field_formatter($element) {
  */
 function date_formatter_process($element) {
   $dates = array();
-  $field = $element['#field'];
-  $node = $element['#node'];
-  $item = $element['#items'];
-
-  if (!is_array($field) || !is_array($item)) return $dates;
+  $field_name = $element['#field_name'];
+  $fields = content_fields();
+  $field = $fields[$field_name];
+  $formatter = $element['#formatter'];
+  $format = date_formatter_format($formatter, $field_name);
+  $item = $element['#item'];
+  $timezone = isset($item['timezone']) ? $item['timezone'] : '';
 
   $process = date_process_values($field);
   foreach ($process as $processed) {
@@ -212,7 +203,7 @@ function date_formatter_process($element) {
           $dates[$processed]['local'] = $dates[$processed]['db'];
       }
       else {
-        $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
+        $timezone = date_get_timezone($field['tz_handling'], $timezone);
         date_timezone_set($date, timezone_open($timezone));
         $dates[$processed]['local']['object'] = $date;
         $dates[$processed]['local']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
@@ -221,7 +212,7 @@ function date_formatter_process($element) {
       }
 
       if (is_object($date) && !empty($format)) {
-        $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format) . $append;
+        $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format);
         $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', date_limit_format($format, array('year', 'month', 'day')));
         $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second')));
       }
@@ -456,8 +447,8 @@ function date_formatter_format($formatter, $field_name) {
     case 'medium':
     case 'short':
     case 'default':
-      $custom = 'output_format_custom'. $formatter != 'default' ? '_'. $formatter : '';
-      $value = 'output_format_date'. $formatter != 'default' ? '_'. $formatter : '';
+      $custom = 'output_format_custom'. ($formatter != 'default' ? '_'. $formatter : '');
+      $value = 'output_format_date'. ($formatter != 'default' ? '_'. $formatter : '');
       if ($field[$custom] > '') {
         $format = $field[$custom];
       }

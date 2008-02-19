@@ -297,17 +297,16 @@ function date_field_settings_form($field) {
   $options = array(0 => t('Never'), 1 => t('Unlimited'));
   $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create unlimited multiple dates one date at a time.');
 
+  // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat')) {
-    $options += array(99 => t('Repeating'));
-    $description .= t(' Repeating dates display options to allow the user to select when and how often the date will repeat.');
+    $form['multiple'] = array(
+      '#type' => 'select',
+      '#title' => t('Number of values'),
+      '#options' => array(1 => t('Unlimited'), 99 => t('Repeating'), 0 => 1) + drupal_map_assoc(range(2, 10)),
+      '#default_value' => $field['multiple'],
+      '#description' => t('Select a specific number of values for this field, or \'Unlimited\' to provide an \'Add more\' button so the users can add as many values as they like.  Repeating dates display options to allow the user to select when and how often the date will repeat.') .'<br/><strong>'. t('Warning! Changing this setting after data has been created could result in the loss of data!') .'</strong>',
+    );
   }
-  $form['multiple'] = array(
-    '#type' => 'radios',
-    '#title' => t('Multiple'),
-    '#options' => $options,
-    '#default_value' => $field['multiple'],
-    '#description' => $description,
-  );
 
   $form['input']['todate'] = array(
     '#type' => 'radios', '#title' => t('To Date'),

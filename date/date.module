@@ -18,6 +18,19 @@ function date_init() {
 }
 
 /**
+ * Implementation of hook_content_is_empty().
+ */
+function date_content_is_empty($item, $field) {
+  if (empty($item['value'])) {
+    return TRUE;
+  }
+  elseif($field['todate'] == 'required' && empty($item['value2'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
  * Implementation of hook_field_info().
  */
 function date_field_info() {
@@ -90,23 +103,32 @@ function date_widget_info() {
 function date_field_formatter_info() {
   return array(
     'default' => array('label' => t('Default'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'long' => array('label' => t('Long'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'medium' => array('label' => t('Medium'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'short' => array('label' => t('Short'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'iso' => array('label' => t('ISO'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'timestamp' => array('label' => t('Timestamp'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'feed' => array('label' => t('Feed'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'ical' => array('label' => t('iCal'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
     'format_interval' => array('label' => t('As Time Ago'),
-      'field types' => array('date', 'datestamp')),
+      'field types' => array('date', 'datestamp', 'datetime')),
+      'multiple values' => FALSE,
   );
 }
 
@@ -162,11 +184,14 @@ function theme_date_field_formatter($element) {
  *         )
  *      )
  */
-function date_formatter_process($field, $item, $node, $formatter = 'default') {
+function date_formatter_process($element) {
   $dates = array();
+  $field = $element['#field'];
+  $node = $element['#node'];
+  $item = $element['#items'];
+
   if (!is_array($field) || !is_array($item)) return $dates;
 
-  $format = date_formatter_format($formatter, $field['field_name']);
   $process = date_process_values($field);
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
@@ -318,6 +343,13 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
     case 'update':
       include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
       return _date_field_update($op, $node, $field, $items, $teaser, $page);
+      break;
+
+    case 'sanitize':
+      foreach ($items as $delta => $item) {
+        $dates = date_formatter_process($field, $item, $node, $formatter);
+        $node->$field['field_name'][$delta]['dates'] = $dates;
+      }
       break;
   }
 }

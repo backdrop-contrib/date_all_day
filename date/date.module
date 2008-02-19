@@ -349,8 +349,8 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'sanitize':
       foreach ($items as $delta => $item) {
-        $dates = date_formatter_process($field, $item, $node, $formatter);
-        $node->$field['field_name'][$delta]['dates'] = $dates;
+        //$dates = date_formatter_process($field, $item, $node, $formatter);
+        //$node->$field['field_name'][$delta]['dates'] = $dates;
       }
       break;
   }

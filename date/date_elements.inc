@@ -120,6 +120,9 @@ function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   // instead and do our conversion to local dates in the form and
   // in the formatters.
   $process = date_process_values($field);
+  if (!isset($items[$delta])) {
+    $items[$delta] = '';
+  }
   foreach ($process as $processed) {
     $date = date_local_date($delta, $items[$delta], $timezone, $field, $processed);
     $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
@@ -157,7 +160,6 @@ function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
  * determine what to do with empty values.
  */
 function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
-
   if ($part == 'value') {
     $default_value = $field['widget']['default_value'];
     $default_value_code = $field['widget']['default_value_code'];
@@ -205,6 +207,7 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
  * 'from' and 'to' date will be constructed from date_select or date_text.
  */
 function _date_elements() {
+  $type = array();
   $type['date_combo'] = array(
     '#input' => TRUE,
     '#delta' => 0,
@@ -291,13 +294,13 @@ function date_combo_process($element, $edit, $form_state, $form) {
  * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element, &$form_state) {
-  global $form_values;
+  $form_values = $form_state['values'];
 
-  $field_name = $element['#parents'][0];
-  $delta = $element['#parents'][1];
+  $field_name = $element['#field_name'];
+  $delta = $element['#delta'];
   $item = $form_values[$field_name][$delta];
-
-  $field = $element['#field'];
+  $fields = content_fields();
+  $field = $fields[$field_name];
   $delta = $element['#delta'];
   $from_field = 'value';
   $to_field = 'value2';

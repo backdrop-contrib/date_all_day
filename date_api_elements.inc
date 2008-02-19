@@ -207,9 +207,9 @@ function date_parts_element($element, $date, $format) {
     $part_required = $element['#required'];
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
-      '#weight' => $order[$part],
+      '#weight' => $order[$field],
       '#required' => $element['#required'],
-      '#attributes' => array('class' => $element['#attributes']['class'] .' date-'. $field),
+      '#attributes' => array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') .' date-'. $field),
       );
     switch ($field) {
       case 'year':
@@ -595,12 +595,12 @@ function theme_date_text($element) {
  */
 function theme_date_select_element($element) {
   $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('select', $element, $element['#children']) .'</div>';
+  return '<div class="date-'. $part .'">'. theme('select', $element) .'</div>';
 }
 
 function theme_date_textfield_element($element) {
   $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('textfield', $element, $element['#children']) .'</div>';
+  return '<div class="date-'. $part .'">'. theme('textfield', $element) .'</div>';
 }
 
 /**

@@ -290,7 +290,7 @@ function date_combo_process($element, $edit, $form_state, $form) {
  * Validate and update a combo element.
  * Don't try this if there were errors before reaching this point.
  */
-function date_combo_validate($element, &$form_state, $form) {
+function date_combo_validate($element, &$form_state) {
   global $form_values;
 
   $field_name = $element['#parents'][0];
@@ -372,13 +372,13 @@ function date_combo_validate($element, &$form_state, $form) {
 /**
  * Handle widget processing.
  */
-function date_widget_validate($element, &$form_state, $form) {
-  global $form_values;
+function date_widget_validate($element, &$form_state) {
+  $form_values = $form_state['values'];
   $field = $form_state['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-    return _date_repeat_widget_validate($element, $form_state, $form);
+    return _date_repeat_widget_validate($element, $form_state);
   }
 }
 

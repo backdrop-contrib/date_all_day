@@ -298,7 +298,7 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
 /**
  * Massage the input values back into a single date.
  */
-function date_popup_validate($element, &$form_state, $form) {
+function date_popup_validate($element, &$form_state) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   date_popup_load();
   $valid_value = date_popup_input_value($element);

@@ -224,10 +224,10 @@ function date_repeat_merge($form_values) {
 /**
  * Adds and removes exceptions from the list of current exceptions.
  */
-function date_repeat_rrule_validate($element, &$form_state, $form) {
+function date_repeat_rrule_validate($element, &$form_state) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
 
-  global $form_values;
+  $form_values = $form_state['values'];
   $field_name = $element['#parents'][0];
   //$delta = $element['#parents'][1];
   $item = $form_values[$field_name]['rrule'];

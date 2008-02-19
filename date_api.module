@@ -1137,3 +1137,23 @@ function date_api_elements() {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   return _date_api_elements();
 }
+
+function date_api_theme() {
+  return array(
+    'date_timezone' => array('arguments' => array('element' => NULL)),
+    'date_select' => array('arguments' => array('element' => NULL)),
+    'date_text' => array('arguments' => array('element' => NULL)),
+    'date_select_element' => array('arguments' => array('element' => NULL)),
+    'date_textfield_element' => array('arguments' => array('element' => NULL)),
+    'date_date_part_hour_prefix' => array('arguments' => array('element' => NULL)),
+    'date_part_minsec_prefix' => array('arguments' => array('element' => NULL)),
+    'date_label_year' => array('arguments' => array('element' => NULL)),
+    'date_label_month' => array('arguments' => array('element' => NULL)),
+    'date_label_day' => array('arguments' => array('element' => NULL)),
+    'date_label_hour' => array('arguments' => array('element' => NULL)),
+    'date_label_minute' => array('arguments' => array('element' => NULL)),
+    'date_label_second' => array('arguments' => array('element' => NULL)),
+    'date_label_ampm' => array('arguments' => array('element' => NULL)),
+    'date_label_timezone' => array('arguments' => array('element' => NULL)),
+    );
+}

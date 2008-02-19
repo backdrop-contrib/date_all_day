@@ -26,6 +26,13 @@ function date_repeat_elements() {
   return $type;
 }
 
+function date_repeat_theme() {
+  return array(
+    'date_repeat' => array('arguments' => array('element' => NULL)),
+    'date_repeat_current_exceptions' => array('arguments' => array('element' => NULL)),
+  );
+}
+
 /**
  * Helper function for FREQ options.
  */

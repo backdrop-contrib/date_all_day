@@ -106,7 +106,7 @@ function date_widget_settings_form($widget) {
     $form['input']['year_range'] = array(
       '#type' => 'textfield',
       '#title' => t('Years back and forward'),
-      '#default_value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
+      '#default_value' => !empty($widget['year_range']) ? $widget['year_range'] : '-3:+3',
       '#size' => 10,
       '#maxsize' => 10,
       '#description' => t('Number of years to go back and forward in the year selection list, default is -3:+3.'),
@@ -121,11 +121,11 @@ function date_widget_settings_form($widget) {
   else {
     $form['increment'] = array(
       '#type' => 'hidden',
-      '#value' => isset($widget['increment']) ? $widget['increment'] : '-3:+3',
+      '#value' => !empty($widget['year_range']) ? $widget['year_range'] : '-3:+3',
       );
     $form['year_range'] = array(
       '#type' => 'hidden',
-      '#value' => isset($widget['year_range']) ? $widget['year_range'] : 1,
+      '#value' => isset($widget['increment']) ? $widget['increment'] : 1,
       );
   }
 

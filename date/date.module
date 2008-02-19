@@ -72,7 +72,7 @@ function date_widget_info() {
       'field types' => array('date', 'datestamp', 'datetime'),
       'multiple values' => CONTENT_HANDLE_CORE,
       'callbacks' => array(
-        'default value' => CONTENT_CALLBACK_DEFAULT,
+        'default value' => CONTENT_CALLBACK_CUSTOM,
         ),
     ),
     'date_text' => array(
@@ -80,7 +80,7 @@ function date_widget_info() {
       'field types' => array('date', 'datestamp', 'datetime'),
       'multiple values' => CONTENT_HANDLE_CORE,
       'callbacks' => array(
-        'default value' => CONTENT_CALLBACK_DEFAULT,
+        'default value' => CONTENT_CALLBACK_CUSTOM,
         ),
       ),
     );
@@ -90,7 +90,7 @@ function date_widget_info() {
       'field types' => array('date', 'datestamp', 'datetime'),
       'multiple values' => CONTENT_HANDLE_CORE,
       'callbacks' => array(
-        'default value' => CONTENT_CALLBACK_DEFAULT,
+        'default value' => CONTENT_CALLBACK_CUSTOM,
         ),
     );
   }
@@ -103,32 +103,32 @@ function date_widget_info() {
 function date_field_formatter_info() {
   return array(
     'default' => array('label' => t('Default'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'long' => array('label' => t('Long'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'medium' => array('label' => t('Medium'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'short' => array('label' => t('Short'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'iso' => array('label' => t('ISO'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'timestamp' => array('label' => t('Timestamp'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'feed' => array('label' => t('Feed'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'ical' => array('label' => t('iCal'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
     'format_interval' => array('label' => t('As Time Ago'),
-      'field types' => array('date', 'datestamp', 'datetime')),
-      'multiple values' => FALSE,
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'multiple values' => CONTENT_HANDLE_CORE),
   );
 }
 
@@ -137,6 +137,8 @@ function date_field_formatter_info() {
  */
 function date_theme() {
   return array(
+    'date_combo' => array('arguments' => array('element' => NULL)),
+    'date_text_parts' => array('arguments' => array('element' => NULL)),
     'date' => array('arguments' => array('element' => NULL)),
     'date_formatter_default' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),
     'date_formatter_long' => array('arguments' => array('element' => NULL), 'function' => 'theme_date_field_formatter'),

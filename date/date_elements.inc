@@ -399,12 +399,14 @@ function date_input_format($element, $field) {
  *  Theme from/to date combination on form.
  */
 function theme_date_combo($element) {
-  if (!$element['#field']['todate']) {
+  $fields = content_fields();
+  $field = $fields[$element['#field_name']];
+  if (!$field['todate']) {
     return $element['#children'];
   }
   // Group from/to items together in fieldset.
   $fieldset = array(
-    '#title' => $element['#field']['widget']['label'] .' '. ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
+    '#title' => $field['widget']['label'] .' '. ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => $element['#children'],
     '#collapsible' => TRUE,
     '#collapsed' => empty($element['#value']) && $element['#delta'] > 0 ? TRUE : FALSE,

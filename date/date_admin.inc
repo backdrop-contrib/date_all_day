@@ -34,20 +34,31 @@ function _date_widget_settings($op, &$field) {
       if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $field['year_range'])) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
-      if (isset($field['advanced']['label_position'])) {
-        form_set_value(array('#parents' => array('label_position')), $field['advanced']['label_position']);
-      }
-      // Munge the table display for text parts back into an array of text parts.
-      if (is_array($field['advanced']['text_parts'])) {
-        form_set_value(array('#parents' => array('text_parts')), array_keys(array_filter($field['advanced']['text_parts'])));
-      }
       break;
+  }
+}
 
+/**
+ * Custom widget settings manipulation.
+ *
+ * CCK widget settings can't use form_set_value(),
+ * so do it in a custom function.
+ */
+function date_widget_settings_validate(&$form, &$form_state, $form_id) {
+  $form_values = $form_state['values'];
+  if (isset($form_values['advanced']['label_position'])) {
+    form_set_value($form['label_position'], $form_values['advanced']['label_position'], $form_state);
+  }
+  // Munge the table display for text parts back into an array of text parts.
+  if (is_array($form_values['advanced']['text_parts'])) {
+    form_set_value($form['text_parts'], array_keys(array_filter($form_values['advanced']['text_parts'])), $form_state);
   }
 }
 
 function date_widget_settings_form($widget) {
-  $form = array();
+  $form = array(
+    '#element_validate' => array('date_widget_settings_validate'),
+    );
   $form['input']['default_value'] = array(
     '#type' => 'radios', '#title' => t('Default value'),
     '#default_value' => !empty($widget['default_value']) ? $widget['default_value'] : 'blank',
@@ -129,6 +140,14 @@ function date_widget_settings_form($widget) {
       );
   }
 
+  $form['label_position'] = array(
+    '#type' => 'value',
+    '#value' => !empty($widget['label_position']) ? $widget['label_position'] : 'above',
+    );
+  $form['text_parts'] = array(
+    '#type' => 'value',
+    '#value' => isset($widget['text_parts']) ? $widget['text_parts'] : '',
+    );
   $form['input']['advanced'] = array(
     '#tree' => TRUE,
     '#type' => 'fieldset',

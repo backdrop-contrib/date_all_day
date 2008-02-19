@@ -50,7 +50,7 @@ function date_widget_settings_form($widget) {
   $form = array();
   $form['input']['default_value'] = array(
     '#type' => 'radios', '#title' => t('Default value'),
-    '#default_value' => isset($widget['default_value']) ? $widget['default_value'] : 'blank',
+    '#default_value' => !empty($widget['default_value']) ? $widget['default_value'] : 'blank',
     '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
@@ -68,7 +68,7 @@ function date_widget_settings_form($widget) {
 
   $form['input']['default']['default_value2'] = array(
     '#type' => 'radios', '#title' => t('Default value for To date'),
-    '#default_value' => isset($widget['default_value2']) ? $widget['default_value2'] : 'same',
+    '#default_value' => !empty($widget['default_value2']) ? $widget['default_value2'] : 'same',
     '#options' => array('same' => t('Same as From date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
@@ -139,12 +139,12 @@ function date_widget_settings_form($widget) {
   $form['input']['advanced']['label_position'] = array(
     '#type' => 'radios',
     '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
-    '#default_value' => $widget['label_position'],
+    '#default_value' => !empty($widget['label_position']) ? $widget['label_position'] : 'above',
     '#title' => t('Position of date part labels'),
     '#description' => t('The location of date part labels, like \'Year\', \'Month\', or \'Day\'. \'Above\' will display them as titles above each date part. \'Within\' will insert the label as the first option in the select list and in blank textfields. \'None\' will not label any of the date parts. The exact text in the label is controlled by themes like \'date_part_label_year\' and \'date_part_label_month\'.'),
     );
   $form['input']['advanced']['text_parts'] = array(
-    '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts_theme' : '',
+    '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts' : '',
     );
   foreach (date_granularity_names() as $key => $value) {
     if ($widget['type'] == 'date_select') {
@@ -168,7 +168,7 @@ function date_widget_settings_form($widget) {
  * Display the text/select options for date parts in a table
  * for easier readability.
  */
-function theme_date_text_parts_theme($element) {
+function theme_date_text_parts($element) {
   $names = date_granularity_names();
   $rows = array();
   foreach ($names as $key => $part) {

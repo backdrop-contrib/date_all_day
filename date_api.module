@@ -1075,6 +1075,7 @@ function date_format_order($format) {
   if (empty($format)) return $order;
   $max = strlen($format);
   for ($i = 0; $i <= $max; $i++) {
+    if (!isset($format[$i])) break;
     $c = $format[$i];
     switch ($c) {
       case 'd':

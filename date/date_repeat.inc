@@ -45,7 +45,7 @@ function _date_repeat_widget(&$element, &$node, $field, &$items) {
  * Create multiple values from the RRULE results.
  * Lots more work needed here.
  */
-function _date_repeat_widget_validate($element, $edit, $form_state, $form) {
+function _date_repeat_widget_validate($element, &$form_state, $form) {
   global $form_values;
 
   $field_name = $element['#parents'][0];
@@ -55,8 +55,8 @@ function _date_repeat_widget_validate($element, $edit, $form_state, $form) {
 
   // If no repeats are set, clean up the form and return.
   if ($values['FREQ'] == 'NONE') {
-    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), NULL);
-    form_set_value($element['rrule'], NULL);
+    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), NULL, $form_state);
+    form_set_value($element['rrule'], NULL, $form_state);
     return;
   }
 
@@ -124,13 +124,13 @@ function _date_repeat_widget_validate($element, $edit, $form_state, $form) {
         'rrule' => $delta == 0 ? $rrule : '',
         );
     }
-    form_set_value($element, $value[$field_name]);
+    form_set_value($element, $value[$field_name], $form_state);
   }
   else {
     // If no changes are needed, move the RRULE back to the zero value
     // item of the field.
-    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule);
-    form_set_value($element['rrule'], NULL);
+    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule, $form_state);
+    form_set_value($element['rrule'], NULL, $form_state);
   }
 }
 

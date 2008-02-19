@@ -335,7 +335,7 @@ function date_increment_round(&$date, $increment) {
 /**
  *  Validation function for date selector.
  */
-function date_select_validate($element, $edit, $form_state, $form) {
+function date_select_validate($element, &$form_state, $form) {
   $error_field = implode('][', $element['#parents']);
 
   // Strip field labels out of the results.
@@ -370,7 +370,7 @@ function date_select_validate($element, $edit, $form_state, $form) {
     // If it creates a valid date, set it.
     $value = date_select_input_value($element);
     if (!empty($value)) {
-      form_set_value($element, $value);
+      form_set_value($element, $value, $form_state);
     }
     elseif ($element['#required']) {
       form_set_error($error_field, t('A valid date cannot be constructed from %m-%d-%year.', array(
@@ -380,7 +380,7 @@ function date_select_validate($element, $edit, $form_state, $form) {
         )));
     }
     else {
-      form_set_value($element, NULL);
+      form_set_value($element, NULL, $form_state);
     }
   }
 }
@@ -398,15 +398,15 @@ function date_select_input_value($element) {
 /**
  *  Validation for text input.
  */
-function date_text_validate($element, $edit, $form_state, $form) {
+function date_text_validate($element, &$form_state, $form) {
   $form_values = $element['#value'];
   $value = date_text_input_value($element);
 
   if (!$element['#required'] && empty($value)) {
-    form_set_value($element, NULL);
+    form_set_value($element, NULL, $form_state);
   }
   elseif (!empty($value)) {
-    form_set_value($element, $value);
+    form_set_value($element, $value, $form_state);
   }
   else {
     $error_field = implode('][', $element['#parents']);
@@ -436,8 +436,8 @@ function date_text_input_value($element) {
  *
  *  Move the timezone value from the nested field back to the original field.
  */
-function  date_timezone_validate($element, $edit, $form_state, $form) {
-  form_set_value($element, $element['#value']['timezone']);
+function date_timezone_validate($element, &$form_state, $form) {
+  form_set_value($element, $element['#value']['timezone'], $form_state);
 }
 
 
@@ -537,10 +537,10 @@ function date_convert_from_custom($date, $format) {
         break;
     }
   }
-  if ($ampm == 'pm' && $final_date['hour'] < 12) {
+  if (isset($ampm) && $ampm == 'pm' && $final_date['hour'] < 12) {
     $final_date['hour'] += 12;
   }
-  elseif ($ampm == 'am' && $final_date['hour'] == 12) {
+  elseif (isset($ampm) && $ampm == 'am' && $final_date['hour'] == 12) {
     $final_date['hour'] -= 12;
   }
   if (date_is_valid($final_date, DATE_ARRAY)) {

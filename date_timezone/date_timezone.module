@@ -69,15 +69,15 @@ function date_timezone_user_form(&$form) {
  * Callback from site timezone settings form to update site timezone info.
  * When the timezone name is updated, update the offset as well.
  */
-function date_timezone_update_site($element) {
+function date_timezone_update_site($element, &$form_state) {
   $timezone = $element['#value'];
   if (empty($timezone)) {
-    form_set_value($element, $element['#offset']);
+    form_set_value($element, $element['#offset'], $form_state);
   }
   else {
     variable_set('date_default_timezone_name', $timezone);
     $date = date_make_date('now', $timezone);
-    form_set_value($element, date_offset_get($date));
+    form_set_value($element, date_offset_get($date), $form_state);
   }
 }
 
@@ -85,11 +85,11 @@ function date_timezone_update_site($element) {
  * Callback from user timezone settings form to update user timezone info.
  * When the timezone name is updated, update the offset as well.
  */
-function date_timezone_update_user($element) {
+function date_timezone_update_user($element, &$form_state) {
   $timezone = $element['timezone_name']['#value'];
   if (!empty($timezone)) {
     $date = date_make_date('now', $timezone);
     $offset = date_offset_get($date);
-    form_set_value($element['timezone'], $offset);
+    form_set_value($element['timezone'], $offset, $form_state);
   }
 }

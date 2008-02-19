@@ -290,7 +290,7 @@ function date_combo_process($element, $edit, $form_state, $form) {
  * Validate and update a combo element.
  * Don't try this if there were errors before reaching this point.
  */
-function date_combo_validate($element, $edit, $form_state, $form) {
+function date_combo_validate($element, &$form_state, $form) {
   global $form_values;
 
   $field_name = $element['#parents'][0];
@@ -318,7 +318,7 @@ function date_combo_validate($element, $edit, $form_state, $form) {
     $item[$tz_field]   = $timezone;
     $item[$offset_field] = NULL;
     $item[$offset_field2] = NULL;
-    form_set_value($element, $item);
+    form_set_value($element, $item, $form_state);
   }
   elseif (!form_get_errors()) {
 
@@ -364,7 +364,7 @@ function date_combo_validate($element, $edit, $form_state, $form) {
       date_timezone_set($to_date, timezone_open('UTC'));
       $item[$from_field] = date_format($from_date, date_type_format($field['type']));
       $item[$to_field] = date_format($to_date, date_type_format($field['type']));
-      form_set_value($element, $item);
+      form_set_value($element, $item, $form_state);
     }
   }
 }
@@ -372,13 +372,13 @@ function date_combo_validate($element, $edit, $form_state, $form) {
 /**
  * Handle widget processing.
  */
-function date_widget_validate($element, $edit, $form_state, $form) {
+function date_widget_validate($element, &$form_state, $form) {
   global $form_values;
   $field = $form_state['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-    return _date_repeat_widget_validate($element, $edit, $form_state, $form);
+    return _date_repeat_widget_validate($element, $form_state, $form);
   }
 }
 

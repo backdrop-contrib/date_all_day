@@ -226,7 +226,7 @@ function _date_field_settings($op, $field) {
 
     case 'save':
 
-      $options = array('granularity', 'timezone_db', 'tz_handling', 'todate');
+      $options = array('granularity', 'timezone_db', 'tz_handling', 'todate', 'repeat');
       for ($i = 0; $i <= 3; $i++) {
         switch ($i) {
         case(1):
@@ -261,6 +261,20 @@ function _date_field_settings($op, $field) {
 }
 
 /**
+ * Custom field settings manipulation.
+ *
+ * CCK field settings can't use form_set_value(),
+ * so do it in a custom function.
+ */
+function date_field_settings_validate(&$form, &$form_state, $form_id) {
+  $form_values = $form_state['values'];
+  if ($form_values['multiple'] == 99) {
+    form_set_value($form['multiple'], 1, $form_state);
+    form_set_value($form['repeat'], 1, $form_state);
+  }
+}
+
+/**
  *  Callback for field columns.
  */
 function date_columns($field) {
@@ -283,19 +297,26 @@ function date_columns($field) {
     $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
     if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
   }
-  if (isset($field['multiple']) && $field['multiple'] == 99) {
+  if (isset($field['repeat']) && $field['repeat'] == 1) {
     $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE);
   }
   return $db_columns;
 }
 
 function date_field_settings_form($field) {
-  $form = array();
+  $form = array(
+    '#element_validate' => array('date_field_settings_validate'),
+    );
   $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : (date_has_time($field['granularity']) ? 'site' : 'none');
 
   // Override the normal multiple checkbox when using date repeat.
   $options = array(0 => t('Never'), 1 => t('Unlimited'));
   $description = t('Choose an option for handling multiple values. Unlimited will allow the user to manually create unlimited multiple dates one date at a time.');
+
+  $form['repeat'] = array(
+    '#type' => 'value',
+    '#value' => $field['repeat'],
+    );
 
   // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat')) {
@@ -303,7 +324,7 @@ function date_field_settings_form($field) {
       '#type' => 'select',
       '#title' => t('Number of values'),
       '#options' => array(1 => t('Unlimited'), 99 => t('Repeating'), 0 => 1) + drupal_map_assoc(range(2, 10)),
-      '#default_value' => $field['multiple'],
+      '#default_value' => !empty($field['repeat']) ? 99 : $field['multiple'],
       '#description' => t('Select a specific number of values for this field, or \'Unlimited\' to provide an \'Add more\' button so the users can add as many values as they like.  Repeating dates display options to allow the user to select when and how often the date will repeat.') .'<br/><strong>'. t('Warning! Changing this setting after data has been created could result in the loss of data!') .'</strong>',
     );
   }

@@ -21,7 +21,7 @@ function date_repeat_elements() {
   $type['date_repeat_rrule'] = array(
     '#input' => TRUE,
     '#process' => array('date_repeat_rrule_process'),
-    'element_validate' => array('date_repeat_rrule_validate'),
+    '#element_validate' => array('date_repeat_rrule_validate'),
   );
   return $type;
 }
@@ -237,6 +237,8 @@ function date_repeat_rrule_description($rrule, $start_date, $format = 'D M d Y')
  */
 function date_repeat_split_rrule($rrule) {
   $parts = explode("\n", $rrule);
+  $rrule = array();
+  $exceptions = array();
   foreach ($parts as $part) {
     if (strstr($part, 'RRULE')) {
       $RRULE = str_replace('RRULE:', '', $part);

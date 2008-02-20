@@ -75,6 +75,7 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
     '#suffix' => '</div>',
   );
 
+  $UNTIL = '';
   if (!empty($rrule['UNTIL']['datetime'])) {
     if (!is_array(!empty($rrule['UNTIL']['datetime']))) {
       $UNTIL = $rrule['UNTIL']['datetime'];

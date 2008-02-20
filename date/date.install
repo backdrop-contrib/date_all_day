@@ -429,7 +429,7 @@ function date_db_integrity($name) {
           }
         }
       }
-      if ($field['multiple'] == 99) {
+      if ($field['repeat'] == 1) {
         if (!date_column_exists($table, $columns_start['rrule']['column'])) {
           unset($columns_start['rrule']);
         }

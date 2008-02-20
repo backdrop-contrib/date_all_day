@@ -28,16 +28,17 @@
  * element, we'll compute the repeat sequence in the widget validation
  * to create the element delta values.
  */
-function _date_repeat_widget(&$element, &$node, $field, &$items) {
-  $element[$field['field_name']]['rrule'] = array(
+function _date_repeat_widget($element, $field, $items, $delta) {
+  $element['rrule'] = array(
     '#type' => 'date_repeat_rrule',
     '#weight' => ($field['widget']['weight'] + .3),
-    '#default_value' => $items[0]['rrule'],
-    '#date_timezone' => $element[$field['field_name']][0]['#date_timezone'],
+    '#default_value' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
+    '#date_timezone' => $element['#date_timezone'],
     '#prev_value' => $items[0]['value'],
     '#prev_value2' => $items[0]['value2'],
-    '#prev_rrule' => $items[0]['rrule'],
+    '#prev_rrule' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
     );
+  return $element;
 }
 /**
  * Validation for date repeat form element.
@@ -47,9 +48,9 @@ function _date_repeat_widget(&$element, &$node, $field, &$items) {
  */
 function _date_repeat_widget_validate($element, &$form_state) {
   $form_values = $form_state['values'];
-
-  $field_name = $element['#parents'][0];
-  $field = $element[0]['#field'];
+  $field_name = $element['#field_name'];
+  $delta = $element['#delta'];
+  $item = $form_values[$field_name][$delta];
 
   $values = date_repeat_merge($element['#post'][$field_name]['rrule']);
 
@@ -143,7 +144,7 @@ function _date_repeat_remove() {
   $types = content_types();
   foreach ($types as $type_name => $type) {
     foreach ($type['fields'] as $field_name => $field) {
-      if ($field['multiple'] == 99) {
+      if ($field['repeat'] == 1) {
         $db_info = content_database_info($field);
         $table = $db_info['table'];
         $column = $db_info['columns']['rrule']['column'];

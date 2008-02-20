@@ -106,7 +106,7 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  *   the local timezone, are converted back to their UTC values and stored.
  *
  */
-function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : '');
 
@@ -144,9 +144,11 @@ function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   }
 
   // Add a date repeat form element, if needed.
-  if (module_exists('date_repeat') && $field['multiple'] == 99) {
+  if (module_exists('date_repeat') && $field['repeat'] == 1) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
-    _date_repeat_widget($element, $node, $field, $items);
+    $element = array_merge($element, _date_repeat_widget($element, $field, $items, $delta));
+    // Trick the Content module into treating this as a single element form.
+    $field['multiple'] = 0;
   }
   return $element;
 }
@@ -298,7 +300,6 @@ function date_combo_process($element, $edit, $form_state, $form) {
  */
 function date_combo_validate($element, &$form_state) {
   $form_values = $form_state['values'];
-
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $item = $form_values[$field_name][$delta];

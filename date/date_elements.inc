@@ -107,6 +107,17 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  *
  */
 function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
+
+  // If this is a multiple value form, get the Content module's
+  // multiple value form with its AHAH add more element and return that.
+  // Set a flag so we know to skip this step when the
+  // content_multiple_value_form() re-invokes this widget.
+  if ($field['multiple'] > 0 && empty($field['repeat']) && empty($field['multiple_form'])) {
+    $field_copy = $field;
+    $field_copy['multiple_form'] = TRUE;
+    return content_multiple_value_form(&$form, &$form_state, $field_copy, $items);
+  }
+
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : '');
 
@@ -147,8 +158,6 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
   if (module_exists('date_repeat') && $field['repeat'] == 1) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');
     $element = array_merge($element, _date_repeat_widget($element, $field, $items, $delta));
-    // Trick the Content module into treating this as a single element form.
-    $field['multiple'] = 0;
   }
   return $element;
 }

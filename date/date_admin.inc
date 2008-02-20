@@ -272,6 +272,9 @@ function date_field_settings_validate(&$form, &$form_state, $form_id) {
     form_set_value($form['multiple'], 1, $form_state);
     form_set_value($form['repeat'], 1, $form_state);
   }
+  else {
+    form_set_value($form['repeat'], 0, $form_state);
+  }
 }
 
 /**

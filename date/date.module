@@ -70,7 +70,7 @@ function date_widget_info() {
     'date_select' => array(
       'label' =>  t('Select List'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'multiple values' => CONTENT_HANDLE_CORE,
+      'multiple values' => CONTENT_HANDLE_MODULE,
       'callbacks' => array(
         'default value' => CONTENT_CALLBACK_CUSTOM,
         ),
@@ -78,7 +78,7 @@ function date_widget_info() {
     'date_text' => array(
       'label' =>  t('Text Field with strtotime validation'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'multiple values' => CONTENT_HANDLE_CORE,
+      'multiple values' => CONTENT_HANDLE_MODULE,
       'callbacks' => array(
         'default value' => CONTENT_CALLBACK_CUSTOM,
         ),
@@ -88,7 +88,7 @@ function date_widget_info() {
     $info['date_popup'] = array(
       'label' =>  t('Text Field with jquery pop-up calendar'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'multiple values' => CONTENT_HANDLE_CORE,
+      'multiple values' => CONTENT_HANDLE_MODULE,
       'callbacks' => array(
         'default value' => CONTENT_CALLBACK_CUSTOM,
         ),

@@ -213,7 +213,6 @@ function date_ical_import($filename) {
       $name = strtoupper(trim($matches[1]));
       $field = $matches[2];
       $data = $matches[3];
-
       $parse_result = '';
       switch ($name) {
         // Keep blank lines out of the results.
@@ -306,6 +305,13 @@ function date_ical_import($filename) {
  *   It will take more work to figure how to support that.
  */
 function date_ical_parse_date($field, $data) {
+  $items = array('datetime' => '', 'all_day' => '', 'tz' => '');
+  if (empty($data)) {
+    return $items;
+  }
+  // Make this a little more whitespace independent
+  $data = trim($data);
+
   // Turn the properties into a nice indexed array of
   // array(PROPERTYNAME => PROPERTYVALUE);
   $field_parts = preg_split('/[;:]/', $field);
@@ -316,9 +322,6 @@ function date_ical_parse_date($field, $data) {
       $properties[$tmp[0]] = $tmp[1];
     }
   }
-
-  // Make this a little more whitespace independent
-  $data = trim($data);
 
   // Record if a time has been found
   $has_time = false;
@@ -648,8 +651,14 @@ function date_api_ical_build_rrule($form_values) {
   }
 
   // Exceptions dates go last, on their own line.
-  if ($form_values['EXDATE']) {
-    $RRULE .= chr(13) . chr(10) .'EXDATE:'. $form_values['EXDATE'];
+  if (is_array($form_values['EXDATE'])) {
+    $ex_dates = array();
+    foreach ($form_values['EXDATE'] as $value) {
+      $ex_dates[] = date_convert($value['datetime'], DATE_DATETIME, DATE_ICAL);
+    }
+    if (!empty($ex_dates)) {
+      $RRULE .= chr(13) . chr(10) .'EXDATE:'. implode(',', $ex_dates);
+    }
   }
   return $RRULE;
 }

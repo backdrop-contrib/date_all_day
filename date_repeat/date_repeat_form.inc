@@ -223,7 +223,7 @@ function date_repeat_merge($form_values) {
 }
 
 /**
- * Adds and removes exceptions from the list of current exceptions.
+ * Build a RRULE out of the form values.
  */
 function date_repeat_rrule_validate($element, &$form_state) {
   include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');

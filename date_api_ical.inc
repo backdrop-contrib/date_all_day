@@ -660,6 +660,7 @@ function date_api_ical_build_rrule($form_values) {
       }
     }
     if (!empty($ex_dates)) {
+      sort($ex_dates);
       $RRULE .= chr(13) . chr(10) .'EXDATE:'. implode(',', $ex_dates);
     }
   }

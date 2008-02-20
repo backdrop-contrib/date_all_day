@@ -33,6 +33,8 @@ define('DATE_FORMAT_ICAL', "Ymd\THis");
 define('DATE_REGEX_ISO', '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
+define('DATE_REGEX_ICAL_DATE', '/(\d{4})(\d{2})(\d{2})/');
+define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?/');
 
 /**
  * Implementation of hook_init().

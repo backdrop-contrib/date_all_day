@@ -306,26 +306,65 @@ function date_ical_import($filename) {
  *   It will take more work to figure how to support that.
  */
 function date_ical_parse_date($field, $data) {
-  $tz = '';
+  // Turn the properties into a nice indexed array of
+  // array(PROPERTYNAME => PROPERTYVALUE);
+  $field_parts = preg_split('/[;:]/', $field);
+  $properties = array();
+  foreach ($field_parts as $part) {
+    if (strpos($part, '=') !== false) {
+      $tmp = explode('=', $part);
+      $properties[$tmp[0]] = $tmp[1];
+    }
+  }
+
+  // Make this a little more whitespace independent
   $data = trim($data);
-  $items = array('DATA' => $data);
-  if (substr($data, -1) == 'Z') {
+
+  // Record if a time has been found
+  $has_time = false;
+
+  // If a format is specified, parse it according to that format
+  if (isset($properties['VALUE'])) {
+    switch ($properties['VALUE']) {
+      case 'DATE':
+        preg_match (DATE_REGEX_ICAL_DATE, $data, $regs);
+        $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
+        break;
+      case 'DATE-TIME':
+        preg_match (DATE_REGEX_ICAL_DATETIME, $data, $regs);
+        $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
+        $datetime .= ' '. date_pad($regs[4]) .':'. date_pad($regs[5]) .':'. date_pad($regs[6]); // Time
+        $has_time = true;
+        break;
+    }
+  }
+  // If no format is specified, attempt a loose match
+  else {
+    preg_match (DATE_REGEX_LOOSE, $data, $regs);
+    $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
+    if (isset($regs[4])) {
+      $has_time = true;
+      $datetime .= ' '.date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]); // Time
+    }
+  }
+
+  // Use timezone if explicitly declared
+  if (isset($properties['TZID'])) {
+    $tz = $properties['TZID'];
+    // Fix commonly used alternatives like US-Eastern which should be US/Eastern.
+    $tz = str_replace('-', '/', $tz);
+  }
+  // If declared as UTC with terminating 'Z', use that timezone
+  else if (strpos($data, 'Z') !== false) {
     $tz = 'UTC';
   }
-  if (strstr($field, 'TZID=')) {
-    $tmp = explode('=', $field);
-    // Fix commonly used alternatives like US-Eastern which should be US/Eastern.
-    $tz = str_replace('-', '/', $tmp[1]);
+  // Otherwise this date is floating...
+  else {
+    $tz = '';
   }
-  $data = str_replace(array('T', 'Z'), '', $data);
-  preg_match(DATE_REGEX_LOOSE, $data, $regs);
-  $items['type'] = 'DATE';
-  if (!empty($regs[5])) {
-    $items['type'] = 'DATE-TIME';
-    $time = ' '. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
-  }
-  $items['datetime'] = $regs[1] .'-'. $regs[2] .'-'. $regs[3] . $time;
-  $items['all_day'] = empty($time) ? 1 : 0;
+
+  $items['datetime'] = $datetime;
+  $items['all_day'] = $has_time ? false : true;
   $items['tz'] = $tz;
   return $items;
 }

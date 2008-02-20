@@ -134,23 +134,3 @@ function _date_repeat_widget_validate($element, &$form_state) {
     form_set_value($element['rrule'], NULL, $form_state);
   }
 }
-
-/**
- * Clean up Date Repeat column information.
- *
- * To be used for uninstalls, not currently implemented anywhere.
- */
-function _date_repeat_remove() {
-  $types = content_types();
-  foreach ($types as $type_name => $type) {
-    foreach ($type['fields'] as $field_name => $field) {
-      if ($field['repeat'] == 1) {
-        $db_info = content_database_info($field);
-        $table = $db_info['table'];
-        $column = $db_info['columns']['rrule']['column'];
-        db_query("ALTER TABLE {". $table ."} DROP $column");
-        db_query("UPDATE {node_field} set multiple = 1 WHERE field_name = '". $field['field_name'] ."'");
-      }
-    }
-  }
-}

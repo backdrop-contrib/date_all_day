@@ -308,7 +308,7 @@ function date_columns($field) {
 
 function date_field_settings_form($field) {
   $form = array(
-    '#element_validate' => array('date_field_settings_validate'),
+    '#element_validate' => array('date_field_settings_validate')
     );
   $tz_handling = $field['tz_handling'] ? $field['tz_handling'] : (date_has_time($field['granularity']) ? 'site' : 'none');
 

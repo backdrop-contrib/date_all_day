@@ -43,9 +43,9 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
   else {
     $rrule = $element['#value'];
   }
-  // Unset the original string value of the RRULE so we can create
+  // Empty the original string value of the RRULE so we can create
   // an array of values for the form from the RRULE's contents.
-  unset($element['#value']);
+  $element['#value'] = '';
 
   $parts = date_repeat_split_rrule($rrule);
   $rrule = $parts[0];
@@ -212,7 +212,7 @@ function date_repeat_merge($form_values) {
   if (is_array($form_values['UNTIL']['datetime']) && array_key_exists('date', $form_values['UNTIL']['datetime'])) {
     $form_values['UNTIL']['datetime'] = $form_values['UNTIL']['datetime']['date'];
   }
-  if (is_array($form_values['EXDATE'])) {
+  if (isset($form_values['EXDATE']) && is_array($form_values['EXDATE'])) {
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime']) && array_key_exists('date', $value['datetime'])) {
        $form_values['EXDATE'][$delta]['datetime'] = $value['datetime']['date'];
@@ -270,6 +270,5 @@ function theme_date_repeat_current_exceptions($rows = array()) {
  * Themes the date repeat element.
  */
 function theme_date_repeat($element) {
-  //return drupal_render($element);
-  //return theme('form_element', $element, '<div class="container-inline">'. drupal_render($element). '</div>');
+  return theme('form_element', $element, '<div class="container-inline">'. drupal_render($element). '</div>');
 }

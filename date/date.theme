@@ -13,18 +13,7 @@
 /**
  *  Theme from/to date combination in the view.
  *
- *  @param $field = the field settings
- *  @param $node = node information, this is not always available and not
- *     always the full node, it depends on what value was provided to the formatter.
- *     Only the nid is always guaranteed to be available.
- *  @param $dates - an array of date information, see explanation for date_field_object() for details.
- *
  *  Useful values:
- *    $field['type_name'] is the content type
- *    $field['type'] is the field type
- *
- *    $node->nid is the node nid, get other node values using node_load($node->nid)
- *
  *    $dates['format'] - the format string used on these dates
  *    $dates['value']['local']['object'] - the local date object for the From date
  *    $dates['value2']['local']['object'] - the local date object for the To date

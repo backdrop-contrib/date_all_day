@@ -120,17 +120,16 @@ function _date_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   // instead and do our conversion to local dates in the form and
   // in the formatters.
   $process = date_process_values($field);
-  if (!isset($items[$delta])) {
-    $items[$delta] = '';
-  }
   foreach ($process as $processed) {
+    if (!isset($items[$delta][$processed])) {
+      $items[$delta][$processed] = '';
+    }
     $date = date_local_date($delta, $items[$delta], $timezone, $field, $processed);
     $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
 
   $element = array(
     '#type' => 'date_combo',
-    '#delta' => $delta,
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
@@ -170,10 +169,10 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
   }
 
   if (empty($item[$part])) {
-    if (empty($default_value) || $default_value == 'blank' || $delta > 0) {
+    if (empty($default_value) || $default_value == 'blank') {
       return NULL;
     }
-    elseif ($part == 'value2' && $default_value == 'same') {
+    elseif ($part == 'value2' && $default_value == 'same' && !empty($item['value'])) {
       $date = date_make_date($item['value'], $timezone);
     }
     // Special case for 'now' when using dates with no timezone,
@@ -186,14 +185,18 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     }
   }
   else {
-    $value = $item[$part];
-    $value = date_convert($value, $field['type'], DATE_DATETIME);
+    if (is_array($item[$part])) {
+      $value = date_convert($item[$part], DATE_ARRAY, DATE_DATETIME);
+    }
+    else {
+      $value = date_convert($item[$part], $field['type'], DATE_DATETIME);
+    }
     $date = date_make_date($value, 'UTC');
-    if (date_timezone_convert($field, $item)) {
+    if (is_object($date) && date_timezone_convert($field, $item)) {
       date_timezone_set($date, timezone_open($timezone));
     }
   }
-  if (empty($item[$part]) && $default_value == 'strtotime' && !empty($default_value_code)) {
+  if (is_object($date) && empty($item[$part]) && $default_value == 'strtotime' && !empty($default_value_code)) {
     date_modify($date, $default_value_code);
   }
   return $date;
@@ -246,7 +249,7 @@ function date_combo_process($element, $edit, $form_state, $form) {
     '#weight'        => $field['widget']['weight'],
     '#description'   => empty($field['todate']) ? t($field['widget']['description']) : '',
     '#required'      => ($field['required'] && $delta == 0) ? 1 : 0,
-    '#default_value' => $element['#value'][$from_field],
+    '#default_value' => isset($element['#value'][$from_field]) ? $element['#value'][$from_field] : '',
     '#field'         => $field,
     '#delta'         => $delta,
     '#date_timezone' => $element['#date_timezone'],
@@ -280,7 +283,7 @@ function date_combo_process($element, $edit, $form_state, $form) {
     $element[$from_field]['#title']  = t('From date');
     $element[$to_field] = $element[$from_field];
     $element[$to_field]['#title'] = t('To date');
-    $element[$to_field]['#default_value'] = $element['#value'][$to_field];
+    $element[$to_field]['#default_value'] = isset($element['#value'][$to_field]) ? $element['#value'][$to_field] : '';
     $element[$to_field]['#required'] = false;
     $element[$to_field]['#weight'] += .1;
     $element[$to_field]['#description'] = t('Empty \'To date\' values will use the \'From date\' values.');

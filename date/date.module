@@ -353,9 +353,9 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
  * This code and all the processes it uses are in a separate file,
  * included only when processing forms.
  */
-function date_widget($op, &$node, $field, &$items) {
+function date_widget(&$form, &$form_state, $field, $items, $delta) {
   include_once(drupal_get_path('module', 'date') .'/date_elements.inc');
-  return _date_widget($op, $node, $field, $items);
+  return _date_widget($form, $form_state, $field, $items, $delta);
 }
 
 /**

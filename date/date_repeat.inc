@@ -49,8 +49,9 @@ function _date_repeat_widget($element, $field, $items, $delta) {
 function _date_repeat_widget_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
-  $delta = $element['#delta'];
-  $item = $form_values[$field_name][$delta];
+  $fields = content_fields();
+  $field = $fields[$field_name];
+  $item = $form_values[$field_name];
 
   $values = date_repeat_merge($element['#post'][$field_name]['rrule']);
 
@@ -86,8 +87,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
     //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
     ) {
 
-    $item = $form_values[$field_name][0];
-    $timezone = date_get_timezone($field['tz_handling'], $item[0]['timezone']);
+    $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
     $start = date_make_date($item['value'], $timezone, $field['type']);
     $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
     if (!empty($item['value2']) && $new_field['value2'] != $item['value']) {

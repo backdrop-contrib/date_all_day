@@ -144,6 +144,7 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
+    '#element_validate' => array('date_widget_validate'),
   );
   if ($field['tz_handling'] == 'date' && $delta == 0) {
     $element += array(
@@ -369,7 +370,7 @@ function date_combo_validate($element, &$form_state) {
     $to_date = date_make_date($item[$to_field], $timezone);
     $item[$offset_field2] = date_offset_get($to_date);
     $item[$tz_field] = $timezone;
-    $item['rrule'] = $rrule;
+    $item['rrule'] = isset($item['rrule']) ? $item['rrule'] : '';
     if ($item[$from_field] > $item[$to_field]) {
       form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
     }
@@ -390,6 +391,7 @@ function date_combo_validate($element, &$form_state) {
  */
 function date_widget_validate($element, &$form_state) {
   $form_values = $form_state['values'];
+  $field_name = $element['#field_name'];
   $field = $form_state['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {

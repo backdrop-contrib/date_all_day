@@ -55,7 +55,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
 
   // Get an integer value for the interval, if none given, '1' is implied.
   $interval = max(1, $rrule['INTERVAL']);
-  $count = $rrule['COUNT'];
+  $count = isset($rrule['COUNT']) ? $rrule['COUNT'] : NULL;
 
   // Find the time period to jump forward between dates.
   switch ($rrule['FREQ']) {
@@ -83,7 +83,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions) {
   // BYMONTHDAY will look for specific days of the month in one or more months.
   // This process is only valid when frequency is monthly or yearly.
 
-  if ($rrule['BYMONTHDAY']) {
+  if (!empty($rrule['BYMONTHDAY'])) {
     if (!in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
       return $days;
     }
@@ -313,15 +313,15 @@ function date_repeat_adjust_rrule($rrule, $start_date) {
   // RFC 2445 says if no day or monthday is specified when creating repeats for
   // weeks, months, or years, impute the value from the start date.
 
-  if (!$rrule['BYDAY'] && $rrule['FREQ'] == 'WEEKLY') {
+  if (empty($rrule['BYDAY']) && $rrule['FREQ'] == 'WEEKLY') {
     $rrule['BYDAY'] = array(date_repeat_dow2day(date_format($start_date, 'w')));
   }
-  elseif (!$rrule['BYDAY'] && !$rrule['BYMONTHDAY'] && $rrule['FREQ'] == 'MONTHLY') {
+  elseif (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && $rrule['FREQ'] == 'MONTHLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
   }
-  elseif (!$rrule['BYDAY'] && !$rrule['BYMONTHDAY'] && !$rrule['BYYEARDAY'] && $rrule['FREQ'] == 'YEARLY') {
+  elseif (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && empty($rrule['BYYEARDAY']) && $rrule['FREQ'] == 'YEARLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
-    if (!$rrule['BYMONTH']) {
+    if (empty($rrule['BYMONTH'])) {
       $rrule['BYMONTH'] = array(date_format($start_date, 'n'));
     }
   }

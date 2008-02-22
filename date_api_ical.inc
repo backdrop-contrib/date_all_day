@@ -128,9 +128,9 @@ function date_ical_import($filename) {
     $line = trim($line);
     $vcal .= $line ."\n";
     // Deal with begin/end tags separately
-    if (preg_match('/(BEGIN|END):(\S+)/', $line, $matches)) {
+    if (preg_match('/(BEGIN|END):V(\S+)/', $line, $matches)) {
       $closure = $matches[1];
-      $type = $matches[2];
+      $type = 'V'. $matches[2];
       if ($closure == 'BEGIN') {
         array_push($parents, $type);
         array_push($subgroups, array());

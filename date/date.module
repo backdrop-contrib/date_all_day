@@ -428,6 +428,20 @@ function date_pathauto_node($op, $node = NULL) {
 }
 
 /**
+ * Callbacks for token.
+ */
+if (!function_exists('date_token_list')) {
+  function date_token_list($type = 'all') {
+    include_once(drupal_get_path('module', 'date') .'/date_token.inc');
+    return _date_token_list($type);
+  }
+  function date_token_values($type, $object = NULL, $options = array()) {
+    include_once(drupal_get_path('module', 'date') .'/date_token.inc');
+    return _date_token_values($type, $object, $options);
+  }
+}
+
+/**
  * Helper function to return the date format used by a specific formatter.
  */
 function date_formatter_format($formatter, $field_name) {

@@ -18,6 +18,7 @@ include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
  * Reset the date caches.
  */
 function date_install() {
+  content_notify('install', 'date');
   $ret = array();
   date_clear_all();
   return $ret;
@@ -25,9 +26,9 @@ function date_install() {
 
 /**
  * Implementation of hook_uninstall().
- *
  */
 function date_uninstall() {
+  content_notify('uninstall', 'date');
   $ret = array();
   // Empty the date caches.
   date_clear_all(TRUE);
@@ -39,6 +40,7 @@ function date_uninstall() {
  * Reset the calendar caches.
  */
 function date_enable() {
+  content_notify('enable', 'date');
   date_clear_all();
 }
 
@@ -47,150 +49,12 @@ function date_enable() {
  * Empty the date caches.
  */
 function date_disable() {
+  content_notify('disable', 'date');
   date_clear_all(TRUE);
 }
 
-function date_update_1() {
-  $ret = array();
-  if (!db_table_exists('node_field_date_data')) {
-    return $ret;
-  }
-  switch ($GLOBALS['db_type']) {
-    case 'pgsql':
-      db_add_column($ret, 'node_field_date_data', 'nid', 'integer', array('not null' => TRUE, 'default' => 0));
-      break;
-
-    case 'mysql':
-    case 'mysqli':
-      $ret[] = update_sql("ALTER TABLE {node_field_date_data} ADD COLUMN nid int(10) NOT NULL DEFAULT 0");
-      break;
-  }
-
-  return $ret;
-}
-
-function date_update_2() {
-  $ret = array();
-  if (!db_table_exists('node_field_date_data')) {
-    return $ret;
-  }
-  // Multi-part update
-  if (!isset($_SESSION['date_update_2'])) {
-    $_SESSION['date_update_2'] = 0;
-    $_SESSION['date_update_2_max'] = db_result(db_query("SELECT COUNT(*) FROM {node_field_date_data}"));;
-  }
-
-  $limit = 20;
-  $result = db_query_range("SELECT nr.nid, nfdd.vid, nfdd.field_name, nfdd.delta FROM {node_field_date_data} nfdd LEFT JOIN {node_revisions} nr ON nr.vid = nfdd.vid", $_SESSION['date_update_2'], $limit);
-  if (db_num_rows($result) == 0) {
-    unset($_SESSION['date_update_2']);
-    unset($_SESSION['date_update_2_max']);
-    return array();
-  }
-  while ($data = db_fetch_object($result)) {
-    $_SESSION['date_update_2']++;
-    db_query("UPDATE {node_field_date_data} SET nid = %d WHERE vid = %d AND field_name = '%s' AND delta = %d", $data->nid, $data->vid, $data->field_name, $data->delta);
-  }
-
-  return array('#finished' => $_SESSION['date_update_2'] / $_SESSION['date_update_2_max']);
-}
-
-/**
- * Data is now stored in per-field tables.
- */
-function date_update_3() {
-  $ret = array();
-  if (!db_table_exists('node_field_date_data')) {
-    return $ret;
-  }
-  content_clear_type_cache();
-  $fields = content_fields();
-
-  foreach ($fields as $field) {
-    switch ($field['type']) {
-      case 'date':
-        $columns = array(
-          'value' => array('type' => 'varchar', 'length' => 17, 'not null' => TRUE, 'default' => "'00010101T00:00:00'"),
-        );
-        // the following line will trigger (negligible) warnings if content_update_3 was run before
-        // (column already exists)
-        @content_alter_db_field(array(), array(), $field, $columns);
-        $db_info = content_database_info($field);
-        $table = $db_info['table'];
-        if ($field['multiple']) {
-          $ret[] = update_sql('INSERT INTO {'. $table .'} (vid, delta, nid, '. $field['field_name'] ."_value) SELECT vid, delta, nid, field_date FROM {node_field_date_data} WHERE field_name = '". $field['field_name'] ."'");
-        }
-        else {
-          $ret[] = update_sql('INSERT INTO {'. $table .'} (vid, nid, '. $field['field_name'] ."_value) SELECT vid, nid, field_date FROM {node_field_date_data} WHERE field_name = '". $field['field_name'] ."'");
-        }
-        break;
-    }
-  }
-
-  $ret[] = update_sql('DROP TABLE {node_field_date_data}');
-
-  db_query('DELETE FROM {cache}');
-  return $ret;
-}
-
-/**
- * Alter date field size and default value to comply with ISO standards, add timezone field.
- */
-
-// a conditional update, can be rerun if changes didn't get made properly previously
-
-function date_update_4() {
-  $ret = array();
-  content_clear_type_cache();
-  $fields = content_fields();
-
-  foreach ($fields as $field) {
-    switch ($field['type']) {
-      case 'date':
-        $columns = array(
-          'value' => array('type' => 'varchar', 'length' => 20, 'not null' => TRUE, 'default' => "'0001-01-01T00:00:00'"),
-          'timezone' => array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => "'GMT'"),
-        );
-        $db_info = content_database_info($field);
-        if ($db_info['columns']['value']['default'] != "'0001-01-01T00:00:00'") {
-          content_alter_db_field(array(), array(), $field, $columns);
-        }
-        $id = $field['field_name'] .'_value';
-        $ret[] = update_sql("UPDATE {". $db_info['table'] ."} SET $id = CONCAT(SUBSTRING($id,1,4), '-', SUBSTRING($id,5,2), '-', SUBSTRING($id,7)) WHERE SUBSTRING($id, 5, 1) <> '-'");
-    }
-  }
-  db_query('DELETE FROM {cache}');
-  return $ret;
-}
-
-// adds in potential for empty dates by allowing date and timezone values to be null
-// add column for timezone offset -- needed for views integration with dates that have date-specific zones
-// Superceded by update 5102, so skip this step and do it then.
-
-function date_update_5() {
-  $ret = array();
-  return $ret;
-}
-
-/**
- * Update existing date-specific timezone fields with their offset values
- * Superceded by update 5103, so just skip this step and do it then.
- */
-function date_update_6() {
-  $ret = array();
-  return $ret;
-}
-
-/**
- *  Update 7
- *
- *  Force all columns to allow NULL values to simplify the module.
- *  Previously only non-required fields allowed NULL values.
- *  Superceded by update 5102, so skipt this step and do it them.
- */
-function date_update_7() {
-  $ret = array();
-  return $ret;
+function date_update_last_removed() {
+  return 7;
 }
 
 /**
@@ -302,11 +166,10 @@ function date_update_5101() {
 }
 
 /**
- * DB integrity update, supercedes most previous db integrity updates.
+ * Make sure date module loads after date_api.
  */
 function date_update_5102() {
   variable_del('date_version');
-  // Make sure date module loads after date_api.
   $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");
   return date_db_integrity('5103');
 }
@@ -363,24 +226,44 @@ function date_update_5200() {
 }
 
 /**
- * Data integrity update, supercedes most previous data integrity updates.
- */
-function date_update_5201() {
-  $ret = date_db_integrity('5201');
-  $ret = date_data_integrity('5201');
-  return $ret;
-}
-
-/**
  * Get rid of jscalendar popup and use jQuery popup instead.
  *
  * @return unknown
  */
-function date_update_5202() {
+function date_update_5201() {
   $ret = array();
   $ret[] = update_sql("UPDATE {node_field_instance} SET widget_type = 'date_popup' WHERE widget_type = 'date_js'");
   content_clear_type_cache();
   return $ret;
+}
+
+/**
+ * Database integrity update, supercedes most previous data integrity updates.
+ */
+function date_update_5202() {
+  return date_db_integrity('5202');
+}
+
+/**
+ * Data integrity update, supercedes most previous data integrity updates.
+ */
+function date_update_5203() {
+  return date_data_integrity('5203');
+}
+
+/**
+ * See if a table column already exists.
+ */
+function date_column_exists($table, $column) {
+  global $db_type;
+  switch ($db_type) {
+    case 'mysql':
+    case 'mysqli':
+      return (bool) db_fetch_object(db_query("SHOW COLUMNS FROM {". db_escape_table($table) ."} LIKE '". db_escape_table($column) ."'"));
+
+    case 'postgres':
+      return (bool) db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM pg_class, pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{". db_escape_table($table) ."}' AND attname = '". db_escape_table($column) ."'"));
+  }
 }
 
 function date_db_integrity($name) {
@@ -447,29 +330,6 @@ function date_db_integrity($name) {
 }
 
 /**
- * Data integrity update, supercedes most previous data integrity updates.
- */
-function date_update_5203() {
-  $ret = date_db_integrity('5203');
-  $ret = date_data_integrity('5203');
-  return $ret;
-}
-
-/**
- * See if a table column already exists.
- */
-function date_column_exists($table, $column) {
-  global $db_type;
-  switch ($db_type) {
-    case 'mysql':
-    case 'mysqli':
-      return (bool) db_fetch_object(db_query("SHOW COLUMNS FROM {". db_escape_table($table) ."} LIKE '". db_escape_table($column) ."'"));
-
-    case 'postgres':
-      return (bool) db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM pg_class, pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{". db_escape_table($table) ."}' AND attname = '". db_escape_table($column) ."'"));
-  }
-}
-/**
  *  Progressive update of date information, integrity checking of all date values.
  *
  * @param name - name of the update
@@ -477,54 +337,60 @@ function date_column_exists($table, $column) {
 function date_data_integrity($name, $force_recalc = FALSE) {
   // Use this to turn extra debugging on or off.
   $debug = TRUE;
-  // The number of nodes to process in each pass.
-  $limit = 5;
+
   $ret = array();
   $update_name = 'date_update_'. $name;
   // Make sure Date API module is installed before proceeding.
   if (!module_exists('date_api')) {
     drupal_install_modules(array('date_api'));
   }
-  $fields = content_fields();
+  if (!module_exists('content')) {
+    drupal_install_modules(array('content'));
+  }
+
   // See if being called for the first time
-  if (!isset($_SESSION[$update_name]) || empty($_SESSION[$update_name]['tables'])) {
-    // Find all tables that have date fields and store them in an array.
-    // There could be more than one date field in each table,
-    // so store fields as sub-array.
-    $update = array();
+  if (!isset($_SESSION[$update_name]) || empty($_SESSION[$update_name]['search'])) {
+    // Find all nids that have date fields and store them in an array.
+    $tables = array();
+    $_SESSION[$update_name]['search'] = array();
+    $_SESSION[$update_name]['fields'] = array();
+    $fields = content_fields();
     foreach ($fields as $field) {
-      $db_info = content_database_info($field);
       if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
-        $update[$db_info['table']][$field['field_name']] = $field;
+        $_SESSION[$update_name]['fields'][$field['field_name']] = $field;
+        $db_info = content_database_info($field);
+        $tables[] =  $db_info['table'];
       }
     }
     // keep track of progress
-    $_SESSION[$update_name]['tables'] = $update;
     $_SESSION[$update_name]['counted'] = 0;
-    foreach ($update as $table => $field) {
-      $_SESSION[$update_name][$table]['nid']   = 0;
-      $_SESSION[$update_name][$table]['to_count'] = db_result(db_query("SELECT COUNT(nid) FROM {". $table ."}"));
-      $_SESSION[$update_name]['count_total'] += $_SESSION[$update_name][$table]['to_count'];
+    $tables = array_unique($tables);
+    foreach ($tables as $table) {
+      $result = db_query("SELECT nid, vid FROM {". $table ."} ORDER BY nid, vid");
+      while ($row = db_fetch_array($result)) {
+        $_SESSION[$update_name]['search'][] = $row['nid'] .':'.  $row['vid'];
+      }
     }
+    sort($_SESSION[$update_name]['search']);
+    $_SESSION[$update_name]['search_all'] = $_SESSION[$update_name]['search'];
+    $_SESSION[$update_name]['count_total'] = count($_SESSION[$update_name]['search']);
+    $_SESSION[$update_name]['counted'] = 0;
   }
-  $update = $_SESSION[$update_name]['tables'];
-  if ($debug) {
-    $_SESSION[$update_name]['nids'] = array();
-    $_SESSION[$update_name]['nids_ok'] = array();
-    $_SESSION[$update_name]['dates'] = array();
-  }
-  // Fetch the next $limit nodes
-  $i = 0;
-  foreach ($update as $table => $fields) {
-    $results = db_query_range("SELECT nid FROM {". $table ."} WHERE nid > %d ORDER BY nid", $_SESSION[$update_name][$table]['nid'], 0, $limit);
-    while ($arr = db_fetch_array($results)) {
-      $node = node_load($arr['nid']);
+  $_SESSION[$update_name]['changed'] = array();
+  $_SESSION[$update_name]['unchanged'] = array();
+  // Do 5 updates in each pass.
+  for($i = 0; $i <= 5; $i++) {
+    $update = !empty($_SESSION[$update_name]['search']) ? array_shift($_SESSION[$update_name]['search']) : array();
+    if (!empty($update)) {
+      $ids = explode(':', $update);
+      $node = node_load($ids[0], $ids[1]);
       // Iterate through all the date fields in this node and re-compute
       // values to make sure they are correct.
       $needs_fix = FALSE;
-      foreach ($fields as $field_name => $field) {
-        foreach ((array) $node->$field['field_name'] as $delta => $item) {
-          $add = array();
+      foreach ($_SESSION[$update_name]['fields'] as $field_name => $field) {
+        $items = (array) $node->$field_name;
+        $add = array();
+        foreach ($items as $delta => $item) {
           // Check for non-required fields that still have the old default values and make them NULL.
           if ($field['type'] == 'date' && !$field['required'] && (substr($item['value'], 0, 10) == '0000-00-00' || substr($item['value'], 0, 10) == '0001-00-00')) {
             $item['value'] = NULL;
@@ -559,79 +425,51 @@ function date_data_integrity($name, $force_recalc = FALSE) {
             }
           }
         }
-        $node->$field['field_name'] = $add;
-        // Debugging information.
-        if ($debug) {
-          $_SESSION[$update_name]['dates'][$i] = $node->nid .' > Value: '. (!empty($add[$delta]['value']) ? $add[$delta]['value'] : 'set to NULL');
-          if (!empty($add[$delta]['value2'])) {
-            $_SESSION[$update_name]['dates'][$i] .= ' > Value2: '. (!empty($add[$delta]['value2']) ? $add[$delta]['value2'] : 'set to NULL');
-          }
-          if ($field['tz_handling'] == 'date' && isset($date)) {
-            $_SESSION[$update_name]['dates'][$i] .= ' > Computed timezone: '. date_get_timezone($field['tz_handling'], $item['timezone']) .
-            ' > Computed offset: '. date_offset_get($date);
-          }
-        }
-        $i++;
-      }
-      // More debugging information.
-      if ($debug) {
-        if ($needs_fix) {
-          $_SESSION[$update_name]['nids'][] = $node->nid;
-        }
-        else {
-          $_SESSION[$update_name]['nids_ok'][] = $node->nid;
+        if (!empty($add)) {
+          $node->$field_name = $add;
         }
       }
+      $_SESSION[$update_name]['counted'] ++;
+
       if ($needs_fix) {
         node_submit($node);
         node_save($node);
-      }
-      // reset nid
-      $_SESSION[$update_name][$table]['nid'] = $node->nid;
-      // add to count total
-      $_SESSION[$update_name]['counted']++;
-      // reduce the number of items in this table left to count
-      $_SESSION[$update_name][$table]['to_count']--;
-    }
-
-    // if everything in this table has been done, move to next table
-    if ($_SESSION[$update_name][$table]['to_count'] < 1) {
-      array_shift($_SESSION[$update_name]['tables']);
-    }
-
-    // See if we are done
-    if ($_SESSION[$update_name]['counted'] && $_SESSION[$update_name]['counted'] < $_SESSION[$update_name]['count_total']) {
-      // Not done yet. Return the progress and a progress debug message.
-      $progress = floatval($_SESSION[$update_name]['counted'] / $_SESSION[$update_name]['count_total']);
-      if ($debug) {
-        $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'] .
-          '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
-          '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['nids_ok']) .
-          '<br>Date Computations:<br>'. implode('<br>', $_SESSION[$update_name]['dates']);
-        unset($_SESSION[$update_name]['nids']);
-        unset($_SESSION[$update_name]['nids_ok']);
-        unset($_SESSION[$update_name]['dates']);
-      }
-      if ($debug) {
-        return array('#finished' => $progress, array('success' => TRUE, 'query' => $message));
+        $_SESSION[$update_name]['changed'][] = $node->nid . ($node->vid != $node->nid ? ':'. $node->vid : '');
       }
       else {
-        return array('#finished' => $progress);
+        $_SESSION[$update_name]['unchanged'][] = $node->nid . ($node->vid != $node->nid ? ':'. $node->vid : '');
       }
+    }
+  }
+  // See if we are done
+  if ($_SESSION[$update_name]['counted']
+  && $_SESSION[$update_name]['count_total']
+  && $_SESSION[$update_name]['counted'] < $_SESSION[$update_name]['count_total']) {
+    // Not done yet. Return the progress and a progress debug message.
+    $progress = floatval($_SESSION[$update_name]['counted'] / $_SESSION[$update_name]['count_total']);
+    if ($debug) {
+      $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'] .
+        '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
+        '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
+    }
+    if ($debug) {
+      return array('#finished' => $progress, array('success' => TRUE, 'query' => $message));
     }
     else {
-      // Done. Clean up and indicate we're finished.
-      drupal_set_message(t('All nodes with date fields have been checked.'));
-      $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'];
-      if ($debug) {
-        $message .= '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['nids']) .
-          '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['nids_ok']) .
-          '<br>Date Computations:<br>'. implode('<br>', $_SESSION[$update_name]['dates']);
-      }
-      unset($_SESSION[$update_name]);
-      content_clear_type_cache();
-      db_query('DELETE FROM {cache_content}');
-      return array('#finished' => 1, array('success' => TRUE, 'query' => $message));
+      return array('#finished' => $progress);
     }
+  }
+  else {
+    // Done. Clean up and indicate we're finished.
+    drupal_set_message(t('All nodes with date fields have been checked.'));
+    $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'];
+    if ($debug) {
+      $message .= '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
+        '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
+    }
+    unset($_SESSION[$update_name]);
+    content_clear_type_cache();
+    db_query('DELETE FROM {cache_content}');
+    return array('#finished' => 1, array('success' => TRUE, 'query' => $message));
   }
 }

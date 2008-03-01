@@ -10,6 +10,18 @@
  */
 
 /**
+ * Make sure a timezone has been selected.
+ */
+function date_timezone_menu($may_cache) {
+  if (!$may_cache) {
+    $tz_name = variable_get('date_default_timezone_name', NULL);
+    if (empty($tz_name) || $tz_name == 'GMT') {
+      drupal_set_message(t('The Date Timezone module requires you to !link.', array('!link' => l(t('set the site timezone name'), 'admin/settings/date-time'))), 'error');
+    }
+  }
+}
+
+/**
  * Implementation of hook_form_alter().
  *
  * Override system handling of user and site timezone selection.

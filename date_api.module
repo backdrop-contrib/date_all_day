@@ -478,6 +478,9 @@ function date_t($string) {
  *   A translated date string in the requested format.
  */
 function date_format_date($object, $type = 'medium', $format = '') {
+  if (empty($object)) {
+    return '';
+  }
   switch ($type) {
     case 'small':
       $format = variable_get('date_format_short', 'm/d/Y - H:i');

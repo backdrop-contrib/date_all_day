@@ -47,7 +47,7 @@ function date_timezone_site_form(&$form) {
     '#title' => t('Default time zone'),
     '#default_value' => $timezone,
     '#options' => date_timezone_names(),
-    '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time.'),
+    '#description' => t('Select the default site time zone. If in doubt, choose the timezone that is closest to your location which has the same rules for daylight saving time.'),
     '#weight' => -10,
     '#element_validate' => array('date_timezone_update_site'),
     '#offset' => variable_get('date_default_timezone', 0),
@@ -72,7 +72,7 @@ function date_timezone_user_form(&$form) {
     '#title' => t('Default time zone'),
     '#default_value' => $timezone,
     '#options' => date_timezone_names(),
-    '#description' => t('Select your current local time.  If in doubt, choose the timezone that is closest to your location which has the same rules for daylight savings time. Dates and times throughout this site will be displayed using this time zone.'),
+    '#description' => t('Select your current local time.  If in doubt, choose the timezone that is closest to your location which has the same rules for daylight saving time. Dates and times throughout this site will be displayed using this time zone.'),
   );
   return $form;
 }

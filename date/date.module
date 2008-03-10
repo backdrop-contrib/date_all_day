@@ -317,7 +317,7 @@ function date_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'views_edit_view') {
     $form['#submit'] = array_merge($form['#submit'], array('date_clear_all'));
   }
-  elseif ($form_id == '_content_admin_field') {
+  elseif ($form_id == '_content_admin_field' && ($form['field_type'] == 'date' || $form['field_type'] == 'datestamp' || $form['field_type'] == 'datetime')) {
     $form['#validate'] = array_merge($form['#validate'], array('date_settings_validate'));
   }
 }

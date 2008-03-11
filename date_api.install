@@ -104,6 +104,10 @@ function date_api_update_5200() {
   if (!function_exists('date_create')) {
     module_enable(array('date_php4'));
   }
+  // When upgrading from previous versions that had no Date Timezone module
+  // some previously-enabled modules won't work, so enable it here and
+  // let the admin disable it if necessary.
+  module_enable(array('date_timezone'));
   return $ret;
 }
 

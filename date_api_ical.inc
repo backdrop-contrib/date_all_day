@@ -467,6 +467,11 @@ function date_ical_parse_text($field, $data) {
   if (strstr($field, 'QUOTED-PRINTABLE')) {
     $data = quoted_printable_decode($data);
   }
+  // Strip line breaks within element
+  $data = str_replace(array("\r\n ", "\n ", "\r "), '', $data);
+  // Put in line breaks where encoded
+  $data = str_replace(array("\\n", "\\N"), "\n", $data);
+  // Remove other escaping
   $data = stripslashes($data);
   return $data;
 }

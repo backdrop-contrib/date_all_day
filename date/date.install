@@ -199,7 +199,7 @@ function date_update_5104() {
  */
 function date_update_5200() {
   $ret = array();
-  module_enable('date_timezone');
+  module_enable(array('date_timezone'));
 
   // Make sure date module loads after date_api.
   $ret[] = update_sql("UPDATE {system} SET weight = 1 WHERE name = 'date'");

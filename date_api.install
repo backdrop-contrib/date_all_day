@@ -102,7 +102,7 @@ function date_api_update_5000() {
 function date_api_update_5200() {
   $ret = array();
   if (!function_exists('date_create')) {
-    module_enable('date_php4');
+    module_enable(array('date_php4'));
   }
   return $ret;
 }

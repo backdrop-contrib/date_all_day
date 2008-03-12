@@ -101,13 +101,26 @@ function date_api_update_5000() {
 
 function date_api_update_5200() {
   $ret = array();
-  if (!function_exists('date_create')) {
-    module_enable(array('date_php4'));
-  }
+  include_once('./includes/install.inc');
+  $module_list = array();
   // When upgrading from previous versions that had no Date Timezone module
-  // some previously-enabled modules won't work, so enable it here and
-  // let the admin disable it if necessary.
-  module_enable(array('date_timezone'));
+  // some previously-enabled modules that depend on it get turned off, so enable them here.
+  $result = db_query("SELECT name FROM {system} WHERE status = 1 AND name IN ('date', 'date_copy', 'calendar', 'calendar_ical')");
+  while ($row = db_fetch_object($result)) {
+    $module_list[] = $row->name;
+  }
+  if (!empty($module_list)) {
+    $module_list = array_merge(array('date_timezone'), $module_list);
+  }
+  if (!function_exists('date_create')) {
+    $module_list[] = 'date_php4';
+  }
+  if (module_exists('jscalendar')) {
+    $module_list[] = 'date_popup';
+  }
+  drupal_install_modules($module_list);
+  module_rebuild_cache();
+  $ret[] = array('success' => TRUE, 'query' => implode(', ', $module_list));
   return $ret;
 }
 

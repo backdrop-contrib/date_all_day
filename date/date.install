@@ -234,9 +234,15 @@ function date_update_5200() {
 function date_update_5201() {
   $ret = array();
   if (db_result(db_query("SELECT COUNT(*) FROM {node_field_instance} WHERE widget_type = 'date_js'"))) {
-    module_enable(array('date_popup'));
+    $result = db_query("SELECT field_name, widget_type, widget_settings from {node_field_instance} where widget_type = 'date_js'");
+    while ($widget = db_fetch_array($result)) {
+      // Change the format to one date_popup can use.
+      $widget_settings = unserialize($widget['widget_settings']);
+      $widget_settings['input_format'] = DATE_FORMAT_DATETIME;
+      $widget_settings['input_format_custom'] = '';
+      db_query("UPDATE {node_field_instance} SET widget_type = 'date_popup', widget_settings = '%s' WHERE field_name = '%s'", serialize($widget_settings), $widget['field_name']);
+    }
   }
-  $ret[] = update_sql("UPDATE {node_field_instance} SET widget_type = 'date_popup' WHERE widget_type = 'date_js'");
   content_clear_type_cache();
   return $ret;
 }

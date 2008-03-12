@@ -283,7 +283,7 @@ function date_parts_element($element, $date, $format) {
     }
   }
 
-  if (strtolower($hours_format) == 'g' && date_has_time($granularity)) {
+  if (($hours_format == 'g' || $hours_format == 'h') && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
       '#type' => 'select',
       '#default_value' => is_object($date) ? (date_format($date, 'G') >= 12 ? 'pm' : 'am') : '',

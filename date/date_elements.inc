@@ -144,7 +144,7 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
-    '#element_validate' => array('date_widget_validate'),
+    '#element_validate' => array('date_combo_validate', 'date_widget_validate'),
   );
   if ($field['tz_handling'] == 'date' && $delta == 0) {
     $element += array(
@@ -308,13 +308,12 @@ function date_combo_process($element, $edit, $form_state, $form) {
  * Validate and update a combo element.
  * Don't try this if there were errors before reaching this point.
  */
-function date_combo_validate($element, &$form_state) {
+function date_combo_validate($element, &$form_state, $form) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $item = $form_values[$field_name][$delta];
-  $fields = content_fields();
-  $field = $fields[$field_name];
+  $field = $form['#field_info'][$element['#field_name']];
   $delta = $element['#delta'];
   $from_field = 'value';
   $to_field = 'value2';
@@ -389,10 +388,10 @@ function date_combo_validate($element, &$form_state) {
 /**
  * Handle widget processing.
  */
-function date_widget_validate($element, &$form_state) {
+function date_widget_validate($element, &$form_state, $form) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
-  $field = $form_state['#field_info'][$element['#field_name']];
+  $field = $form['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');

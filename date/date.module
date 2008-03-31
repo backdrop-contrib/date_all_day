@@ -317,13 +317,13 @@ function date_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'views_edit_view') {
     $form['#submit'] = array_merge($form['#submit'], array('date_clear_all'));
   }
-  elseif ($form_id == '_content_admin_field' && ($form['field_type'] == 'date' || $form['field_type'] == 'datestamp' || $form['field_type'] == 'datetime')) {
+  elseif ($form_id == '_content_admin_field' && ($form['type']['#value'] == 'date' || $form['type']['#value'] == 'datestamp' || $form['type']['#value'] == 'datetime')) {
     $form['#validate'] = array_merge($form['#validate'], array('date_settings_validate'));
   }
 }
 
-function date_settings_validate($form_id, $form) {
-  form_set_value(array('#parents' => array('granularity')), array_keys(array_filter($form['granularity'])));
+function date_settings_validate($form, &$form_state) {
+  form_set_value(array('#parents' => array('granularity')), array_keys(array_filter($form_state['values']['granularity'])), $form_state);
 }
 
 /**

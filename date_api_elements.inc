@@ -66,6 +66,7 @@ function _date_api_elements() {
     '#date_text_parts' => array(),
     '#date_increment' => 1,
     '#date_year_range' => '-3:+3',
+    '#date_label_position' => 'above',
     );
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_process'),
@@ -336,19 +337,23 @@ function date_increment_round(&$date, $increment) {
  *  Validation function for date selector.
  */
 function date_select_validate($element, &$form_state) {
+  if (empty($element['#value'])) {
+    $element['#value'] = array();
+  }
   $error_field = implode('][', $element['#parents']);
-
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $value) {
     if (substr($value, 0, 1) == '-') {
       $element['#value'][$field] = '';
     }
   }
-  if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
-    $element['#value']['hour'] += 12;
-  }
-  elseif ($element['#value']['ampm'] == 'am' && $element['#value']['hour'] == 12) {
-    $element['#value']['hour'] -= 12;
+  if (isset($element['#value']['ampm'])) {
+    if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
+      $element['#value']['hour'] += 12;
+    }
+    elseif ($element['#value']['ampm'] == 'am' && $element['#value']['hour'] == 12) {
+      $element['#value']['hour'] -= 12;
+    }
   }
   if ($element['#required'] || !empty($form_values['year'])) {
     if ($element['#value']['year'] < variable_get('date_min_year', 1) || $element['#value']['year'] > variable_get('date_max_year', 4000)) {

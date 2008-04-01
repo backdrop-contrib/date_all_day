@@ -12,8 +12,10 @@
 function date_init() {
   include_once(drupal_get_path('module', 'date') .'/date.theme');
   if (module_exists('views')) {
-    // Comment out until Views implementation is working.
-    //include_once(drupal_get_path('module', 'date') .'/date_views.inc');
+    include_once(drupal_get_path('module', 'date') .'/date_views.inc');
+  }
+  if (module_exists('token')) {
+    include_once(drupal_get_path('module', 'date') .'/date_token.inc');
   }
 }
 
@@ -388,64 +390,6 @@ function date_widget_settings($op, $widget) {
 function date_field_settings($op, $field) {
   include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
   return _date_field_settings($op, $field);
-}
-
-/**
- * Wrapper functions for views hooks.
- */
-function date_views_filters($field) {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_filters($field);
-}
-function date_views_timestamp_filter_handler($op, $filter, $filterinfo, &$query) {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_timestamp_filter_handler($op, $filter, $filterinfo, $query);
-}
-function date_views_filter_handler($op, $filter, $filterinfo, &$query, $field_type = 'iso') {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_filter_handler($op, $filter, $filterinfo, $query, $field_type);
-}
-function date_views_handler_filter_date_value_form($field) {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_handler_filter_date_value_form($field);
-}
-function date_views_timestamp_argument_range_handler($op, &$query, $argtype, $arg = '') {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_timestamp_argument_range_handler($op, $query, $argtype, $arg);
-}
-function date_views_argument_range_handler($op, &$query, $argtype, $arg = '', $field_type = 'iso') {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_argument_range_handler($op, $query, $argtype, $arg, $field_type);
-}
-function date_views_style_plugins() {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_style_plugins();
-}
-function date_views_query_alter(&$query, &$view) {
-  include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-  return _date_views_query_alter($query, $view);
-}
-
-/**
- * Callback for pathauto.
- */
-function date_pathauto_node($op, $node = NULL) {
-  include_once(drupal_get_path('module', 'date') .'/date_pathauto.inc');
-  return _date_pathauto_node($op, $node);
-}
-
-/**
- * Callbacks for token.
- */
-if (!function_exists('date_token_list')) {
-  function date_token_list($type = 'all') {
-    include_once(drupal_get_path('module', 'date') .'/date_token.inc');
-    return _date_token_list($type);
-  }
-  function date_token_values($type, $object = NULL, $options = array()) {
-    include_once(drupal_get_path('module', 'date') .'/date_token.inc');
-    return _date_token_values($type, $object, $options);
-  }
 }
 
 /**

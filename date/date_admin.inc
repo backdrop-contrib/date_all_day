@@ -44,7 +44,7 @@ function _date_widget_settings($op, &$field) {
  * CCK widget settings can't use form_set_value(),
  * so do it in a custom function.
  */
-function date_widget_settings_validate(&$form, &$form_state, $form_id) {
+function date_widget_settings_validate(&$form, &$form_state) {
   $form_values = $form_state['values'];
   if (isset($form_values['advanced']['label_position'])) {
     form_set_value($form['label_position'], $form_values['advanced']['label_position'], $form_state);
@@ -250,13 +250,9 @@ function _date_field_settings($op, $field) {
     case 'database columns':
       return date_columns($field);
 
-    case 'arguments':
+    case 'views data':
       include_once('./'. drupal_get_path('module', 'date') .'/date_views.inc');
-      return _date_views_arguments($field);
-
-    case 'filters':
-      return date_views_filters($field);
-      break;
+      return _date_views_data($field);
   }
 }
 
@@ -266,7 +262,7 @@ function _date_field_settings($op, $field) {
  * CCK field settings can't use form_set_value(),
  * so do it in a custom function.
  */
-function date_field_settings_validate(&$form, &$form_state, $form_id) {
+function date_field_settings_validate(&$form, &$form_state) {
   $form_values = $form_state['values'];
   if ($form_values['multiple'] == 99) {
     form_set_value($form['multiple'], 1, $form_state);

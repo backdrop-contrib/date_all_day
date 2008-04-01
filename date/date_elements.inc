@@ -112,10 +112,10 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
   // multiple value form with its AHAH add more element and return that.
   // Set a flag so we know to skip this step when the
   // content_multiple_value_form() re-invokes this widget.
-  if ($field['multiple'] > 0 && empty($field['repeat']) && empty($field['multiple_form'])) {
+  if (empty($field['repeat']) && empty($field['multiple_form'])) {
     $field_copy = $field;
     $field_copy['multiple_form'] = TRUE;
-    return content_multiple_value_form(&$form, &$form_state, $field_copy, $items);
+    return content_multiple_value_form($form, $form_state, $field_copy, $items);
   }
 
   include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
@@ -236,7 +236,7 @@ function _date_elements() {
 /**
  * Process an individual date element.
  */
-function date_combo_process($element, $edit, $form_state, $form) {
+function date_combo_process($element, $edit, &$form_state, $form) {
   $field_name = $element['#field_name'];
   $field = $form['#field_info'][$field_name];
   $delta = $element['#delta'];
@@ -301,6 +301,11 @@ function date_combo_process($element, $edit, $form_state, $form) {
     $element[$to_field]['#description'] = t('Empty \'To date\' values will use the \'From date\' values.');
     $element['#fieldset_description'] = t($field['widget']['description']);
   }
+
+  // Make sure field info will be available to the validator which
+  // does not get the values in $form.
+  $form_state['#field_info'][$field['field_name']] = $field;
+
   return $element;
 }
 
@@ -308,12 +313,12 @@ function date_combo_process($element, $edit, $form_state, $form) {
  * Validate and update a combo element.
  * Don't try this if there were errors before reaching this point.
  */
-function date_combo_validate($element, &$form_state, $form) {
+function date_combo_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $item = $form_values[$field_name][$delta];
-  $field = $form['#field_info'][$element['#field_name']];
+  $field = $form_state['#field_info'][$element['#field_name']];
   $delta = $element['#delta'];
   $from_field = 'value';
   $to_field = 'value2';
@@ -388,10 +393,11 @@ function date_combo_validate($element, &$form_state, $form) {
 /**
  * Handle widget processing.
  */
-function date_widget_validate($element, &$form_state, $form) {
+function date_widget_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
-  $field = $form['#field_info'][$element['#field_name']];
+  $fields = content_fields();
+  $field = $form_state['#field_info'][$element['#field_name']];
 
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
     include_once(drupal_get_path('module', 'date') .'/date_repeat.inc');

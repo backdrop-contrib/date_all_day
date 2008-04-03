@@ -42,19 +42,19 @@ function _date_token_values($type, $object = NULL, $options = array()) {
 
     $tokens['value']          = $item['value'];
     $tokens['view']           = $item['view'];
-    $tokens['timestamp']      = date_format_date($date, 'U');
-    $tokens['yyyy']           = date_format_date($date, 'Y');
-    $tokens['yy']             = date_format_date($date, 'y');
-    $tokens['month']          = date_format_date($date, 'F');
-    $tokens['mon']            = date_format_date($date, 'M');
-    $tokens['mm']             = date_format_date($date, 'm');
-    $tokens['m']              = date_format_date($date, 'n');
-    $tokens['ww']             = date_format_date($date, 'W');
-    $tokens['date']           = date_format_date($date, 'N');
-    $tokens['day']            = date_format_date($date, 'l');
-    $tokens['ddd']            = date_format_date($date, 'D');
-    $tokens['dd']             = date_format_date($date, 'd');
-    $tokens['d']              = date_format_date($date, 'j');
+    $tokens['timestamp']      = date_format_date($date, 'custom', 'U');
+    $tokens['yyyy']           = date_format_date($date, 'custom', 'Y');
+    $tokens['yy']             = date_format_date($date, 'custom', 'y');
+    $tokens['month']          = date_format_date($date, 'custom', 'F');
+    $tokens['mon']            = date_format_date($date, 'custom', 'M');
+    $tokens['mm']             = date_format_date($date, 'custom', 'm');
+    $tokens['m']              = date_format_date($date, 'custom', 'n');
+    $tokens['ww']             = date_format_date($date, 'custom', 'W');
+    $tokens['date']           = date_format_date($date, 'custom', 'N');
+    $tokens['day']            = date_format_date($date, 'custom', 'l');
+    $tokens['ddd']            = date_format_date($date, 'custom', 'D');
+    $tokens['dd']             = date_format_date($date, 'custom', 'd');
+    $tokens['d']              = date_format_date($date, 'custom', 'j');
 
     if (!empty($item['value2'])) {
 
@@ -64,19 +64,19 @@ function _date_token_values($type, $object = NULL, $options = array()) {
 
       $tokens['to-value']          = $item['value2'];
       $tokens['to-view']           = $item['view2'];
-      $tokens['to-timestamp']      = date_format_date($date, 'U');
-      $tokens['to-yyyy']           = date_format_date($date, 'Y');
-      $tokens['to-yy']             = date_format_date($date, 'y');
-      $tokens['to-month']          = date_format_date($date, 'F');
-      $tokens['to-mon']            = date_format_date($date, 'M');
-      $tokens['to-mm']             = date_format_date($date, 'm');
-      $tokens['to-m']              = date_format_date($date, 'n');
-      $tokens['to-ww']             = date_format_date($date, 'W');
-      $tokens['to-date']           = date_format_date($date, 'N');
-      $tokens['to-day']            = date_format_date($date, 'l');
-      $tokens['to-ddd']            = date_format_date($date, 'D');
-      $tokens['to-dd']             = date_format_date($date, 'd');
-      $tokens['to-d']              = date_format_date($date, 'j');
+      $tokens['to-timestamp']      = date_format_date($date, 'custom', 'U');
+      $tokens['to-yyyy']           = date_format_date($date, 'custom', 'Y');
+      $tokens['to-yy']             = date_format_date($date, 'custom', 'y');
+      $tokens['to-month']          = date_format_date($date, 'custom', 'F');
+      $tokens['to-mon']            = date_format_date($date, 'custom', 'M');
+      $tokens['to-mm']             = date_format_date($date, 'custom', 'm');
+      $tokens['to-m']              = date_format_date($date, 'custom', 'n');
+      $tokens['to-ww']             = date_format_date($date, 'custom', 'W');
+      $tokens['to-date']           = date_format_date($date, 'custom', 'N');
+      $tokens['to-day']            = date_format_date($date, 'custom', 'l');
+      $tokens['to-ddd']            = date_format_date($date, 'custom', 'D');
+      $tokens['to-dd']             = date_format_date($date, 'custom', 'd');
+      $tokens['to-d']              = date_format_date($date, 'custom', 'j');
     }
     return $tokens;
   }

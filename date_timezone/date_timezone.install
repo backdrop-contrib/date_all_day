@@ -27,7 +27,7 @@ function date_timezone_requirements($phase) {
   switch ($phase) {
     case 'runtime':
       $tz_name = variable_get('date_default_timezone_name', NULL);
-      if ($tz_name === NULL || $tz_name == 'GMT') {
+      if ($tz_name === NULL) {
         $error = TRUE;
         $severity = REQUIREMENT_ERROR;
         $value = $t('The Date Timezone module requires you to !link.', array('!link' => l($t('set the site timezone name'), 'admin/settings/date-time')));

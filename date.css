@@ -1,23 +1,35 @@
-.container-inline-date {width:auto; clear:both;}
-.container-inline-date .form-item {float:left; padding:0; margin:0}
-.container-inline-date .form-item, .container-inline-date .form-item input {width:auto;}
-.container-inline-date .description {clear: both;}
+.container-inline-date {
+  width:auto;
+  clear:both;
+}
+.container-inline-date .form-item {
+  float:left;
+  padding:0;
+  margin:0;
+}
+.container-inline-date .form-item,
+.container-inline-date .form-item input {
+  width:auto;
+}
+.container-inline-date .description {
+  clear: both;
+}
 
 .container-inline-date .form-item input,
 .container-inline-date .form-item select,
-.container-inline-date .form-item option {margin-right:.5em;}
+.container-inline-date .form-item option {
+  margin-right:5px;}
 
 .container-inline-date {
   display: inline-block;
  }
 
 .container-inline-date .date-spacer {
-  margin-left:-.5em;
+  margin-left:-5px;
 }
-
-/* force IE to display the jscalendar icon in date fieldsets */
-.container-inline-date .jscalendar-icon {
-  text-indent: 0;
+.views-right-60 .container-inline-date div {
+  padding:0;
+  margin:0;
 }
 
 .container-inline-date .date-timezone .form-item {
@@ -31,7 +43,11 @@
   margin:0;
   padding:0;
 }
-#calendar_div, .calendar_control, .calendar_links, .calendar_header, .calendar {
+#calendar_div,
+.calendar_control,
+.calendar_links,
+.calendar_header,
+.calendar {
   width: 185px;
   border-collapse: separate;
   margin: 0;
@@ -61,4 +77,11 @@ span.date-display-separator {
 .date-repeat fieldset {
   clear:both;
   float:none;
+}
+
+/* TODO Removed if this gets added to Views */
+.views-exposed-date-filter {
+  float:left !important;
+  margin-right:2px !important;
+  padding:0 !important;
 }

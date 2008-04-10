@@ -287,7 +287,7 @@ function date_clear_all($remove = FALSE) {
       cache_clear_all('date_browser_views', 'cache_views');
     }
     else {
-      date_views_browser_get_views(TRUE);
+      //date_views_browser_get_views(TRUE);
     }
   }
 }

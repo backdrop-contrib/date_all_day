@@ -431,13 +431,13 @@ function date_ical_parse_duration(&$subgroup) {
   $items = $subgroup['DURATION'];
   $data  = $items['DATA'];
   preg_match('/^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?/', $data, $duration);
-  $items['year'] = str_replace('Y', '', $duration[1]);
-  $items['month'] = str_replace('M', '', $duration[2]);
-  $items['week'] = str_replace('W', '', $duration[3]);
-  $items['day'] = str_replace('D', '', $duration[4]);
-  $items['hour'] = str_replace('H', '', $duration[6]);
-  $items['minute'] = str_replace('M', '', $duration[7]);
-  $items['second'] = str_replace('S', '', $duration[8]);
+  $items['year'] = isset($duration[1]) ? str_replace('Y', '', $duration[1]) : '';
+  $items['month'] = isset($duration[2]) ?str_replace('M', '', $duration[2]) : '';
+  $items['week'] = isset($duration[3]) ?str_replace('W', '', $duration[3]) : '';
+  $items['day'] = isset($duration[4]) ?str_replace('D', '', $duration[4]) : '';
+  $items['hour'] = isset($duration[6]) ?str_replace('H', '', $duration[6]) : '';
+  $items['minute'] = isset($duration[7]) ?str_replace('M', '', $duration[7]) : '';
+  $items['second'] = isset($duration[8]) ?str_replace('S', '', $duration[8]) : '';
   $start_date = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['datetime'] : date_format(date_now(), DATE_FORMAT_ISO);
   $timezone = array_key_exists('DTSTART', $subgroup) ? $subgroup['DTSTART']['tz'] : variable_get('date_default_timezone_name', NULL);
   if (empty($timezone)) {
@@ -450,14 +450,14 @@ function date_ical_parse_duration(&$subgroup) {
       date_modify($date2, '+'. $count .' '. $item);
     }
   }
-  $format = $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
+  $format = isset($subgroup['DTSTART']['type']) && $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
   $subgroup['DTEND'] = array(
     'datetime' => date_format($date2, DATE_FORMAT_DATETIME),
-    'all_day' => $subgroup['DTSTART']['all_day'],
+    'all_day' => isset($subgroup['DTSTART']['all_day']) ? $subgroup['DTSTART']['all_day'] : 0,
     'tz' => $timezone,
     );
- $items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
- $subgroup['DURATION'] = $items;
+  $items['DURATION'] = date_format($date2, 'U') - date_format($date, 'U');
+  $subgroup['DURATION'] = $items;
 }
 
 /**

@@ -541,6 +541,9 @@ function date_now($timezone = NULL) {
  *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
  */
 function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
+  if ($date != 'now' && !date_is_valid($date, $type)) {
+    return NULL;
+  }
   if (empty($timezone)) {
     $timezone = date_default_timezone_name();
   }
@@ -972,6 +975,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
  */
 function date_is_valid($date, $type = DATE_DATETIME) {
   if (empty($date)) return FALSE;
+  if ($type == DATE_OBJECT && !is_object($date)) return FALSE;
   if (($type == DATE_ISO || $type == DATE_DATETIME) && !preg_match(DATE_REGEX_LOOSE, $date)) return FALSE;
   if ($type == DATE_UNIX and !is_numeric($date)) return FALSE;
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;

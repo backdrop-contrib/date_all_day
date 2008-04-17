@@ -161,6 +161,7 @@ function date_select_process($element, $edit, $form_state, $form) {
   // This happens when the processing bypasses the element validation step
   // that resets the value from the date and time
   // subparts.
+  $date = NULL;
   if (!empty($edit) || is_array($element['#value'])) {
     if (empty($edit)) {
       $edit = $element['#value'];
@@ -170,9 +171,11 @@ function date_select_process($element, $edit, $form_state, $form) {
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
-  elseif ($element['#required']) {
-    $date = date_now($element['#date_timezone']);
-  }
+  // TODO keep an eye on this, commented out so it is possible to provide
+  // blank initial value for required date.
+  //elseif ($element['#required']) {
+  //  $date = date_now($element['#date_timezone']);
+  //}
   $element['#tree'] = TRUE;
   date_increment_round($date, $element['#date_increment']);
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
@@ -214,7 +217,9 @@ function date_parts_element($element, $date, $format) {
   $count = 0;
   $increment = min(intval($element['#date_increment']), 1);
   foreach ($granularity as $field) {
-    $part_required = $element['#required'];
+    // Allow empty value as option if date is not required 
+    // or if empty value was provided as a starting point.
+    $part_required = ($element['#required'] && is_object($date)) ? TRUE : FALSE;
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
       '#weight' => $order[$field],

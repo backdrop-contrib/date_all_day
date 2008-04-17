@@ -65,6 +65,12 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
         }
       }
     }
+    // Special case for ISO dates which may have been given artifical values for
+    // some date parts to make them into valid dates.
+    $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), DATE_ISO);
+    if ($field['todate']) {
+      $items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), DATE_ISO);
+    }
   }
   $node->$field['field_name'] = $items;
 }
@@ -197,14 +203,27 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     }
   }
   else {
-    if (is_array($item[$part])) {
-      $value = date_convert($item[$part], DATE_ARRAY, DATE_DATETIME);
+    $value = $item[$part];
+    // Special case for ISO dates to create a valid date object for formatting.
+    if ($field['type'] == DATE_ISO) {
+      preg_match(DATE_REGEX_LOOSE, $value, $regs);
+      if (intval($regs[1]) == 0) {
+        $regs[1] = date('Y');
+      }
+      if (intval($regs[2]) == 0) {
+        $regs[2] = 1;
+      }
+      if (intval($regs[3]) == 0) {
+        $regs[3] = 1;
+      }
+      $value = date_pad(intval($regs[1]), 4) .'-'. date_pad(intval($regs[2])) .'-'. date_pad(intval($regs[3])) .
+        'T'. date_pad(intval($regs[5])) .':'. date_pad(intval($regs[6])) .':'. date_pad(intval($regs[7]));
     }
     else {
-      $value = date_convert($item[$part], $field['type'], DATE_DATETIME);
+      $value = date_convert($value, $field['type'], DATE_DATETIME);
     }
     $date = date_make_date($value, 'UTC');
-    if (is_object($date) && date_timezone_convert($field, $item)) {
+    if (date_timezone_convert($field, $item)) {
       date_timezone_set($date, timezone_open($timezone));
     }
   }

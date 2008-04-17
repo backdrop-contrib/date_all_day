@@ -216,13 +216,17 @@ function date_formatter_process($element) {
         $dates[$processed]['local']['offset'] = date_offset_get($date);
       }
 
-      if (is_object($date) && !empty($format)) {
-        $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format);
-        $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', date_limit_format($format, array('year', 'month', 'day')));
-        $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second')));
-      }
-      else {
-        $dates[$processed]['formatted'] = '';
+      //format the date, special casing the 'interval' format which doesnt need to be processed
+      $dates[$processed]['formatted'] = '';
+      if (is_object($date)) {
+        if ($format == 'interval') {
+           $dates[$processed]['formatted'] = date_format_interval($date);
+        } 
+        elseif (!empty($format)) {
+          $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format) . $append;
+          $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', date_limit_format($format, array('year', 'month', 'day')));
+          $dates[$processed]['formatted_time'] = date_format_date($date, 'custom', date_limit_format($format, array('hour', 'minute', 'second')));
+        }  
       }
     }
   }
@@ -410,6 +414,8 @@ function date_formatter_format($formatter, $field_name) {
       return DATE_FORMAT_ISO .'P';
     case 'feed':
       return 'D, j M Y H:i:s O';
+    case 'format_interval':
+      return 'interval';
 
     case 'long':
     case 'medium':

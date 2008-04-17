@@ -148,7 +148,7 @@ function date_update_5100() {
       // because the query must be run immediately so we can rebuild the cache.
       db_query("UPDATE {node_field} SET global_settings = '%s' WHERE field_name='%s'", serialize($field_settings), $field['field_name']);
       db_query("UPDATE {node_field_instance} SET widget_settings = '%s' WHERE field_name='%s'", serialize($widget_settings), $field['field_name']);
-      $ret[] = array('success' => TRUE, 'query' => 'field settings updated to '. serialize($field_settings) .'<br>widget settings updated to '. serialize($widget_settings));
+      $ret[] = array('success' => TRUE, 'query' => 'field settings updated to '. serialize($field_settings) .'<br />widget settings updated to '. serialize($widget_settings));
     }
   }
   // Rebuild the cache.
@@ -272,7 +272,7 @@ function date_column_exists($table, $column) {
       return (bool) db_fetch_object(db_query("SHOW COLUMNS FROM {". db_escape_table($table) ."} LIKE '". db_escape_table($column) ."'"));
 
     case 'postgres':
-      return (bool) db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM pg_class, pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{". db_escape_table($table) ."}' AND attname = '". db_escape_table($column) ."'"));
+      return (bool) db_result(db_query("SELECT COUNT(pg_attribute.attname) FROM {pg_class} AS pg_class, {pg_attribute} AS pg_attribute WHERE pg_attribute.attrelid = pg_class.oid AND pg_class.relname = '{". db_escape_table($table) ."}' AND attname = '". db_escape_table($column) ."'"));
   }
 }
 
@@ -459,8 +459,8 @@ function date_data_integrity($name, $force_recalc = FALSE) {
     $progress = floatval($_SESSION[$update_name]['counted'] / $_SESSION[$update_name]['count_total']);
     if ($debug) {
       $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'] .
-        '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
-        '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
+        '<br />Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
+        '<br />Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
     }
     if ($debug) {
       return array('#finished' => $progress, array('success' => TRUE, 'query' => $message));
@@ -474,8 +474,8 @@ function date_data_integrity($name, $force_recalc = FALSE) {
     drupal_set_message(t('All nodes with date fields have been checked.'));
     $message = 'Date data integrity check. Total nodes checked: '. $_SESSION[$update_name]['counted'];
     if ($debug) {
-      $message .= '<br>Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
-        '<br>Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
+      $message .= '<br />Updated nodes: '. implode(', ', $_SESSION[$update_name]['changed']) .
+        '<br />Unchanged nodes: '. implode(', ', $_SESSION[$update_name]['unchanged']);
     }
     unset($_SESSION[$update_name]);
     content_clear_type_cache();

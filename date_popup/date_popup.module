@@ -135,57 +135,6 @@ function date_popup_elements() {
 }
 
 /**
- * Implementation of hook_form_alter().
- *
- * Add popup to node and comment dates. Although the data in these
- * fields is stored in the database as a unix timestamp, the value
- * has been massaged into Y-m-d H:i by the time it gets to the form
- * and the node and comment modules will expect that format when
- * they save the data.
- */
-function date_popup_form_alter(&$form, &$form_state, $form_id) {
-  // jscalendar overloads these fields, so must not try to do this
-  // if jscalendar is installed.
-  if (!module_exists('jscalendar')) {
-    if ($form_id == 'comment_form' && isset($form['admin']) && $form['admin']['#access']) {
-      $form['admin']['date'] = date_popup_system_date_form($form['admin']['date']);
-    }
-    elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id
-    && isset($form['author']) && $form['author']['#access']) {
-      $form['author']['date'] = date_popup_system_date_form($form['author']['date']);
-    }
-  }
-}
-
-/**
- * Rework a system date form to use the date_popup element.
- *
- * Create a date object by undoing the core method of adjusting a date
- * by the timezone offset. Set default value back to the database value,
- * then adjust it using the timezone name.
- */
-function date_popup_system_date_form($element, $edit = NULL) {
-  $element['#type'] = 'date_popup';
-  $element['#date_format'] = 'Y-m-d H:i:s O';
-  $element['#date_timezone'] = date_default_timezone_name();
-
-  // Wipe out the description to use the popup description instead.
-  $element['#description'] = '';
-  if (!empty($element['#default_value'])) {
-    $value = strtotime($element['#default_value']);
-    $date = date_make_date($value, 'GMT', DATE_UNIX);
-    date_timezone_set($date, timezone_open($element['#date_timezone']));
-    $element['#default_value'] = date_format($date, $element['#date_format']);
-  }
-  else {
-    $date = date_now(date_default_timezone_name());
-    $element['#default_value'] = date_format($date, $element['#date_format']);
-  }
-  unset($element['#maxlength']);
-  return $element;
-}
-
-/**
  * Javascript popup element processing.
  * Add popup attributes to $element.
  */

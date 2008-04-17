@@ -65,7 +65,7 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
         }
       }
     }
-    // Special case for ISO dates which may have been given artifical values for
+    // Special case for ISO dates which may have been given artificial values for
     // some date parts to make them into valid dates.
     $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), DATE_ISO);
     if ($field['todate']) {
@@ -206,18 +206,7 @@ function date_local_date($delta, $item, $timezone, $field, $part = 'value') {
     $value = $item[$part];
     // Special case for ISO dates to create a valid date object for formatting.
     if ($field['type'] == DATE_ISO) {
-      preg_match(DATE_REGEX_LOOSE, $value, $regs);
-      if (intval($regs[1]) == 0) {
-        $regs[1] = date('Y');
-      }
-      if (intval($regs[2]) == 0) {
-        $regs[2] = 1;
-      }
-      if (intval($regs[3]) == 0) {
-        $regs[3] = 1;
-      }
-      $value = date_pad(intval($regs[1]), 4) .'-'. date_pad(intval($regs[2])) .'-'. date_pad(intval($regs[3])) .
-        'T'. date_pad(intval($regs[5])) .':'. date_pad(intval($regs[6])) .':'. date_pad(intval($regs[7]));
+      $value = date_fuzzy_datetime($value);
     }
     else {
       $value = date_convert($value, $field['type'], DATE_DATETIME);
@@ -388,22 +377,29 @@ function date_combo_validate($element, &$form_state) {
       $item[$to_field] = $item[$from_field];
     }
 
-    $from_date = date_make_date($item[$from_field], $timezone);
-    $item[$offset_field] = date_offset_get($from_date);
-    $to_date = date_make_date($item[$to_field], $timezone);
-    $item[$offset_field2] = date_offset_get($to_date);
-    $item[$tz_field] = $timezone;
-    $item['rrule'] = isset($item['rrule']) ? $item['rrule'] : '';
     if ($item[$from_field] > $item[$to_field]) {
       form_set_error(implode('][', $element['#parents']), t('The From date must be greater than the To date.'));
     }
     else {
       // Convert input dates back to their UTC values and re-format to ISO
       // or UNIX instead of the DATETIME format used in element processing.
-      date_timezone_set($from_date, timezone_open('UTC'));
-      date_timezone_set($to_date, timezone_open('UTC'));
-      $item[$from_field] = date_format($from_date, date_type_format($field['type']));
-      $item[$to_field] = date_format($to_date, date_type_format($field['type']));
+      if (date_timezone_convert($field, $item)) {
+        $item[$tz_field] = $timezone;
+        $from_date = date_make_date($item[$from_field], $timezone);
+        $item[$offset_field] = date_offset_get($from_date);
+        $to_date = date_make_date($item[$to_field], $timezone);
+        $item[$offset_field2] = date_offset_get($to_date);
+        date_timezone_set($from_date, timezone_open('UTC'));
+        date_timezone_set($to_date, timezone_open('UTC'));
+        $item[$from_field] = date_format($from_date, date_type_format($field['type']));
+        $item[$to_field] = date_format($to_date, date_type_format($field['type']));
+      }
+      else {
+        $item[$from_field] = date_convert($item[$from_field], DATE_DATETIME, $field['type']);
+        $item[$to_field] = date_convert($item[$to_field], DATE_DATETIME, $field['type']);
+      }
+      $item['rrule'] = $rrule;
+        
       form_set_value($element, $item, $form_state);
     }
   }

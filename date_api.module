@@ -780,6 +780,26 @@ function date_convert($date, $from_type, $to_type) {
   if (empty($date) && !$date === 0) return NULL;
   if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
+    case DATE_ARRAY:
+      if (!is_array($date)) return NULL;
+      $datetime = date_pad(intval($date['year']), 4) .'-'. date_pad(intval($date['month'])) .
+            '-'. date_pad(intval($date['day'])) .' '. date_pad(intval($date['hour'])) .
+            ':'. date_pad(intval($date['minute'])) .':'. date_pad(intval($date['second']));
+      switch ($to_type) {
+        case DATE_ISO:
+          return str_replace(' ', 'T', $datetime);
+        case DATE_DATETIME:
+          return $datetime;
+        case DATE_ICAL:
+          $replace = array(' ' => 'T', '-' => '', ':' => '');
+          return strtr($datetime, $replace);
+        case DATE_OBJECT:    
+          return date_create($datetime, timezone_open('UTC'));
+        case DATE_UNIX:
+          $obj = date_create($datetime, timezone_open('UTC'));
+          return date_format($obj, 'U');  
+      }
+      break;
     case DATE_OBJECT:
       if (!is_object($date)) return NULL;
       $obj = $date;
@@ -800,19 +820,6 @@ function date_convert($date, $from_type, $to_type) {
       if (!is_numeric($date)) return NULL;
       $obj = date_create("@$date", timezone_open('UTC'));
       break;
-    case DATE_ARRAY:
-      if (!is_array($date)) return NULL;
-      $parts = array('year', 'month', 'day', 'hour', 'minute', 'second');
-      foreach ($parts as $part) {
-        if (!isset($date[$part])) {
-          $date[$part] = 0;
-        }
-      }
-      $datetime = date_pad($date['year'], 4) .'-'. date_pad($date['month']) .
-            '-'. date_pad($date['day']) .' '. date_pad($date['hour']) .
-            ':'. date_pad($date['minute']) .':'. date_pad($date['second']);
-      $obj = date_create($datetime, timezone_open('UTC'));
-      break;
   }
   switch ($to_type) {
     case DATE_OBJECT:
@@ -826,10 +833,53 @@ function date_convert($date, $from_type, $to_type) {
     case DATE_UNIX:
       return date_format($obj, 'U');
     case DATE_ARRAY:
-      return date_array($obj);
+      $date_array = date_array($obj);
+      // ISO dates may contain zero values for some date parts,
+      // make sure they don't get lost in the conversion.
+      if ($from_type == DATE_ISO) {
+        $date_array = array_merge($date_array, date_iso_array($date));
+      }
+      return $date_array;
     default:
       return NULL;
   }
+}
+
+/**
+ * Create valid datetime value from incomplete ISO dates or arrays.
+ */
+function date_fuzzy_datetime($date) {
+  if (!is_array($date)) {
+    $date = date_iso_array($date);
+  }
+  if (empty($date['year'])) {
+    $date['year'] = date('Y');
+  }
+  if (empty($date['month'])) {
+    $date['month'] = 1;
+  }
+  if (empty($date['day'])) {
+    $date['day'] = 1;
+  }
+  $value = date_pad($date['year'], 4) .'-'. date_pad($date['month']) .'-'. 
+    date_pad($date['day']) .'T'. date_pad($date['hour']) .':'. 
+    date_pad($date['minute']) .':'. date_pad($date['second']);
+  return $value;
+}
+
+/**
+ * Create an array of date parts from an ISO date.
+ */
+function date_iso_array($date) {
+  preg_match(DATE_REGEX_LOOSE, $date, $regs);
+  return array(
+    'year' => intval($regs[1]),
+    'month' => intval($regs[2]),
+    'day' => intval($regs[3]),
+    'hour' => intval($regs[5]),
+    'minute' => intval($regs[6]),
+    'second' => intval($regs[7]),
+    );        
 }
 
 /**

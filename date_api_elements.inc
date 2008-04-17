@@ -176,6 +176,15 @@ function date_select_process($element, $edit, $form_state, $form) {
   $element['#tree'] = TRUE;
   date_increment_round($date, $element['#date_increment']);
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
+  
+  // Store a hidden value for all date parts not in the current display.
+  $granularity = date_format_order($element['#date_format']);
+  foreach (date_nongranularity($granularity) as $field) {
+    $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
+    $element[$field] = array(
+      '#type' => 'hidden',
+      '#value' => is_object($date) ? intval(date_format($date, $formats[$field])) : 0);
+  }
   return $element;
 }
 

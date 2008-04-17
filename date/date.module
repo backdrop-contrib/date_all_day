@@ -195,6 +195,9 @@ function date_formatter_process($element) {
     else {
       // create a date object with a gmt timezone from the database value
       $value = $item[$processed];
+      if ($field['type'] == DATE_ISO) {
+        $value = date_fuzzy_datetime($value);
+      }
       $date = date_make_date($value, 'UTC', $field['type']);
       $dates[$processed] = array();
       $dates[$processed]['db']['object'] = $date;

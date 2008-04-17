@@ -42,6 +42,40 @@ function date_popup_init() {
   drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/timeentry.css');
 }
 
+/**
+ * Create a unique CSS class name and output a single inline JS block
+ * for each unique combination of startup function to call and
+ * settings array to pass it.  This allows the dynamic use of any
+ * number of custom settings without requiring a duplicate copy for
+ * every element that uses them.
+ *
+ * @param $pfx
+ *   The CSS class prefix to search the DOM for.
+ * @param $func
+ *   The jQuery function to invoke on each DOM element containing the
+ * returned CSS class.
+ * @param $settings
+ *   The settings array to pass to the jQuery function.
+ * @returns
+ *   The CSS class name to assign to an element that should have
+ * $func($settings) invoked on it.
+ */
+function date_popup_js_settings_class($pfx, $func, $settings) {
+  static $cache = array();
+  static $cnt = 0;
+  
+  $serial = serialize($settings);
+  $key = $pfx .':'. $func;
+  if (! isset($cache[$key][$serial])) {
+    $class = $cache[$key][$serial] = $pfx .'-'. $cnt++;
+    drupal_add_js('// Global Killswitch
+    if (Drupal.jsEnabled) {
+      $(document).ready(function() {$(\'.'. $class .'\').'. $func .'({'. $settings. '});
+      })}', 'inline');
+  }
+  return $cache[$key][$serial];
+}
+
 function date_popup_theme() {
   return array(
     'date_popup' => array('arguments' => array('element' => NULL)),
@@ -243,10 +277,11 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
       })}', 'inline');
 
   // Create a unique class for each element so we can use custom settings.
+  $class = date_popup_js_settings_class('jquery-calendar', 'calendar', $settings);
   $sub_element = array(
     '#type' => 'textfield',
     '#default_value' => is_object($date) ? date_format($date, $date_format) : '',
-    '#attributes' => array('class' => 'jquery-calendar-'. $element['#id']),
+    '#attributes' => array('class' => $class),
     '#size' => 20,
     '#maxlength' => 20,
     );

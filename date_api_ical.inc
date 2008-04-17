@@ -98,7 +98,20 @@ function date_ical_import($filename) {
       return false;
     }
   }
+  return date_ical_parse($icaldatafolded);
+}
 
+/**
+ * Return an array of iCalendar information from an iCalendar file.
+ *
+ * As date_ical_import() but different param.
+ *
+ * @param $icaldatafolded
+ *   an array of lines from an ical feed.
+ * @return array
+ *   An array with all the elements from the ical.
+ */
+function date_ical_parse($icaldatafolded = array()) {
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
     drupal_set_message('Invalid calendar file:'. $filename, 'error');

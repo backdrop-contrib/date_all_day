@@ -113,7 +113,9 @@ function _date_repeat_widget_validate($element, &$form_state) {
 
     $dates = date_repeat_calc($rrule, $start_datetime, $end_datetime, $exceptions);
     foreach ($dates as $delta => $date) {
-      $date_start = date_make_date($date, $timezone, $field['type']);
+      // date_repeat_calc always returns DATE_DATETIME dates, which is
+      // not necessarily $field['type'] dates.
+      $date_start = date_make_date($date, $timezone, DATE_DATETIME);      
       $date_end = drupal_clone($date_start);
       date_modify($date_end, '+'. $duration .' seconds');
       $value[$field_name][$delta] = array(

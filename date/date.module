@@ -219,8 +219,8 @@ function date_formatter_process($element) {
       //format the date, special casing the 'interval' format which doesnt need to be processed
       $dates[$processed]['formatted'] = '';
       if (is_object($date)) {
-        if ($format == 'interval') {
-           $dates[$processed]['formatted'] = date_format_interval($date);
+        if ($format == 'format_interval') {
+           $dates[$processed]['interval'] = date_format_interval($date);
         } 
         elseif (!empty($format)) {
           $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format) . $append;
@@ -415,7 +415,7 @@ function date_formatter_format($formatter, $field_name) {
     case 'feed':
       return 'D, j M Y H:i:s O';
     case 'format_interval':
-      return 'interval';
+      return 'format_interval';
 
     case 'long':
     case 'medium':

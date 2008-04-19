@@ -73,27 +73,23 @@ function theme_date_display_combination($element) {
  */
 function theme_date_format_interval($element) {
   $dates = date_formatter_process($element);
-
   // Time to compare dates to
-  $now = date_format(date_make_date('now', date_default_timezone()), 'U');
+  $now = date_format(date_make_date('now', date_default_timezone()), DATE_DATETIME);
+  $start = $dates['value']['local']['datetime'];
+  $end = $dates['value2']['local']['datetime'];
 
-  // Pull local timestamps out of date objects.
-  $start = date_format($dates['value']['local']['object'], 'U');
-  if (!$end = date_format($dates['value2']['local']['object'], 'U')) {
-    $end = $start;
-  }
   // 1) The date is entirely in the future
   if ($now < $start) {
-    return t('!time', array('!time' => format_interval($start - $now)));
+    return t('!time from now', array('!time' => $dates['value']['interval']));
   }
   // 2) Ongoing date
   elseif ($now > $start && $now <= $end) {
-    //return t('Started !time ago', array('!time' => format_interval($now - $timestamp1)));
+    //return t('Started !time ago', array('!time' => $dates['value']['interval']));
     return t('ongoing');
   }
   // 3) Date is in the past
   else {
-    return t('!time ago', array('!time' => format_interval($now - $end)));
+    return t('!time ago', array('!time' => $dates['value']['interval']));
   }
 }
 

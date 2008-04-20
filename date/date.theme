@@ -74,7 +74,7 @@ function theme_date_display_combination($element) {
 function theme_date_format_interval($element) {
   $dates = date_formatter_process($element);
   // Time to compare dates to
-  $now = date_format(date_make_date('now', date_default_timezone()), DATE_DATETIME);
+  $now = date_format(date_make_date('now', date_default_timezone()), DATE_FORMAT_DATETIME);
   $start = $dates['value']['local']['datetime'];
   $end = $dates['value2']['local']['datetime'];
 

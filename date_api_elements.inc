@@ -119,6 +119,7 @@ function date_text_process($element, $edit, $form_state, $form) {
   // This happens when the processing bypasses the element validation step
   // that resets the value from the date and time
   // subparts.
+  $date = NULL;
   if (!empty($edit) || is_array($element['#value'])) {
     if (empty($edit)) {
       $edit = $element['#value'];
@@ -129,9 +130,11 @@ function date_text_process($element, $edit, $form_state, $form) {
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
-  elseif ($element['#required']) {
-    $date = date_now($element['#date_timezone']);
-  }
+  // TODO keep an eye on this, commented out so it is possible to provide
+  // blank initial value for required date.
+  //elseif ($element['#required']) {
+  //  $date = date_now($element['#date_timezone']);
+  //}
 
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.

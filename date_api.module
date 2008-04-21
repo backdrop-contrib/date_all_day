@@ -958,7 +958,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
     case DATE_ICAL:
       return (integer) substr($date, $ipositions[$part], $part == 'year' ? 4 : 2);
     case DATE_UNIX:
-      $date = date_make_date($date, 'UTC', DATE_UNIX);
+      $date = date_create("@$date", timezone_open('UTC'));
       return date_format($date, $formats[$part]);
     case DATE_OBJECT:
       return date_format($date, $formats[$part]);

@@ -31,7 +31,7 @@ function _date_widget_settings($op, &$field) {
           form_set_error('default_value_code2', t('The Strtotime default value for the To Date is invalid.'));
         }
       }
-      if ($field['widget']['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $field['year_range'])) {
+      if ($field['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $field['year_range'])) {
         form_set_error('year_range', t('Years back and forward must be in the format -9:+9.'));
       }
       break;
@@ -46,6 +46,13 @@ function _date_widget_settings($op, &$field) {
  */
 function date_widget_settings_validate(&$form, &$form_state) {
   $form_values = $form_state['values'];
+  // Only a limited set of formats is available for the Date Popup module
+  if ($form_values['widget_type'] == 'date_popup') {
+    if (!empty($form_values['input_format_custom']) || !in_array($form_values['input_format'], date_popup_formats())) {
+      form_set_value($form['input_format_custom'], NULL, $form_state);
+      form_set_value($form['input_format'], DATE_FORMAT_DATETIME, $form_state);
+    }
+  }
   if (isset($form_values['advanced']['label_position'])) {
     form_set_value($form['label_position'], $form_values['advanced']['label_position'], $form_state);
   }
@@ -107,12 +114,20 @@ function date_widget_settings_form($widget) {
     '#options' => $options,
     '#description' => t('Set the order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
   );
-
-  $form['input']['format']['input_format_custom'] = array(
-    '#type' => 'textfield',  '#title' => t('*Custom input format'),
-    '#default_value' => $widget['input_format_custom'] ? $widget['input_format_custom'] : '',
-    '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
-  );
+  // Only a limited set of formats is available for the Date Popup module
+  if ($widget['type'] != 'date_popup') {
+    $form['input']['format']['input_format_custom'] = array(
+      '#type' => 'textfield',  '#title' => t('*Custom input format'),
+      '#default_value' => $widget['input_format_custom'] ? $widget['input_format_custom'] : '',
+      '#description' => t('The custom format, if provided, will override the input format selected above. See more about custom date formats below.'),
+    );
+  }
+  else {
+    $form['input']['format']['input_format_custom'] = array(
+      '#type' => 'hidden',
+      '#value' => '',
+      );
+  }
   if ($widget['type'] == 'date_select' || $widget['type'] == 'date_popup') {
     $form['input']['year_range'] = array(
       '#type' => 'textfield',

@@ -67,9 +67,9 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
     }
     // Special case for ISO dates which may have been given artificial values for
     // some date parts to make them into valid dates.
-    $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), DATE_ISO);
+    $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), $field['type']);
     if ($field['todate']) {
-      $items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), DATE_ISO);
+      $items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), $field['type']);
     }
   }
   $node->$field['field_name'] = $items;

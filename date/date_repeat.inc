@@ -57,8 +57,8 @@ function _date_repeat_widget_validate($element, &$form_state) {
 
   // If no repeats are set, clean up the form and return.
   if ($values['FREQ'] == 'NONE') {
-    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), NULL, $form_state);
-    form_set_value($element['rrule'], NULL, $form_state);
+    form_set_value($element, $value[$field_name], $form_state);
+    form_set_value($element['rrule'], NULL);
     return;
   }
 
@@ -87,18 +87,35 @@ function _date_repeat_widget_validate($element, &$form_state) {
     //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
     ) {
 
-    $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-    $start = date_make_date($item['value'], $timezone, $field['type']);
-    $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
-    if (!empty($item['value2']) && $new_field['value2'] != $item['value']) {
-      $end = date_make_date($item['value2'], $timezone, $field['type']);
-      $duration = date_diff($start, $end);
+    $item = $form_values[$field_name][0];
+    
+    // By the time we get here, the start and end dates have been 
+    // adjusted back to UTC, but we want localtime dates to do
+    // things like '+1 Tuesday', so adjust back to localtime.
+    $timezone = date_get_timezone($field['tz_handling'], $item[0]['timezone']);
+    if (date_timezone_convert($field, $item)) {
+      $start = date_make_date($item['value'], 'UTC', $field['type']);
+      date_timezone_set($start, timezone_open($timezone));
+      if (!empty($item['value2']) && $new_field['value2'] != $item['value']) {
+        $end = date_make_date($item['value2'], 'UTC', $field['type']);
+        date_timezone_set($end, timezone_open($timezone));
+      }
+      else {
+        $end = $start;
+      }
     }
     else {
-      $end = $start;
-      $duration = 0;
+      $start = date_make_date($item['value'], $timezone, $field['type']);
+      if (!empty($item['value2']) && $new_field['value2'] != $item['value']) {
+        $end = date_make_date($item['value2'], $timezone, $field['type']);
+      }
+      else {
+        $end = $start;
+      }
     }
 
+    $duration = date_diff($start, $end);
+    $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
     $end = date_ical_date($values['UNTIL'], $timezone);
     $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
 
@@ -115,7 +132,11 @@ function _date_repeat_widget_validate($element, &$form_state) {
     foreach ($dates as $delta => $date) {
       // date_repeat_calc always returns DATE_DATETIME dates, which is
       // not necessarily $field['type'] dates.
-      $date_start = date_make_date($date, $timezone, DATE_DATETIME);      
+      // Convert returned dates back to UTC before storing.
+      $date_start = date_make_date($date, $timezone, DATE_DATETIME);  
+      if (date_timezone_convert($field, $item)) {
+        date_timezone_set($date_start, timezone_open('UTC'));    
+      }
       $date_end = drupal_clone($date_start);
       date_modify($date_end, '+'. $duration .' seconds');
       $value[$field_name][$delta] = array(

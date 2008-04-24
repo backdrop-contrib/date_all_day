@@ -11,64 +11,56 @@
  * @todo
  *  Add export capabilities, possibly add support for csv import.
  */
-function date_copy_help($section) {
-  switch ($section) {
-    case 'admin/modules#description':
-      return t('Copy data in and out of Date module.');
-      break;
-  }
-}
-
 /**
- *  Implementation of hook_menu()
+ *  Implementation of hook_menu().
  */
 function date_copy_menu() {
   $items = array();
   $items['admin/content/date'] = array(
-    'title'    => t('Date Import/Export'),
-    'description' => t('Import and export date data.'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'Date Import/Export',
+    'description' => 'Import and export date data.',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_import_ical_form',
+    'page arguments' => array('date_copy_import_ical_form'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/content/date/import'] = array(
-    'title'    => t('Import'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'Import',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_import_ical_form',
+    'page arguments' => array('date_copy_import_ical_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   );
   $items['admin/content/date/export'] = array(
-    'title'    => t('Export'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'Export',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_export_form',
+    'page arguments' => array('date_copy_export_form'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
   $items['admin/content/date/import/ical'] = array(
-    'title'    => t('iCal'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'iCal',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_import_ical_form',
+    'page arguments' => array('date_copy_import_ical_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   );
   $items['admin/content/date/import/event'] = array(
-    'title'    => t('Events'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'Events',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_import_event_form',
+    'page arguments' => array('date_copy_import_event_form'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
   $items['admin/content/date/import/csv'] = array(
-    'title'    => t('CSV'),
-    'access'   => user_access('administer nodes'),
+    'title'    => 'CSV',
+    'access arguments'   => array('administer nodes'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'date_copy_import_csv_form',
+    'page arguments' => array('date_copy_import_csv_form'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
   );

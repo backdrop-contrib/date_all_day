@@ -296,7 +296,7 @@ function date_columns($field) {
     $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'sortable' => TRUE);
   }
   elseif ($field['type'] == 'datestamp') {
-    $db_columns['value'] = array('type' => 'integer', 'length' => 11, 'not null' => FALSE, 'sortable' => TRUE);
+    $db_columns['value'] = array('type' => 'int', 'length' => 11, 'not null' => FALSE, 'sortable' => TRUE);
   }
   elseif ($field['type'] == 'datetime') {
     $db_columns['value'] = array('type' => 'datetime', 'not null' => FALSE, 'sortable' => TRUE);
@@ -308,7 +308,7 @@ function date_columns($field) {
   // timezone and offset columns are used only if date-specific dates are chosen.
   if (isset($field['tz_handling']) && $field['tz_handling'] == 'date') {
     $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'sortable' => TRUE);
-    $db_columns['offset'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
+    $db_columns['offset'] = array('type' => 'int', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
     if ($field['todate']) $db_columns['offset2'] = array('type' => 'integer', 'length' => 10, 'not null' => FALSE, 'sortable' => TRUE);
   }
   if (isset($field['repeat']) && $field['repeat'] == 1) {

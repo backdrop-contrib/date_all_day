@@ -492,6 +492,7 @@ function _date_views_query_alter(&$query, &$view) {
   if (in_array($view->name, array_keys($date_views_browser_views))) {
     $name       = explode(':', $view->argument[0]['type']);
     $field_name = trim($name[1]);
+    $field_name = substr($field_name, 0, 3) == 'to|' ? substr($field_name, 3) : $field_name;
     $field      = content_fields($field_name);
     $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
     $db_info    = content_database_info($field);

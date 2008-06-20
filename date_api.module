@@ -41,6 +41,16 @@ define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})
  */
 function date_api_init() {
   drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
+  
+  // Make sure the Date PHP4 module is always enabled when needed.
+  
+  // TODO Not sure how efficient this is, but it should prevent the
+  // errors that kept getting reported when the module is not enabled.
+  // Need to re-visit this to see if it is the right fix.
+  if (!function_exists('date_create') && !module_exists('date_php4')) {
+    module_enable('date_php4');
+  }
+      
 }
 
 /**
@@ -112,7 +122,7 @@ function date_month_names_abbr($required = FALSE) {
   if (empty($month_names)) {
     $month_names = array();
     foreach (date_month_names_untranslated() as $key => $month) {
-      $month_names[$key] = t(substr($month, 0, 3));
+      $month_names[$key] = t(drupal_substr($month, 0, 3));
     }
   }
   $none = array('' => '');
@@ -169,8 +179,8 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
 function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
-    foreach (date_week_days_untranslated($refresh) as $key => $day) {
-      $weekdays[$key] = t(substr($day, 0, $length));
+    foreach (date_week_days($refresh) as $key => $day) {
+      $weekdays[$key] = drupal_substr($day, 0, $length);
     }
   }
   $none = array('' => '');
@@ -402,13 +412,22 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
   if (empty($zonenames)) {
     $zonenames = array();
     $cached = cache_get('date_timezone_identifiers_list');
-    $data = isset($cached->data) ? $cached->data : array();
-    if (empty($data) || $refresh) {
+    if ($refresh || empty($cached) || !$data = $cached->data) {
       $data = timezone_identifiers_list();
-      cache_set('date_timezone_identifiers_list', $data);
     }
-    foreach ($data as $name) {
-      $zonenames[$name] = t($name);
+    foreach ($data as $delta => $zone) {
+      // Because many time zones exist in PHP only for backward 
+      // compatibility reasons and should not be used, the list is 
+      // filtered by a regular expression.
+      if (preg_match('!^((Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific)/|UTC$)!', $zone)) {
+        $zonenames[$zone] = t($zone);
+      }      
+      else {
+        unset($data[$delta]);
+      }
+    }
+    if (!empty($data)) {
+      cache_set('date_timezone_identifiers_list', $data);
     }
   }
   $none = array('' => '');
@@ -449,11 +468,11 @@ function date_t($string) {
     // Translate the whole name first, then look for abbreviations.
     foreach (date_month_names_untranslated() as $month) {
       $replace[$month] = t($month);
-      $replace[substr($month, 0, 3)] = t(substr($month, 0, 3));
+      $replace[drupal_substr($month, 0, 3)] = t(drupal_substr($month, 0, 3));
     }
     foreach (date_week_days_untranslated() as $day) {
       $replace[$day] = t($day);
-      $replace[substr($day, 0, 3)] = t(substr($day, 0, 3));
+      $replace[drupal_substr($day, 0, 3)] = t(drupal_substr($day, 0, 3));
     }
   }
   return strtr($string, $replace);
@@ -541,11 +560,14 @@ function date_now($timezone = NULL) {
  *    DATE_ARRAY, DATE_UNIX, DATE_DATETIME, DATE_ISO, or DATE_OBJECT.
  */
 function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
-  if ($date != 'now' && !date_is_valid($date, $type)) {
-    return NULL;
-  }
+  // Make sure some value is set for the date and timezone even if the
+  // site timezone is not yet set up to avoid fatal installation
+  // errors.
   if (empty($timezone)) {
     $timezone = date_default_timezone_name();
+  }
+  if (!date_is_valid($date, $type) || empty($date)) {
+    $date = 'now';
   }
   if (!empty($timezone) && !empty($date)) {
     if (!is_object($timezone)) {
@@ -555,7 +577,14 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
       return date_create('now', $timezone);
     }
     elseif ($datetime = date_convert($date, $type, DATE_DATETIME)) {
-      return date_create($datetime, $timezone);
+      if ($type == DATE_UNIX && timezone_name_get($timezone) != 'UTC') {
+        $date = date_create($datetime, timezone_open('UTC'));
+        date_timezone_set($date, $timezone);
+        return $date;
+      }
+      else {
+        return date_create($datetime, $timezone);
+      }
     }
   }
   return NULL;
@@ -566,7 +595,7 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
  *
  * @return a timezone name
  *   Identify the default timezone for a user, if available, otherwise the site.
- *   May return a blank value if no timezone info has been set up.
+ *   Must return a value even if no timezone info has been set up.
  */
 function date_default_timezone_name($check_user = TRUE) {
   global $user;
@@ -574,7 +603,8 @@ function date_default_timezone_name($check_user = TRUE) {
     return $user->timezone_name;
   }
   else {
-    return variable_get('date_default_timezone_name', '');
+    $default = variable_get('date_default_timezone_name', '');
+    return empty($default) ? 'UTC' : $default;
   }
 }
 
@@ -585,6 +615,7 @@ function date_default_timezone_name($check_user = TRUE) {
  *   Identify the default timezone for a user, if available, otherwise the site.
  */
 function date_default_timezone($check_user = TRUE) {
+  $timezone = date_default_timezone_name($check_user);
   return timezone_open(date_default_timezone_name($check_user));
 }
 
@@ -639,7 +670,7 @@ function date_days_in_year($date = NULL, $type = DATE_OBJECT) {
  * @param string $type
  * @return integer
  */
-function date_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
+function date_iso_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
   if (empty($date)) {
     $date = date_now();
     $type = DATE_OBJECT;
@@ -705,7 +736,7 @@ function date_day_of_week_name($date = NULL, $abbr = TRUE, $type = DATE_DATETIME
  *   the type of dates provided:
  *   DATE_OBJECT, DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
  */
-function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJECT) {
+function date_difference($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJECT) {
   // Create cloned objects or original dates will be impacted by
   // the date_modify() operations done in this code.
   $date1 = drupal_clone(date_convert($date1_in, $type, DATE_OBJECT));
@@ -771,12 +802,92 @@ function date_diff($date1_in, $date2_in, $measure = 'seconds', $type = DATE_OBJE
         $year_diff = date_format($date2, 'o') - date_format($date1, 'o');
         for ($i = 1; $i <= $year_diff; $i++) {
           date_modify($date1, '+1 year');
-          $week_diff += date_weeks_in_year($date1);
+          $week_diff += date_iso_weeks_in_year($date1);
         }
         return $week_diff;
     }
   }
   return NULL;
+}
+
+/**
+ * Start and end dates for a calendar week, adjusted to use the
+ * chosen first day of week for this site.
+ */
+function date_week_range($week, $year) {
+  $min_date = date_make_date($year .'-01-01 00:00:00', date_default_timezone_name());
+  date_timezone_set($min_date, date_default_timezone());
+
+  // move to the right week
+  date_modify($min_date, '+' . strval(7 * ($week - 1)) . ' days');
+
+  // move backwards to the first day of the week
+  $first_day = variable_get('date_first_day', 0);
+  $day_wday = date_format($min_date, 'w');
+  date_modify($min_date, '-' . strval((7 + $day_wday - $first_day) % 7) . ' days');
+
+  // move forwards to the last day of the week
+  $max_date = drupal_clone($min_date);
+  date_modify($max_date, '+7 days');
+
+  if (date_format($min_date, 'Y') != $year) {
+    $min_date = date_make_date($year .'-01-01 00:00:00', date_default_timezone());
+  }
+  return array($min_date, $max_date);
+}
+
+/**
+ * The number of calendar weeks in a year.
+ * 
+ * PHP week functions return the ISO week, not the calendar week.
+ *
+ * @param int $year
+ * @return int number of calendar weeks in selected year.
+ */
+function date_weeks_in_year($year) {
+  $date = date_make_date(($year + 1) . '-01-01 12:00:00', 'UTC');
+  date_modify($date, '-1 day');
+  return date_week(date_format($date, 'Y-m-d'));
+}
+
+/**
+ * The calendar week number for a date.
+ * 
+ * PHP week functions return the ISO week, not the calendar week.
+ *
+ * @param string $date, in the format Y-m-d
+ * @return int calendar week number.
+ */
+function date_week($date) {
+  $parts = explode('-', $date);
+
+  $date = date_make_date($date . ' 12:00:00', 'UTC');
+  $year_date = date_make_date($parts[0] . '-01-01 12:00:00', 'UTC');
+
+  $week = intval(date_format($date, 'W'));
+  $year_week = intval(date_format($year_date, 'W'));
+  $date_year = intval(date_format($date, 'o'));
+
+  // remove the leap week if it's present
+  if ($date_year > intval($parts[0])) {
+    $last_date = drupal_clone($date);
+    date_modify($last_date, '-7 days');
+    $week = date_format($last_date, 'W') + 1;
+  } else if ($date_year < intval($parts[0])) {
+    $week = 0;
+  }
+  if ($year_week != 1) $week++;
+
+  // convert to ISO-8601 day number, to match weeks calculated above
+  $iso_first_day = 1 + (variable_get('date_first_day', 0) + 6) % 7;
+
+  // if it's before the starting day, it's the previous week
+  if (intval(date_format($date, 'N')) < $iso_first_day) $week--;
+
+  // if the year starts before, it's an extra week at the beginning
+  if (intval(date_format($year_date, 'N')) < $iso_first_day) $week++;
+
+  return $week;
 }
 
 /**
@@ -868,9 +979,19 @@ function date_convert($date, $from_type, $to_type) {
  * Create valid datetime value from incomplete ISO dates or arrays.
  */
 function date_fuzzy_datetime($date) {
+  // A text ISO date, like MMMM-YY-DD HH:MM:SS
   if (!is_array($date)) {
     $date = date_iso_array($date);
   }
+  // An date/time value in the format:
+  //  array('date' => MMMM-YY-DD, 'time' => HH:MM:SS).
+  elseif (array_key_exists('date', $date) || array_key_exists('time', $date)) {
+    $date_part = array_key_exists('date', $date) ? $date['date'] : '';
+    $time_part = array_key_exists('time', $date) ? $date['time'] : '';
+    $date = date_iso_array(trim($date_part .' '. $time_part));
+  }
+  // Otherwise date must in in format:
+  //  array('year' => YYYY, 'month' => MM, 'day' => DD).
   if (empty($date['year'])) {
     $date['year'] = date('Y');
   }
@@ -892,13 +1013,13 @@ function date_fuzzy_datetime($date) {
 function date_iso_array($date) {
   preg_match(DATE_REGEX_LOOSE, $date, $regs);
   return array(
-    'year' => intval($regs[1]),
-    'month' => intval($regs[2]),
-    'day' => intval($regs[3]),
-    'hour' => intval($regs[5]),
-    'minute' => intval($regs[6]),
-    'second' => intval($regs[7]),
-    );        
+    'year' => isset($regs[1]) ? intval($regs[1]) : '',
+    'month' => isset($regs[2]) ? intval($regs[2]) : '',
+    'day' => isset($regs[3]) ? intval($regs[3]) : '',
+    'hour' => isset($regs[5]) ? intval($regs[5]) : '',
+    'minute' => isset($regs[6]) ? intval($regs[6]) : '',
+    'second' => isset($regs[7]) ? intval($regs[7]) : '',
+    );       
 }
 
 /**
@@ -976,7 +1097,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
 function date_is_valid($date, $type = DATE_DATETIME) {
   if (empty($date)) return FALSE;
   if ($type == DATE_OBJECT && !is_object($date)) return FALSE;
-  if (($type == DATE_ISO || $type == DATE_DATETIME) && !preg_match(DATE_REGEX_LOOSE, $date)) return FALSE;
+  if (($type == DATE_ISO || $type == DATE_DATETIME) && (!is_string($date) || !preg_match(DATE_REGEX_LOOSE, $date))) return FALSE;
   if ($type == DATE_UNIX and !is_numeric($date)) return FALSE;
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;
 
@@ -1096,7 +1217,6 @@ function date_limit_value($date, $granularity, $type = DATE_DATETIME) {
  */
 function date_limit_format($format, $granularity) {
   // Strip out timezone formatting.
-  $regex = array('([OZPe])');
   // Get rid of dash separating date and time if either is missing.
   if (!date_has_time($granularity)
     || sizeof(array_intersect($granularity, array('year', 'month', 'day')) == 0)) {
@@ -1126,6 +1246,9 @@ function date_limit_format($format, $granularity) {
       case 'second':
         $regex[] = '([:]?[s])';
         break;
+      case 'timezone':
+        $regex[] = '([OZPe])';
+        break;  
     }
   }
   // Remove selected values from string.
@@ -1199,7 +1322,7 @@ function date_format_order($format) {
  *   an array like ('year', 'month', 'day', 'hour', 'minute', 'second');
  */
 function date_nongranularity($granularity) {
-  return array_diff(array('year', 'month', 'day', 'hour', 'minute', 'second'), (array) $granularity);
+  return array_diff(array('year', 'month', 'day', 'hour', 'minute', 'second', 'timezone'), (array) $granularity);
 }
 
 /**
@@ -1220,21 +1343,50 @@ function date_api_elements() {
 }
 
 function date_api_theme() {
+  $path = drupal_get_path('module', 'date_api');
+  $base = array(
+    'file' => 'theme.inc',
+    'path' => "$path/theme",
+  );
   return array(
-    'date_timezone' => array('arguments' => array('element' => NULL)),
-    'date_select' => array('arguments' => array('element' => NULL)),
-    'date_text' => array('arguments' => array('element' => NULL)),
-    'date_select_element' => array('arguments' => array('element' => NULL)),
-    'date_textfield_element' => array('arguments' => array('element' => NULL)),
-    'date_date_part_hour_prefix' => array('arguments' => array('element' => NULL)),
-    'date_part_minsec_prefix' => array('arguments' => array('element' => NULL)),
-    'date_part_label_year' => array('arguments' => array('element' => NULL)),
-    'date_part_label_month' => array('arguments' => array('element' => NULL)),
-    'date_part_label_day' => array('arguments' => array('element' => NULL)),
-    'date_part_label_hour' => array('arguments' => array('element' => NULL)),
-    'date_part_label_minute' => array('arguments' => array('element' => NULL)),
-    'date_part_label_second' => array('arguments' => array('element' => NULL)),
-    'date_part_label_ampm' => array('arguments' => array('element' => NULL)),
-    'date_part_label_timezone' => array('arguments' => array('element' => NULL)),
+    'date_nav_title' => $base + array('arguments' => array('type' => NULL, 'view' => NULL)),
+    'date_vcalendar' => $base + array('arguments' => array('events' => NULL, 'calname' => NULL)),
+    'date_vevent' => $base + array('arguments' => array('event' => NULL)),
+    'date_valarm' => $base + array('arguments' => array('alarm' => NULL)),
+    'date_timezone' => $base + array('arguments' => array('element' => NULL)),
+    'date_select' => $base + array('arguments' => array('element' => NULL)),
+    'date_text' => $base + array('arguments' => array('element' => NULL)),
+    'date_select_element' => $base + array('arguments' => array('element' => NULL)),
+    'date_textfield_element' => $base + array('arguments' => array('element' => NULL)),
+    'date_date_part_hour_prefix' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_minsec_prefix' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_year' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_month' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_day' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_hour' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_minute' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_second' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_ampm' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_timezone' => $base + array('arguments' => array('element' => NULL)),
     );
+}
+
+/**
+ * Wrapper around date handler setting for timezone.
+ */
+function date_api_set_db_timezone($offset = '+00:00') {
+  include_once(drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+  $handler = new date_sql_handler();
+  return $handler->set_db_timezone($offset);
+}
+
+/**
+ * Wrapper function to make sure this function will always work.
+ */
+function date_api_views_fetch_fields($base, $type) {
+  if (!module_exists('views')) {
+    return array();
+  }
+  include_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+  return views_fetch_fields($base, $type);
 }

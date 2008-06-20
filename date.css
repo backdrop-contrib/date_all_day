@@ -84,4 +84,50 @@ span.date-display-separator {
   float:left !important;
   margin-right:2px !important;
   padding:0 !important;
+  width:12em;
 }
+
+.date-nav {
+  width:100%;
+  display:relative;
+}
+.date-nav div.prev {
+  text-align: left;
+  width:24%;
+  float:left;
+}
+.date-nav div.next {
+  text-align: right;
+  width:24%;
+  float:right;
+}
+.date-nav div.heading {
+  text-align:center;
+  width:50%;
+  float:left;
+}
+
+/*
+** Markup free clearing that fixes unwanted scrollbars
+** @see http://drupal.org/node/232959
+*/
+.date-clear-block:after {
+  content: " ";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+.date-clear-block {
+  display: inline-block;
+}
+
+/* Hides from IE-mac \*/
+* html .date-clear-block {
+  height: 1%;
+}
+.date-clear-block {
+  display: block;
+}
+/* End hide from IE-mac */

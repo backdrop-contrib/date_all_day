@@ -24,7 +24,7 @@ timezone, adjust it to a different timezone, then return the offset in seconds
 in the new timezone for the input date; The offset will be adjusted for both 
 the timezone difference and daylight savings time, if necessary:
 
-$date = create_date('2007-03-11 02:00:00', timezone_open('America/Chicago'));
+$date = date_create('2007-03-11 02:00:00', timezone_open('America/Chicago'));
 $chicago_time = date_format('Y-m-d H:i', $date);
 
 print 'At '. $chicago_time .' in Chicago, the timezone offset in seconds 

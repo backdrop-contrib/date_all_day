@@ -73,7 +73,7 @@ function _date_api_elements() {
     '#element_validate' => array('date_select_validate'),
     ));
   $type['date_text'] = array_merge($date_base, array(
-    '#process' => array('date_text_process' => array()),
+    '#process' => array('date_text_process'),
     '#element_validate' => array('date_text_validate'),
     ));
   $type['date_timezone'] = array(
@@ -138,11 +138,19 @@ function date_text_process($element, $edit, $form_state, $form) {
 
   // Don't overwrite values already added to $element['date'] in case
   // using something like jscalendar that needs to set custom values.
+  if (empty($element['date']['#description'])) {
+    $element['date']['#description'] = '';
+  }
+  if (empty($element['date']['#attributes']['class'])) {
+    $element['date']['#attributes']['class'] = '';
+  }
+  
   $element['#tree'] = TRUE;
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
   $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] .' date-date';
+  $element['date']['#description'] .= ' '. t('Format: @date', array('@date' => date($element['#date_format'], time())));
   
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
@@ -188,11 +196,13 @@ function date_select_process($element, $edit, $form_state, $form) {
   
   // Store a hidden value for all date parts not in the current display.
   $granularity = date_format_order($element['#date_format']);
+  $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
   foreach (date_nongranularity($granularity) as $field) {
-    $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
-    $element[$field] = array(
-      '#type' => 'hidden',
-      '#value' => is_object($date) ? intval(date_format($date, $formats[$field])) : 0);
+    if ($field != 'timezone') {
+      $element[$field] = array(
+        '#type' => 'hidden',
+        '#value' => is_object($date) ? intval(date_format($date, $formats[$field])) : 0);
+    }
   }
   return $element;
 }
@@ -454,6 +464,13 @@ function date_text_input_value($element) {
   if (date_is_valid($value)) {
     return $value;
   }
+  // If that didn't work, try strtotime().
+  else {
+   $date = strtotime($input, 0);
+   if (date_is_valid($date, DATE_UNIX)) {
+     return date_convert($date, DATE_UNIX, DATE_DATETIME);
+   }
+  }
   return NULL;
 }
 
@@ -604,7 +621,7 @@ function theme_date_select($element) {
   if (isset($element['#children'])) {
     $output = $element['#children'];
   }
-  return '<div class="container-inline-date clear-block">'. theme('form_element', $element, $output) .'</div>';
+  return '<div class="container-inline-date date-clear-block">'. theme('form_element', $element, $output) .'</div>';
 }
 
 /**

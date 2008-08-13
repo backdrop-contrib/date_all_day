@@ -41,14 +41,14 @@ function date_sql_pad($str, $size = 2, $pad = '0', $side = 'l') {
  */
 class date_sql_handler {
   var $db_type = 'mysql';
-  var $date_type = DATE_UNIX;
+  var $date_type = DATE_DATETIME;
   var $db_timezone = 'UTC'; // A string timezone name.
   var $local_timezone = NULL; // A string timezone name.
   var $db_timezone_field = NULL; // Use if the db timezone is stored in a field.
   var $local_timezone_field = NULL; // Use if the local timezone is stored in a field.
   var $offset_field = NULL; // Use if the offset is stored in a field.
   
-  function construct($date_type = DATE_UNIX, $local_timezone = NULL) {
+  function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
     $this->db_type = $GLOBALS['db_type'];
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
@@ -76,7 +76,7 @@ class date_sql_handler {
           }
           break;
         case 'pgsql':
-          $test = "TIMESTAMP WITH TIME ZONE '2008-02-15 12:00:00' AT TIME ZONE 'US/Central'";
+          $test = db_result(db_query("'2008-02-15 12:00:00 UTC' AT TIME ZONE 'US/Central'"));
           if ($test == '2008-02-15 06:00:00') {
             $has_support = TRUE;
           }
@@ -107,11 +107,11 @@ class date_sql_handler {
     static $already_set = FALSE;
     $type = $GLOBALS['db_type'];
     if (!$already_set) {
-      if ($type == 'mysqli' || version_compare(db_version(), '4.1.3', '>=')) {
+      if ($type == 'mysqli' && version_compare(db_version(), '4.1.3', '>=')) {
         db_query("SET @@session.time_zone = '$offset'");
       }
       elseif ($type == 'pgsql') {
-        db_query("SET TIME ZONE '$offset'");
+        db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
       }
       $already_set = true;
     }
@@ -147,7 +147,7 @@ class date_sql_handler {
     if (strtoupper($field) == 'NOW') {
       // NOW() will be in UTC since that is what we set the db timezone to.
       $this->local_timezone = 'UTC';
-      return 'NOW()';
+      return $this->sql_offset('NOW()', $offset);
     }
     switch ($this->db_type) {
       case 'mysql':
@@ -164,7 +164,7 @@ class date_sql_handler {
         }
         break;
       case 'pgsql':
-        switch ($date_type) {
+        switch ($this->date_type) {
           case DATE_UNIX:
             $field = "$field::ABSTIME";
             break;
@@ -516,17 +516,30 @@ class date_sql_handler {
    * and the current values if type = 'now'.
    */
   function complete_date($selected, $type = 'now') {
+    if (empty($selected)) {
+      return '';
+    }
     // Special case for weeks.
     if (array_key_exists('week', $selected)) {
       $dates = date_week_range($selected['week'], $selected['year']);
-      return date_format($dates[0], 'Y-m-d H:i:s');
+      switch ($type) {
+        case 'empty_now':
+        case 'empty_min':
+        case 'min':
+          return date_format($dates[0], 'Y-m-d H:i:s');
+        case 'empty_max':
+        case 'max':
+          return date_format($dates[1], 'Y-m-d H:i:s');
+        default:
+          return;
+      }
     }
     
     $compare = array_merge($this->part_info('empty_'. $type), $selected);
     // If this is a max date, make sure the last day of 
     // the month is the right one for this date.
     if ($type == 'max') {
-      $compare['day'] = date('t', mktime(0, 0, 0, $compare['month'], 1, $compare['year']));
+      $compare['day'] = date_days_in_month($compare, DATE_ARRAY);
     }
     $value = '';
     $separators = $this->part_info('sep');
@@ -576,22 +589,32 @@ class date_sql_handler {
 
   function views_formats($granularity, $type = 'sql') {
     $formats = array('display', 'sql');
+    // Start with the site long date format and add seconds to it
+    $long = str_replace(':i', ':i:s', variable_get('date_format_long',  'l, F j, Y - H:i'));
     switch ($granularity) {
       case('year'):
         $formats['display'] = 'Y';
         $formats['sql'] = 'Y';
         break;
       case('month'):
-        $formats['display'] = 'F Y';
+        $formats['display'] = date_limit_format($long, array('year', 'month'));
         $formats['sql'] = 'Y-m';
         break;
       case('day'):
-        $formats['display'] = 'F j Y';
+        $formats['display'] = date_limit_format($long, array('year', 'month', 'day'));
         $formats['sql'] = 'Y-m-d';
         break;
       case('hour'):
-        $formats['display'] = 'F j Y - H';
+        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour'));
         $formats['sql'] = 'Y-m-d\TH';
+        break;
+      case('minute'):
+        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour', 'minute'));
+        $formats['sql'] = 'Y-m-d\TH:i';
+        break;
+      case('second'):
+        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour', 'minute', 'second'));
+        $formats['sql'] = 'Y-m-d\TH:i:s';
         break;
       case('week'):
         $formats['display'] = 'F j Y (W)';
@@ -631,8 +654,12 @@ class date_sql_handler {
    *
    */
   function arg_parts($argument) {
-    $fromto = explode('--', $argument);
     $values = array();
+    // Keep mal-formed arguments from creating errors.
+    if (empty($argument) || is_array($argument)) {
+      return array('date' => array(), 'period' => array());
+    }
+    $fromto = explode('--', $argument);
     foreach ($fromto as $arg) {
       $parts = array();
       if ($arg == '@') {
@@ -673,13 +700,26 @@ class date_sql_handler {
 
   /**
    * Use the parsed values from the ISO argument to determine the
+   * granularity of this period.
+   */
+  function arg_granularity($arg) {
+    $granularity = '';
+    $parts = $this->arg_parts($arg);
+    $date = !empty($parts[0]['date']) ? $parts[0]['date'] : (!empty($parts[1]['date']) ? $parts[1]['date'] : array());
+    foreach ($date as $key => $part) {
+      $granularity = $key;    
+    }
+    return $granularity;
+  }
+
+  /**
+   * Use the parsed values from the ISO argument to determine the
    * min and max date for this period.
    */
   function arg_range($arg) {
-      
     // Parse the argument to get its parts
     $parts = $this->arg_parts($arg);
-
+   
     // Intercept invalid info and fall back to the current date.
     if (empty($parts[0]) || empty($parts[0]['date']) && empty($parts[0]['period'])) {
       $now = date_now();
@@ -697,11 +737,12 @@ class date_sql_handler {
       return array($min_date, $max_date);
     }
     if (!empty($parts[0]['date'])) {
-      $min_date = date_make_date($this->complete_date($parts[0]['date'], 'min'));
-      
+      $value = date_fuzzy_datetime($this->complete_date($parts[0]['date'], 'min'));
+      $min_date = date_make_date($value, date_default_timezone_name(), DATE_ISO);
       // Build a range from a single date-only argument.
       if (empty($parts[1]) || (empty($parts[1]['date']) && empty($parts[1]['period']))) {
-        $max_date = date_make_date($this->complete_date($parts[0]['date'], 'max'));
+        $value = date_fuzzy_datetime($this->complete_date($parts[0]['date'], 'max'));
+        $max_date = date_make_date($value, date_default_timezone_name(), DATE_ISO);
         return array($min_date, $max_date);
       }
       // Build a range from start date + period.
@@ -716,7 +757,8 @@ class date_sql_handler {
     }
     // Build a range from start date and end date.
     if (!empty($parts[1]['date'])) {
-      $max_date = $this->complete_date($parts[1]['date'], 'max');
+      $value = date_fuzzy_datetime($this->complete_date($parts[1]['date'], 'max'));
+      $max_date = date_make_date($value, date_default_timezone_name(), DATE_ISO);
       if (isset($min_date)) {
         return array($min_date, $max_date);
       }

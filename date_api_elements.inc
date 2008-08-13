@@ -60,7 +60,7 @@
  */
 function _date_api_elements() {
   $date_base = array(
-    '#input' => TRUE, '#tree' => TRUE, '#date' => NULL,
+    '#input' => TRUE, '#tree' => TRUE,
     '#date_timezone' => date_default_timezone_name(),
     '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#date_text_parts' => array(),
@@ -70,16 +70,13 @@ function _date_api_elements() {
     );
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_process'),
-    '#element_validate' => array('date_select_validate'),
     ));
   $type['date_text'] = array_merge($date_base, array(
     '#process' => array('date_text_process'),
-    '#element_validate' => array('date_text_validate'),
     ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#process' => array('date_timezone_process'),
-    '#element_validate' => array('date_timezone_validate'),
     );
   return $type;
 }
@@ -92,6 +89,7 @@ function _date_api_elements() {
  *   the timezone form element
  */
 function date_timezone_process($element, $edit, $form_state, $form) {
+  $element['#tree'] = TRUE;
   $element['timezone'] = array(
     '#type' => 'select',
     '#title' => theme('date_part_label_timezone', 'select', $element),
@@ -99,9 +97,15 @@ function date_timezone_process($element, $edit, $form_state, $form) {
     '#options' => date_timezone_names($element['#required']),
     '#weight' => $element['#weight'],
     '#required' => $element['#required'],
-    '#attributes' => array('class' => 'date-timezone'),
+    '#attributes' => array('class' => 'date-timezone date-clear-block'),
     '#theme' => 'date_select_element',
   );
+  if (isset($element['#element_validate'])) {
+    array_push($element['#element_validate'], 'date_timezone_validate');
+  }
+  else {
+    $element['#element_validate'] = array('date_timezone_validate');
+  }
   return $element;
 }
 
@@ -112,50 +116,45 @@ function date_timezone_process($element, $edit, $form_state, $form) {
  *
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from #date_format.
+ * 
+ * In regular FAPI processing $element['#value'] will contain a string
+ * value before the form is submitted, and an array during submission.
+ * 
+ * In regular FAPI processing $edit is empty until the form is submitted
+ * when it will contain an array.
+ * 
+ * Views widget processing now receives the same values as normal FAPI
+ * processing (that was not true in Views 1).
+ * 
  */
 function date_text_process($element, $edit, $form_state, $form) {
-  // There are some cases, like when using this as a Views form element,
-  // where $edit is empty and $element['#value'] holds an array of input values.
-  // This happens when the processing bypasses the element validation step
-  // that resets the value from the date and time
-  // subparts.
   $date = NULL;
-  if (!empty($edit) || is_array($element['#value'])) {
-    if (empty($edit)) {
-      $edit = $element['#value'];
-    }
+  if (!empty($edit)) {
     $datetime = date_convert_from_custom($edit['date'], $element['#date_format']);
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME);
   }
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
-  // TODO keep an eye on this, commented out so it is possible to provide
-  // blank initial value for required date.
-  //elseif ($element['#required']) {
-  //  $date = date_now($element['#date_timezone']);
-  //}
 
-  // Don't overwrite values already added to $element['date'] in case
-  // using something like jscalendar that needs to set custom values.
-  if (empty($element['date']['#description'])) {
-    $element['date']['#description'] = '';
-  }
-  if (empty($element['date']['#attributes']['class'])) {
-    $element['date']['#attributes']['class'] = '';
-  }
-  
   $element['#tree'] = TRUE;
+
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
-  $element['date']['#attributes']['class'] = $element['date']['#attributes']['class'] .' date-date';
-  $element['date']['#description'] .= ' '. t('Format: @date', array('@date' => date($element['#date_format'], time())));
+  $element['date']['#attributes'] = array('class' => $element['#attributes']['class'] .' date-date');
+  $element['date']['#description'] = ' '. t('Format: @date', array('@date' => date($element['#date_format'], time())));
   
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
   //$element['date']['#required'] = $element['#required'];
   $element['date']['#theme'] = 'date_textfield_element';
+  if (isset($element['#element_validate'])) {
+    array_push($element['#element_validate'], 'date_text_validate');
+  }
+  else {
+    $element['#element_validate'] = array('date_text_validate');
+  }
   return $element;
 }
 
@@ -168,28 +167,26 @@ function date_text_process($element, $edit, $form_state, $form) {
  *
  * The exact parts displayed in the field are those in #date_granularity.
  * The display of each part comes from ['#date_settings']['format'].
+ * 
+ * In regular FAPI processing $element['#value'] will contain a string
+ * value before the form is submitted, and an array during submission.
+ * 
+ * In regular FAPI processing $edit is empty until the form is submitted
+ * when it will contain an array.
+ * 
+ * Views widget processing now receives the same values as normal FAPI
+ * processing (that was not true in Views 1).
+ * 
  */
 function date_select_process($element, $edit, $form_state, $form) {
-  // There are some cases, like when using this as a Views form element,
-  // where $edit is empty and $element['#value'] holds an array of input values.
-  // This happens when the processing bypasses the element validation step
-  // that resets the value from the date and time
-  // subparts.
   $date = NULL;
-  if (!empty($edit) || is_array($element['#value'])) {
-    if (empty($edit)) {
-      $edit = $element['#value'];
-    }
+  if (!empty($edit)) {
     $date = date_make_date($edit, $element['#date_timezone'], DATE_ARRAY);
   }
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone']);
   }
-  // TODO keep an eye on this, commented out so it is possible to provide
-  // blank initial value for required date.
-  //elseif ($element['#required']) {
-  //  $date = date_now($element['#date_timezone']);
-  //}
+
   $element['#tree'] = TRUE;
   date_increment_round($date, $element['#date_increment']);
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
@@ -203,6 +200,12 @@ function date_select_process($element, $edit, $form_state, $form) {
         '#type' => 'hidden',
         '#value' => is_object($date) ? intval(date_format($date, $formats[$field])) : 0);
     }
+  }
+  if (isset($element['#element_validate'])) {
+    array_push($element['#element_validate'], 'date_select_validate');
+  }
+  else {
+    $element['#element_validate'] = array('date_select_validate');
   }
   return $element;
 }
@@ -365,13 +368,21 @@ function date_increment_round(&$date, $increment) {
 
 /**
  *  Validation function for date selector.
+ * 
+ * When used as a Views widget, the validation step always gets triggered,
+ * even with no form submission. Before form submission $element['#value']
+ * contains a string, after submission it contains an array.
+ * 
  */
 function date_select_validate($element, &$form_state) {
-  if (empty($element['#value'])) {
-    $element['#value'] = array();
+  if (is_string($element['#value'])) {
+    return;
   }
-  $error_field = implode('][', $element['#parents']);
+  
+  $parents = $element['#parents'];
+  $error_field = implode('][', $parents);
   $granularity = array_values(date_format_order($element['#date_format']));
+  
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $value) {
     if (substr($value, 0, 1) == '-') {
@@ -433,9 +444,17 @@ function date_select_input_value($element) {
 
 /**
  *  Validation for text input.
+ * 
+ * When used as a Views widget, the validation step always gets triggered,
+ * even with no form submission. Before form submission $element['#value']
+ * contains a string, after submission it contains an array.
+ * 
  */
 function date_text_validate($element, &$form_state) {
-  $form_values = $element['#value'];
+  if (is_string($element['#value'])) {
+    return;
+  }
+  $parents = $element['#parents'];
   $value = date_text_input_value($element);
 
   if (!$element['#required'] && empty($value)) {
@@ -460,16 +479,24 @@ function date_text_input_value($element) {
 
   $value = date_convert_from_custom($input, $element['#date_format']);
 
+  // Check for special case when using partial dates, like year only.
+  // We have to create a valid date out of the results to test validity.
+  $granularity = date_format_order($element['#date_format']);
+  $non_granularity = date_nongranularity($granularity);
+  if (array_intersect($non_granularity, array('year', 'month', 'day'))) {
+    $value = date_fuzzy_datetime(str_replace(' ', 'T', $value));
+  }
+
   // If it creates a valid date, use it.
   if (date_is_valid($value)) {
     return $value;
   }
-  // If that didn't work, try strtotime().
   else {
-   $date = strtotime($input, 0);
-   if (date_is_valid($date, DATE_UNIX)) {
-     return date_convert($date, DATE_UNIX, DATE_DATETIME);
-   }
+    // A wrapped strtotime, that respects desired timezone (and handles lots of input formats)
+    $date = date_make_date($value, $element['#date_timezone']);
+    if (date_is_valid($date, DATE_OBJECT)) {   
+      return date_format($date, DATE_FORMAT_DATETIME);
+    }
   }
   return NULL;
 }
@@ -527,7 +554,6 @@ function date_convert_from_custom($date, $format) {
   $regex2 = str_replace('a', '(am|pm)', $regex2);
   preg_match('`^'. $regex2 .'$`', $date, $values);
   array_shift($values);
-
   // if we did not find all the values for the patterns in the format, abort
   if (count($letters) != count($values)) {
     return  NULL;
@@ -586,118 +612,7 @@ function date_convert_from_custom($date, $format) {
   elseif (isset($ampm) && $ampm == 'am' && $final_date['hour'] == 12) {
     $final_date['hour'] -= 12;
   }
-  if (date_is_valid($final_date, DATE_ARRAY)) {
-    return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
- * Format a date timezone element.
- *
- * @param $element
- *   An associative array containing the properties of the element.
- *   Properties used: title, value, options, description, required and attributes.
- * @return
- *   A themed HTML string representing the date selection boxes.
- */
-function theme_date_timezone($element) {
-  return theme('form_element', $element, $element['#children']);
-}
-
-/**
- * Format a date selection element.
- *
- * @param $element
- *   An associative array containing the properties of the element.
- *   Properties used: title, value, options, description, required and attributes.
- * @return
- *   A themed HTML string representing the date selection boxes.
- */
-function theme_date_select($element) {
-  $output = '';
-  if (isset($element['#children'])) {
-    $output = $element['#children'];
-  }
-  return '<div class="container-inline-date date-clear-block">'. theme('form_element', $element, $output) .'</div>';
-}
-
-/**
- * Format a date text element.
- *
- * @param $element
- *   An associative array containing the properties of the element.
- *   Properties used: title, value, options, description, required and attributes.
- * @return
- *   A themed HTML string representing the date selection boxes.
- */
-function theme_date_text($element) {
-  return theme('form_element', $element, $element['#children']);
-}
-
-/**
- *  Themes for date input form elements
- */
-function theme_date_select_element($element) {
-  $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('select', $element) .'</div>';
-}
-
-function theme_date_textfield_element($element) {
-  $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('textfield', $element) .'</div>';
-}
-
-/**
- * Functions to separate date parts in form.
- *
- * Separators float up to the title level for elements with titles,
- * so won't work if this element has titles above the element date parts.
- */
-function theme_date_part_hour_prefix($element) {
-  if ($element['#date_label_position'] != 'above') {
-    return '<span class="form-item date-spacer">&nbsp;-&nbsp;</span>';
-  }
-}
-
-function theme_date_part_minsec_prefix($element) {
-  if ($element['#date_label_position'] != 'above') {
-    return '<span class="form-item date-spacer">:</span>';
-  }
-}
-
-/**
- * Format labels for each date part in a date_select.
- *
- * @param $part_type
- *   the type of field used for this part, 'textfield' or 'select'
- * @param $element
- *   An associative array containing the properties of the element.
- *   Properties used: title, value, options, description, required and attributes.
- */
-function theme_date_part_label_year($part_type, $element) {
-  return t('Year');
-}
-function theme_date_part_label_month($part_type, $element) {
-  return t('Month');
-}
-function theme_date_part_label_day($part_type, $element) {
-  return t('Day');
-}
-function theme_date_part_label_hour($part_type, $element) {
-  return t('Hour');
-}
-function theme_date_part_label_minute($part_type, $element) {
-  return t('Minute');
-}
-function theme_date_part_label_second($part_type, $element) {
-  return t('Second');
-}
-function theme_date_part_label_ampm($part_type, $element) {
-  return t('am/pm');
-}
-function theme_date_part_label_timezone($part_type, $element) {
-  return t('Timezone');
+  // Don't test for valid date, we might use this to extract
+  // incomplete date part info from user input.
+  return date_convert($final_date, DATE_ARRAY, DATE_DATETIME);
 }

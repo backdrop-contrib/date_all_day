@@ -1,5 +1,6 @@
 <?php
 //$Id$
+
 /**
  * @file
  * Defines date-related Views data and plugins:
@@ -12,11 +13,12 @@
  *   and period formats, like 2009-05-01, 2008-W25, P1W. 
  * 
  * Date filter:
- *   A generic date argument that has an option to select a 
- *   Views date field to filter on, and provides a place to select
- *   a value and an adjustment to use for the filtering. The value
- *   can be a date or 'now', and the adjustment can be something like
- *   '+90 days'. 
+ *   A generic date filter that has an option to select a 
+ *   Views date field to filter on, with a choice of a widget to use
+ *   for the filter form and an option to set the default value to 
+ *   a set date or something like 'now +90 days'. If the operator is 
+ *   set to 'between' or 'not between' you can set a default value for
+ *   both the from and to dates. 
  * 
  * Current date argument default
  *   Adds a default option to set the argument to the current date 
@@ -114,6 +116,11 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function init(&$view, $options) {
     parent::init($view, $options);
+    
+    // Identify the type of display we're using.
+    $this->display_handler = $view->display_handler->definition['handler'];
+    
+    // Add a date handler to the display.
     $date_handler = $this->date_handler;
     $date_handler->granularity = $this->options['granularity'];
     $this->format = $date_handler->views_formats($date_handler->granularity, 'display');
@@ -171,8 +178,9 @@ class date_api_argument_handler extends views_handler_argument_date {
   }
     
   function options_validate($form, &$form_state) {
-    if (empty($form_state['values']['options']['date_fields'])) {
-      form_error($form, t('You must select at least one date field for this argument.'));
+    $check_fields = array_filter($form_state['values']['options']['date_fields']);
+    if (empty($check_fields)) {
+      form_error($form['date_fields'], t('You must select at least one date field for this argument.'));
     }
   }
   
@@ -218,8 +226,9 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function summary_name($data) {
     $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
-    $created = $data->{$this->name_alias};
-    return format_date(strtotime($created), 'custom', $format, 0);
+    $value = $data->{$this->name_alias};
+    $range = $date_handler->arg_range($value);
+    return date_format_date($range[0], 'custom', $format);
   }
 
   /**
@@ -235,7 +244,8 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function title() {
     $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
-    return format_date(strtotime($this->argument), 'custom', $format, 0);
+    $range = $this->date_handler->arg_range($this->argument);
+    return date_format_date($range[0], 'custom', $format);
   }
 
   /**
@@ -285,34 +295,7 @@ class date_api_argument_handler extends views_handler_argument_date {
         $date_handler = new date_sql_handler();
         $date_handler->construct($field['sql_type'], date_default_timezone_name());
         $date_handler->granularity = $this->options['granularity'];
-        $tz_handling  = $field['tz_handling'];
-        switch ($tz_handling) {
-          case 'date' :
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone_field = $field['timezone_field'];
-            $date_handler->local_offset_field = $field['offset_field'];
-            $date_handler->min_date = $min_date;
-            $date_handler->max_date = $max_date;
-            break;
-          case 'none':
-            $date_handler->db_timezone = date_default_timezone_name();
-            $date_handler->local_timezone = date_default_timezone_name();
-            $date_handler->min_date = $min_date;
-            $date_handler->max_date = $max_date;
-            break;
-          case 'utc':
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone = 'UTC';
-            $date_handler->min_date = $min_utc;
-            $date_handler->max_date = $max_utc;
-            break;
-          default :
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone = 'UTC';
-            $date_handler->min_date = $min_utc;
-            $date_handler->max_date = $max_utc;
-            break;
-        }
+        date_views_set_timezone($date_handler, $this, $field);
         $this->query_fields[] = array('field' => $field, 'date_handler' => $date_handler);
       }
     }
@@ -324,6 +307,20 @@ class date_api_argument_handler extends views_handler_argument_date {
    * The argument sent may be found at $this->argument.
    */
   function query() { 
+    $block_identifier = isset($this->view->block_identifier) ? $this->view->block_identifier : 'mini';
+    if (!empty($this->view->block) && isset($_GET[$block_identifier])) {
+      $mini_args = explode('/', str_replace($this->view->get_path() .'/', '', $_GET[$block_identifier]));
+      $this->view->args = $mini_args;
+      $i = 0;
+      foreach ($this->view->argument as $argument) {
+        if ($argument->field == 'date_argument') {
+          $this->argument = $this->view->args[$argument->position];
+          break;
+        }
+        $i++;
+      }
+    }
+    
     $parts = $this->date_handler->arg_parts($this->argument);
     foreach ($parts[0]['date'] as $key => $part) {
       // The last part evaluated is the one that will 'stick'
@@ -334,32 +331,22 @@ class date_api_argument_handler extends views_handler_argument_date {
     $range = $this->date_handler->arg_range($this->argument);
     $min_date = $range[0];
     $max_date = $range[1];
-    
-    // Create min and max dates in both local and UTC time.
-    // We'll compare fields to the UTC date whenever possible
-    // to avoid the need to do timezone conversions. When that
-    // isn't possible (the date is not stored in UTC or needs to
-    // be converted back to a time that may be different than
-    // the local timezone) we will have to do tz conversions in
-    // the database.
     $this->min_date = $min_date;
-    $this->min_utc = drupal_clone($min_date);
-    date_timezone_set($this->min_utc, timezone_open('UTC'));
     $this->max_date = $max_date;
-    $this->max_utc = drupal_clone($max_date);
-    date_timezone_set($this->max_utc, timezone_open('UTC'));
-        
+    
     $this->get_query_fields();
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
       $this->query->set_where_group($this->options['date_method'], 'date');
-      $this->ensure_my_table();
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
         $date_handler = $query_field['date_handler'];
       
-        // Make sure this field is added to the query.
+        // Explicitly add this table using add_table so Views does not
+        // remove it if it is a duplicate, since that will break the query.
+        $this->query->add_table($field['table_name'], NULL, NULL, $field['table_name']);
+        // Make sure the real field is added to the query.
         $this->query->add_field($field['table_name'], $field['field_name']);
         foreach ($field['related_fields'] as $related) {
           $bits = explode('.', $related);
@@ -367,9 +354,11 @@ class date_api_argument_handler extends views_handler_argument_date {
             $this->query->add_field($field['table_name'], $bits[1]);
           }
         }
-        $from = $date_handler->sql_where_date('DATE', $field['fullname'], '>=', date_format($date_handler->min_date, DATE_FORMAT_DATETIME));
-        $to   = $date_handler->sql_where_date('DATE', $field['fullname'], '<=', date_format($date_handler->max_date, DATE_FORMAT_DATETIME));
-        $sql = str_replace('***table***', $this->table_alias, "($from AND $to)");
+        $from_field = str_replace($field['table_name'] .'_', $field['table_name'] .'.', $field['fromto'][0]);
+        $to_field = str_replace($field['table_name'] .'_', $field['table_name'] .'.', $field['fromto'][1]);
+        $from = $date_handler->sql_where_date('DATE', $from_field, '<=', date_format($max_date, DATE_FORMAT_DATETIME));
+        $to   = $date_handler->sql_where_date('DATE', $to_field, '>=', date_format($min_date, DATE_FORMAT_DATETIME));
+        $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
         if ($sql) {
           $this->query->add_where('date', $sql);
         }
@@ -408,6 +397,7 @@ class date_plugin_display_attachment extends views_plugin_display_attachment {
     $display->display_options['defaults']['row_plugin'] = FALSE;
     $display->display_options['defaults']['row_options'] = FALSE;
   } 
+
 }
 
 /**
@@ -426,13 +416,22 @@ class date_navigation_plugin_style extends views_plugin_style {
     $errors = parent::validate();
     
     $arguments = $this->display->handler->get_option('arguments');
-    if (!in_array('date_argument', array_keys($arguments))) {
-      $errors[] = t('The @style requires the Calendar: Date argument.', array('@style' => $this->definition['title']));      
-    }
-    else {
-      if ($arguments['date_argument']['default_argument_type'] != 'date') {
-        $errors[] = t('The @style requires the Calendar: Date argument to provide a default argument set to default to the current date.', array('@style' => $this->definition['title']));      
+    $count = 0;
+    $found = FALSE;
+    foreach ($arguments as $id => $argument) {
+      if ($argument['field'] == 'date_argument') {
+        if ($count > 0) {
+          $errors[] = t('The @style cannot use more than one Date: Date argument.', array('@style' => $this->definition['title']));          
+        }
+        elseif ($argument['default_argument_type'] != 'date') {
+          $errors[] = t('The @style requires the Date: Date argument be set to default to the current date.', array('@style' => $this->definition['title']));      
+        }
+        $count++;
+        $found = TRUE;
       }
+    }
+    if (!$found) {
+      $errors[] = t('The @style requires the Date: Date argument.', array('@style' => $this->definition['title']));      
     }
     return $errors;
   }
@@ -453,6 +452,7 @@ class date_navigation_plugin_style extends views_plugin_style {
         $this->view->week = isset($argument->week) ? $argument->week : NULL;
         $this->view->min_date = $argument->min_date;
         $this->view->max_date = $argument->max_date;
+        $this->view->url = $this->view->get_url();
       }
       $i++;
     }
@@ -506,16 +506,14 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     parent::options($options);
     $options['date_fields'] = array();
     $options['granularity'] = 'day';
-    $options['adjustment_field'] = 0;
-
-    // We use different values than the parent form, so we must
-    // construct our own value options.
-    $options['value'] = array();
-    foreach (array('value', 'min', 'max') as $prefix) {
-      foreach (array('date', 'adjustment') as $key => $part) {
-        $options['value'][$prefix . $key] = '';
-      }
-    }
+    $options['form_type'] = 'date_select';
+    $options['default_date'] = '';
+    $options['default_to_date'] = '';
+  }
+  
+  function option_definition() {
+    $options = parent::option_definition();
+    return $options;
   }
 
   /**
@@ -523,23 +521,35 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     */
   function has_extra_options() { return TRUE; }
 
-  function extra_options_form(&$form, &$form_state) {
-    $form['adjustment_field'] = array(
-      '#type' => 'radios',
-      '#title' => t('Filter type'),
-      '#default_value' => $this->options['adjustment_field'],
-      '#options' => array(
-        0 => t('Date only'), 
-        1 => t('Both date and adjustment'), 
-        2 => t('Adjustment only'),
-        ),
-      '#description' => t('Choose a date to filter on, or use an adjustment field for a value like \'+1 day\'. When you use both date and adjustment, the adjustment will be added to the date. When the adjustment field is used with no date field, the adjustment will be made to the current date. The date can be a specific date, or \'now\'.'),
+  /**
+   * Date selection options.
+   * 
+   * TODO Only select widget is working right now.
+   */
+  function widget_options() {
+    $options = array(
+      'date_select' => t('Select'), 
+      //'date_text' => t('Text'), 
+      //'date_popup' => t('Popup'),
       );
+    //if (!module_exists('date_popup')) {
+    //  unset($options['date_popup']);
+    //}  
+    return $options;
+  }
+   
+  function extra_options_form(&$form, &$form_state) {
+    $form['form_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Date form type'),
+      '#default_value' => $this->options['form_type'],
+      '#options' => $this->widget_options(),
+      '#description' => t('Choose the form element to use for date selection (more options will be available later).'),
+      );
+   
     $form['granularity'] = $this->date_handler->granularity_form($this->options['granularity']);
-    $form['granularity']['#description'] = '<p>'. t('Select a granularity for the date filter. For instance, selecting \'day\' will create a filter where you can select the year, month, and day as YYYY-MM-DD.') .'</p>';
-    if (!$this->date_handler->db_tz_support()) {
-      $form['granularity']['#description'] .= '<p>'. t('This database does not appear to have native timezone support. Filtering using hour, minute, or second granularity is likely to return incorrect results at least some of the time on systems without native timezone support, so it is recommended to set the granularity to no more than \'day\'.') .'</p>';
-    }
+    $form['granularity']['#description'] = '<p>'. t('Select a granularity for the date filter. For instance, selecting \'day\' will create a filter where users can select the year, month, and day.') .'</p>';
+    
     $fields = date_api_fields();
     $options = array();
     foreach ($fields['name'] as $name => $field) {
@@ -547,7 +557,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),
-      '#type' => 'radios',
+      '#type' => 'checkboxes',
       '#options' => $options,
       '#default_value' => $this->options['date_fields'],
       '#multiple' => FALSE,
@@ -555,6 +565,17 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     );
   }
 
+  function extra_options_validate($form, &$form_state) {
+    $check_fields = array_filter($form_state['values']['options']['date_fields']);
+    if (empty($check_fields)) {
+      form_error($form['date_fields'], t('You must select at least one date field for this filter.'));
+    }
+  }
+  
+  function extra_options_submit($form, &$form_state) {
+    $form_state['values']['options']['date_fields'] = array_filter($form_state['values']['options']['date_fields']);
+  }
+    
   /**
    * Add the selectors to the value form using the date handler.
    */
@@ -563,13 +584,19 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     // construct our own form element.
     $form['value'] = array();
     $form['value']['#tree'] = TRUE;
+    
+    // We have to make some choices when creating this as an exposed
+    // filter form. For example, if the operator is locked and thus
+    // not rendered, we can't render dependencies; instead we only
+    // render the form items we need.
     $which = 'all';
+    $source = '';
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
 
     if (!empty($form_state['exposed'])) {
-      if (empty($this->options['expose']['operator'])) {
+      if (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator'])) {
         // exposed and locked.
         $which = in_array($this->operator, $this->operator_values(2)) ? 'minmax' : 'value';
       }
@@ -579,40 +606,43 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
 
     $handler = $this->date_handler;
+       
     if ($which == 'all' || $which == 'value') {
-      $form['value'] += $this->date_parts_form('value', $source, $which, $this->operator_values(1));
+      $form['value'] += $this->date_parts_form($form_state, 'value', $source, $which, $this->operator_values(1));
     }
 
     if ($which == 'all' || $which == 'minmax') {
-      $form['value'] += $this->date_parts_form('min', $source, $which, $this->operator_values(2));
-      $form['value'] += $this->date_parts_form('max', $source, $which, $this->operator_values(2));
+      $form['value'] += $this->date_parts_form($form_state, 'min', $source, $which, $this->operator_values(2));
+      $form['value'] += $this->date_parts_form($form_state, 'max', $source, $which, $this->operator_values(2));
     }
-    $format = $handler->views_formats($handler->granularity, 'sql');
-    $format_help = $handler->format_help($format);
-    $form['value']['description'] = array(
-      '#prefix' => '<div class=""><div class="form-item"><div class="description">',
-      '#suffix' => '</div></div></div>',
-      '#value' => t('Date format @format. Leave date blank to do no filtering, use \'now\' to filter for the current date.', array('@format' => $format_help)),
+    
+    $form['value']['value']['#prefix'] = t('<div class="form-item"><label>Absolute value</label></div>');
+    $form['value']['default_date'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Date default'),
+      '#default_value' => $this->options['default_date'],
+      '#prefix' => t('<div class="form-item"><label>Relative value</label><p>Relative values will be used if no date is set above. Use \'now\' to default to the current date at runtime or add modifiers like \'now +1 day\'. The To date default value is used when the operator is set to \'between\' or \'not between\'. </p><p>If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter. </p></div>'),
       );
-    if ($this->options['adjustment_field'] == 1) {
-      $form['value']['description']['#value'] .= t(' \'Adjustment\' filters for an offset like \'+1 day\' from the date value, most useful when used with \'now\'.');
+    $form['value']['default_to_date'] = array(
+      '#type' => 'textfield',
+      '#title' => t('To date default'),
+      '#default_value' => $this->options['default_to_date'],
+      );
+
+    // Test if this value is in the UI or exposed, only show these elements in the UI.
+    // We'll save it as an option rather than a value to store it for use
+    // in the exposed filter.
+    if (!empty($form_state['exposed'])) {
+      $form['value']['default_date']['#type'] = 'hidden';
+      $form['value']['default_date']['#value'] = $form['value']['default_date']['#default_value'];
+      $form['value']['default_to_date']['#type'] = 'hidden';
+      $form['value']['default_to_date']['#value'] = $form['value']['default_to_date']['#default_value'];
+      unset($form['value']['default_date']['#prefix']);
     }
-    elseif ($this->options['adjustment_field'] == 2) {
-      $form['value']['description']['#value'] = t('\'Adjustment\' filters for an offset like \'+1 day\' from the current time.');
-    }
+    
+    $form['value']['#theme'] = 'date_views_filter_form';  
   }
 
-  function date_filter_parts() {
-    switch ($this->options['adjustment_field']) {
-      case 1:
-        return array('date' => t('Date'), 'adjustment' => t('Adjustment'));
-      case 2:
-        return array('adjustment' => t('Adjustment'));
-      default:
-        return array('date' => t('Date'));
-    }
-  }
-  
   /**
    * A form element to select date part values.
    *
@@ -630,118 +660,146 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    * @return
    *   The form date part element for this instance.
    */
-  function date_parts_form($prefix, $source, $which, $operator_values) {
-    $prefixname = $prefix == 'value' ? '' : ($prefix == 'min' ? t('From') : t('To'));
-    $handler = $this->date_handler;
-    $min = $handler->part_info('min');
-    $max = $handler->part_info('max');
-    $limit = $handler->granularity;
-    switch ($this->options['adjustment_field']) {
-      case 1:
-        $parts = array('date' => t('Date'), 'adjustment' => t('Adjustment'));
-        $first_item = 'date';
-        $last_item = 'adjustment';
+  function date_parts_form($form_state, $prefix, $source, $which, $operator_values) {
+    include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+    switch($prefix) {
+      case 'min':
+        $name = t('From date');
         break;
-      case 2:
-        $parts = array('adjustment' => t('Adjustment'));
-        $first_item = 'adjustment';
-        $last_item = 'adjustment';
+      case 'max':
+        $name = t('To date');
         break;
       default:
-        $parts = array('date' => t('Date'));
-        $first_item = 'date';
-        $last_item = 'date';
+        $name = '';
         break;
     }
-    foreach ($parts as $key => $name) {
-      $type = 'textfield';
-      $form[$prefix . $key] = array(
-        '#title' => t('@type @value', array('@type' => $prefixname, '@value' => $name)),
-        '#type' => $type,
-        '#size' => 20,
-        '#default_value' => !empty($this->value[$prefix . $key]) ? $this->value[$prefix . $key] : '',
-        '#prefix' => '<div class="views-exposed-date-filter">',
-        '#suffix' => '</div>',
+    $type = $this->options['form_type'];
+    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+    $granularity = array_keys($this->date_handler->date_parts($this->options['granularity']));
+    
+    // Don't set a default date in the UI, only in the exposed form.
+    $default_date = '';
+    if (!empty($form_state['exposed'])) {
+      $default_date = $this->default_value($prefix);
+    }
+    $form[$prefix] = array(
+      '#type' => $type,
+      '#title' => $name,
+      '#size' => 20,
+      '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
+      '#date_format' => date_limit_format($format, $granularity),
+      '#date_label_position' => 'within',
+    );
+    if ($which == 'all') {
+      $dependency = array(
+        '#process' => array($type .'_process', 'views_process_dependency'),
+        '#dependency' => array($source => $operator_values),
       );
-      if ($which == 'all') {
-        $dependency = array(
-          '#process' => array('views_process_dependency'),
-          '#dependency' => array($source => $operator_values),
-        );
-        $form[$prefix . $key] += $dependency;
-      }
-      // Add wrappers to force each date grouping to a separate line.
-      if ($key == $first_item) {
-        $form[$prefix . $key]['#prefix'] = '<div class="clear-block"><div class="views-left-75">' .
-          $form[$prefix . $key]['#prefix'];
-      }
-      if ($key == $last_item) {
-        $form[$prefix . $key]['#suffix'] .= '</div></div>';
-      }
+      $form[$prefix] += $dependency;
     }
     return $form;
   }
 
-  // User the date handler to validate the form.
-  function options_validate(&$form, &$form_state) {
-    if (!isset($form_state['values']['options']['value'])) {
-      return;
+   function default_value($prefix, $options = NULL) {
+    $default_date = '';
+    if (empty($options)) {
+      $options = $this->options;
     }
-    $handler = $this->date_handler;
-    $parts = $this->date_filter_parts();
-    $min = $handler->part_info('min');
-    $max = $handler->part_info('max');
-    $values = $form_state['values']['options']['value'];
-    // Validate date values.
-    unset($values['offset']);
-    foreach ($values as $name => $value) {
-      $part = str_replace(array('min', 'max', 'value'), '', $value);
-      if (!empty($part) && $value != '' && $value != 'now' &&
-        ($value < $min[$part] || $value > $max[$part])) {
-        form_error($form['value'][$name], t('@value is invalid.', array('@value' => $parts[$part])));
+    $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
+    if (!empty($default_option)) {
+      $date = date_now();
+      if ($add = trim(str_replace('now', '', $default_option))) {
+        date_modify($date, $add);
+      }
+      $default_date = date_format($date, DATE_FORMAT_DATETIME);
+    }
+    return $default_date;
+  }
+  
+  /**
+   * Value validation.
+   * 
+   * TODO add in more validation.
+   * 
+   * We are setting an extra option using a value form
+   * because it makes more sense to set it there. 
+   * That's not the normal method, so we have to manually
+   * transfer the selected value back to the option.
+   */
+  function value_validate(&$form, &$form_state) {
+    if (($form_state['values']['options']['operator'] == 'between' || $form_state['values']['options']['operator'] == 'not between') && 
+    !empty($form_state['values']['options']['value']['default_date']) && empty($form_state['values']['options']['value']['default_to_date'])) {
+      form_error($form['value']['default_to_date'], t('Please set a default value for the To date as well as the From date when using default values with the Between or Not between operators.'));
+    }
+    if (isset($form_state['values']['options']['value']['default_date'])) {
+      $this->options['default_date'] = $form_state['values']['options']['value']['default_date'];
+      $this->options['default_to_date'] = $form_state['values']['options']['value']['default_to_date'];
+    }
+    parent::value_validate($form, $form_state);
+  }
+
+  /**
+   * Be sure that default values get set properly when there is no input.
+   */
+  function accept_exposed_input($input) {
+    if (empty($this->options['exposed'])) {
+      return TRUE;
+    }
+    if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator']) && isset($input[$this->options['expose']['operator']])) {
+      $this->operator = $input[$this->options['expose']['operator']];
+    }
+    if (!empty($this->options['expose']['identifier'])) {
+      $value = $input[$this->options['expose']['identifier']];
+      if (!isset($_GET[$this->options['expose']['identifier']])) {
+        $value['min'] = $this->default_value('min');
+        $value['max'] = $this->default_value('max');
+        $value['value'] = $this->default_value('value');
+      }
+      
+      // Various ways to check for the absence of optional input.
+      if (!empty($this->options['expose']['optional'])) {
+        if ($value == 'All' || $value === array()) {
+          return FALSE;
+        }
+        if (!empty($this->no_single) && $value === '') {
+          return FALSE;
+        }
+      }
+
+      if (isset($value)) {
+        $this->value = $value;
+      }
+      else {
+        return FALSE;
       }
     }
+    return TRUE;
   }
   
   // Update the summary values to provide
   // meaningful information for each option.
   function admin_summary() {
-    if (!empty($this->options['date_fields'])) {
-      $field = $this->options['date_fields'];
+    if (empty($this->options['date_fields'])) {
+      return t('Missing date fields!');
     }
-    
     $handler = $this->date_handler;
-    $output = "($field) ". check_plain($this->operator) . ' ';
+    $field = implode(', ', $this->options['date_fields']);
+    $output = "$field ". check_plain($this->operator) . ' ';
     $parts = $handler->date_parts();
     
+    $widget_options = $this->widget_options();
     // If the filter is exposed, display the granularity.
     if ($this->options['exposed']) {
-      return t('(@field) <strong>Exposed</strong> Granularity: @format', array('@field' => $field, '@format' => $parts[$handler->granularity]));
+      return t('(@field) <strong>Exposed</strong> @widget @format', array('@field' => $field, '@format' => $parts[$handler->granularity], '@widget' => $widget_options[$this->options['form_type']]));
     }
-    // If the filter is not exposed, display the selected values.
-    // Check both empty and is_numeric to show all non-blank values,
-    // including zero values.
-    $min = '';
-    $max = '';
-    $handler = $this->date_handler;
-    $separators = $handler->part_info('sep');
+    // If not exposed, display the value.
     if (in_array($this->operator, $this->operator_values(2))) {
-      foreach ($this->date_filter_parts() as $key => $part) {
-        if (!empty($this->value['min'. $key]) || !empty($this->value['max'. $key])
-        || is_numeric($this->value['min'. $key]) || is_numeric($this->value['max'. $key])) {
-          $min .= $separators[$key] . check_plain($this->value['min'. $key]);
-          $max .= $separators[$key] . check_plain($this->value['max'. $key]);
-        }
-      }
+      $min = check_plain(!empty($this->options['default_date']) ? $this->options['default_date'] : $this->options['value']['mindate']);
+      $max = check_plain(!empty($this->options['default_to_date']) ? $this->options['default_to_date'] : $this->options['value']['maxdate']);
       $output .= t('@min and @max', array('@min' => $min, '@max' => $max));
     }
     else {
-      foreach ($this->date_filter_parts() as $key => $part) {
-        if (!empty($this->value['value'. $key]) || is_numeric($this->value['value'. $key])) {
-          $min .= $separators[$key] . check_plain($this->value['value'. $key]);
-        }
-      }
-      $output .= $min;
+      $output .= check_plain(!empty($this->options['default_date']) ? $this->options['default_date'] : $this->options['value']['valuedate']);
     }
     return $output;
   }
@@ -758,55 +816,49 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
 
   function date_filter($prefix, $field, $operator) {
-    if (empty($this->value[$prefix .'adjustment']) && empty($this->value[$prefix .'date'])) {
+    // If no value is supplied from an exposed filter use the default value.
+    if (empty($this->options['exposed']) && empty($this->value[$prefix])) {
+      $default = $this->default_value($prefix);
+      if (empty($default)) {
+        return;
+      }
+      else {
+        $this->value[$prefix] = $default;
+      }
+    }
+    // If there is no value, do no filtering.
+    if (empty($this->value[$prefix])) {
       return;
     }
     $date_handler = $this->date_handler;
     $granularity = $this->options['granularity'];
-    $filter_parts = $this->date_filter_parts();
-    $adjustment = 0;
-    if (!empty($this->value[$prefix .'adjustment'])) {
-      $adjustment = strtotime($this->value[$prefix .'adjustment'], 0);
-    }
-    if ($this->value[$prefix .'date'] == 'now') {
-      $date = date_now();
-    }
-    else {
-      $selected = $date_handler->arg_parts($this->value[$prefix .'date']);
-      $date = date_make_date($date_handler->complete_date($selected[0]['date']));
-    }
-    if (!empty($adjustment)) {
-      date_modify($date, "+$adjustment seconds");
-    }
+    //$selected = $date_handler->arg_parts($this->value[$prefix]);
+    //$complete_date = $date_handler->complete_date($selected[0]['date']);
+    $complete_date = $this->value[$prefix];
+    $date = date_make_date($complete_date);
     $this->format = $date_handler->views_formats($granularity, 'sql');
     $value = date_format($date, $this->format);
-        
     $range = $this->date_handler->arg_range($value);
     $min_date = $range[0];
     $max_date = $range[1];
     
-    // Create min and max dates in both local and UTC time.
-    // We'll compare fields to the UTC date whenever possible
-    // to avoid the need to do timezone conversions. 
     $this->min_date = $min_date;
-    $this->min_utc = drupal_clone($min_date);
-    date_timezone_set($this->min_utc, timezone_open('UTC'));
     $this->max_date = $max_date;
-    $this->max_utc = drupal_clone($max_date);
-    date_timezone_set($this->max_utc, timezone_open('UTC'));
     
     $this->get_query_fields();
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
       //$this->query->set_where_group($this->options['date_method'], 'date');
-      $this->ensure_my_table();
       foreach ((array) $this->query_fields as $query_field) {
         $field = $query_field['field'];
         $date_handler = $query_field['date_handler'];
         $parts = $date_handler->date_parts();
     
-        // Make sure this field is added to the query.
+        // Explicitly add this table using add_table so Views does not
+        // remove it if it is a duplicate, since that will break the query.
+        $this->query->add_table($field['table_name'], NULL, NULL, $field['table_name']);
+        // Make sure the real field is added to the query.
         $this->query->add_field($field['table_name'], $field['field_name']);
         foreach ($field['related_fields'] as $related) {
           $bits = explode('.', $related);
@@ -814,16 +866,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
             $this->query->add_field($field['table_name'], $bits[1]);
           }
         }
-        if (!empty($this->value[$prefix .'adjustment'])) {
-          // See if there are any filters other than the adjustment,
-          // if not, compare to NOW() and return.
-          if ($this->options['adjustment_field'] == 2) {
-            $sql = $date_handler->sql_field($field['fullname'], 0) . " $operator ". $date_handler->sql_field('NOW', $adjustment);
-            $this->query->add_where($this->options['group'], $sql);
-            continue;
-          }
-        }
-        $value = $prefix == 'max' ? date_format($date_handler->max_date, $this->format) : date_format($date_handler->min_date, $this->format);
+        $value = $prefix == 'max' ? date_format($max_date, $this->format) : date_format($min_date, $this->format);
         $sql = $date_handler->sql_where_format($this->format, $field['fullname'], $operator, $value);
         $this->query->add_where($this->options['group'], $sql);
         continue;
@@ -844,42 +887,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $date_handler = new date_sql_handler();
         $date_handler->construct($field['sql_type'], date_default_timezone_name());
         $date_handler->granularity = $this->options['granularity'];
-        
-        $tz_handling  = $field['tz_handling'];
-        switch ($tz_handling) {
-          // Date-specific timezone fields must always be converted
-          // before comparing them.
-          case 'date' :
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone_field = $field['timezone_field'];
-            $date_handler->local_offset_field = $field['offset_field'];
-            $date_handler->min_date = $min_date;
-            $date_handler->max_date = $max_date;
-            break;
-          // Dates with no timezones and dates that are always UTC
-          // must never be converted before comparing them.  
-          case 'none':
-            $date_handler->db_timezone = date_default_timezone_name();
-            $date_handler->local_timezone = date_default_timezone_name();
-            $date_handler->min_date = $min_date;
-            $date_handler->max_date = $max_date;
-            break;
-          case 'utc':
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone = 'UTC';
-            $date_handler->min_date = $min_utc;
-            $date_handler->max_date = $max_utc;
-            break;
-          // We're comparing partial dates in the filter, like
-          // Y-m-d H, so we have to convert the db date to the local 
-          // timezone to get the right results.  
-          default:
-            $date_handler->db_timezone = 'UTC';
-            $date_handler->local_timezone = date_default_timezone_name(); 
-            $date_handler->min_date = $min_date;
-            $date_handler->max_date = $max_date;
-
-        }
+        date_views_set_timezone($date_handler, $this->view, $field);
         $this->query_fields[] = array('field' => $field, 'date_handler' => $date_handler);
       }
     }
@@ -957,12 +965,6 @@ function _date_api_fields($base = 'node') {
       $rrule_field = '';
       $granularity = array('year', 'month', 'day', 'hour', 'minute');
        
-      // dates with from and to dates need to handle both fields as one
-      // add the from and to dates to the first one found and ignore the second
-      $fields[$name]['table_name'] = $table_name;
-      $fields[$name]['field_name'] = $field_name;
-      $fields[$name]['type'] = $type;
-      
       // Handling for content field dates
       if (isset($handler->content_field['tz_handling'])) {
         $tz_handling = $handler->content_field['tz_handling'];
@@ -1031,10 +1033,56 @@ function _date_api_fields($base = 'node') {
         'rrule_field' => $rrule_field,
         'related_fields' => $related_fields,
       );
+      if (isset($handler->content_field)) {
+        if (substr($field_name, -1) == '2') {
+          $len = (strlen($field_name) - 7);
+        }
+        else {
+          $len = (strlen($field_name) - 6);
+        }
+        $fields['name'][$name]['real_field_name'] = substr($field_name, 0, $len);
+      }
+      else {
+        $fields['name'][$name]['real_field_name'] = $field_name;
+      }
       $fields['alias'][$alias] = $fields['name'][$name];
     }
   }
   
   //cache_set($cid, $fields, 'cache_views');
   return $fields;
+}
+
+/**
+ * Central function for setting up the right timezone values
+ * in the SQL date handler.
+ * 
+ * The date handler will use this information to decide if the
+ * database value needs a timezone conversion.
+ * 
+ * In Views, we will always be comparing to a local date value,
+ * so the goal is to convert the database value to the right
+ * value to compare to the local value.
+ */
+function date_views_set_timezone(&$date_handler, &$view, $field) {
+  $tz_handling  = $field['tz_handling'];
+  switch ($tz_handling) {
+    case 'date' :
+      $date_handler->db_timezone = 'UTC';
+      $date_handler->local_timezone_field = $field['timezone_field'];
+      $date_handler->local_offset_field = $field['offset_field'];
+      break;
+    case 'none':
+      $date_handler->db_timezone = date_default_timezone_name();
+      $date_handler->local_timezone = date_default_timezone_name();
+      break;
+    case 'utc':
+      $date_handler->db_timezone = 'UTC';
+      $date_handler->local_timezone = 'UTC';
+      break;
+    default :
+      $date_handler->db_timezone = 'UTC';
+      $date_handler->local_timezone = date_default_timezone_name();
+      break;
+  }
 }

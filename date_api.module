@@ -29,6 +29,7 @@ define('DATE_FORMAT_ISO', "Y-m-d\TH:i:s");
 define('DATE_FORMAT_UNIX', "U");
 define('DATE_FORMAT_DATETIME', "Y-m-d H:i:s");
 define('DATE_FORMAT_ICAL', "Ymd\THis");
+define('DATE_FORMAT_DATE', 'Y-m-d');
 
 define('DATE_REGEX_ISO', '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2})?/');
@@ -41,16 +42,6 @@ define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})
  */
 function date_api_init() {
   drupal_add_css(drupal_get_path('module', 'date_api')  .'/date.css');
-  
-  // Make sure the Date PHP4 module is always enabled when needed.
-  
-  // TODO Not sure how efficient this is, but it should prevent the
-  // errors that kept getting reported when the module is not enabled.
-  // Need to re-visit this to see if it is the right fix.
-  if (!function_exists('date_create') && !module_exists('date_php4')) {
-    module_enable('date_php4');
-  }
-      
 }
 
 /**
@@ -267,7 +258,7 @@ function date_hours($format = 'H', $required = FALSE) {
     $max = 23;
   }
   for ($i = $min; $i <= $max; $i++) {
-    $hours[$i] = $i < 10 && $format == 'H' || $format == 'h' ? "0$i" : $i;
+    $hours[$i] = $i < 10 && ($format == 'H' || $format == 'h') ? "0$i" : $i;
   }
   $none = array('' => '');
   return !$required ? $none + $hours : $hours;
@@ -467,7 +458,7 @@ function date_t($string) {
     $replace = array();
     // Translate the whole name first, then look for abbreviations.
     foreach (date_month_names_untranslated() as $month) {
-      $replace[$month] = t($month);
+      $replace[$month] = trim(t('!long-month-name '. $month, array('!long-month-name' => '')));
       $replace[drupal_substr($month, 0, 3)] = t(drupal_substr($month, 0, 3));
     }
     foreach (date_week_days_untranslated() as $day) {
@@ -937,8 +928,8 @@ function date_convert($date, $from_type, $to_type) {
     case DATE_DATETIME:
     case DATE_ISO:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
-      $date = str_replace('T', ' ', $date);
-      $obj = date_make_date(date_fuzzy_datetime($date), 'UTC');
+      $date = date_fuzzy_datetime($date);
+      $obj = date_create($date, timezone_open('UTC'));
       break;
     case DATE_ICAL:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
@@ -1002,7 +993,7 @@ function date_fuzzy_datetime($date) {
     $date['day'] = 1;
   }
   $value = date_pad($date['year'], 4) .'-'. date_pad($date['month']) .'-'. 
-    date_pad($date['day']) .'T'. date_pad($date['hour']) .':'. 
+    date_pad($date['day']) .' '. date_pad($date['hour']) .':'. 
     date_pad($date['minute']) .':'. date_pad($date['second']);
   return $value;
 }
@@ -1072,7 +1063,7 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
     'hour' => 9, 'minute' => 11, 'second' => 13);
   switch ($type) {
     case DATE_ARRAY:
-      return (integer) $date[$part];
+      return (integer) array_key_exists($part, $date) ? $date[$part] : NULL;
     case DATE_DATETIME:
     case DATE_ISO:
       return (integer) substr($date, $positions[$part], $part == 'year' ? 4 : 2);
@@ -1102,9 +1093,10 @@ function date_is_valid($date, $type = DATE_DATETIME) {
   if ($type == DATE_ARRAY and !is_array($date)) return FALSE;
 
   // If checkdate works, no need for further tests.
-  $year = date_part_extract($date, 'year', $type);
-  $month = date_part_extract($date, 'month', $type);
-  $day = date_part_extract($date, 'day', $type);
+  // Make sure integer values are sent to checkdate.
+  $year = intval(date_part_extract($date, 'year', $type));
+  $month = intval(date_part_extract($date, 'month', $type));
+  $day = intval(date_part_extract($date, 'day', $type));
 
   if (!checkdate($month, $day, $year)) {
     // ISO dates and arrays can have empty date parts
@@ -1216,45 +1208,49 @@ function date_limit_value($date, $granularity, $type = DATE_DATETIME) {
  *   a format string with all other elements removed
  */
 function date_limit_format($format, $granularity) {
-  // Strip out timezone formatting.
   // Get rid of dash separating date and time if either is missing.
   if (!date_has_time($granularity)
     || sizeof(array_intersect($granularity, array('year', 'month', 'day')) == 0)) {
     $regex[] = '( -)';
   }
   if (!date_has_time($granularity)) {
-      $regex[] = '(a|A)';
+      $regex[] = '((?<!\\\\)[a|A])';
   }
   // Create regular expressions to remove selected values from string.
+  // Use (?<!\\\\) to keep escaped letters from being removed.
   foreach (date_nongranularity($granularity) as $element) {
     switch ($element) {
       case 'year':
-        $regex[] = '([\-/\.]?[Yy][\-/\.,]?)';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[Yy])';
         break;
       case 'day':
-        $regex[] = '([\-/\.]?[lDdj][\-/\.,]?)';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[lDdj])';
         break;
       case 'month':
-        $regex[] = '([\-/\.]?[FMmn][\-/\.,]?)';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[FMmn])';
         break;
       case 'hour':
-        $regex[] = '([HhGg][:]?)';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[HhGg])';
         break;
       case 'minute':
-        $regex[] = '([:]?[i])';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[i])';
         break;
       case 'second':
-        $regex[] = '([:]?[s])';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[s])';
         break;
       case 'timezone':
-        $regex[] = '([OZPe])';
-        break;  
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[OZPe])';
+        break;
+    
     }
   }
   // Remove selected values from string.
-  // Don't leave any trailing punctuation behind.
   $format = trim(preg_replace($regex, array(), $format));
-  return preg_replace('([\-/\.,]$)', '', $format);
+  // Remove orpaned punctuation at the beginning of the string.
+  $format = preg_replace('`^([\-/\.,:])`', '', $format);
+  // Remove orpaned punctuation at the end of the string.
+  $format = preg_replace('([\-/\.,:]$)', '', $format);
+  return trim($format);
 }
 
 /**
@@ -1368,6 +1364,9 @@ function date_api_theme() {
     'date_part_label_second' => $base + array('arguments' => array('element' => NULL)),
     'date_part_label_ampm' => $base + array('arguments' => array('element' => NULL)),
     'date_part_label_timezone' => $base + array('arguments' => array('element' => NULL)),
+    'date_views_filter_form' => $base + array(
+      'template' => 'date-views-filter-form',
+      'arguments' => array('form' => NULL)),
     );
 }
 
@@ -1389,4 +1388,42 @@ function date_api_views_fetch_fields($base, $type) {
   }
   include_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
   return views_fetch_fields($base, $type);
+}
+
+/**
+ * Store personalized format options for each user.
+ *
+ * Store to avoid work of re-creating it over and over,
+ * personalize for each user to preserve translation.
+ *
+ * @return array
+ */
+function date_format_options() {
+  global $user;
+  $options = array();
+  $cached = cache_get('date_format_options:'. $user->uid);
+  $options = isset($cached->data) ? $cached->data : array();
+  if (empty($options)) {
+    $formats = array_merge(date_short_formats(), date_medium_formats(), date_long_formats());
+    $options = array();
+    $now = date_example_date();
+    if (!empty($now)) {
+      foreach ($formats as $format) {
+        // Create an option that shows date only without time, along with the
+        // default string which has both date and time.
+        $no_time = date_limit_format($format, array('month', 'day', 'year'));
+        $zones = array('', 'O', 'P', 'e');
+        foreach ($zones as $zone) {
+          $time_format = !empty($zone) ? $format .' '. $zone : $format;
+          $options[$no_time] = date_format_date($now, 'custom', $no_time);
+          $options[$time_format] = date_format_date($now, 'custom', $time_format);
+        }
+      }
+      asort($options);
+    }
+    if (!empty($options)) {
+      cache_set('date_format_options:'. $user->uid, $options, 'cache', CACHE_TEMPORARY);
+    }
+  }
+  return $options;
 }

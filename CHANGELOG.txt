@@ -1,11 +1,121 @@
 //$Id$
 Date Module 6.x
 =================
-TODO
- - Get repeating dates working again.
-
 Version 6.2-dev
 =================
+
+Version 6.2-rc1
+=================
+
+- Fix Date Popup process that was ignoring $edit values.
+- #289215 Shorten the size of Date Popup date box and allow the API to control the size.
+- #291882 Do some tweaking of the Date Popup css to be sure backgrounds are hidden and values are overridden.
+- #292945 See if there is an existing validation array before adding validation.
+- #293685 Add missing $form_state in form_set_value() call in date_repeat.inc.
+- Fix broken logic in comparison of min and max to from and to dates in the date argument.
+- #272551 Remove weight for repeat element, it isn't needed and doesn't work right when weight is negative.
+- #283392 Make sure widget description shows up with or without 'to' date.
+- #292680 Make sure themes don't add padding to navigation h3 causing misalignment.
+- #292602 Make sure dates without times do not get 'All day' added.
+- #292436 Fix critical typo in new date_all_day function and add test to date_formatter_process() to keep empty value from wiping out a good one.
+- Check for date values before using new all day theme.
+- Add 'All day' themes for use in nodes and calendar psuedo nodes.
+- #290826 Fix logic error that was missing date ranges that start before the current period by changing 'AND' to 'OR' in argument filter.
+
+Version 6.2-beta4
+=================
+
+- #270318 Get date browser and calendar navigation working correctly when used in a block.
+- Add new DATE_FORMAT_DATE for date-only format that is used throughout the calendar.
+- Fix validation code that checks if arguments and filters have date fields selected, need to array_filter() the selections.
+- #269569 Override Views default method of combining tables when adding two fields from the same table, needed to avoid broken queries.
+- Add validation for Date Browser to be sure only one date argument is used in the view.
+- Rework the install file so variables can be corrected and dependent modules enabled by disabling and re-enabling Date API.
+- #280863 Make sure Date Timezone and Date PHP4 can be uninstalled by keeping module_enable() in the install.
+- Rework of date filter to provide a choice of a widget to use for the filter form and an option to set the default value to a set date or something like 'now +90 days'. You must delete any previously-created date filters and re-create them to pick up the new parameters.
+- Make sure PHP4 date_modify() does not care if there is a space between the number and the date part.
+- Make sure we don't use mktime() in compare_date() function, won't work reliably in PHP4.
+- Make sure PHP4 wrapper code doesn't try to use date() on values outside the 32 bit signed range.
+- Get the url into the theme processing.
+- Remove old D5 themes, this is now handled by the Date API date browser attachment.
+- #286864 Fix wrong RRULE value being passed to validator and add trim() to get repeating dates working again.
+- #286864 Need a different fix for timezone API since this fix broke Date Repeat.
+- #283107 Evaluate date and time parts separately since we can't know or care how they're combined in the complete date format.
+- #283107 Date Popup timepicker formats need adjustment before using date_convert_from_custom().
+- Exception dates were getting lost when parsing the RRULE.
+- Increase size of Date Popup input box to accept longer formats that the new datepicker allows.
+- #287325 Change the default date type in the date handler to DATE_DATETIME.
+- Add test for jQueryUI and load datepicker from there if it exists.
+- Update to latest versions of jQuery datepicker and timeentry.
+- Hide image div in Date Popup timeentry css to keep FF from displaying a 'helpful' dropdown.
+- Move date_format_options() to Date API so other code can use it.
+- #279247 Make sure date_timezone element works no matter what the parent element name is.
+- Fix undefined index in PHP4 date_datetime2timestamp() function.
+- #265076 Avoid use of strtotime and use date_create instead as date_text validator.
+- #277771 Fix date_gmmktime() computation in PHP4 date handling to avoid erratic daylight savings time problem.
+- Fix computation of 'now' in PHP4 date_create() function.
+- Fix some inconsistencies in the expectation of whether date_fuzzy_datetime returns a datetime or ISO value.
+- Don't use date_make_date() in date_convert() to avoid cyclical references.
+- Set a warning message for invalid non-required Date popup values instead of silently setting to NULL.
+- #244025 Fix jquery calendar so it works correctly with multiple value fields.
+- #269569 Make sure more than one date filter will work on the same view. 
+- Add a template for the Date Views filter form.
+- Check for invalid inputs to the date handler argument handling.
+- Move the class configuration to the theme so it is easier for themers.
+- Remove code previously commented out that forced required value to current date, seems to be working right.
+- Adapt date elements so they will work correctly as Views 2 widgets.
+- Move #validate parameters to element processing step instead of hook_element() to help ensure they don't get wiped out.
+- Make sure partial dates, like year-only, get the right range computed for them.
+- Don't user format_date() and strtotime() to create argument titles and links.
+- #282408 Make sure dates only float when there are two of them by adding #date_float parameter.
+- #281623 Switch old jscalendar widgets to use date_text instead of date_popup since date_popup may not be available.
+- Make sure empty time does not get value on submit.
+- Format interval theme added 'ago' twice to past events.
+- Need a space between the date and the timezone name in the Date theme.
+- Get repeating dates working.
+- #280899, #273344 Make sure Date Popup doesn't inject the current date into empty fields.
+- Fix undefined index for timezone field.
+- Fix computation of year range in date_content_generate.
+- #275797 Remove invalid and unneeded css display:relative.
+- Fix inconsistencies in handling of 'none' and 'user' timezones in Date and Calendar.
+- Add static variable to PHP4 timezone offset handling to reduce number of database queries.
+- #280041 Fix typo in postgres switch code in date_api_sql.inc.
+- #264749 Fix typo in date_ical_date which unset the date.
+- #277420 Add missing format information for minutes and seconds to date_sql_handler.
+- Make sure the timezone always goes on its own line now that date elements float.
+- #279932 Remove length from integer rows so they don't create errors in postgres.
+- #270316 Fix postgres timezone adjustment.
+- #279051 Fix postgres timezone test.
+- Add week handling and granularity tests to date_sql_handler().
+- Set date prefix on date navigation css classes.
+- Fix PHP4 handler for date_timezone_set() which was incorrectly altering the timestamp value.
+- Fix computation of 'N' in PHP4 date_format() wrapper to get date_week() working right in PHP4.
+- #274403 Fix typo in date_hours().
+- #269834 Add timezone adjustment to PHP4 date_format() wrapper.
+- #272110 Alter css so that from/to dates can float next to each other.
+- #275490 Remove orphaned punctuation at beginning of string in date_limit_format().
+- #277549 Make sure no repeats are created if no start date was set.
+- #272523 Fix error in PHP4 wrapper code that kept date_modify from working reliably.
+- #273344 Make sure incomplete Date Popup values get converted into complete dates.
+- #274882 Fix typo using $field instead of $form_values.
+- #276544 Rework system for handling timezone in date theme.
+- Add code to adjust NOW() by a number of seconds to allow NOW() to be the beginning of the day.
+- Rework PHP4 date handling to avoid any use of date() or mktime(), which may inject an incorrect timezone offset.
+- Get rid of the adodb method of computing the gmt offset for PHP4 and use the date_offset_get() computation.
+- Fix use of wrong value for timezone in repeating dates.
+- Remove as many dependencies as possible from install files and auto-enable necessary modules.
+- #270267 Remove timezone_identifiers_list() in the install file from the global space.
+- Date Popup was not handling empty non-required values correctly and they were defaulting to current date.
+- #273727 Small fixes to field settings validation.
+- #248338 and #254819 clean up date_limit_format() to better handle punctuation and escaped letters.
+- The jQuery calendar requires year, month, and day or it won't work, add validation for that in the settings.
+- #270358 Fix handling of year-only or month-only text fields to save the right values.
+- Remove unneeded hook_form_alter() used to fix radio values for granularity.
+- Make sure granularity is in correct format before setting value in field settings form.
+- #244025 Didn't get the right code into the original commit for the single jquery class. 
+    Still have the problem that it won't work with AHAH add more.
+- #273130 Conform to new Drupal 6 method of indicating long and short month names.
+- Clean up Date popup validation.
 - Add templates for ical vevent and valarm.
 - Fix undefined indexes in date_repeat_calc.inc.
 - Change method of showing multiple values with timezones on forms and show them in every instance. 

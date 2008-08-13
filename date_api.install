@@ -1,47 +1,62 @@
 <?php
 // $Id$
-function date_api_load() {
-  // Updates happen in random order so include critical code here just to be sure.
-  include_once(drupal_get_path('module', 'date_api') .'/date_api.module');
-  if (!function_exists('date_timezone_identifiers_list')) {
-    include_once(drupal_get_path('module', 'date_php4') .'/date_php4/date_php4.module');
+function date_api_set_variables() {
+  /**
+   * Set absolute minimum and maximum year for dates on this site.
+   *
+   * There is actually no maximum and minimum year in PHP 5, but a date with
+   * a year less than 0 would result in negative ISO and DATETIME dates,
+   * like -1250-01-01T00:00:00, which probably won't make sense or work
+   * correctly anywhere.
+   * 
+   * The odd construct of using variable_get() instead of variable_set()
+   * is so we don't accidentally write over an existing value. If
+   * no value is set, variable_get() will set it.
+   */
+  variable_get('date_max_year', 4000);
+  variable_get('date_min_year', 1);
+  variable_get('date_php_min_year', 1901);
+
+  /**
+   * Set an API version in a way that other modules can test for compatibility.
+   */
+  variable_set('date_api_version', '5.2');
+ 
+  if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
+    module_enable(array('date_php4'));
   }
-  include_once(drupal_get_path('module', 'date_timezone') .'/date_timezone.module');
+  // The timezone module was originally going to be optional
+  // but too many things break without it.
+  if (!module_exists('date_timezone')) {
+    module_enable(array('date_timezone'));
+  }
+
+  /**
+   * NULL is used for the default setting of date_default_timezone_name
+   * to have a way to tell that no site timezone name has been implemented.
+   * Otherwise, many functions would use 'UTC' incorrectly and
+   * produce unreliable and odd results. This way functions can test for a
+   * value and not use this if it is empty.
+   * 
+   * The odd construct of using variable_get() instead of variable_set()
+   * is so we don't accidentally write over an existing value. If
+   * no value is set, variable_get() will set it to NULL.
+   */
+  variable_get('date_default_timezone_name', NULL);
 }
-
-/**
- * Set absolute minimum and maximum year for dates on this site.
- *
- * There is actually no maximum and minimum year in PHP 5, but a date with
- * a year less than 0 would result in negative ISO and DATETIME dates,
- * like -1250-01-01T00:00:00, which probably won't make sense or work
- * correctly anywhere.
- */
-variable_set('date_max_year', 4000);
-variable_set('date_min_year', 1);
-variable_set('date_php_min_year', 1901);
-
-/**
- * Set an API version in a way that other modules can test for compatibility.
- */
-variable_set('date_api_version', '5.2');
-
-/**
- * NULL is used for the default setting of date_default_timezone_name
- * to have a way to tell that no site timezone name has been implemented.
- * Otherwise, many functions would use 'UTC' incorrectly and
- * produce unreliable and odd results. This way functions can test for a
- * value and not use this if it is empty.
- */
-variable_get('date_default_timezone_name', NULL);
 
 /**
  * Implementation of hook_install().
  */
 function date_api_install() {
- $ret = array();
- $ret = db_query("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
- return $ret;
+  date_api_set_variables();
+  $ret = array();
+  $ret = db_query("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
+  return $ret;
+}
+
+function date_api_enable() {
+  date_api_set_variables();
 }
 
 /**
@@ -105,27 +120,29 @@ function date_api_update_5000() {
   return $ret;
 }
 
+/**
+ * Make sure all the appropriate modules get enabled.
+ */
 function date_api_update_5200() {
   $ret = array();
-  include_once('./includes/install.inc');
-  $module_list = array();
-  // When upgrading from previous versions that had no Date Timezone module
-  // some previously-enabled modules that depend on it get turned off, so enable them here.
-  $result = db_query("SELECT name FROM {system} WHERE status = 1 AND name IN ('date', 'date_copy', 'calendar', 'calendar_ical')");
-  while ($row = db_fetch_object($result)) {
-    $module_list[] = $row->name;
-  }
-  if (!empty($module_list)) {
-    $module_list = array_merge(array('date_timezone'), $module_list);
-  }
-  if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
-    $module_list[] = 'date_php4';
-  }
-  if (module_exists('jscalendar')) {
-    $module_list[] = 'date_popup';
-  }
-  drupal_install_modules($module_list);
-  module_rebuild_cache();
-  $ret[] = array('success' => TRUE, 'query' => implode(', ', $module_list));
+  return $ret;
+}
+
+/**
+ * Make sure all the appropriate modules get enabled.
+ * Repeated again in the 5.2 version.
+ */
+function date_api_update_5201() {
+  $ret = array();
+  return $ret;
+}
+
+/**
+ * Make sure all the appropriate modules get enabled.
+ * Repeated again just to be sure they are set.
+ */
+function date_api_update_6000() {
+  $ret = array();
+  date_api_set_variables();
   return $ret;
 }

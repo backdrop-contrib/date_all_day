@@ -51,7 +51,7 @@ function date_api_set_variables() {
 function date_api_install() {
   date_api_set_variables();
   $ret = array();
-  $ret = db_query("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
+  db_add_field($ret, "users", "timezone_name", array('type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => ''));
   return $ret;
 }
 
@@ -64,7 +64,7 @@ function date_api_enable() {
  */
 function date_api_uninstall() {
   $ret = array();
-  $ret[] = db_query("ALTER TABLE {users} DROP timezone_name");
+  db_drop_field($ret, "users", "timezone_name");
 
   cache_clear_all('date_timezone_identifiers_list', 'cache');
   $variables = array(
@@ -77,6 +77,12 @@ function date_api_uninstall() {
   foreach ($variables as $variable) {
     variable_del($variable);
   }
+
+  $displays = array(
+    'date_nav', 
+    );
+  db_query("DELETE FROM {views_display} WHERE display_plugin IN ('". implode("','", $displays) ."')");
+  db_query("DELETE FROM {cache_views}");
   return $ret;
 }
 
@@ -87,8 +93,8 @@ function date_api_uninstall() {
 function date_api_requirements($phase) {
   $requirements = array();
   $t = get_t();
-  //switch ($phase) {
- //   case 'runtime':
+  switch ($phase) {
+    case 'runtime':
       $tz_name = variable_get('date_default_timezone_name', NULL);
       $error = FALSE;
       if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
@@ -103,10 +109,10 @@ function date_api_requirements($phase) {
           'severity' => $severity,
           );
       }
-  //    break;
-  //   case 'install':
-  //    break;
-  //}
+      break;
+     case 'install':
+      break;
+  }
   return $requirements;
 }
 
@@ -144,5 +150,24 @@ function date_api_update_5201() {
 function date_api_update_6000() {
   $ret = array();
   date_api_set_variables();
+  return $ret;
+}
+
+/**
+ * Rebuild the theme registry and all the caches.
+ * needed to pick up changes created by updated Views API.
+ */
+function date_api_update_6001() {
+  $ret = array();
+  if (db_table_exists('cache_content')) {
+    db_query('DELETE FROM {cache_content}');
+  }
+  if (db_table_exists('cache_views')) {
+    db_query('DELETE FROM {cache_views}');
+  }
+  if (db_table_exists('views_object_cache')) {
+    db_query('DELETE FROM {views_object_cache}');
+  }    
+  db_query("DELETE FROM {cache} where cid LIKE 'theme_registry%'");
   return $ret;
 }

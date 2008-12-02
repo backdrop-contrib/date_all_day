@@ -85,7 +85,7 @@ function date_ical_import($filename) {
     $icaldatafetch = drupal_http_request($filename);
     // Check the return result
     if ($icaldatafetch->error) {
-      drupal_set_message('Request Error: '. $icaldatafetch->error, 'error');
+      watchdog('date ical', 'Request Error importing !filename: !error', array('!filename' => $filename, '!error' => $icaldatafetch->error));
       return false;
     }
     // Break the return result into one array entry per lines
@@ -94,7 +94,7 @@ function date_ical_import($filename) {
   else {
     $icaldatafolded = @file($filename, FILE_IGNORE_NEW_LINES);
     if ($icaldatafolded === FALSE) {
-      drupal_set_message('Failed to open file: '. $filename, 'error');
+      watchdog('date ical', 'Failed to open file: !filename', array('!filename' => $filename));
       return false;
     }
   }
@@ -114,7 +114,7 @@ function date_ical_import($filename) {
 function date_ical_parse($icaldatafolded = array()) {
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
-    drupal_set_message('Invalid calendar file:'. $filename, 'error');
+    watchdog('date ical', 'Invalid calendar file: !filename', array('!filename' => $filename));
     return false;
   }
 
@@ -137,6 +137,7 @@ function date_ical_parse($icaldatafolded = array()) {
   // Parse the iCal information
   $parents = array();
   $subgroups = array();
+  $vcal = '';
   foreach ($icaldata as $line) {
     $line = trim($line);
     $vcal .= $line ."\n";
@@ -336,6 +337,9 @@ function date_ical_parse_date($field, $data) {
     }
   }
 
+  // Make this a little more whitespace independent
+  $data = trim($data);
+
   // Record if a time has been found
   $has_time = false;
 
@@ -369,6 +373,10 @@ function date_ical_parse_date($field, $data) {
     $tz = $properties['TZID'];
     // Fix commonly used alternatives like US-Eastern which should be US/Eastern.
     $tz = str_replace('-', '/', $tz);
+    // Unset invalid timezone names.
+    if (!date_timezone_is_valid($tz)) {
+      $tz = '';
+    }
   }
   // If declared as UTC with terminating 'Z', use that timezone
   else if (strpos($data, 'Z') !== false) {
@@ -537,7 +545,7 @@ function date_ical_escape_text($text) {
   $text = str_replace(":", "\:", $text);
   $text = str_replace(";", "\;", $text);
   $text = str_replace("\n", "\n ", $text);
-  return $text;
+  return trim($text);
 }
 
 /**
@@ -593,8 +601,15 @@ function date_api_ical_build_rrule($form_values) {
   if (array_key_exists('BYMONTHDAY', $form_values) && $BYMONTHDAY = implode(",", $form_values['BYMONTHDAY'])) {
     $RRULE .= ';BYMONTHDAY='. $BYMONTHDAY;
   }
+  // The UNTIL date is supposed to always be expressed in UTC.
   if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL'])) {
-    $RRULE .= ';UNTIL='. date_convert($form_values['UNTIL']['datetime'], DATE_DATETIME, DATE_ICAL);
+    $until = date_ical_date($form_values['UNTIL'], 'UTC');
+    $RRULE .= ';UNTIL='. date_format($until, DATE_FORMAT_ICAL) .'Z';
+  }
+  // Our form doesn't allow a value for COUNT, but it may be needed by
+  // modules using the API, so add it to the rule.
+  if (array_key_exists('COUNT', $form_values)) {
+    $RRULE .= ';COUNT='. $form_values['COUNT'];
   }
 
   // iCal rules presume the week starts on Monday unless otherwise specified,
@@ -607,7 +622,7 @@ function date_api_ical_build_rrule($form_values) {
   }
 
   // Exceptions dates go last, on their own line.
-  if (is_array($form_values['EXDATE'])) {
+  if (isset($form_values['EXDATE']) && is_array($form_values['EXDATE'])) {
     $ex_dates = array();
     foreach ($form_values['EXDATE'] as $value) {
       $ex_date = date_convert($value['datetime'], DATE_DATETIME, DATE_ICAL);

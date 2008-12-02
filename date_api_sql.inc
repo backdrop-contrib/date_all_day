@@ -9,7 +9,6 @@
  */
 function date_sql_concat($array) {
   global $db_type;
-
   switch ($db_type) {
     case('mysql'):
     case('mysqli'):
@@ -17,6 +16,22 @@ function date_sql_concat($array) {
     case('pgsql'):
       return implode(" || ", $array);
   }
+}
+
+/**
+ * Helper function to do cross-database NULL replacements
+ *
+ * @param an array of values to test for NULL values
+ * @return SQL statement to return the first non-NULL value in the list.
+ */
+function date_sql_coalesce($array) {
+  global $db_type;
+  switch ($db_type) {
+    case('mysql'):
+    case('mysqli'):
+    case('pgsql'):
+      return "COALESCE(". implode(',', $array) .")";
+  }  
 }
 
 /**
@@ -70,9 +85,11 @@ class date_sql_handler {
       switch ($this->db_type) {
         case 'mysql':
         case 'mysqli':
-          $test = db_result(db_query("SELECT CONVERT_TZ('2008-02-15 12:00:00', 'UTC', 'US/Central')"));
-          if ($test == '2008-02-15 06:00:00') {
-            $has_support = TRUE;
+          if (version_compare(db_version(), '4.1.3', '>=')) {
+            $test = db_result(db_query("SELECT CONVERT_TZ('2008-02-15 12:00:00', 'UTC', 'US/Central')"));
+            if ($test == '2008-02-15 06:00:00') {
+              $has_support = TRUE;
+            }
           }
           break;
         case 'pgsql':
@@ -107,7 +124,7 @@ class date_sql_handler {
     static $already_set = FALSE;
     $type = $GLOBALS['db_type'];
     if (!$already_set) {
-      if ($type == 'mysqli' && version_compare(db_version(), '4.1.3', '>=')) {
+      if (($type == 'mysqli' || $type == 'mysql') && version_compare(db_version(), '4.1.3', '>=')) {
         db_query("SET @@session.time_zone = '$offset'");
       }
       elseif ($type == 'pgsql') {
@@ -157,7 +174,12 @@ class date_sql_handler {
             $field = "FROM_UNIXTIME($field)";
             break;
           case DATE_ISO:
-            $field = "STR_TO_DATE($field, '%Y-%m-%%dT%T')";
+            if (version_compare(db_version(), '4.1.1', '>=')) {
+              $field = "STR_TO_DATE($field, '%Y-%m-%%dT%T')";
+            }
+            else {
+              $field = "REPLACE($field, 'T', ' ')";
+            }
             break;
           case DATE_DATETIME:
             break;
@@ -188,13 +210,55 @@ class date_sql_handler {
       switch ($this->db_type) {
         case 'mysql':
         case 'mysqli':
-          return "ADDTIME($field, SEC_TO_TIME($offset))";
+          if (version_compare(db_version(), '4.1.1', '>=')) {
+            return "ADDTIME($field, SEC_TO_TIME($offset))";
+          }
+          else {
+            return "DATE_ADD($field, INTERVAL $offset SECOND)";
+          }
         case 'pgsql':
-          return "($field + 'INTERVAL $offset SECONDS')";;
+          return "($field + INTERVAL '$offset SECONDS')";;
       }
     }
     return $field;
   }
+  
+  /**
+   * Adjust a field value by time interval.
+   * 
+   * @param $field
+   *   The field to be adjusted.
+   * @param $direction
+   *   Either ADD or SUB.
+   * @param $count
+   *   The number of values to adjust.
+   * @param $granularity
+   *   The granularity of the adjustment, should be singular,
+   *   like SECOND, MINUTE, DAY, HOUR.
+   */
+  function sql_date_math($field, $direction, $count, $granularity) {
+    $granularity = strtoupper($granularity);
+    switch ($this->db_type) {
+      case 'mysql':
+      case 'mysqli':
+        switch ($direction) {
+          case 'ADD':
+            return "DATE_ADD($field, INTERVAL $count $granularity)";
+          case 'SUB':
+            return "DATE_SUB($field, INTERVAL $count $granularity)";
+          }
+      
+      case 'pgsql':
+        $granularity .= 'S';
+        switch ($direction) {
+          case 'ADD':
+            return "($field + INTERVAL '$count $granularity')";
+          case 'SUB':
+            return "($field - INTERVAL '$count $granularity')";
+        }
+     }
+     return $field;
+  }  
   
   /**
    * Select a date value from the database, adjusting the value
@@ -212,7 +276,7 @@ class date_sql_handler {
   function sql_tz($field, $offset = NULL) {
     // If the timezones are values they need to be quoted, but
     // if they are field names they do not.
-    $db_zone    = $this->db_timezone_field ? $this->db_timezone_field : "'{$this->db_timezone}'";
+    $db_zone   = $this->db_timezone_field ? $this->db_timezone_field : "'{$this->db_timezone}'";
     $localzone = $this->local_timezone_field ? $this->local_timezone_field : "'{$this->local_timezone}'"; 
      
     // If a fixed offset is required, use it.
@@ -267,18 +331,20 @@ class date_sql_handler {
           'd' => '%%d', 'j' => '%e',
           'H' => '%H',
           'i' => '%i',
-          's' => '%s',
+          's' => '%%s',
+          '\WW' => 'W%U',
           );
         $format = strtr($format, $replace);
         return "DATE_FORMAT($field, '$format')";
       case 'pgsql':
         $replace = array(
-          'Y' => 'YY', 'y' => 'Y',
+          'Y' => 'YYYY', 'y' => 'Y',
           'm' => 'MM', 'n' => 'M',
           'd' => 'DD', 'j' => 'D',
           'H' => 'HH24',
           'i' => 'MI',
           's' => 'SS',
+          //'\W' => // TODO, what should this be?
           );
         $format = strtr($format, $replace);
         return "TO_CHAR($field, '$format')";
@@ -539,7 +605,7 @@ class date_sql_handler {
     // If this is a max date, make sure the last day of 
     // the month is the right one for this date.
     if ($type == 'max') {
-      $compare['day'] = date_days_in_month($compare, DATE_ARRAY);
+      $compare['day'] = date_days_in_month($compare['year'], $compare['month']);
     }
     $value = '';
     $separators = $this->part_info('sep');
@@ -719,7 +785,7 @@ class date_sql_handler {
   function arg_range($arg) {
     // Parse the argument to get its parts
     $parts = $this->arg_parts($arg);
-   
+       
     // Intercept invalid info and fall back to the current date.
     if (empty($parts[0]) || empty($parts[0]['date']) && empty($parts[0]['period'])) {
       $now = date_now();

@@ -33,7 +33,7 @@ define('DATE_FORMAT_DATE', 'Y-m-d');
 
 define('DATE_REGEX_ISO', '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?/');
 define('DATE_REGEX_DATETIME', '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):?(\d{2})?/');
-define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{2})-?(\d{2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
+define('DATE_REGEX_LOOSE', '/(\d{4})-?(\d{1,2})-?(\d{1,2})([T\s]?(\d{2}):?(\d{2}):?(\d{2})?(\.\d+)?(Z|[\+\-]\d{2}:?\d{2})?)?/');
 define('DATE_REGEX_ICAL_DATE', '/(\d{4})(\d{2})(\d{2})/');
 define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?/');
 
@@ -83,6 +83,27 @@ function date_month_names_untranslated() {
 /**
  * A translated array of month names
  *
+ * Needed for css, translation functions, strtotime(), and other places
+ * that use the English versions of these words.
+ *
+ * @return
+ *   an array of month names
+ */
+function date_month_names_translated() {
+  static $month_names;
+  if (empty($month_names)) {
+    // See format_date() for an explanation of why !long-month-name is necessary
+    $month_names = date_month_names_untranslated();
+    foreach ($month_names as $delta => $english) {
+      $month_names[$delta] = trim(t('!long-month-name '. $english, array('!long-month-name' => '')));
+    }
+  }
+  return $month_names;
+}
+
+/**
+ * A translated array of month names
+ *
  * @param $required
  *   If not required, will include a blank value at the beginning of the list.
  * @return
@@ -92,8 +113,8 @@ function date_month_names($required = FALSE) {
   static $month_names;
   if (empty($month_names)) {
     $month_names = array();
-    foreach (date_month_names_untranslated() as $key => $month) {
-      $month_names[$key] = t($month);
+    foreach (date_month_names_translated() as $key => $month) {
+      $month_names[$key] = $month;
     }
   }
   $none = array('' => '');
@@ -112,8 +133,8 @@ function date_month_names_abbr($required = FALSE) {
   static $month_names;
   if (empty($month_names)) {
     $month_names = array();
-    foreach (date_month_names_untranslated() as $key => $month) {
-      $month_names[$key] = t(drupal_substr($month, 0, 3));
+    foreach (date_month_names_translated() as $key => $month) {
+      $month_names[$key] = drupal_substr($month, 0, 3);
     }
   }
   $none = array('' => '');
@@ -142,6 +163,25 @@ function date_week_days_untranslated($refresh = TRUE) {
 /**
  * A translated array of week days
  *
+ * Needed for css, translation functions, strtotime(), and other places
+ * that use the English versions of these words.
+ *
+ * @return
+ *   an array of week day names
+ */
+function date_week_days_translated($refresh = TRUE) {
+  static $weekdays;
+  if ($refresh || empty($weekdays)) {
+    $weekdays = array(0 => t('Sunday'), 1 => t('Monday'), 2 => t('Tuesday'),
+      3 => t('Wednesday'), 4 => t('Thursday'), 5 => t('Friday'),
+      6 => t('Saturday'));
+  }
+  return $weekdays;
+}
+
+/**
+ * A translated array of week days
+ *
  * @param $required
  *   If not required, will include a blank value at the beginning of the array.
  * @return
@@ -151,8 +191,8 @@ function date_week_days($required = FALSE, $refresh = TRUE) {
   static $weekdays;
   if ($refresh || empty($weekdays)) {
     $weekdays = array();
-    foreach (date_week_days_untranslated($refresh) as $key => $day) {
-      $weekdays[$key] = t($day);
+    foreach (date_week_days_translated($refresh) as $key => $day) {
+      $weekdays[$key] = $day;
     }
   }
   $none = array('' => '');
@@ -361,14 +401,19 @@ function date_long_formats() {
  *
  * @return array of date() format letters and their regex equivalents.
  */
-function date_format_patterns() {
+function date_format_patterns($strict = FALSE) {
   return array(
-    'd' => '\d{2}',    'j' => '\d{1,2}',    'N' => '\d',      'S' => '\w{2}',
-    'w' => '\d',       'z' => '\d{1,3}',    'W' => '\d{1,2}', 'm' => '\d{2}',
+    'd' => '\d{'. ($strict ? '2' : '1,2') .'}', 
+    'm' => '\d{'. ($strict ? '2' : '1,2') .'}', 
+    'h' => '\d{'. ($strict ? '2' : '1,2') .'}',      
+    'H' => '\d{'. ($strict ? '2' : '1,2') .'}',   
+    'i' => '\d{'. ($strict ? '2' : '1,2') .'}',
+    's' => '\d{'. ($strict ? '2' : '1,2') .'}',
+    'j' => '\d{1,2}',    'N' => '\d',      'S' => '\w{2}',
+    'w' => '\d',       'z' => '\d{1,3}',    'W' => '\d{1,2}',
     'n' => '\d{1,2}',  't' => '\d{2}',      'L' => '\d',      'o' => '\d{4}',
     'Y' => '\d{4}',    'y' => '\d{2}',      'B' => '\d{3}',   'g' => '\d{1,2}',
-    'G' => '\d{1,2}',  'h' => '\d{2}',      'H' => '\d{2}',   'i' => '\d{2}',
-    's' => '\d{2}',    'e' => '\w*',        'I' => '\d',      'T' => '\w*',
+    'G' => '\d{1,2}',  'e' => '\w*',        'I' => '\d',      'T' => '\w*',
     'U' => '\d*',      'z' => '[+-]?\d*',   'O' => '[+-]?\d{4}',
     //Using S instead of w and 3 as well as 4 to pick up non-ASCII chars like German umlaute
     'D' => '\S{3,4}',    'l' => '\S*', 'M' => '\S{3,4}', 'F' => '\S*',
@@ -400,25 +445,54 @@ function date_granularity_names() {
  */
 function date_timezone_names($required = FALSE, $refresh = FALSE) {
   static $zonenames;
-  if (empty($zonenames)) {
-    $zonenames = array();
+  if (empty($zonenames) || $refresh) {
     $cached = cache_get('date_timezone_identifiers_list');
-    if ($refresh || empty($cached) || !$data = $cached->data) {
+    $zonenames = !empty($cached) ? $cached->data : array();
+    if ($refresh || empty($cached) || empty($zonenames)) {
       $data = timezone_identifiers_list();
-    }
-    foreach ($data as $delta => $zone) {
-      // Because many time zones exist in PHP only for backward 
-      // compatibility reasons and should not be used, the list is 
-      // filtered by a regular expression.
-      if (preg_match('!^((Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific)/|UTC$)!', $zone)) {
-        $zonenames[$zone] = t($zone);
-      }      
-      else {
-        unset($data[$delta]);
+      // Use include instead of include once in case the function gets 
+      // refreshed via devel or other API and is called more than once.
+      if (module_exists('date_php4')) {
+        include('./'. drupal_get_path('module', 'date_php4') .'/date_php4_missing_data.inc');
+      }
+      foreach ($data as $delta => $zone) {
+        // Because many time zones exist in PHP only for backward 
+        // compatibility reasons and should not be used, the list is 
+        // filtered by a regular expression.
+        if (preg_match('!^((Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific)/|UTC$)!', $zone)) {
+          $zonenames[$zone] = $zone;
+        }      
+      }
+      // If using PHP4, filter the list down to only the timezones
+      // the PHP4 wrapper has data for.
+      if (module_exists('date_php4')) {
+        foreach ($missing_timezone_data as $zone) {
+          unset($zonenames[$zone]);
+        }
+      }
+    
+      // If using Event, further filter the list down to only 
+      // zones that exist in the event module.
+      if (module_exists('event') && db_table_exists('event_timezones')) {
+        $result = db_query("SELECT name FROM {event_timezones} ORDER BY name");
+        $names = array();
+        while ($row = db_fetch_array($result)) {
+          $names[] = str_replace(' ', '_', $row['name']);
+        }
+        foreach ($zonenames as $name => $zone) {
+          if (!in_array($name, $names)) {
+            unset($zonenames[$name]);
+          }
+        }
+      }
+      if (!empty($zonenames)) {
+        cache_set('date_timezone_identifiers_list', $zonenames);
       }
     }
-    if (!empty($data)) {
-      cache_set('date_timezone_identifiers_list', $data);
+    else {
+      foreach ($zonenames as $zone) {
+        $zonenames[$zone] = t('!timezone', array('!timezone' => $zone));
+      }
     }
   }
   $none = array('' => '');
@@ -457,13 +531,15 @@ function date_t($string) {
   if (empty($replace)) {
     $replace = array();
     // Translate the whole name first, then look for abbreviations.
-    foreach (date_month_names_untranslated() as $month) {
-      $replace[$month] = trim(t('!long-month-name '. $month, array('!long-month-name' => '')));
-      $replace[drupal_substr($month, 0, 3)] = t(drupal_substr($month, 0, 3));
+    $untranslated = date_month_names_untranslated();
+    foreach (date_month_names_translated() as $delta => $month) {
+      $replace[$untranslated[$delta]] = $month;
+      $replace[drupal_substr($untranslated[$delta], 0, 3)] = drupal_substr($month, 0, 3);
     }
-    foreach (date_week_days_untranslated() as $day) {
-      $replace[$day] = t($day);
-      $replace[drupal_substr($day, 0, 3)] = t(drupal_substr($day, 0, 3));
+    $untranslated = date_week_days_untranslated();
+    foreach (date_week_days_translated() as $delta => $day) {
+      $replace[$untranslated[$delta]] = $day;
+      $replace[drupal_substr($untranslated[$delta], 0, 3)] = drupal_substr($day, 0, 3);
     }
   }
   return strtr($string, $replace);
@@ -480,7 +556,8 @@ function date_format_interval($date, $granularity = 2) {
   $interval = time() - date_format($date, 'U');
   if($interval > 0 ) {
     return t('!time ago', array('!time' => format_interval($interval, $granularity)));
-  } else {
+  } 
+  else {
     return format_interval(abs($interval), $granularity);
   }
 }
@@ -554,31 +631,32 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME) {
   // Make sure some value is set for the date and timezone even if the
   // site timezone is not yet set up to avoid fatal installation
   // errors.
-  if (empty($timezone)) {
+  if (empty($timezone) || !date_timezone_is_valid($timezone)) {
     $timezone = date_default_timezone_name();
   }
   if (!date_is_valid($date, $type) || empty($date)) {
     $date = 'now';
   }
   if (!empty($timezone) && !empty($date)) {
-    if (!is_object($timezone)) {
-      $timezone = timezone_open($timezone);
-    }
     if ($date == 'now') {
-      return date_create('now', $timezone);
+      return date_create('now', timezone_open($timezone));
     }
-    elseif ($datetime = date_convert($date, $type, DATE_DATETIME)) {
-      if ($type == DATE_UNIX && timezone_name_get($timezone) != 'UTC') {
-        $date = date_create($datetime, timezone_open('UTC'));
-        date_timezone_set($date, $timezone);
-        return $date;
-      }
-      else {
-        return date_create($datetime, $timezone);
-      }
+    elseif ($datetime = date_convert($date, $type, DATE_DATETIME, $timezone)) {
+      return date_create($datetime, timezone_open($timezone));
     }
   }
   return NULL;
+}
+
+function date_timezone_is_valid($timezone) {
+  static $timezone_names;
+  if (empty($timezone_names)) {
+    $timezone_names = array_keys(date_timezone_names(TRUE));
+  }
+  if (!in_array($timezone, $timezone_names)) {
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
@@ -612,20 +690,12 @@ function date_default_timezone($check_user = TRUE) {
 
 /**
  * Identify the number of days in a month for a date.
- *
- * @param mixed $date
- * @return integer
  */
-function date_days_in_month($date = NULL, $type = DATE_OBJECT) {
-  if (empty($date)) {
-    $date = date_now();
-    $type = DATE_OBJECT;
-  }
-  $date = date_convert($date, $type, DATE_OBJECT);
-  if (is_object($date)) {
-    return date_format($date, 't');
-  }
-  return NULL;
+function date_days_in_month($year, $month) {
+  // Pick a day in the middle of the month to avoid timezone shifts.
+  $datetime = date_pad($year, 4) .'-'. date_pad($month) .'-15 00:00:00';
+  $date = date_make_date($datetime);
+  return date_format($date, 't');
 }
 
 /**
@@ -850,6 +920,7 @@ function date_weeks_in_year($year) {
  * @return int calendar week number.
  */
 function date_week($date) {
+  $date = substr($date, 0, 10);
   $parts = explode('-', $date);
 
   $date = date_make_date($date . ' 12:00:00', 'UTC');
@@ -885,10 +956,9 @@ function date_week($date) {
  * Date conversion helper function.
  *
  * A variety of ways to convert dates from one type to another.
- * No timezone conversion is done in this operation!!
- *
- * Example: date_convert('2007-03-15 08:30', DATE_DATETIME, DATE_UNIX);
- *  returns unix value for the supplied date.
+ * No timezone conversion is done in this operation, except
+ * when handling timestamps because create_date() assumes
+ * timestamps hold the UTC value for the time.
  *
  * @param mixed $date
  *   the date to convert
@@ -896,13 +966,20 @@ function date_week($date) {
  *   the type of date to convert from
  * @param string $to_type
  *   the type of date to convert to
+ * @param string $tz
+ *   the timezone of the supplied value, only needed when using timestamps
+ *   for dates not set to UTC.
  */
-function date_convert($date, $from_type, $to_type) {
+function date_convert($date, $from_type, $to_type, $tz = 'UTC') {
   if (empty($date) && !$date === 0) return NULL;
   if (empty($from_type) || empty($to_type) || $from_type == $to_type) return $date;
   switch ($from_type) {
     case DATE_ARRAY:
       if (!is_array($date)) return NULL;
+      if (isset($date['ampm'])) {
+        if ($date['ampm'] == 'pm' && $date['hour'] < 12) $date['hour'] += 12;
+        if ($date['ampm'] == 'am' && $date['hour'] == 12) $date['hour'] -= 12;
+      }
       $datetime = date_pad(intval($date['year']), 4) .'-'. date_pad(intval($date['month'])) .
             '-'. date_pad(intval($date['day'])) .' '. date_pad(intval($date['hour'])) .
             ':'. date_pad(intval($date['minute'])) .':'. date_pad(intval($date['second']));
@@ -915,9 +992,9 @@ function date_convert($date, $from_type, $to_type) {
           $replace = array(' ' => 'T', '-' => '', ':' => '');
           return strtr($datetime, $replace);
         case DATE_OBJECT:    
-          return date_create($datetime, timezone_open('UTC'));
+          return date_create($datetime, timezone_open($tz));
         case DATE_UNIX:
-          $obj = date_create($datetime, timezone_open('UTC'));
+          $obj = date_create($datetime, timezone_open($tz));
           return date_format($obj, 'U');  
       }
       break;
@@ -929,17 +1006,22 @@ function date_convert($date, $from_type, $to_type) {
     case DATE_ISO:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       $date = date_fuzzy_datetime($date);
-      $obj = date_create($date, timezone_open('UTC'));
+      $obj = date_create($date, timezone_open($tz));
       break;
     case DATE_ICAL:
       if (!preg_match(DATE_REGEX_LOOSE, $date)) return NULL;
       preg_match(DATE_REGEX_LOOSE, $date, $regs);
       $datetime = date_pad($regs[1], 4) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]) .
         'T'. date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]);
-      $obj = date_create($datetime, timezone_open('UTC'));
+      $obj = date_create($datetime, timezone_open($tz));
+      break;
     case DATE_UNIX:
       if (!is_numeric($date)) return NULL;
+      // Special case when creating dates with timestamps.
+      // The date_create() function will assume date is UTC value
+      // and will ignore our timezone.
       $obj = date_create("@$date", timezone_open('UTC'));
+      date_timezone_set($obj, timezone_open($tz));
       break;
   }
   switch ($to_type) {
@@ -1054,7 +1136,7 @@ function date_array($obj) {
  * @return integer
  *   the integer value of the requested date part.
  */
-function date_part_extract($date, $part, $type = DATE_DATETIME) {
+function date_part_extract($date, $part, $type = DATE_DATETIME, $tz = 'UTC') {
   $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j',
     'hour' => 'G', 'minute' => 'i', 'second' => 's');
   $positions = array('year' => 0, 'month' => 5, 'day' => 8,
@@ -1070,7 +1152,11 @@ function date_part_extract($date, $part, $type = DATE_DATETIME) {
     case DATE_ICAL:
       return (integer) substr($date, $ipositions[$part], $part == 'year' ? 4 : 2);
     case DATE_UNIX:
+      // Special case when creating dates with timestamps.
+      // The date_create() function will assume date is UTC value
+      // and will ignore our timezone.
       $date = date_create("@$date", timezone_open('UTC'));
+      date_timezone_set($date, timezone_open($tz));
       return date_format($date, $formats[$part]);
     case DATE_OBJECT:
       return date_format($date, $formats[$part]);
@@ -1224,7 +1310,7 @@ function date_limit_format($format, $granularity) {
         $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[Yy])';
         break;
       case 'day':
-        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[lDdj])';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[l|D|d|dS|j|jS]{1,2})';
         break;
       case 'month':
         $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[FMmn])';
@@ -1244,6 +1330,11 @@ function date_limit_format($format, $granularity) {
     
     }
   }
+  // Remove empty parentheses, brackets, pipes.
+  $regex[] = '(\(\))';
+  $regex[] = '(\[\])';
+  $regex[] = '(\|\|)';
+
   // Remove selected values from string.
   $format = trim(preg_replace($regex, array(), $format));
   // Remove orpaned punctuation at the beginning of the string.
@@ -1334,7 +1425,7 @@ function date_api_simpletest() {
  * Implementation of hook_elements().
  */
 function date_api_elements() {
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   return _date_api_elements();
 }
 
@@ -1374,9 +1465,41 @@ function date_api_theme() {
  * Wrapper around date handler setting for timezone.
  */
 function date_api_set_db_timezone($offset = '+00:00') {
-  include_once(drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
   $handler = new date_sql_handler();
   return $handler->set_db_timezone($offset);
+}
+
+/**
+ *  Function to figure out which local timezone applies to a date and select it
+ */
+function date_get_timezone($handling, $timezone = '') {
+  switch ($handling) {
+    case('date'):
+      $timezone = !empty($timezone) ? $timezone : date_default_timezone_name();
+      break;
+    case('utc'):
+      $timezone = 'UTC';
+      break;
+    default:
+      $timezone = date_default_timezone_name();
+  }
+  return $timezone > '' ? $timezone : date_default_timezone_name();
+}
+
+/**
+ *  Function to figure out which db timezone applies to a date and select it
+ */
+function date_get_timezone_db($handling, $timezone = '') {
+  switch ($handling) {
+    case('none'):
+      $timezone = date_default_timezone_name();
+      break;
+    default:
+      $timezone = 'UTC';
+      break;
+  }
+  return $timezone > '' ? $timezone : 'UTC';
 }
 
 /**
@@ -1386,7 +1509,7 @@ function date_api_views_fetch_fields($base, $type) {
   if (!module_exists('views')) {
     return array();
   }
-  include_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+  require_once('./'. drupal_get_path('module', 'views') .'/includes/admin.inc');
   return views_fetch_fields($base, $type);
 }
 
@@ -1426,4 +1549,172 @@ function date_format_options() {
     }
   }
   return $options;
+}
+
+/**
+ * Implementation of hook_views_api().
+ *
+ * This one is used as the base to reduce errors when updating.
+ */
+function date_api_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'date_api') .'/includes',
+  );
+}
+
+/**
+ * Rebuild the theme registry and all the caches.
+ * needed to pick up changes created by updated Views API
+ * and other changes to Views definitions.
+ */
+function date_api_views_clear() {
+  if (db_table_exists('cache_content')) {
+    db_query('DELETE FROM {cache_content}');
+  }
+  if (db_table_exists('cache_views')) {
+    db_query('DELETE FROM {cache_views}');
+  }
+  if (db_table_exists('views_object_cache')) {
+    db_query('DELETE FROM {views_object_cache}');
+  }    
+  db_query("DELETE FROM {cache} where cid LIKE 'theme_registry%'");
+}
+
+/**
+ * Embed a view using a PHP snippet.
+ *
+ * This function is meant to be called from PHP snippets, should one wish to
+ * embed a view in a node or something. It's meant to provide the simplest
+ * solution and doesn't really offer a lot of options, but breaking the function
+ * apart is pretty easy, and this provides a worthwhile guide to doing so.
+ *
+ * Note that this function does NOT display the title of the view. If you want
+ * to do that, you will need to do what this function does manually, by
+ * loading the view, getting the preview and then getting $view->get_title().
+ *
+ * @param $name
+ *   The name of the view to embed.
+ * 
+ * @param $display_id
+ *   'calendar_1' will display the calendar page, 
+ *   'calendar_block_1' will display the calendar block.
+ * 
+ * @param $settings
+ *   an array of view settings to use to override view default values;
+ * 
+ *   Include a setting for 'block_identifier, the identifier to use 
+ *   for this embedded view. All embedded views that use the same 
+ *   identifier will move together, or provide different identifiers 
+ *   to keep them independent. The identifier will be used in the url 
+ *   as a querystring, like: node/27?mini=calendar/2008-10.
+ * 
+ * @param ...
+ *   Any additional parameters will be passed as arguments.
+ */
+function date_embed_view($name, $display_id = 'default', $settings = array(), $args = array()) {
+  $view = views_get_view($name);
+  if (!$view) {
+    return;
+  }
+  if (!empty($settings)) {
+    foreach ($settings as $key => $setting) {
+      $view->$key = $setting;
+    }
+  }
+  if (!isset($view->date_info->block_identifier)) {
+    $view->date_info->block_identifier = 'mini';
+  }
+  return $view->preview($display_id, $args);
+}
+
+/**
+ * Figure out the URL of the date view we're currently looking at,
+ * adapted to various date types or specific date arguments.
+ * 
+ * @param $date_type
+ *  - if not empty, return the url of a specific date type.
+ * @param $date_arg
+ *  - if not empty, return the url for a view with a specific date argument.
+ * @param $force_view_url
+ *  - always use the view url, even if embedded.
+ * @return 
+ *   return the requested view url.
+ */
+function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_url = FALSE) {
+  $args = $view->args;
+  $pos = $view->date_info->date_arg_pos;
+  if (!empty($date_type)) {
+    switch ($date_type) {
+      case 'year':
+        $args[$pos] = date_pad($view->date_info->year, 4);
+        break;
+      case 'week':
+        $args[$pos] = date_pad($view->date_info->year, 4) .'-W'. date_pad($view->date_info->week);
+        break;
+      case 'day':
+        $args[$pos] = date_pad($view->date_info->year, 4) .'-'. date_pad($view->date_info->month) .'-'. date_pad($view->date_info->day);
+        break;
+      default:
+        $args[$pos] = date_pad($view->date_info->year, 4) .'-'. date_pad($view->date_info->month);
+        break;
+    }
+  }
+  elseif (!empty($date_arg)) {
+    $args[$pos] = $date_arg;
+  }
+  else {
+    $args = $view->args;
+  }
+  // Is this an embedded or a block view?
+  if (!$force_view_url && (!empty($view->preview) || !empty($view->date_info->block_identifier))) {
+    $url = $view->get_url($args);
+    return url($_GET['q'], array(
+      'query' => date_querystring($view, array(date_block_identifier($view) => $url)), 
+      'absolute' => TRUE));
+  }
+  else {
+    return $view->get_url($args);
+  }
+}
+
+/**
+ * Pick up filter and sort info from url.
+ */
+function date_querystring($view, $extra_params = array()) {
+  $query_params = array_merge($_GET, $extra_params);
+  // Allow NULL params to be removed from the query string.
+  foreach ($extra_params AS $key => $value) {
+    if (!isset($value)) {
+      unset($query_params[$key]);
+    }
+  }
+  // Filter the special "q" and "view" variables out of the query string.
+  $exclude = array('q');
+  $query = drupal_query_string_encode($query_params, $exclude);
+  // To prevent an empty query string from adding a "?" on to the end of a URL,
+  // we return NULL.
+  return !empty($query) ? $query : NULL;
+}
+
+function date_block_identifier($view) {
+  return isset($view->date_info->block_identifier) ? $view->date_info->block_identifier : NULL;
+}
+
+
+/**
+ * Implementation of hook_schema_alter(). We alter $schema by reference.
+ *
+ * @param $schema
+ * The system-wide schema collected by drupal_get_schema().
+ */
+function date_api_schema_alter(&$schema) {
+  // Add field to existing schema.
+  $schema['users']['fields']['timezone_name'] = array(
+    'type' => 'varchar',
+    'length' => 50,
+    'not null' => TRUE,
+    'default' => '',
+    'description' => t('Per-user timezone name.'),
+  );
 }

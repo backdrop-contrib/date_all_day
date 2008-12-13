@@ -49,7 +49,7 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     }
     // If the view has a minimum/maximum date, limited the grouped
     // values to the date range.
-    $where = '';
+    $where = array('1');
     if (!empty($this->view->date_info->min_date)) {
       $date_handler = date_field_get_sql_handler($field);
       foreach ($this->view->date_info->date_handler_fields as $key => $value) {

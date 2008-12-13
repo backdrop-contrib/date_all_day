@@ -82,6 +82,9 @@ span.date-display-separator {
   float:none;
 }
 
+.date-views-filter-wrapper {
+  min-width:250px;
+}
 .date-views-filter input {
   float:left !important;
   margin-right:2px !important;

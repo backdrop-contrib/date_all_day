@@ -4,6 +4,26 @@ Date Module 6.x
 Version 6.2-dev
 =================
 
+- Improve the template and css for the exposed date filter to keep date parts lined up next to each other.
+- Fix handling for fixed date default value in date filter.
+- Get rid of DURATION time part details in iCal array, we only need the DATA and DURATION.
+- #282521 Do more work on LOCATION to split out UID and handle odd upcoming.org location identifiers.
+- Add more error trapping to ical parser.
+- Add handling to ical parser for odd upcoming.org location format.
+- #341705 Fix broken iCal DURATION parsing.
+- Add some protection against empty or missing info in ical parser.
+- #343126 Fix date argument handler type assignment.
+- #343190 Add validity testing to date_api_ical_build_rrule().
+- #307166 Make sure timestamps with missing granularity parts in select widgets get defaulted to empty values and saved correctly.
+- #341203 Make sure there is no SQL error if there are no fields.
+- Add ability to analyze a period to period argument, like P1M--P1Y.
+- Adapt Date Argument/Date Browser code to work correctly if only a period is used.
+- #324063 Remove unneeded break.
+- #320596 Add hook to date_api_fields() so custom modules can add date fields to the Date argument and filter.
+- #341964 Get missing back/next links back in year.
+- Add date_increment_round() to date_content_generate to make sure generated dates match increment settings.
+- Move Date repeat form help to Advanced Help instead of using collapsed fieldset.
+
 Version 6.2-rc6
 =================
 

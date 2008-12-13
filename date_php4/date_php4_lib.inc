@@ -59,15 +59,17 @@
  * array values, and is much faster as it does not calculate dow, etc.
  *
  * @param $timestamp a unix timestamp
- * @param $is_gmt whether the timestamp is a GMT date that should not have
- *   a timezone conversion applied.
- * @param $test whether the date functions are being test, used to force the
- *   low level function even for current dates.
-*/
-function _date_getdate($timestamp = false, $is_gmt = false) {
+ * @param $timezone name
+ *   Use 'UTC' to avoid timezone conversion.
+ */
+function _date_getdate($timestamp = false, $timezone = false) {
   static $YRS;
+  if ($timezone === FALSE) {
+    $timezone = date_default_timezone_name();
+  }
+
   $timestamp_in = $timestamp;
-  $timestamp =  $timestamp - ($is_gmt ? 0 : date_get_gmt_diff());
+    
   $_day_power = 86400;
   $_hour_power = 3600;
   $_min_power = 60;
@@ -116,7 +118,7 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
       1620 => -11044944000,
       1610 => -11360476800,
       1600 => -11676096000);
-    if ($is_gmt) $origd = $timestamp;
+    
     // The valid range of a 32bit signed timestamp is typically from
     // Fri, 13 Dec 1901 20:45:54 GMT to Tue, 19 Jan 2038 03:14:07 GMT
     //
@@ -160,6 +162,22 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
     $hour = floor($timestamp/$_hour_power);
   }
   else {
+    // Check yesterday's and tomorrow's offset in case dst happens this day.
+    $today_offset = date_get_gmt_diff_ts($timestamp, $timezone);
+    $yesterday_offset = date_get_gmt_diff_ts($timestamp - 86400, $timezone);
+    $tomorrow_offset = date_get_gmt_diff_ts($timestamp + 86400, $timezone);
+    
+    if ($yesterday_offset != $tomorrow_offset && $yesterday_offset < 0) {
+      $adj = $yesterday_offset;
+    }
+    elseif ($yesterday_offset != $tomorrow_offset && $tomorrow_offset > 0) {
+      $adj = $tomorrow_offset;
+    }
+    else {
+      $adj = $today_offset;
+    }
+    $timestamp =  $timestamp + $adj;
+    
     for ($a = 1970 ;; $a++) {
       $lastd = $timestamp;
       if ($leap = date_is_leap_year($a)) $timestamp -= $d366;
@@ -212,16 +230,16 @@ function _date_getdate($timestamp = false, $is_gmt = false) {
  *
  * @param $format a format string for the result
  * @param $timestamp a unix timestamp
- * @param $fast whether to get a fast version that omits the dow, applies only
- *   to pre-1970 dates that use the low level function
- * @param $is_gmt whether the timestamp is a GMT date that should not have
- *   a timezone conversion applied.
- * @param $test whether the date functions are being test, used to force the
- *   low level function even for current dates.
+ * @param $timezone name
+ *   Use 'UTC' to avoid timezone conversion.
  */
-function _date_date($format, $timestamp = false, $is_gmt = false, $test = false) {
+function _date_date($format, $timestamp = false, $timezone = false) {
+  if ($timezone === FALSE) {
+    $timezone = date_default_timezone_name();
+  }
+
   $_day_power = 86400;
-  $arr = _date_getdate($timestamp, true, $is_gmt);
+  $arr = _date_getdate($timestamp, $timezone);
   $year = $arr['year'];
   $month = $arr['month'];
   $day = $arr['day'];
@@ -230,6 +248,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
   $secs = $arr['second'];
   $max = strlen($format);
   $dates = '';
+  
   /*
     at this point, we have the following integer vars to manipulate:
     $year, $month, $day, $hour, $min, $secs
@@ -247,7 +266,7 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
       if ($hour < 10) $dates .= '0'. $hour; else $dates .= $hour;
       if ($min < 10) $dates .= ':0'. $min; else $dates .= ':'. $min;
       if ($secs < 10) $dates .= ':0'. $secs; else $dates .= ':'. $secs;
-      $gmt = date_get_gmt_diff();
+      $gmt = date_get_gmt_diff_ts($timestamp, $timezone);
       $dates .= sprintf(' %s%04d', ($gmt < 0) ? '+' : '-', abs($gmt) / 36); break;
     case 'Y': $dates .= date_pad($year, 4); break;
     case 'y': $dates .= substr($year, strlen($year)-2, 2); break;
@@ -274,10 +293,12 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
       break;
     // HOUR
     case 'Z':
-      $dates .= ($is_gmt) ? 0 : -date_get_gmt_diff(); break;
+      $dates .= -date_get_gmt_diff_ts($timestamp, $timezone);
+      break;
     case 'O':
-      $gmt = ($is_gmt) ? 0 : date_get_gmt_diff();
-      $dates .= sprintf('%s%04d', ($gmt<0)?'+':'-', abs($gmt)/36); break;
+      $gmt = date_get_gmt_diff_ts($timestamp, $timezone);
+      $dates .= sprintf('%s%04d', ($gmt<0)?'+':'-', abs($gmt)/36); 
+      break;
     case 'H':
       if ($hour < 10) $dates .= '0'. $hour;
       else $dates .= $hour;
@@ -338,11 +359,14 @@ function _date_date($format, $timestamp = false, $is_gmt = false, $test = false)
  * @param $mon the month
  * @param $day the day
  * @param $year the year
- * @param $test whether the date functions are being test, used to force the
- *   low level function even for current dates.
+ * @param $timezone name
+ *   Use 'UTC' to avoid timezone conversion.
  */
-function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false, $is_gmt = false, $test = false) {
-  $gmt_different = ($is_gmt) ? 0 : date_get_gmt_diff();
+function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false, $timezone = false) {
+  if ($timezone === FALSE) {
+    $timezone = date_default_timezone_name();
+  }
+
   /*
   # disabled because some people place large values in $sec.
   # however we need it for $mon because we use an array...
@@ -355,14 +379,14 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
   $year = intval($year);
   $year = date_year_digit_check($year);
   if ($mon > 12) {
-    $y = floor($mon / 12);
+    $y = floor(($mon-1) / 12);
     $year += $y;
-    $mon -= $y*12;
+    $mon -= $y * 12;
   }
   else if ($mon < 1) {
     $y = ceil((1-$mon) / 12);
     $year -= $y;
-    $mon += $y*12;
+    $mon += $y * 12;
   }
   $_day_power = 86400;
   $_hour_power = 3600;
@@ -371,6 +395,7 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
   $_month_table_leap = array("", 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
   $_total_date = 0;
   if ($year >= 1970) {
+    $year_in = $year;
     for ($a = 1970 ; $a <= $year; $a++) {
       $leap = date_is_leap_year($a);
       if ($leap == true) {
@@ -391,7 +416,9 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
       }
     }
     $_total_date +=$day-1;
-    $ret = $_total_date * $_day_power + $hr * $_hour_power + $min * $_min_power + $sec + $gmt_different;
+    $ret = ($_total_date * $_day_power) + ($hr * $_hour_power) + ($min * $_min_power) + $sec;
+    $ret -= date_get_gmt_diff_ts($ret, $timezone);
+    
   }
   else {
     for ($a = 1969 ; $a >= $year; $a--) {
@@ -415,7 +442,8 @@ function _date_mktime($hr, $min, $sec, $mon = false, $day = false, $year = false
     $_total_date += $loop_table[$mon] - $day;
     $_day_time = $hr * $_hour_power + $min * $_min_power + $sec;
     $_day_time = $_day_power - $_day_time;
-    $ret = -( $_total_date * $_day_power + $_day_time - $gmt_different);
+    $ret = -( $_total_date * $_day_power + $_day_time);
+    $ret -= date_get_gmt_diff_ts($ret, $timezone);
     if ($ret < -12220185600) $ret += 10*86400; // if earlier than 5 Oct 1582 - gregorian correction
     else if ($ret < -12219321600) $ret = -12219321600; // if in limbo, reset to 15 Oct 1582.
   }

@@ -7,13 +7,14 @@ Javascript popup calendar and timeentry using the jquery-calendar library,
 Contents
 ==================================================================================
 
-If empty, this 'lib' folder should be filled with the following files, downloaded from
-the jquery plugins page:
+If jQuery UI is installed, the version of the 'datepicker' code from
+that module will be used.
 
-Download the following file from the jquery UI home page 
- at http://ui.jquery.com/
-- ui.calendar.js
+If jQuery UI is not installed, the 'datepicker' code from this folder
+will be used.
 
-Download the following file from the jquery-timeentry home page
-  at http://home.iprimus.com.au/kbwood/jquery/timeEntry.html
-- jquery.timeentry.pack.js
+See:
+
+- http://docs.jquery.com/UI/Datepicker/datepicker
+- http://ui.jquery.com/functional_demos/#ui.datepicker
+- http://plugins.jquery.com/project/timeEntry

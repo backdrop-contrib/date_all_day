@@ -11,8 +11,8 @@ class DateRepeat extends DrupalTestCase {
   }
 
   function testDateRepeat() {
-    include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
-    include_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
+    require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+    require_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
     // Examples adapted from http://www.faqs.org/rfcs/rfc2445.html and
     // http://www.kanzaki.com/docs/ical/rrule.html.
 

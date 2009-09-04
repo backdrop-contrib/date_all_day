@@ -1,0 +1,7 @@
+; $Id$
+name = Date Tools
+description = Tools to import and auto-create dates and calendars.
+dependencies[] = content
+dependencies[] = date
+package = Date/Time
+core = 6.x

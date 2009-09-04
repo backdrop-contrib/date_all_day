@@ -140,7 +140,7 @@ class date_sql_handler {
   function get_offset() {
     if (!empty($this->db_timezone) && !empty($this->local_timezone)) {
       if ($this->db_timezone != $this->local_timezone) {
-        $date = date_make_date('now', $this->db_timezone);
+        $date = date_now($this->db_timezone);
         date_timezone_set($date, timezone_open($this->local_timezone));
         return date_offset_get($date);
       }
@@ -344,6 +344,7 @@ class date_sql_handler {
           'H' => 'HH24',
           'i' => 'MI',
           's' => 'SS',
+          '\T' => '"T"',
           //'\W' => // TODO, what should this be?
           );
         $format = strtr($format, $replace);
@@ -511,8 +512,8 @@ class date_sql_handler {
    */
   function date_parts($limit = NULL) {
     $parts =  array(
-      'year' => t('Year'), 'month' => t('Month'), 'day' => t('Day'),
-      'hour' => t('Hour'), 'minute' => t('Minute'), 'second' => t('Second'),
+      'year' => date_t('Year', 'datetime'), 'month' => date_t('Month', 'datetime'), 'day' => date_t('Day', 'datetime'),
+      'hour' => date_t('Hour', 'datetime'), 'minute' => date_t('Minute', 'datetime'), 'second' => date_t('Second', 'datetime'),
       );
     if (!empty($limit)) {
       $last = FALSE;
@@ -765,6 +766,42 @@ class date_sql_handler {
   }
 
   /**
+   * Convert strings like '+1 day' to the ISO equivalent, like 'P1D'.
+   */
+  function arg_replace($arg) {
+    if (!preg_match('/([+|-])\s?([0-9]{1,32})\s?([day(s)?|week(s)?|month(s)?|year(s)?|hour(s)?|minute(s)?|second(s)?]{1,10})/', $arg, $results)) {
+      return str_replace('now', '@', $arg);
+    }
+    $direction = $results[1];
+    $count = $results[2];
+    $item = $results[3];
+      
+    $replace = array(
+      'now' => '@',
+      '+' => 'P',
+      '-' => 'P-',
+      'years' => 'Y',
+      'year' => 'Y',
+      'months' => 'M',
+      'month' => 'M',
+      'weeks' => 'W',
+      'week' => 'W',
+      'days' => 'D',
+      'day' => 'D',
+      'hours' => 'H',
+      'hour' => 'H',
+      'minutes' => 'M',
+      'minute' => 'M',
+      'seconds' => 'S',
+      'second' => 'S',
+      '  ' => '',
+      ' ' => '',
+      );
+    $prefix = in_array($item, array('hours', 'hour', 'minutes', 'minute', 'seconds', 'second')) ? 'T' : '';  
+    return $prefix . strtr($direction, $replace) . $count . strtr($item, $replace);  
+  }
+  
+  /**
    * Use the parsed values from the ISO argument to determine the
    * granularity of this period.
    */
@@ -785,13 +822,7 @@ class date_sql_handler {
   function arg_range($arg) {
     // Parse the argument to get its parts
     $parts = $this->arg_parts($arg);
-       
-    // Intercept invalid info and fall back to the current date.
-    if (empty($parts[0]) || empty($parts[0]['date']) && empty($parts[0]['period'])) {
-      $now = date_now();
-      return array($now, $now);
-    }
-    
+        
     // Build a range from a period-only argument (assumes the min date is now.)
     if (empty($parts[0]['date']) && !empty($parts[0]['period']) && (empty($parts[1]))) {
       $min_date = date_now();
@@ -845,11 +876,14 @@ class date_sql_handler {
     }
     // Build a range from period + end date.
     if (!empty($parts[0]['period'])) {
+      $min_date = date_now();
       foreach ($parts[0]['period'] as $part => $value) {
-        $min_date = drupal_clone($max_date);
-        date_modify($min_date, "-$value $part");
+        date_modify($min_date, "$value $part");
       }
       return array($min_date, $max_date);
     }
-  }
+     // Intercept invalid info and fall back to the current date.
+    $now = date_now();
+    return array($now, $now);
+ }
 }

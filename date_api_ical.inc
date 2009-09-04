@@ -83,7 +83,7 @@ function date_ical_import($filename) {
     $icaldatafetch = drupal_http_request($filename);
     // Check the return result
     if ($icaldatafetch->error) {
-      watchdog('date ical', 'Request Error importing !filename: !error', array('!filename' => $filename, '!error' => $icaldatafetch->error));
+      watchdog('date ical', 'HTTP Request Error importing %filename: @error', array('%filename' => $filename, '@error' => $icaldatafetch->error));
       return false;
     }
     // Break the return result into one array entry per lines
@@ -92,13 +92,13 @@ function date_ical_import($filename) {
   else {
     $icaldatafolded = @file($filename, FILE_IGNORE_NEW_LINES);
     if ($icaldatafolded === FALSE) {
-      watchdog('date ical', 'Failed to open file: !filename', array('!filename' => $filename));
+      watchdog('date ical', 'Failed to open file: %filename', array('%filename' => $filename));
       return false;
     }
   }
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
-    watchdog('date ical', 'Invalid calendar file: !filename', array('!filename' => $filename));
+    watchdog('date ical', 'Invalid calendar file: %filename', array('%filename' => $filename));
     return false;
   }
   return date_ical_parse($icaldatafolded);
@@ -193,18 +193,19 @@ function date_ical_parse($icaldatafolded = array()) {
             // Can't be sure whether DTSTART is before or after DURATION,
             // so parse DURATION at the end.
             if (isset($subgroup['DURATION'])) {
-              date_ical_parse_duration($subgroup);
+              date_ical_parse_duration($subgroup, 'DURATION');
             }
-            // Check for all-day events setting the 'all_day' property under
-            // the component instead of DTSTART/DTEND subcomponents
-            if ((isset($subgroup['DTSTART']) && !isset($subgroup['DTEND'])) || 
-            (isset($subgroup['DTSTART']) && $subgroup['DTSTART']['all_day'])) {
-              $subgroup['all_day'] = true;
-              if (!isset($subgroup['DTEND'])) {
-                $subgroup['DTEND'] = $subgroup['DTSTART'];
-              }
-              unset($subgroup['DTSTART']['all_day']);
-              unset($subgroup['DTEND']['all_day']);
+            // Add a top-level indication for the 'All day' condition.
+            // Leave it in the individual date components, too, so it
+            // is always available even when you are working with only
+            // a portion of the VEVENT array, like in Feed API parsers.
+            $subgroup['all_day'] = FALSE;
+            if (!empty($subgroup['DTSTART']) && (!empty($subgroup['DTSTART']['all_day']) || 
+            (empty($subgroup['DTEND']) && empty($subgroup['RRULE']) && empty($subgroup['RRULE']['COUNT'])))) {
+              // Many programs output DTEND for an all day event as the
+              // following day, reset this to the same day for internal use.
+              $subgroup['all_day'] = TRUE;
+              $subgroup['DTEND'] = $subgroup['DTSTART'];
             }
           // Add this element to the parent as an array under the
           // component name
@@ -245,7 +246,6 @@ function date_ical_parse($icaldatafolded = array()) {
         case 'DTEND':
         case 'DTSTAMP':
         case 'RDATE':
-        case 'TRIGGER':
         case 'FREEBUSY':
         case 'DUE':
         case 'COMPLETED':
@@ -256,6 +256,16 @@ function date_ical_parse($icaldatafolded = array()) {
           $parse_result = date_ical_parse_exceptions($field, $data);
           break;
 
+        case 'TRIGGER':
+          // A TRIGGER can either be a date or in the form -PT1H.
+          if (!empty($field)) {
+            $parse_result = date_ical_parse_date($field, $data);
+          }
+          else {
+            $parse_result = array('DATA' => $data);
+          }
+          break;
+          
         case 'DURATION':
           // Can't be sure whether DTSTART is before or after DURATION in
           // the VEVENT, so store the data and parse it at the end.
@@ -460,8 +470,8 @@ function date_ical_parse_exceptions($field, $data) {
  *  @param $subgroup
  *   array of other values in the vevent so we can check for DTSTART
  */
-function date_ical_parse_duration(&$subgroup) {
-  $items = $subgroup['DURATION'];
+function date_ical_parse_duration(&$subgroup, $field = 'DURATION') {
+  $items = $subgroup[$field];
   $data  = $items['DATA'];
   preg_match('/^P(\d{1,4}[Y])?(\d{1,2}[M])?(\d{1,2}[W])?(\d{1,2}[D])?([T]{0,1})?(\d{1,2}[H])?(\d{1,2}[M])?(\d{1,2}[S])?/', $data, $duration);
   $items['year'] = isset($duration[1]) ? str_replace('Y', '', $duration[1]) : '';
@@ -547,7 +557,10 @@ function date_ical_parse_location($field, $data) {
 function date_ical_date($ical_date, $to_tz = FALSE) {
   // If the ical date has no timezone, must assume it is stateless
   // so treat it as a local date.
-  if (empty($ical_date['tz'])) {
+  if (empty($ical_date['datetime'])) {
+    return NULL;
+  }
+  elseif (empty($ical_date['tz'])) {
     $from_tz = date_default_timezone_name();
   }
   else {
@@ -572,10 +585,13 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
  */
 function date_ical_escape_text($text) {
   //$text = strip_tags($text);
-  $text = str_replace('"', '\"', $text);
+  // TODO Per #38130 the iCal specs don't want : and " escaped
+  // but there was some reason for adding this in. Need to watch
+  // this and see if anything breaks.
+  //$text = str_replace('"', '\"', $text);
+  //$text = str_replace(":", "\:", $text);
   $text = str_replace("\\", "\\\\", $text);
   $text = str_replace(",", "\,", $text);
-  $text = str_replace(":", "\:", $text);
   $text = str_replace(";", "\;", $text);
   $text = str_replace("\n", "\n ", $text);
   return trim($text);
@@ -639,7 +655,7 @@ function date_api_ical_build_rrule($form_values) {
     $RRULE .= ';BYMONTHDAY='. $BYMONTHDAY;
   }
   // The UNTIL date is supposed to always be expressed in UTC.
-  if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL'])) {
+  if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL']) && !empty($form_values['UNTIL']['datetime'])) {
     $until = date_ical_date($form_values['UNTIL'], 'UTC');
     $RRULE .= ';UNTIL='. date_format($until, DATE_FORMAT_ICAL) .'Z';
   }

@@ -3,11 +3,21 @@
 /**
  * Test PHP 4 Timezone Conversion
  */
-class DateRepeat extends DrupalTestCase {
-  function get_info() {
-    if (module_exists('date_repeat')) {
-      return array('name' => t('Date repeat calculations'), 'desc' => t('Test Date Repeat processes to create arrays of dates from iCal rules.') , 'group' => 'Date tests');
-    }
+class DateRepeatTestCase extends DrupalWebTestCase {
+  function getInfo() {
+    return array(
+      'name' => t('Date repeat calculations'),
+      'description' => t('Test Date Repeat processes to create arrays of dates from iCal rules.') ,
+      'group' => t('Date'),
+    );
+  }
+
+  /**
+   * Implementation of setUp().
+   */
+  function setUp() {
+    // Load the date_repeat module.
+    parent::setUp('date_repeat');
   }
 
   function testDateRepeat() {

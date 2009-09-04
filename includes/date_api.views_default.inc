@@ -65,7 +65,7 @@ $handler->override_option('row_options', array(
   'comments' => 0,
 ));
 $handler = $view->new_display('page', 'Page', 'page');
-$handler->override_option('path', 'date_browser');
+$handler->override_option('path', 'date-browser');
 $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',

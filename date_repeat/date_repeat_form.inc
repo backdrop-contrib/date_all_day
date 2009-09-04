@@ -63,12 +63,12 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
     date_timezone_set($until_date, timezone_open($timezone));
     $UNTIL = date_format($until_date, DATE_FORMAT_DATETIME);
   }
-
+  $parent_collapsed = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
   $element['#type'] = 'fieldset';
   $element['#title'] = t('Repeat');
   $element['#description'] = theme('advanced_help_topic', 'date_api', 'date-repeat-form') . t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.');
   $element['#collapsible'] = TRUE;
-  $element['#collapsed'] = !empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0;
+  $element['#collapsed'] = $parent_collapsed;
   
   // Make sure we don't get floating parts where we don't want them.
   $element['#prefix'] = '<div class="date-clear">';
@@ -129,7 +129,7 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
 
   $element['advanced']['BYMONTH'] = array(
     '#type' => 'select',
-    '#title' => t('Month'),
+    '#title' => date_t('Month', 'datetime'),
     '#default_value' => !empty($rrule['BYMONTH']) ? $rrule['BYMONTH'] : '',
     '#options' => array('' => t('-- Any')) + date_month_names(TRUE),
     '#multiple' => TRUE,
@@ -255,7 +255,7 @@ function theme_date_repeat_current_exceptions($rows = array()) {
       $rows_info[] = array(drupal_render($value['action']), drupal_render($value['display']));
     }
   }
-  return theme('table', array(t('Delete'), t('Current Exceptions')), $rows_info);
+  return theme('table', array(t('Delete'), t('Current exceptions')), $rows_info);
 }
 
 /**

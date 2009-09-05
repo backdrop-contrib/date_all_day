@@ -16,7 +16,7 @@
  *   A generic date filter that has an option to select a 
  *   Views date field to filter on, with a choice of a widget to use
  *   for the filter form and an option to set the default value to 
- *   a set date or something like 'now +90 days'. If the operator is 
+ *   a set date or something like 'now +90 days' . If the operator is 
  *   set to 'between' or 'not between' you can set a default value for
  *   both the from and to dates. 
  * 
@@ -36,7 +36,7 @@
 function date_api_views_handlers() {
   return array(
     'info' => array(
-      'path' => drupal_get_path('module', 'date_api') .'/includes',
+      'path' => drupal_get_path('module', 'date_api') . '/includes',
       ),
     'handlers' => array(
       'date_api_argument_handler' => array(
@@ -129,7 +129,7 @@ function date_api_views_data() {
     $data[$base_table]['date_argument'] = array(
       'group' => t('Date'),
       'title' => t('Date (!base_table)', array('!base_table' => $base_table)),
-      'help' => t('Filter any Views !base_table date field by a date argument, using any common ISO date/period format (i.e. YYYY, YYYY-MM, YYYY-MM-DD, YYYY-W99, YYYY-MM-DD--P3M, P90D, etc).', array('!base_table' => $base_table)),
+      'help' => t('Filter any Views !base_table date field by a date argument, using any common ISO date/period format (i.e. YYYY, YYYY-MM, YYYY-MM-DD, YYYY-W99, YYYY-MM-DD--P3M, P90D, etc). ', array('!base_table' => $base_table)),
       'argument' => array(
         'handler' => 'date_api_argument_handler',
         'empty name field' => t('Undated'),
@@ -140,7 +140,7 @@ function date_api_views_data() {
     $data[$base_table]['date_filter'] = array(
       'group' => t('Date'),
       'title' => t('Date (!base_table)', array('!base_table' => $base_table)),
-      'help' => t('Filter any Views !base_table date field.', array('!base_table' => $base_table)),
+      'help' => t('Filter any Views !base_table date field. ', array('!base_table' => $base_table)),
       'filter' => array(
         'handler' => 'date_api_filter_handler',
         'empty name field' => t('Undated'),
@@ -157,9 +157,9 @@ function date_api_views_data() {
 function date_api_fields($base = 'node', $reset = FALSE) {
   static $fields = array();
   $empty = array('name' => array(), 'alias' => array());
-  require_once('./'. drupal_get_path('module', 'date_api') .'/includes/date_api_fields.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/includes/date_api_fields.inc');
   if (empty($fields[$base]) || $reset) {
-    $cid = 'date_api_fields_'. $base;
+    $cid = 'date_api_fields_' . $base;
     if (!$reset && $cached = cache_get($cid, 'cache_views')) {
       $fields[$base] = $cached->data;
     }

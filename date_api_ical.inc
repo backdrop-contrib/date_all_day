@@ -84,7 +84,7 @@ function date_ical_import($filename) {
     // Check the return result
     if ($icaldatafetch->error) {
       watchdog('date ical', 'HTTP Request Error importing %filename: @error', array('%filename' => $filename, '@error' => $icaldatafetch->error));
-      return false;
+      return FALSE;
     }
     // Break the return result into one array entry per lines
     $icaldatafolded = explode("\n", $icaldatafetch->data);
@@ -93,13 +93,13 @@ function date_ical_import($filename) {
     $icaldatafolded = @file($filename, FILE_IGNORE_NEW_LINES);
     if ($icaldatafolded === FALSE) {
       watchdog('date ical', 'Failed to open file: %filename', array('%filename' => $filename));
-      return false;
+      return FALSE;
     }
   }
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
     watchdog('date ical', 'Invalid calendar file: %filename', array('%filename' => $filename));
-    return false;
+    return FALSE;
   }
   return date_ical_parse($icaldatafolded);
 }
@@ -145,21 +145,21 @@ function date_ical_parse($icaldatafolded = array()) {
   $vcal = '';
   foreach ($icaldata as $line) {
     $line = trim($line);
-    $vcal .= $line ."\n";
+    $vcal .= $line . "\n";
     // Deal with begin/end tags separately
     if (preg_match('/(BEGIN|END):V(\S+)/', $line, $matches)) {
       $closure = $matches[1];
-      $type = 'V'. $matches[2];
+      $type = 'V' . $matches[2];
       if ($closure == 'BEGIN') {
         array_push($parents, $type);
         array_push($subgroups, array());
       }
-      else if ($closure == 'END') {
+      elseif ($closure == 'END') {
         end($subgroups);
         $subgroup =& $subgroups[key($subgroups)];
         switch ($type) {
           case 'VCALENDAR':
-            if (prev($subgroups) == false) {
+            if (prev($subgroups) == FALSE) {
               $items[] = array_pop($subgroups);
             }
             else {
@@ -359,30 +359,30 @@ function date_ical_parse_date($field, $data) {
   $data = trim($data);
 
   // Record if a time has been found
-  $has_time = false;
+  $has_time = FALSE;
 
   // If a format is specified, parse it according to that format
   if (isset($properties['VALUE'])) {
     switch ($properties['VALUE']) {
       case 'DATE':
-        preg_match (DATE_REGEX_ICAL_DATE, $data, $regs);
-        $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
+        preg_match(DATE_REGEX_ICAL_DATE, $data, $regs);
+        $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
         break;
       case 'DATE-TIME':
-        preg_match (DATE_REGEX_ICAL_DATETIME, $data, $regs);
-        $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
-        $datetime .= ' '. date_pad($regs[4]) .':'. date_pad($regs[5]) .':'. date_pad($regs[6]); // Time
-        $has_time = true;
+        preg_match(DATE_REGEX_ICAL_DATETIME, $data, $regs);
+        $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
+        $datetime .= ' ' . date_pad($regs[4]) . ':' . date_pad($regs[5]) . ':' . date_pad($regs[6]); // Time
+        $has_time = TRUE;
         break;
     }
   }
   // If no format is specified, attempt a loose match
   else {
     preg_match (DATE_REGEX_LOOSE, $data, $regs);
-    $datetime = date_pad($regs[1]) .'-'. date_pad($regs[2]) .'-'. date_pad($regs[3]); // Date
+    $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
     if (isset($regs[4])) {
-      $has_time = true;
-      $datetime .= ' '.date_pad($regs[5]) .':'. date_pad($regs[6]) .':'. date_pad($regs[7]); // Time
+      $has_time = TRUE;
+      $datetime .= ' ' .date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
     }
   }
 
@@ -397,7 +397,7 @@ function date_ical_parse_date($field, $data) {
     }
   }
   // If declared as UTC with terminating 'Z', use that timezone
-  else if (strpos($data, 'Z') !== false) {
+  elseif (strpos($data, 'Z') !== FALSE) {
     $tz = 'UTC';
   }
   // Otherwise this date is floating...
@@ -406,7 +406,7 @@ function date_ical_parse_date($field, $data) {
   }
 
   $items['datetime'] = $datetime;
-  $items['all_day'] = $has_time ? false : true;
+  $items['all_day'] = $has_time ? FALSE : TRUE;
   $items['tz'] = $tz;
   return $items;
 }
@@ -487,10 +487,10 @@ function date_ical_parse_duration(&$subgroup, $field = 'DURATION') {
     $timezone = 'UTC';
   }
   $date = date_make_date($start_date, $timezone);
-  $date2 = drupal_clone($date);
+  $date2 = clone($date);
   foreach ($items as $item => $count) {
     if ($count > 0) {
-      date_modify($date2, '+'. $count .' '. $item);
+      date_modify($date2, '+' . $count . ' ' . $item);
     }
   }
   $format = isset($subgroup['DTSTART']['type']) && $subgroup['DTSTART']['type'] == 'DATE' ? 'Y-m-d' : 'Y-m-d H:i:s';
@@ -531,7 +531,7 @@ function date_ical_parse_text($field, $data) {
  * Use non-greedy check for ':' in case there are more of them in the address.
  */
 function date_ical_parse_location($field, $data) {
-  if (preg_match('/UID=[?"](.+)[?"][*?:](.+)/', $field .':'. $data, $matches)) {
+  if (preg_match('/UID=[?"](.+)[?"][*?:](.+)/', $field . ':' . $data, $matches)) {
     $location = array();
     $location['UID'] = $matches[1];
     $location['DESCRIPTION'] = stripslashes($matches[2]);
@@ -637,8 +637,8 @@ function date_api_ical_build_rrule($form_values) {
     return $RRULE;
   }
   //grab the RRULE data and put them into iCal RRULE format
-  $RRULE .= 'RRULE:FREQ='. (!array_key_exists('FREQ', $form_values) ? 'DAILY' : $form_values['FREQ']);
-  $RRULE .= ';INTERVAL='. (!array_key_exists('INTERVAL', $form_values) ? 1 : $form_values['INTERVAL']);
+  $RRULE .= 'RRULE:FREQ=' . (!array_key_exists('FREQ', $form_values) ? 'DAILY' : $form_values['FREQ']);
+  $RRULE .= ';INTERVAL=' . (!array_key_exists('INTERVAL', $form_values) ? 1 : $form_values['INTERVAL']);
 
   // Unset the empty 'All' values.
   if (array_key_exists('BYDAY', $form_values)) unset($form_values['BYDAY']['']);
@@ -646,32 +646,32 @@ function date_api_ical_build_rrule($form_values) {
   if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
 
   if (array_key_exists('BYDAY', $form_values) && $BYDAY = implode(",", $form_values['BYDAY'])) {
-    $RRULE .= ';BYDAY='. $BYDAY;
+    $RRULE .= ';BYDAY=' . $BYDAY;
   }
   if (array_key_exists('BYMONTH', $form_values) && $BYMONTH = implode(",", $form_values['BYMONTH'])) {
-    $RRULE .= ';BYMONTH='. $BYMONTH;
+    $RRULE .= ';BYMONTH=' . $BYMONTH;
   }
   if (array_key_exists('BYMONTHDAY', $form_values) && $BYMONTHDAY = implode(",", $form_values['BYMONTHDAY'])) {
-    $RRULE .= ';BYMONTHDAY='. $BYMONTHDAY;
+    $RRULE .= ';BYMONTHDAY=' . $BYMONTHDAY;
   }
   // The UNTIL date is supposed to always be expressed in UTC.
   if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL']) && !empty($form_values['UNTIL']['datetime'])) {
     $until = date_ical_date($form_values['UNTIL'], 'UTC');
-    $RRULE .= ';UNTIL='. date_format($until, DATE_FORMAT_ICAL) .'Z';
+    $RRULE .= ';UNTIL=' . date_format($until, DATE_FORMAT_ICAL) . 'Z';
   }
   // Our form doesn't allow a value for COUNT, but it may be needed by
   // modules using the API, so add it to the rule.
   if (array_key_exists('COUNT', $form_values)) {
-    $RRULE .= ';COUNT='. $form_values['COUNT'];
+    $RRULE .= ';COUNT=' . $form_values['COUNT'];
   }
 
   // iCal rules presume the week starts on Monday unless otherwise specified,
   // so we'll specify it.
   if (array_key_exists('WKST', $form_values)) {
-    $RRULE .= ';WKST='. $form_values['WKST'];
+    $RRULE .= ';WKST=' . $form_values['WKST'];
   }
   else {
-    $RRULE .= ';WKST='. date_repeat_dow2day(variable_get('date_first_day', 1));
+    $RRULE .= ';WKST=' . date_repeat_dow2day(variable_get('date_first_day', 1));
   }
 
   // Exceptions dates go last, on their own line.
@@ -685,11 +685,11 @@ function date_api_ical_build_rrule($form_values) {
     }
     if (!empty($ex_dates)) {
       sort($ex_dates);
-      $RRULE .= chr(13) . chr(10) .'EXDATE:'. implode(',', $ex_dates);
+      $RRULE .= chr(13) . chr(10) . 'EXDATE:' . implode(',', $ex_dates);
     }
   }
   elseif (!empty($form_values['EXDATE'])) {
-    $RRULE .= chr(13) . chr(10) .'EXDATE:'. $form_values['EXDATE'];
+    $RRULE .= chr(13) . chr(10) . 'EXDATE:' . $form_values['EXDATE'];
   }
   return $RRULE;
 }

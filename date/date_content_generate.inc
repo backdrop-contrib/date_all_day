@@ -1,11 +1,15 @@
 <?php
 /**
+ * @file
+ * Date Devel Generate code.
+ */
+/**
  * Implementation of Devel module's hook_content_generate().
  *
  * Included only when needed.
  */
 function _date_content_generate($node, $field) {
-  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
   
   $node_field = array();
   if (isset($field['widget']['year_range'])) {
@@ -19,21 +23,21 @@ function _date_content_generate($node, $field) {
   }
   // Pick a random year within the time range,
   // and a random second within that year.
-	$year = date_format(date_now(), 'Y') - $back + mt_rand(0, ($forward + $back));
-	$start = date_make_date($year .'-01-01 00:00:00', date_get_timezone_db($field['tz_handling']));
-	$leap = date_format($start, 'L');
-	$max_days = $leap ? 366 : 365;
-	$seconds = mt_rand(0, ($max_days * 86400));
-	date_modify($start, "+$seconds seconds");
-	$increment = $field['widget']['increment'];
+  $year = date_format(date_now(), 'Y') - $back + mt_rand(0, ($forward + $back));
+  $start = date_make_date($year . '-01-01 00:00:00', date_get_timezone_db($field['tz_handling']));
+  $leap = date_format($start, 'L');
+  $max_days = $leap ? 366 : 365;
+  $seconds = mt_rand(0, ($max_days * 86400));
+  date_modify($start, "+$seconds seconds");
+  $increment = $field['widget']['increment'];
   date_increment_round($start, $increment);
     
-	// Modify To date by 1 hour to 3 days, shorter for repeating dates
-	// longer for others.
-	$start2 = drupal_clone($start);
-	$max = !empty($field['repeat']) ? 720 : 4320;
-	$max = 240;
-  date_modify($start2, '+'. mt_rand(60, $max) .' minutes');  
+  // Modify To date by 1 hour to 3 days, shorter for repeating dates
+  // longer for others.
+  $start2 = clone($start);
+  $max = !empty($field['repeat']) ? 720 : 4320;
+  $max = 240;
+  date_modify($start2, '+' . mt_rand(60, $max) . ' minutes');  
   date_increment_round($start2, $increment);
       
   if ($field['tz_handling'] == 'date') {
@@ -71,12 +75,12 @@ function _date_content_generate($node, $field) {
   $node_field['timezone'] = $timezone;
   $node_field['offset'] = date_offset_get($start);
   date_timezone_set($start2, timezone_open($timezone));
-  $node_field['offset2'] = date_offset_get($start2);     	 	
+  $node_field['offset2'] = date_offset_get($start2);          
   
   if (!empty($field['repeat'])) {
-    include_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
-    include_once('./'. drupal_get_path('module', 'date') .'/date_repeat.inc');
-    include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+    include_once(' ./' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
+    include_once(' ./' . drupal_get_path('module', 'date') . '/date_repeat.inc');
+    include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   
     // Create a repeating date.
     $duration = date_difference($start, $start2);
@@ -142,7 +146,7 @@ function _date_content_generate($node, $field) {
         break;
         
     }
-    date_modify($start2, '+'. max(1, $forward) .' years');
+    date_modify($start2, '+' . max(1, $forward) . ' years');
     date_increment_round($start2, $increment);
     $until = date_format($start2, 'Y-m-d H:i:s');
     $form_values['UNTIL'] = array('datetime' => $until, 'tz' => 'UTC');
@@ -177,7 +181,7 @@ function date_content_repeat_dow_options() {
   foreach (date_repeat_dow_count_options() as $count_key => $count_value) {
     foreach (date_repeat_dow_day_options() as $dow_key => $dow_value) {
       if ($count_key != 5 && $count_key != -5) {
-        $options[$count_key . $dow_key] = $count_value .' '. $dow_value;
+        $options[$count_key . $dow_key] = $count_value . ' ' . $dow_value;
       }
     }
   }

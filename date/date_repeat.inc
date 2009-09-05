@@ -54,7 +54,7 @@ function _date_repeat_widget(&$element, $field, $items, $delta) {
  * Lots more work needed here.
  */
 function _date_repeat_widget_validate($element, &$form_state) {
-  require_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_form.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_form.inc');
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $fields = content_fields();
@@ -73,7 +73,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
   // Require the UNTIL date for now.
   // The RRULE has already been created by this point, so go back
   // to the posted values to see if this was filled out.
-  $error_field = implode('][', $element['#parents']) .'][rrule][UNTIL][datetime][date';
+  $error_field = implode('][', $element['#parents']) . '][rrule][UNTIL][datetime][date';
   if (empty($values['UNTIL']['datetime'])) {
     form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
   }
@@ -122,7 +122,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
  * whichever is missing will be created when needed.
  */
 function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
-  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $field_name = $field['field_name'];
   
   if (empty($rrule)) {
@@ -138,7 +138,7 @@ function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
   $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
   $timezone_db = date_get_timezone_db($field['tz_handling']);
   $start = date_make_date($item['value'], $timezone_db, $field['type'], $field['granularity']);
-  if ($timezone != $timezone_db){
+  if ($timezone != $timezone_db) {
     date_timezone_set($start, timezone_open($timezone));
   }
   if (!empty($item['value2']) && $item['value2'] != $item['value']) {
@@ -174,8 +174,8 @@ function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
     // Convert returned dates back to db timezone before storing.
     $date_start = date_make_date($date, $timezone, DATE_DATETIME, $field['granularity']);  
     date_timezone_set($date_start, timezone_open($timezone_db));    
-    $date_end = drupal_clone($date_start);
-    date_modify($date_end, '+'. $duration .' seconds');
+    $date_end = clone($date_start);
+    date_modify($date_end, '+' . $duration . ' seconds');
     $value[$delta] = array(
       'value' => date_format($date_start, date_type_format($field['type'])),
       'value2' => date_format($date_end, date_type_format($field['type'])),

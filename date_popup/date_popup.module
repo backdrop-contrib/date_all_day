@@ -167,13 +167,13 @@ function date_popup_elements() {
  */
 function date_popup_process($element, $edit, $form_state, $form) {
   date_popup_load();
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
 
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
   
   if (!empty($edit) && is_array($edit) && !empty($edit['date'])) {
-    $input = $edit['date'] . (!empty($edit['time']) ? ' '. $edit['time'] : '');
+    $input = $edit['date'] . (!empty($edit['time']) ? ' ' . $edit['time'] : '');
     $datetime = date_convert_from_custom($input, $element['#date_format']);
     $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME, $granularity);
   }
@@ -218,7 +218,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
   $year_range = date_range_string($range);
 
   $settings = array(
-    'prevText' => '&lt;'. date_t('Prev', 'date_nav'),
+    'prevText' => '&lt;' . date_t('Prev', 'date_nav'),
     'nextText' => date_t('Next', 'date_nav') .'&gt;',
     'currentText' => date_t('Today', 'date_nav'),
     'clearText' => t('Clear'),
@@ -256,7 +256,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     $sub_element['#value'] = $sub_element['#default_value'];
   }
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = ' '. t('Format: @date', array('@date' => date($date_format, time())));
+  $sub_element['#description'] = ' ' . t('Format: @date', array('@date' => date($date_format, REQUEST_TIME)));
   return $sub_element;
 }
 
@@ -293,7 +293,7 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
     $sub_element['#value'] = $sub_element['#default_value'];
   }
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = t('Format: @date', array('@date' => date($time_format, time())));
+  $sub_element['#description'] = t('Format: @date', array('@date' => date($time_format, REQUEST_TIME)));
   return ($sub_element);
 }
 
@@ -334,7 +334,7 @@ function date_popup_validate($element, &$form_state) {
     return;
   }
 
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
   date_popup_load();
   $value = date_popup_input_value($element);
   
@@ -378,7 +378,7 @@ function date_popup_input_value($element, $auto_complete = FALSE) {
   if (is_array($element['#value']) && !empty($element['#value']['date'])) {
     $date = date_convert_from_custom(trim(!empty($element['#value']['date']) ? $element['#value']['date'] : ''), $date_format);
     $time = date_convert_from_custom(trim(!empty($element['#value']['time']) ? $element['#value']['time'] : ''), $time_format);
-    $value = trim(substr($date, 0, 10) .' '. substr($time, 11, 8));
+    $value = trim(substr($date, 0, 10) .' ' . substr($time, 11, 8));
   }
   
   if (date_is_valid($value, DATE_DATETIME, $granularity)) {
@@ -432,7 +432,7 @@ function date_format_options() {
         $no_time = date_limit_format($format, array('month', 'day', 'year'));
         $zones = array('', 'O', 'P', 'e');
         foreach ($zones as $zone) {
-          $time_format = !empty($zone) ? $format .' '. $zone : $format;
+          $time_format = !empty($zone) ? $format .' ' . $zone : $format;
           $options[$no_time] = date_format_date($now, 'custom', $no_time);
           $options[$time_format] = date_format_date($now, 'custom', $time_format);
         }
@@ -474,7 +474,7 @@ function date_popup_format_to_popup_time($format) {
     $format = 'H:i';
   }
   $format = strtr($format, timepicker_format_replacements());
-  $format = str_replace(array(' ', '/', '-', '.', ',', 'F', 'M', 'l', 'z', 'w', 'W', 'd', 'j', 'm', 'n', 'y', 'Y'), '', $format);
+  $format = str_replace(array(' ', '/', '-', ' .', ',', 'F', 'M', 'l', 'z', 'w', 'W', 'd', 'j', 'm', 'n', 'y', 'Y'), '', $format);
   return $format;
 }
 
@@ -532,7 +532,7 @@ function theme_date_popup($element) {
   if (isset($element['#children'])) {
     $output = $element['#children'];
   }
-  return '<div class="'. $class .'">'. theme('form_element', $element, $output) .'</div>';
+  return '<div class="' . $class .'">' . theme('form_element', $element, $output) .'</div>';
 }
 
 /**
@@ -583,7 +583,7 @@ function date_popup_settings() {
 }
 EOM;
 
-  $form['#suffix'] = t('<p>The Date Popup calendar includes some css for IE6 that breaks css validation. Since IE 6 is now superceded by IE 7 and IE 8, the special css for IE 6 has been removed from the regular css used by the Date Popup. If you find you need that css after all, you can add it back in your theme. Look at the way the Garland theme adds special IE-only css in in its page.tpl.php file. The css you need is:</p>') .'<blockquote><PRE>'. $css .'</PRE></blockquote>';
+  $form['#suffix'] = t('<p>The Date Popup calendar includes some css for IE6 that breaks css validation. Since IE 6 is now superceded by IE 7 and IE 8, the special css for IE 6 has been removed from the regular css used by the Date Popup. If you find you need that css after all, you can add it back in your theme. Look at the way the Garland theme adds special IE-only css in in its page.tpl.php file. The css you need is:</p>') .'<blockquote><PRE>' . $css .'</PRE></blockquote>';
 
   return system_settings_form($form);
 }

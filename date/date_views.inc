@@ -10,37 +10,37 @@ function _date_views_data($field) {
   $table_alias = content_views_tablename($field);
 
   // Swap the filter and argument handlers to the date handlers.
-  $data[$table_alias][$field['field_name'] .'_value']['filter']['handler'] = 'date_views_filter_handler';
-  $data[$table_alias][$field['field_name'] .'_value']['argument']['handler'] = 'date_views_argument_handler';
+  $data[$table_alias][$field['field_name'] . '_value']['filter']['handler'] = 'date_views_filter_handler';
+  $data[$table_alias][$field['field_name'] . '_value']['argument']['handler'] = 'date_views_argument_handler';
 
   // Set the date type in the handlers.
   $date_type = $field['type'] == 'date' ? 'iso' : 'int';
-  $data[$table_alias][$field['field_name'] .'_value']['field']['date_type'] = $date_type;
-  $data[$table_alias][$field['field_name'] .'_value']['filter']['date_type'] = $date_type;
-  $data[$table_alias][$field['field_name'] .'_value']['argument']['date_type'] = $date_type;
-  $data[$table_alias][$field['field_name'] .'_value']['sort']['date_type'] = $date_type;
+  $data[$table_alias][$field['field_name'] . '_value']['field']['date_type'] = $date_type;
+  $data[$table_alias][$field['field_name'] . '_value']['filter']['date_type'] = $date_type;
+  $data[$table_alias][$field['field_name'] . '_value']['argument']['date_type'] = $date_type;
+  $data[$table_alias][$field['field_name'] . '_value']['sort']['date_type'] = $date_type;
 
   // Add in another set of fields, filters, and aguments for the To date.
   if ($field['todate']) {
-    $data[$table_alias][$field['field_name'] .'_value2'] = $data[$table_alias][$field['field_name'] .'_value'];
-    $data[$table_alias][$field['field_name'] .'_value']['title'] = t('!label (!field value)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
-    $data[$table_alias][$field['field_name'] .'_value2']['title'] = t('!label (!field value2)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
+    $data[$table_alias][$field['field_name'] . '_value2'] = $data[$table_alias][$field['field_name'] . '_value'];
+    $data[$table_alias][$field['field_name'] . '_value']['title'] = t('!label (!field value)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
+    $data[$table_alias][$field['field_name'] . '_value2']['title'] = t('!label (!field value2)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
   }
 
   // Create another argument for the date browser, using the configuration already created.
-  $data[$table_alias][$field['field_name'] .'_browser'] = $data[$table_alias][$field['field_name'] .'_value'];
-  $data[$table_alias][$field['field_name'] .'_browser']['title'] = t('Date Browser (!field value)', array('!field' => t($field['field_name'])));
-  $data[$table_alias][$field['field_name'] .'_browser']['argument']['handler'] = 'date_views_browser_argument_handler';
-  unset($data[$table_alias][$field['field_name'] .'_browser']['field']);
-  unset($data[$table_alias][$field['field_name'] .'_browser']['filter']);
-  unset($data[$table_alias][$field['field_name'] .'_browser']['sort']);
+  $data[$table_alias][$field['field_name'] . '_browser'] = $data[$table_alias][$field['field_name'] . '_value'];
+  $data[$table_alias][$field['field_name'] . '_browser']['title'] = t('Date Browser (!field value)', array('!field' => t($field['field_name'])));
+  $data[$table_alias][$field['field_name'] . '_browser']['argument']['handler'] = 'date_views_browser_argument_handler';
+  unset($data[$table_alias][$field['field_name'] . '_browser']['field']);
+  unset($data[$table_alias][$field['field_name'] . '_browser']['filter']);
+  unset($data[$table_alias][$field['field_name'] . '_browser']['sort']);
   if ($field['todate']) {
-    $data[$table_alias][$field['field_name'] .'_browser2'] = $data[$table_alias][$field['field_name'] .'_value2'];
-    $data[$table_alias][$field['field_name'] .'_browser2']['title'] = t('Date Browser (!field value2)', array('!field' => t($field['field_name'])));
-    $data[$table_alias][$field['field_name'] .'_browser2']['argument']['handler'] = 'date_views_browser_argument_handler';
-    unset($data[$table_alias][$field['field_name'] .'_browser2']['field']);
-    unset($data[$table_alias][$field['field_name'] .'_browser2']['filter']);
-    unset($data[$table_alias][$field['field_name'] .'_browser2']['sort']);
+    $data[$table_alias][$field['field_name'] . '_browser2'] = $data[$table_alias][$field['field_name'] . '_value2'];
+    $data[$table_alias][$field['field_name'] . '_browser2']['title'] = t('Date Browser (!field value2)', array('!field' => t($field['field_name'])));
+    $data[$table_alias][$field['field_name'] . '_browser2']['argument']['handler'] = 'date_views_browser_argument_handler';
+    unset($data[$table_alias][$field['field_name'] . '_browser2']['field']);
+    unset($data[$table_alias][$field['field_name'] . '_browser2']['filter']);
+    unset($data[$table_alias][$field['field_name'] . '_browser2']['sort']);
   }
 
   return $data;
@@ -236,7 +236,7 @@ class date_views_browser_argument_handler extends views_handler_argument_formula
     // the relevant part of the date instead of a complete date.
     $this->formula = $handler->sql_format($this->sql_format, "$this->table_alias.$this->real_field");
 
-    $alias = $this->name_alias = $this->table_alias ."_". $this->real_field;
+    $alias = $this->name_alias = $this->table_alias . "_" . $this->real_field;
     $this->query->add_field(NULL, $this->get_formula(), $alias);
     $this->base_alias = $this->get_formula();
 
@@ -260,8 +260,8 @@ class date_views_browser_argument_handler extends views_handler_argument_formula
     $this->ensure_my_table();
     $range = date_views_date_range($this->argument, $this->content_field);
     $handler = $this->date_handler;
-    $this->query->add_where(0, $handler->sql_field("$this->table_alias.$this->real_field") .">='". str_replace('T', ' ', $range[0]) ."'");
-    $this->query->add_where(0, $handler->sql_field("$this->table_alias.$this->real_field") ."<='". str_replace('T', ' ', $range[1]) ."'");
+    $this->query->add_where(0, $handler->sql_field("$this->table_alias.$this->real_field") . ">='" . str_replace('T', ' ', $range[0]) . "'");
+    $this->query->add_where(0, $handler->sql_field("$this->table_alias.$this->real_field") . "<='" . str_replace('T', ' ', $range[1]) . "'");
   }
 }
 
@@ -316,8 +316,8 @@ function date_iso_week_range($value) {
   $parts = explode('-W', $value);
   $year = $parts[0];
   $week = $parts[1];
-  $date = date_make_date($year .'-01-04 00:00:00', 'UTC');
-  date_modify($date, '+'. $week .' weeks');
+  $date = date_make_date($year . '-01-04 00:00:00', 'UTC');
+  date_modify($date, '+' . $week . ' weeks');
   date_modify($date, '-1 Monday');
   $min_date = date_format($date, DATE_FORMAT_ISO);
   date_modify($date, '+1 week');
@@ -339,7 +339,7 @@ function date_iso_week_range($value) {
  *  @return an array of ISO dates representing the first and last day in the range
  */
 function date_plus_period_range($value) {
-  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $value = str_replace('--P', 'P', $value);
   $range = explode('P', $value);
 
@@ -363,7 +363,7 @@ function date_plus_period_range($value) {
 
   $min_date = date_range_value($range[0], 'min');
   $parsed = array('DURATION' => array(
-    'DATA' => 'P'. $range[1]),
+    'DATA' => 'P' . $range[1]),
     'DTSTART' => array(
       'datetime' => date_convert($min_date, DATE_ISO, DATE_DATETIME),
       'tz' => 'UTC',
@@ -388,19 +388,19 @@ function date_range_value($value, $value_type = 'min') {
 
   switch (strlen($value)) {
   case(4):
-    $return = ($value_type == 'min' ? $value .'-01-01T00:00:00' : $value .'-12-31T23:59:59');
+    $return = ($value_type == 'min' ? $value . '-01-01T00:00:00' : $value . '-12-31T23:59:59');
     break;
   case(7):
-    $return = ($value_type == 'min' ? $value .'-01T00:00:00' : $value .'-31T23:59:59');
+    $return = ($value_type == 'min' ? $value . '-01T00:00:00' : $value . '-31T23:59:59');
     break;
   case(10):
-    $return = ($value_type == 'min' ? $value .'T00:00:00' : $value .'T23:59:59');
+    $return = ($value_type == 'min' ? $value . 'T00:00:00' : $value . 'T23:59:59');
     break;
   case(13):
-    $return = ($value_type == 'min' ? $value .':00:00' : $value .':59:59');
+    $return = ($value_type == 'min' ? $value . ':00:00' : $value . ':59:59');
     break;
   case(16):
-    $return = ($value_type == 'min' ? $value .':00' : $value .':59');
+    $return = ($value_type == 'min' ? $value . ':00' : $value . ':59');
     break;
   case(19):
     $return = $value;
@@ -446,10 +446,10 @@ function _date_views_style_plugins() {
     'name' => t('Date: Date Browser'),
     'theme' => 'date_views_browser_full_view',
     'summary_theme' => 'date_views_browser_summary_view',
-    'needs_fields' => true,
-    'needs_table_header' => true,
+    'needs_fields' => TRUE,
+    'needs_table_header' => TRUE,
     'validate' => 'date_browser_validate',
-    'even_empty' => true,
+    'even_empty' => TRUE,
   );
   return $items;
 }
@@ -463,7 +463,7 @@ function date_browser_validate($type, $view, $form) {
     $fields = array_filter(array_keys($view['field']), 'is_numeric');
   }
   if (!$fields) {
-    form_error($form["$type-info"][$type .'_type'], t('The Date Browser requires at least one field.'));
+    form_error($form["$type-info"][$type . '_type'], t('The Date Browser requires at least one field.'));
   }
   // Make sure all arguments are set to 'Display all values'
   // and that a date argument has been provided.
@@ -473,7 +473,7 @@ function date_browser_validate($type, $view, $form) {
     if (in_array($argument['options'], $options)) {
       $found = TRUE;
       if (is_numeric($delta) && $argument['argdefault'] != 2) {
-        form_error($form['argument'][$delta]['argdefault'], t('Date Browser arguments must be set to \'Display All Values\'.'));
+        form_error($form['argument'][$delta]['argdefault'], t('Date Browser arguments must be set to \'Display All Values\' .'));
       }
     }
   }
@@ -487,7 +487,7 @@ function date_browser_validate($type, $view, $form) {
  *  Used to make sure view defaults to current date if no date selected
  */
 function _date_views_query_alter(&$query, &$view) {
-  include_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
   $date_views_browser_views = date_views_browser_get_views();
   if (in_array($view->name, array_keys($date_views_browser_views))) {
     $name       = explode(':', $view->argument[0]['type']);
@@ -496,12 +496,12 @@ function _date_views_query_alter(&$query, &$view) {
     $field      = content_fields($field_name);
     $field_type = $field['type'] == DATE_UNIX ? 'int' : 'iso';
     $db_info    = content_database_info($field);
-    $table      = 'node_data_'. $field['field_name'];
+    $table      = 'node_data_' . $field['field_name'];
 
     // Add a combo FROM|TO date field to the query
     $value      = $db_info['columns']['value']['column'];
     $value2     = !empty($db_info['columns']['value2']['column']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column'];
-    $combo = date_sql_concat(array($table .'.'. $value, "'|'", $table .'.'. $value2)) .' AS date_combo ';
+    $combo = date_sql_concat(array($table . ' . ' . $value, "'|'", $table . ' . ' . $value2)) . ' AS date_combo ';
     $query->add_field($combo, NULL);
 
     $path = explode('/', $view->url);
@@ -519,8 +519,8 @@ function _date_views_query_alter(&$query, &$view) {
         $query->ensure_table($table);
         $query->add_field('nid', 'node');
         $query->add_field($value, $table);
-        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) .">='". str_replace('T', ' ', $range[0]) ."'");
-        $query->add_where(date_sql('DATE', $table .'.'. $value, $field_type, $offset) ."<='". str_replace('T', ' ', $range[1]) ."'");
+        $query->add_where(date_sql('DATE', $table . ' . ' . $value, $field_type, $offset) . ">='" . str_replace('T', ' ', $range[0]) . "'");
+        $query->add_where(date_sql('DATE', $table . ' . ' . $value, $field_type, $offset) . "<='" . str_replace('T', ' ', $range[1]) . "'");
       }
     }
   }
@@ -550,7 +550,7 @@ function date_views_browser_get_views($reset = FALSE) {
           $arguments = array_merge($arguments, _date_views_arguments($field));
         }
       }
-      $argument_list = "'". implode("','", array_keys($arguments)) ."'";
+      $argument_list = "'" . implode("','", array_keys($arguments)) . "'";
       if (!$argument_list) {
         return array();
       }
@@ -642,14 +642,14 @@ function date_views_browser_navigation($view, $period) {
   $range = date_views_date_range($arg);
   $date = date_make_date($range[0], 'UTC');
   // Move backwards 1 period and create a link to that date.
-  date_modify($date, '-1'. $period);
-  $prev = $view->url .'/'.
+  date_modify($date, '-1' . $period);
+  $prev = $view->url . '/' .
     date_format_date($date, 'custom', date_views_browser_period_format($period)) .
     date_views_browser_period($period);
   // Move forward 2 periods (back to the current period and to the next period)
   // and create a link to that date.
-  date_modify($date, '+2 '. $period);
-  $next = $view->url .'/'.
+  date_modify($date, '+2 ' . $period);
+  $next = $view->url . '/' .
     date_format_date($date, 'custom', date_views_browser_period_format($period)) .
     date_views_browser_period($period);
 
@@ -662,7 +662,7 @@ function date_views_browser_navigation($view, $period) {
 function date_views_offset($field) {
   switch ($field['tz_handling']) {
   case(DATE_ISO):
-    $offset = 'node_data_'. $field['field_name'] .'.'. $field['field_name'] .'_offset';
+    $offset = 'node_data_' . $field['field_name'] . ' . ' . $field['field_name'] . '_offset';
     break;
   case('site'):
     $offset = variable_get('date_default_timezone', 0);
@@ -757,7 +757,7 @@ class views_date_handler {
 
   /**
    * Convert a format string into help text,
-   * i.e. 'Y-m-d' becomes 'YYYY-MM-DD'.
+   * i.e. 'Y-m-d' becomes 'YYYY-MM-DD' .
    *
    * @param unknown_type $format
    * @return unknown
@@ -881,7 +881,7 @@ class views_date_handler {
    * Helper function to create cross-database SQL dates.
    *
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @param $set_offset
    *   The name of a field that holds the timezone offset or a fixed timezone
    *   offset value. If not provided, the normal Drupal timezone handling
@@ -933,9 +933,9 @@ class views_date_handler {
    * Helper function to create cross-database SQL date formatting.
    *
    * @param $format
-   *   A format string for the result, like 'Y-m-d H:i:s'.
+   *   A format string for the result, like 'Y-m-d H:i:s' .
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @param $set_offset
    *   The name of a field that holds the timezone offset or a fixed timezone
    *   offset value. If not provided, the normal Drupal timezone handling
@@ -976,9 +976,9 @@ class views_date_handler {
    * Helper function to create cross-database SQL date extraction.
    *
    * @param $extract_type
-   *   The type of value to extract from the date, like 'MONTH'.
+   *   The type of value to extract from the date, like 'MONTH' .
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @param $set_offset
    *   The name of a field that holds the timezone offset or a fixed timezone
    *   offset value. If not provided, the normal Drupal timezone handling
@@ -1137,7 +1137,7 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
       '#value' => t('Blank values do no filtering, \'now\' filters for the current value.'),
       );
     if (in_array('adjustment', $handler->granularity)) {
-      $form['value']['description']['#value'] .= t(' \'Adjustment\' adds a value like \'+1 day\' to the other values.');
+      $form['value']['description']['#value'] .= t('\'Adjustment\' adds a value like \'+1 day\' to the other values.');
     }
 
   }
@@ -1164,11 +1164,11 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
    * A form element to select date part values.
    *
    * @param string $prefix
-   *   A prefix for the date values, 'value', 'min', or 'max'.
+   *   A prefix for the date values, 'value', 'min', or 'max' .
    * @param string $source
    *   The operator for this element.
    * @param string $which
-   *   Which element to provide, 'all', 'value', or 'minmax'.
+   *   Which element to provide, 'all', 'value', or 'minmax' .
    * @param array $operator_values
    *   An array of the allowed operators for this element.
    * @param array $limit
@@ -1274,18 +1274,18 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
     $handler = $this->date_handler;
     if (in_array($this->operator, $this->operator_values(2))) {
       foreach ($handler->date_parts($this->value['granularity']) as $key => $part) {
-        if (!empty($this->value['min'. $key]) || !empty($this->value['max'. $key])
-        || is_numeric($this->value['min'. $key]) || is_numeric($this->value['max'. $key])) {
-          $min[] = $part .'='. check_plain($this->value['min'. $key]);
-          $max[] = $part .'='. check_plain($this->value['max'. $key]);
+        if (!empty($this->value['min' . $key]) || !empty($this->value['max' . $key])
+        || is_numeric($this->value['min' . $key]) || is_numeric($this->value['max' . $key])) {
+          $min[] = $part . '=' . check_plain($this->value['min' . $key]);
+          $max[] = $part . '=' . check_plain($this->value['max' . $key]);
         }
       }
       $output .= t('@min and @max', array('@min' => implode(': ', $min), '@max' => implode(': ', $max)));
     }
     else {
       foreach ($handler->date_parts($handler->granularity) as $key => $part) {
-        if (!empty($this->value['value'. $key]) || is_numeric($this->value['value'. $key])) {
-          $min[]= $part .'='. check_plain($this->value['value'. $key]);
+        if (!empty($this->value['value' . $key]) || is_numeric($this->value['value' . $key])) {
+          $min[]= $part . '=' . check_plain($this->value['value' . $key]);
         }
       }
       $output .= implode(': ', $min);
@@ -1309,8 +1309,8 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
     $granularity = $handler->granularity;
     $parts = $handler->date_parts();
     unset($parts['adjustment']);
-    if (!empty($this->value[$prefix .'adjustment'])) {
-      $adjustment = views_get_timezone() + strtotime($this->value[$prefix .'adjustment']) - time();
+    if (!empty($this->value[$prefix . 'adjustment'])) {
+      $adjustment = views_get_timezone() + strtotime($this->value[$prefix . 'adjustment']) - REQUEST_TIME;
     }
     foreach ($parts as $key => $label) {
       if (!empty($adjustment)) {
@@ -1324,7 +1324,7 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
       }
       elseif ($this->value[$prefix . $key] == 'now') {
         $value = $handler->sql_extract(strtoupper($key), "NOW()", 0);
-        $this->query->add_where($this->options['group'], $extract ." $operator %s", $value);
+        $this->query->add_where($this->options['group'], $extract . " $operator %s", $value);
       }
       else {
         $value = $this->value[$prefix . $key];

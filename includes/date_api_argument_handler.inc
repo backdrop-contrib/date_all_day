@@ -6,7 +6,7 @@
 class date_api_argument_handler extends views_handler_argument_date {
   function construct() {
     parent::construct();
-    require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();
   }
@@ -71,7 +71,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       '#title' => t('Date year range'),
       '#type' => 'textfield',
       '#default_value' => $this->options['year_range'],
-      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010'. When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)'."),
+      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
     
     $fields = date_api_fields($this->definition['base']);
@@ -92,7 +92,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       '#type' => 'radios',
       '#options' => array('OR' => t('OR'), 'AND' => t('AND')),
       '#default_value' => $this->options['date_method'],
-      '#description' => t('Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2).'),
+      '#description' => t('Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2). '),
       );
     
   }
@@ -130,7 +130,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       foreach ($this->options['date_fields'] as $field) {
         $output[] = $fields['name'][$field]['label'];
       }
-      return implode('<br />'. $this->options['date_method'] .' ', $output);
+      return implode('<br />' . $this->options['date_method'] . ' ', $output);
     }
     else {
       return parent::admin_summary();
@@ -143,7 +143,7 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function get_default_argument($raw = FALSE) {
     if (!$raw && $this->options['default_argument_type'] == 'date') {
-      return date($this->format(), time());
+      return date($this->format(), REQUEST_TIME);
     }
     else {
       return parent::get_default_argument($raw);
@@ -339,8 +339,8 @@ class date_api_argument_handler extends views_handler_argument_date {
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
         $date_handler = $query_field['date_handler'];
-        $from_field = str_replace($field['table_name'] .'_', $field['table_name'] .'.', $field['fromto'][0]);
-        $to_field = str_replace($field['table_name'] .'_', $field['table_name'] .'.', $field['fromto'][1]);
+        $from_field = str_replace($field['table_name'] . '_', $field['table_name'] . ' . ', $field['fromto'][0]);
+        $to_field = str_replace($field['table_name'] . '_', $field['table_name'] . ' . ', $field['fromto'][1]);
         if ($this->granularity != 'week') {
           $from = $date_handler->sql_where_format($format, $from_field, '<=', date_format($max_date, $format));
           $to   = $date_handler->sql_where_format($format, $to_field, '>=', date_format($min_date, $format));

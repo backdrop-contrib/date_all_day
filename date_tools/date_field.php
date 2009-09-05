@@ -1,7 +1,7 @@
 $content[type]  = array (
   'name' => 'Event',
   'type' => 'event',
-  'description' => 'Events have a start date and an optional end date.',
+  'description' => 'Events have a start date and an optional end date. ',
   'title_label' => 'Title',
   'body_label' => 'Body',
   'min_word_count' => '0',

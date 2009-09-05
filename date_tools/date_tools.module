@@ -7,16 +7,16 @@
 function date_tools_help($section, $arg) {
   switch ($section) {
     case 'admin/content/date/tools':
-      return '<p>'. t('Tools for creating and importing dates and calendars.') .'</p>';
+      return '<p>' . t('Tools for creating and importing dates and calendars.') . '</p>';
        
     case 'admin/content/date/tools/date_wizard':
       $disabled_modules = date_tools_wizard_disabled_modules(array('popup', 'repeat', 'linked'));
       if (!empty($disabled_modules)) {
-        drupal_set_message(t('The following modules are required for the wizard to work:') .'<ul><li>'. implode('</li><li>', $disabled_modules) .'</li></ul>', 'error');
+        drupal_set_message(t('The following modules are required for the wizard to work:') . '<ul><li>' . implode('</li><li>', $disabled_modules) . '</li></ul>', 'error');
       }
       $output =        
       t('Fill out the following form to auto-create a date content type, with a datetime field and matching pre-configured calendar. A calendar and upcoming events block will be created, an ical feed will be added to the calendar, and the mini calendar, calendar legend, and upcoming events blocks will be added to the sidebar of the default theme. Nodes created from this new content type will include a link to the calendar, and the calendar will have a link to the \'add new date\' form. If the Signup module is enabled, Signups will also be enabled for this field. You can also add new date fields to an existing content type by entering the existing content type name instead of creating a new one.') .
-      '</p><p>'.
+      '</p><p>' .
       t('Only a limited set of options are displayed here to make this easy to set up. Once the date has been created you will be able to make other changes to the date settings and add other fields to your new content type on the Manage fields screen, and make changes to the calendar on the Views edit page.') .
       '</p>';
       return $output;
@@ -32,14 +32,14 @@ function date_tools_menu() {
   $items = array();
   $items['admin/content/date/tools'] = array(
     'title'    => 'Date Tools',
-    'description' => 'Tools to import and auto-create dates and calendars.',
+    'description' => 'Tools to import and auto-create dates and calendars. ',
     'access arguments'   => array('administer date tools'),
     'page callback' => 'date_tools_page',
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/content/date/tools/about'] = array(
     'title' => 'About',
-    'description' => 'Tools to import and auto-create dates and calendars.',
+    'description' => 'Tools to import and auto-create dates and calendars. ',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -5,
     'priority' => 1,
@@ -48,7 +48,7 @@ function date_tools_menu() {
     );
   $items['admin/content/date/tools/date_wizard'] = array(
     'title' => 'Date wizard',
-    'description' => 'Easy creation of date content types and calendars.',
+    'description' => 'Easy creation of date content types and calendars. ',
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
     'priority' => 1,
@@ -103,8 +103,8 @@ function date_tools_menu() {
  */
 function date_tools_page() {
   $choices = array();
-  $choices[] = t('Dates and calendars can be complicated to set up. The !date_wizard makes it easy to create a simple date content type and related calendar.', array('!date_wizard' => l(t('Date wizard'), 'admin/content/date/tools/date_wizard')));
-  $content = '<ul><li>'. implode('</li><li>', $choices) .'</li></ul>';
+  $choices[] = t('Dates and calendars can be complicated to set up. The !date_wizard makes it easy to create a simple date content type and related calendar. ', array('!date_wizard' => l(t('Date wizard'), 'admin/content/date/tools/date_wizard')));
+  $content = '<ul><li>' . implode('</li><li>', $choices) . '</li></ul>';
 
   if (module_exists('calendar')) {
     $calendar_options = variable_get('calendar_default_view_options', array());
@@ -115,9 +115,9 @@ function date_tools_page() {
       if (array_key_exists($type_name, $node_types)) {
         $type = $node_types[$type_name];
         $calendars[] = array(
-          l($type->name, 'admin/content/node-type/'. $type_name .'/fields'), 
-          l($key, 'admin/build/views/edit/'. $key), 
-          t('The calendar %view is a default calendar created for the content type %type_name.', array('%view' => $key, '%type_name' => $type->name)),
+          l($type->name, 'admin/content/node-type/' . $type_name . '/fields'), 
+          l($key, 'admin/build/views/edit/' . $key), 
+          t('The calendar %view is a default calendar created for the content type %type_name. ', array('%view' => $key, '%type_name' => $type->name)),
           l(t('remove !view', array('!view' => $key)), 'date/tools/remove/' . $key),
         );
       }
@@ -164,7 +164,7 @@ function date_tools_remove_form_submit($form, &$form_state) {
   
   if ($view_name && $form_values['confirm']) {
     calendar_remove($view_name);
-    drupal_set_message(t('Removed calendar %calendar.', array(
+    drupal_set_message(t('Removed calendar %calendar. ', array(
       '%calendar' => $view_name)));
   }
   $form_state['redirect'] = 'admin/content/date/tools';
@@ -285,7 +285,7 @@ function date_tools_wizard_form() {
 
 function date_tools_wizard_form_validate(&$form, &$form_state) {
   $type_name = $form_state['values']['type_name'];
-  $field_name = 'field_'. $form_state['values']['field_name'];
+  $field_name = 'field_' . $form_state['values']['field_name'];
   if (db_result(db_query("SELECT type FROM {node_type} WHERE type='%s'", $type_name))) {
     drupal_set_message(t('This content type name already exists, adding new field to existing content type.'));
   }
@@ -305,17 +305,17 @@ function date_tools_wizard_form_submit(&$form, &$form_state) {
   menu_rebuild();
   if (!empty($view_name)) {
     drupal_set_message(t('Change the calendar as needed and save the view.'), 'error');
-    $form['#redirect'] = 'admin/build/views/edit/'. $view_name;
+    $form['#redirect'] = 'admin/build/views/edit/' . $view_name;
   }
   else {
-    $form['#redirect'] = 'admin/content/node-type/'. str_replace('_', '-', $form_state['values']['type_name']) .'/fields';
+    $form['#redirect'] = 'admin/content/node-type/' . str_replace('_', '-', $form_state['values']['type_name']) . '/fields';
   }
 }
 
 function date_tools_wizard_build($form_values) {
   extract($form_values);
   
-  $field_name = 'field_'. $field_name;
+  $field_name = 'field_' . $field_name;
   
   if (!empty($repeat)) {
     $widget_type .= '_repeat';
@@ -331,7 +331,7 @@ function date_tools_wizard_build($form_values) {
     $type_settings['signup_date_field'] = $field_name;
     variable_set('signup_fieldset_collapsed', 0);
     variable_set("signup_date_field_$type_name", $field_name);
-    variable_set('signup_node_default_state_'. $type_name, 'enabled_on');
+    variable_set('signup_node_default_state_' . $type_name, 'enabled_on');
   }
   if (!array_key_exists($type_name, $types)) {
     date_tools_wizard_create_content_type($name, $type_name, $type_description, $type_settings);
@@ -453,7 +453,7 @@ function date_tools_wizard_create_ical_feed($type_name, $feed_url, $feed_title) 
   
   // TODO Can we map the node when we create it?
   // TODO Can we refresh the node automatically after mapping it?
-  drupal_goto('node/'. $node->nid .'/map');
+  drupal_goto('node/' . $node->nid . '/map');
   
 }
 
@@ -549,7 +549,7 @@ function date_tools_wizard_enabled_modules($options = array()) {
   $names = date_tools_wizard_modules();
   foreach ($modules as $option) {
     if (module_exists($option)) {
-      $enabled[$option] = $names[$option] .' (<span class="admin-enabled">'. t('enabled') .'</span>)';
+      $enabled[$option] = $names[$option] . ' (<span class="admin-enabled">' . t('enabled') . '</span>)';
     }
   }
   return $enabled;
@@ -561,7 +561,7 @@ function date_tools_wizard_disabled_modules($options = array()) {
   $names = date_tools_wizard_modules();
   foreach ($modules as $option) {
     if (!module_exists($option)) {
-      $enabled[$option] = $names[$option] .' (<span class="admin-disabled">'. t('disabled') .'</span>)';
+      $enabled[$option] = $names[$option] . ' (<span class="admin-disabled">' . t('disabled') . '</span>)';
     }
   }
   return $enabled;
@@ -570,7 +570,7 @@ function date_tools_wizard_disabled_modules($options = array()) {
 function date_tools_wizard_field_types() {
   $field_types = array();  
   foreach (date_field_info() as $name => $info) {
-    $field_types[$name] = $info['label']; //.' - '. $info['description'];
+    $field_types[$name] = $info['label']; //. ' - ' . $info['description'];
   }
   return $field_types;  
 }
@@ -586,7 +586,7 @@ function date_tools_wizard_widget_types() {
 }
 
 function date_tools_wizard_tz_handling() {
-  include_once(drupal_get_path('module', 'date') .'/date_admin.inc');
+  include_once(drupal_get_path('module', 'date') . '/date_admin.inc');
   return date_timezone_handling_options();
 }
 
@@ -630,12 +630,12 @@ function date_tools_wizard_create_content_type($name, $type_name, $description, 
   
   if ($type == 'ical_feed') {
     // Default type to not be promoted and have comments disabled.
-    variable_set('node_options_'. $type_name, array('status'));
-    variable_set('comment_'. $type_name, COMMENT_NODE_DISABLED);
+    variable_set('node_options_' . $type_name, array('status'));
+    variable_set('comment_' . $type_name, COMMENT_NODE_DISABLED);
 
     // Don't display date and author information for this type by default.
     $theme_settings = variable_get('theme_settings', array());
-    $theme_settings['toggle_node_info_'. $type_name] = FALSE;
+    $theme_settings['toggle_node_info_' . $type_name] = FALSE;
     variable_set('theme_settings', $theme_settings);
   }
   
@@ -688,15 +688,15 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
     // Move the date right below the title.
     'weight' => -4,
 
-    // Set default values to 'blank', 'now', or 'relative'. To dates can also use 'same'.
+    // Set default values to 'blank', 'now', or 'relative' . To dates can also use 'same' .
     'default_value' => 'now',
-    'default_value_code' => '', // The code to use with 'relative', like '+1 day'. 
+    'default_value_code' => '', // The code to use with 'relative', like '+1 day' . 
     'default_value2' => 'blank',
-    'default_value_code2' => '', // The code to use with 'relative', like '+1 day'. 
+    'default_value_code2' => '', // The code to use with 'relative', like '+1 day' . 
     
     // Set format string to use for input forms, it controls order and type of date parts.
     // Input formats must have all date parts, including seconds.
-    'input_format_custom' => variable_get('date_format_short', 'm/d/Y - H:i') .':s',
+    'input_format_custom' => variable_get('date_format_short', 'm/d/Y - H:i') . ':s',
     
     // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
     'increment' => 15,
@@ -708,7 +708,7 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
     // The number of years to go back and forward in drop-down year selectors.
     'year_range' => '0:+1',
     
-    // The place for the date part labels, can be 'above', 'within', or 'none'.
+    // The place for the date part labels, can be 'above', 'within', or 'none' .
     'label_position' => 'above',
   );
   
@@ -735,22 +735,22 @@ function date_tools_wizard_create_calendar($name, $type_name, $date_field, $loca
   
   $location_name = !empty($location_field) ? $location_field['field_name'] : '';
   $date_name = !empty($date_field) ? $date_field['field_name'] : '';
-  $path = 'calendar-'. str_replace('field_', '', $date_name);
+  $path = 'calendar-' . str_replace('field_', '', $date_name);
   
   // Add a default calendar for this content type.
   $calendar_options = variable_get('calendar_default_view_options', array());
-  if (array_key_exists('calendar_'. $type_name, $calendar_options)) {
-    unset($calendar_options['calendar_'. $type_name]);
+  if (array_key_exists('calendar_' . $type_name, $calendar_options)) {
+    unset($calendar_options['calendar_' . $type_name]);
   }
   $option = array(
-    'name' => 'calendar_'. $type_name,
-    'description' => 'An event calendar for '. $date_field['widget']['label'],
+    'name' => 'calendar_' . $type_name,
+    'description' => 'An event calendar for ' . $date_field['widget']['label'],
     'path' => $path,
     'types' => array($type_name => $name),
     'date_fields' => array($date_name),
     'display_fields' => !empty($location_name) ? array('title' => array(), $date_name => array(), $location_name => array()) : array('title' => array(), $date_name => array()),
   );
-  $calendar_options['calendar_'. $type_name] = $option;
+  $calendar_options['calendar_' . $type_name] = $option;
   variable_set('calendar_default_view_options', $calendar_options);
   
   // Make sure menu items get rebuilt as necessary.
@@ -763,12 +763,12 @@ function date_tools_wizard_create_calendar($name, $type_name, $date_field, $loca
   cache_clear_all();  
   
   // Remove this view from cache so we can edit it properly.
-  views_object_cache_clear('view', 'calendar_'. $type_name);  
+  views_object_cache_clear('view', 'calendar_' . $type_name);  
 
   // Force Views to empty its cache and find the new view.
   views_discover_default_views();
 
-  return 'calendar_'. $type_name;
+  return 'calendar_' . $type_name;
 }
 
 function date_tools_wizard_create_blocks($type_name) {
@@ -788,12 +788,12 @@ function date_tools_wizard_create_blocks($type_name) {
   
   // Mini calendar block. 
   $block->module = 'views';
-  $block->delta = 'calendar_'. $type_name .'-calendar_block_1';
+  $block->delta = 'calendar_' . $type_name . '-calendar_block_1';
   date_tools_wizard_add_block($block); 
   
   // Upcoming events block.
   $block->module = 'views';
-  $block->delta = 'calendar_'. $type_name .'-block_1';
+  $block->delta = 'calendar_' . $type_name . '-block_1';
   date_tools_wizard_add_block($block);
   return;      
 }
@@ -854,7 +854,7 @@ function date_tools_copy_type_form($target = TRUE) {
     );
     $form['macro']['link'] = array(
       '#type' => 'markup',
-      '#value' => l(t('Add new date field'), 'admin/content/types/import', array('query' => 'macro_file='. drupal_get_path('module', 'date_tools') .'/date_field.php')),
+      '#value' => l(t('Add new date field'), 'admin/content/types/import', array('query' => 'macro_file=' . drupal_get_path('module', 'date_tools') . '/date_field.php')),
     );
   }
   return $form;
@@ -953,7 +953,7 @@ function date_tools_copy_type_misc_form($type) {
       ),
       '#node' => $node,
     );
-    taxonomy_form_alter($subform, array(), $type .'_node_form');
+    taxonomy_form_alter($subform, array(), $type . '_node_form');
     $form['taxonomy'] = array(
       '#type' => 'fieldset',
       '#title' => t('Categories'),
@@ -969,7 +969,7 @@ function date_tools_copy_type_misc_form($type) {
     '#type' => 'textfield', '#title' => t('Authored by'),
     '#maxlength' => 60, '#autocomplete_path' => 'user/autocomplete',
     '#default_value' => $node->name ? $node->name : '',
-    '#description' => t('Leave blank for %anonymous.', array(
+    '#description' => t('Leave blank for %anonymous. ', array(
       '%anonymous' => variable_get('anonymous', t('Anonymous')))));
   $form['status']   = array(
     '#type' => 'checkbox', '#title' => t('Published'),
@@ -1008,19 +1008,19 @@ function date_import_taxonomy_form2node($taxonomy) {
 
 function date_tools_copy_import_csv_form() {
   // PLACEHOLDER
-  drupal_set_message(t('Importing dates into CCK from a comma separated file can be done using the <a href="@link">Node Import module</a>.', array('@link' => 'http://drupal.org/project/node_import')));
+  drupal_set_message(t('Importing dates into CCK from a comma separated file can be done using the <a href="@link">Node Import module</a>. ', array('@link' => 'http://drupal.org/project/node_import')));
 }
 
 /**
  * iCal import form.
  */
 function date_tools_copy_import_ical_form($form_state) {
-  $message = t('Use <a href="@link">Feed API</a> to import ical dates into nodes.', array('@link' => 'http://drupal.org/project/feedapi'));
+  $message = t('Use <a href="@link">Feed API</a> to import ical dates into nodes. ', array('@link' => 'http://drupal.org/project/feedapi'));
   if (module_exists('advanced_help')) {
-    $message .= ' '. t('See complete instructions on how to do it in the <a href="@link">Advanced help</a>.', array('@link' => url('help/date_api/ical-import')));
+    $message .= ' ' . t('See complete instructions on how to do it in the <a href="@link">Advanced help</a>. ', array('@link' => url('help/date_api/ical-import')));
   }
   else {
-    $message .= ' '. t('Enable the <a href="http://drupal.org/project/advanced_help">Advanced help module</a> for more instructions.');    
+    $message .= ' ' . t('Enable the <a href="http://drupal.org/project/advanced_help">Advanced help module</a> for more instructions.');    
   }
   drupal_set_message($message);
 }
@@ -1048,7 +1048,7 @@ function date_tools_copy_import_event_form($form_state) {
   switch ($step) {
     case 1: // Select a content type to import into.
       $node_types = node_get_types('names');
-      $form['#prefix'] = '<p>' . t("Create a new CCK content type to import your events into, or, if you do not want to create new nodes for your events, add a date field to the existing event type. Make sure the target content type has a date field that has an optional or required To date so it can accept the From date and To date of the event. If your source event has its own timezone field, make sure you set the target date timezone handling to 'date'. Test the target type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.") . '</p><p><strong>' . t('The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import!') . '</strong></p>';
+      $form['#prefix'] = '<p>' . t("Create a new CCK content type to import your events into, or, if you do not want to create new nodes for your events, add a date field to the existing event type. Make sure the target content type has a date field that has an optional or required To date so it can accept the From date and To date of the event. If your source event has its own timezone field, make sure you set the target date timezone handling to 'date' . Test the target type by trying to create a node manually and make sure all the right options are available in the form before attempting an import.") . '</p><p><strong>' . t('The import will create new nodes and trigger all related hooks, so you may want to turn off automatic email messaging for this node type while performing the import!') . '</strong></p>';
       $source_type_options = array();
       $result = db_query("SELECT DISTINCT n.type FROM {event} e INNER JOIN {node} n ON e.nid=n.nid");
       while ($arr = db_fetch_array($result)) {
@@ -1106,7 +1106,7 @@ function date_tools_copy_import_event_form_submit($form, &$form_state) {
 
   // The array that maps event timezone zids to timezone names is in
   // date_php4_tz_map.inc, need to reverse it so the zid is the key.
-  require_once('./'. drupal_get_path('module', 'date_php4') .'/date_php4_tz_map.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_php4') . '/date_php4_tz_map.inc');
   $timezones = array('' => '');
   $map = $timezone_map;
   foreach ($map as $zone => $values) {
@@ -1129,7 +1129,7 @@ function date_tools_copy_import_event_form_submit($form, &$form_state) {
   //$_SESSION['messages'] = $messages;
 
   if (!empty($rows)) {
-    drupal_set_message(format_plural(sizeof($rows), '1 event has been converted.', '@count events have been converted.'));
+    drupal_set_message(format_plural(sizeof($rows), '1 event has been converted. ', '@count events have been converted.'));
     drupal_set_message(theme('table', array(t('Node Title'), t('Original Node ID'), t('New Node ID'), t('Start date'), t('End date')), $rows));
   }
   else {
@@ -1191,7 +1191,7 @@ function date_tools_copy_convert_events( $source_type, $target_type, $date_field
     $timezone = !empty($event->timezone) && $tz_handling == 'date' && $event_tz_handling == 'event' ? $timezones[$event->timezone] : date_default_timezone_name();
 
     // If this is a deprecated timezone, replace it.
-    require_once(drupal_get_path('module', 'date_timezone') .'/date_timezone.install');
+    require_once(drupal_get_path('module', 'date_timezone') . '/date_timezone.install');
     $timezone = _date_timezone_replacement($timezone);
 
     // Find the original timezone value (might not be the same as the date timezone).
@@ -1215,10 +1215,10 @@ function date_tools_copy_convert_events( $source_type, $target_type, $date_field
       if ($event_node->start_offset != date_offset_get($start) || $event_node->end_offset != date_offset_get($end)) {
         $adj = $event_node->start_offset - date_offset_get($start);
         date_timezone_set($start, timezone_open('UTC'));
-        date_modify($start, $adj .' seconds');
+        date_modify($start, $adj . ' seconds');
         $adj = $event_node->end_offset - date_offset_get($end);
         date_timezone_set($end, timezone_open('UTC'));
-        date_modify($end, $adj .' seconds');
+        date_modify($end, $adj . ' seconds');
       }
       $data[0]['value'] = date_format($start, date_type_format($field['type']));
       $data[0]['value2'] = date_format($end, date_type_format($field['type']));
@@ -1256,26 +1256,26 @@ function date_tools_copy_convert_events( $source_type, $target_type, $date_field
     node_save($target_node);
 
     if ($target_type != $source_type) {
-      watchdog('date_tools', '!type: %title has been created.', array(
+      watchdog('date_tools', '!type: %title has been created. ', array(
         '!type' => t($target_type),
         '%title' => $target_node->title),
         WATCHDOG_NOTICE,
-        l(t('view'), 'node/'. $target_node->nid));
+        l(t('view'), 'node/' . $target_node->nid));
       if ($delete_old) {
         node_delete($source_nid);
       }
     }
     else {
-      watchdog('date_tools', '!type: %title has been updated.', array(
+      watchdog('date_tools', '!type: %title has been updated. ', array(
         '!type' => t($target_type),
         '%title' => $target_node->title),
         WATCHDOG_NOTICE,
-        l(t('view'), 'node/'. $target_node->nid));
+        l(t('view'), 'node/' . $target_node->nid));
     }
     $new_field = $target_node->$date_field;
     $rows[] = array(
       l($target_node->title,
-      'node/'. $target_node->nid),
+      'node/' . $target_node->nid),
       $source_nid,
       $target_node->nid,
       $new_field[0]['value'],

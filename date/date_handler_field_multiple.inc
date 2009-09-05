@@ -80,10 +80,10 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     // a function that is used both by the handler and by the 
     // node theme to take advantage of formatter settings.
     $where = array('1');
-    $query = 'SELECT '. implode(', ', $query_columns) .
-             ' FROM {'. $db_info['table'] ."} $alias".
-             " LEFT JOIN {node} node ON node.vid = $alias.vid".
-             " WHERE node.vid IN (". implode(',', $vids) .') AND '. implode(' OR ', $where) .
+    $query = 'SELECT ' . implode(', ', $query_columns) .
+             ' FROM {' . $db_info['table'] . "} $alias" .
+             " LEFT JOIN {node} node ON node.vid = $alias.vid" .
+             " WHERE node.vid IN (" . implode(',', $vids) . ') AND ' . implode(' OR ', $where) .
              " ORDER BY node.nid ASC, $alias.delta ASC";
     $result = db_query($query);
 
@@ -102,7 +102,7 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     
     // By this time $values is a pseudo node that will be passed
     // to the theme. Add view information to it.
-    $values->date_info = !empty($this->view->date_info) ? $this->view->date_info : new StdClass();
+    $values->date_info = !empty($this->view->date_info) ? $this->view->date_info : new stdClass();
     $values->date_info->date_handler_fields = date_handler_fields($this->view);
     
     // Add the formatter settings to the pseudo node.
@@ -121,8 +121,8 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     $vid = $values->{$this->field_alias};
     if (isset($this->field_values[$vid])) {
       // Build a pseudo-node from the retrieved values.
-      $node = drupal_clone($values);
-      // content_format and formatters will need a 'type'.
+      $node = clone($values);
+      // content_format and formatters will need a 'type' .
       $node->type = $values->{$this->aliases['type']};
       $node->nid = $values->{$this->aliases['nid']};
       $node->vid = $values->{$this->aliases['vid']};

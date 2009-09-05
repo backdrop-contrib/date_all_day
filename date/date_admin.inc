@@ -178,7 +178,7 @@ function date_widget_settings_form($widget) {
     '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
     '#default_value' => !empty($widget['label_position']) ? $widget['label_position'] : 'above',
     '#title' => t('Position of date part labels'),
-    '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day'. 'Above' will display them as titles above each date part. 'Within' will insert the label as the first option in the select list and in blank textfields. 'None' will not label any of the date parts. The exact text in the label is controlled by themes like 'date_part_label_year' and 'date_part_label_month'."),
+    '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' will display them as titles above each date part. 'Within' will insert the label as the first option in the select list and in blank textfields. 'None' will not label any of the date parts. The exact text in the label is controlled by themes like 'date_part_label_year' and 'date_part_label_month' ."),
     );
   $form['input']['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts' : '',
@@ -258,32 +258,32 @@ function _date_field_settings($op, $field) {
       
       // Swap in the date multiple value handler for 
       // CCK's regular multiple value handler.
-      $data[$table_alias][$field['field_name'] .'_value']['field']['handler'] = 'date_handler_field_multiple';
+      $data[$table_alias][$field['field_name'] . '_value']['field']['handler'] = 'date_handler_field_multiple';
       
       // Unset the filter and argument handlers, dates can use the generic 
       // date argument and filter handlers created by the Date API.
-      unset($data[$table_alias][$field['field_name'] .'_value']['argument']);
-      unset($data[$table_alias][$field['field_name'] .'_value']['filter']);
+      unset($data[$table_alias][$field['field_name'] . '_value']['argument']);
+      unset($data[$table_alias][$field['field_name'] . '_value']['filter']);
      
       // Add in another set of fields for the To date.
       if (!empty($field['todate'])) {
-        $data[$table_alias][$field['field_name'] .'_value']['field']['title'] = $data[$table_alias][$field['field_name'] .'_value']['title'];
-        $data[$table_alias][$field['field_name'] .'_value']['field']['title short'] = $data[$table_alias][$field['field_name'] .'_value']['title short'];
+        $data[$table_alias][$field['field_name'] . '_value']['field']['title'] = $data[$table_alias][$field['field_name'] . '_value']['title'];
+        $data[$table_alias][$field['field_name'] . '_value']['field']['title short'] = $data[$table_alias][$field['field_name'] . '_value']['title short'];
 
-        $data[$table_alias][$field['field_name'] .'_value2'] = $data[$table_alias][$field['field_name'] .'_value'];
+        $data[$table_alias][$field['field_name'] . '_value2'] = $data[$table_alias][$field['field_name'] . '_value'];
 
-        $data[$table_alias][$field['field_name'] .'_value']['title'] .= ' - ' . t('From date');
-        $data[$table_alias][$field['field_name'] .'_value']['title short'] .= ' - ' . t('From date');
-        $data[$table_alias][$field['field_name'] .'_value']['field']['title'] .= ' - ' . t('From date');
-        $data[$table_alias][$field['field_name'] .'_value']['field']['title short'] .= ' - ' . t('From date');
+        $data[$table_alias][$field['field_name'] . '_value']['title'] .= ' - ' . t('From date');
+        $data[$table_alias][$field['field_name'] . '_value']['title short'] .= ' - ' . t('From date');
+        $data[$table_alias][$field['field_name'] . '_value']['field']['title'] .= ' - ' . t('From date');
+        $data[$table_alias][$field['field_name'] . '_value']['field']['title short'] .= ' - ' . t('From date');
         
-        $data[$table_alias][$field['field_name'] .'_value2']['title'] .= ' - ' . t('To date');
-        $data[$table_alias][$field['field_name'] .'_value2']['title short'] .= ' - ' . t('To date');
-        $data[$table_alias][$field['field_name'] .'_value2']['field']['title'] .= ' - ' . t('To date');
-        $data[$table_alias][$field['field_name'] .'_value2']['field']['title short'] .= ' - ' . t('To date');
+        $data[$table_alias][$field['field_name'] . '_value2']['title'] .= ' - ' . t('To date');
+        $data[$table_alias][$field['field_name'] . '_value2']['title short'] .= ' - ' . t('To date');
+        $data[$table_alias][$field['field_name'] . '_value2']['field']['title'] .= ' - ' . t('To date');
+        $data[$table_alias][$field['field_name'] . '_value2']['field']['title short'] .= ' - ' . t('To date');
 
-        $data[$table_alias][$field['field_name'] .'_value2']['field']['field'] .= '2';
-        $data[$table_alias][$field['field_name'] .'_value2']['sort']['field'] .= '2';
+        $data[$table_alias][$field['field_name'] . '_value2']['field']['field'] .= '2';
+        $data[$table_alias][$field['field_name'] . '_value2']['sort']['field'] .= '2';
       }
       return $data;
   }
@@ -344,7 +344,7 @@ function date_field_settings_form($field) {
     $form['repeat'] = array('#type' => 'hidden', '#value' => 0);
   }
 
-  $description = t("Display a matching second date field as a 'To date'. If marked 'Optional' field will be presented but not required. If marked 'Required' the 'To date' will be required if the 'From date' is required or filled in.");
+  $description = t("Display a matching second date field as a 'To date' . If marked 'Optional' field will be presented but not required. If marked 'Required' the 'To date' will be required if the 'From date' is required or filled in.");
   $description .= date_data_loss_warning('To date');
   $form['input']['todate'] = array(
     '#type' => 'radios', '#title' => t('To Date'),
@@ -368,7 +368,7 @@ function date_field_settings_form($field) {
     '#title' => t('Default Display'),
     '#default_value' => !empty($field['default_format']) ? $field['default_format'] : 'medium',
     '#options' => $format_types,
-    '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() .'admin/settings/date-time/formats')),
+    '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/settings/date-time/formats')),
     );
 
   $description = t('Select the timezone handling method to be used for this date field.');
@@ -460,12 +460,12 @@ function date_example_date() {
  * in profiles or custom code.
  * 
  * @param $field_type
- *   Can be 'date', 'datestamp', or 'datetime'.
+ *   Can be 'date', 'datestamp', or 'datetime' .
  * @param $widget_type
  *   Can be 'date_text', 'date_text_repeat', 'date_select', 
- *   'date_select_repeat', 'date_popup', 'date_popup_repeat'.
+ *   'date_select_repeat', 'date_popup', 'date_popup_repeat' .
  * @param $tz_handling
- *   Can be 'site', 'date', 'utc', 'none', or 'user'.
+ *   Can be 'site', 'date', 'utc', 'none', or 'user' .
  * @param $overrides
  *   An optional array of field/widget values that should 
  *   override the normal defaults.
@@ -474,12 +474,12 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
   module_load_include('inc', 'content', 'includes/content.crud');
   $repeat_widgets = array('date_select_repeat', 'date_text_repeat', 'date_popup_repeat');
   
-  $base_field_values = array (
+  $base_field_values = array(
     'field_name' => '',
     'type_name' => '',
     'multiple' => in_array($widget_type, $repeat_widgets) ? 1 : 0,
     'module' => 'date',
-    'granularity' => array (
+    'granularity' => array(
       'year' => 'year',
       'month' => 'month',
       'day' => 'day',
@@ -493,7 +493,7 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
     'repeat_collapsed' => 0, 
     'default_format' => 'medium',
     );
-  $base_widget_values = array (
+  $base_widget_values = array(
     'label' => '',
     'default_value' => 'now',
     'default_value_code' => '', 
@@ -502,7 +502,7 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
     'input_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     'input_format_custom' => '', 
     'increment' => 1,
-    'text_parts' => array (),
+    'text_parts' => array(),
     'year_range' => '-3:+3',
     'label_position' => 'above',
     'weight' => 0,

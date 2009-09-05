@@ -79,7 +79,7 @@ function theme_date_display_combination($element) {
   // displayed. Show it only with the first multiple value date.
   if (!in_array($node->nid, $repeating_ids) && module_exists('date_repeat') 
   && !empty($item['rrule']) && $options['repeat']['show_repeat_rule'] == 'show') {
-    require_once('./'. drupal_get_path('module', 'date') .'/date_repeat.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
     $output .= theme('date_repeat_display', $field, $item, $node);
     $repeating_ids[] = $node->nid;
   }
@@ -154,13 +154,13 @@ function theme_date_display_combination($element) {
 }
 
 function theme_date_display_single($date, $timezone = NULL) {
-  return '<span class="date-display-single">'. $date . $timezone .'</span>';
+  return '<span class="date-display-single">' . $date . $timezone . '</span>';
 }
 
 function theme_date_display_range($date1, $date2, $timezone = NULL) {
-  return '<span class="date-display-start">'. $date1 .'</span>'.
+  return '<span class="date-display-start">' . $date1 . '</span>' .
       '<span class="date-display-separator"> - </span>' .
-      '<span class="date-display-end">'. $date2 . $timezone. '</span>';
+      '<span class="date-display-end">' . $date2 . $timezone. '</span>';
 }
 
 /**
@@ -228,16 +228,16 @@ function theme_date_repeat_display($field, $item, $node = NULL) {
   $output = '';
   if (!empty($item['rrule'])) {
     $output = date_repeat_rrule_description($item['rrule']);
-    $output = '<div>'. $output .'</div>';
+    $output = '<div>' . $output . '</div>';
   }
   return $output;
 }
 
 /**
- * Adjust from/to date format to account for 'all day'.
+ * Adjust from/to date format to account for 'all day' .
  *
  * @param array $field, the field definition for this date field.
- * @param string $which, which value to return, 'date1' or 'date2'.
+ * @param string $which, which value to return, 'date1' or 'date2' .
  * @param object $date1, a date/time object for the 'from' date.
  * @param object $date2, a date/time object for the 'to' date.
  * @param string $format
@@ -263,11 +263,11 @@ function theme_date_all_day($field, $which, $date1, $date2, $format, $node, $vie
   switch ($granularity) {
     case 'second':
       $min_comp = date_format($date1, 'H:i:s') == '00:00:00';
-      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i:s') == '23:'. $max_minutes .':'. $max_seconds;
+      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i:s') == '23:' . $max_minutes . ':' . $max_seconds;
       break;
     case 'minute':
       $min_comp = date_format($date1, 'H:i') == '00:00';
-      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i') == '23:'. $max_minutes;
+      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i') == '23:' . $max_minutes;
       break;
     case 'hour':
       $min_comp = date_format($date1, 'H') == '00';
@@ -278,10 +278,10 @@ function theme_date_all_day($field, $which, $date1, $date2, $format, $node, $vie
       $max_comp = FALSE;
   }
   
-  // Time runs from midnight to the maximum time -- call it 'All day'.
+  // Time runs from midnight to the maximum time -- call it 'All day' .
   if (date_has_time($field['granularity']) && $min_comp && $max_comp) {
     $format = date_limit_format($format, array('year', 'month', 'day'));
-    return trim(date_format_date($$which, 'custom', $format) .' '. theme('date_all_day_label'));
+    return trim(date_format_date($$which, 'custom', $format) . ' ' . theme('date_all_day_label'));
   }
   // There is no time, use neither 'All day' nor time.
   elseif (!date_has_time($field['granularity'])) {
@@ -298,6 +298,6 @@ function theme_date_all_day($field, $which, $date1, $date2, $format, $node, $vie
  * Theme the way an 'all day' label will look.
  */
 function theme_date_all_day_label() {
-  return '('. date_t('All day', 'datetime') .')';
+  return '(' . date_t('All day', 'datetime') .')';
 }
 /** @} End of addtogroup themeable */

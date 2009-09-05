@@ -22,11 +22,11 @@ class DateAPITestCase extends DrupalWebTestCase {
 
   function testDateAPI() {
     variable_set('date_first_day', 1);
-    $expected = array ( 0 => t('Mon'), 1 => t('Tue'), 2 => t('Wed'), 3 => t('Thu'), 4 => t('Fri'), 5 => t('Sat'), 6 => t('Sun'), );
+    $expected = array( 0 => t('Mon'), 1 => t('Tue'), 2 => t('Wed'), 3 => t('Thu'), 4 => t('Fri'), 5 => t('Sat'), 6 => t('Sun'), );
     $days = date_week_days_ordered(date_week_days_abbr(1));
     $this->assertEqual($expected, $days, 'Test that date_week_days_ordered() array starts on Monday when the site first day is on Monday.');
     variable_set('date_first_day', 0);
-    $expected = array ( 0 => t('Sun'), 1 => t('Mon'), 2 => t('Tue'), 3 => t('Wed'), 4 => t('Thu'), 5 => t('Fri'), 6 => t('Sat'), );
+    $expected = array( 0 => t('Sun'), 1 => t('Mon'), 2 => t('Tue'), 3 => t('Wed'), 4 => t('Thu'), 5 => t('Fri'), 6 => t('Sat'), );
     $days = date_week_days_ordered(date_week_days_abbr(1));
     $this->assertEqual($expected, $days, 'Test that date_week_days_ordered() array starts on Sunday when the site first day is on Sunday.');
 

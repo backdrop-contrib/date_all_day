@@ -12,10 +12,10 @@ function template_preprocess_date_navigation(&$vars) {
   $max_date = is_object($view->date_info->max_date) ? $view->date_info->max_date : date_now();
   
   if (empty($view->date_info->hide_nav)) {
-    $prev_date = drupal_clone($min_date);
-    date_modify($prev_date, '-1 '. $view->date_info->granularity);
-    $next_date = drupal_clone($min_date);
-    date_modify($next_date, '+1 '. $view->date_info->granularity);
+    $prev_date = clone($min_date);
+    date_modify($prev_date, '-1 ' . $view->date_info->granularity);
+    $next_date = clone($min_date);
+    date_modify($next_date, '+1 ' . $view->date_info->granularity);
     $format = array('year' => 'Y', 'month' => 'Y-m', 'day' => 'Y-m-d');
     switch ($view->date_info->granularity) {
       case 'week':
@@ -59,7 +59,7 @@ function template_preprocess_date_navigation(&$vars) {
   $next_title = '';
 
   // Build next/prev link titles.
-  switch($view->date_info->granularity) {
+  switch ($view->date_info->granularity) {
     case 'year':
       $prev_title = t('Navigate to previous year');
       $next_title = t('Navigate to next year');
@@ -86,8 +86,8 @@ function template_preprocess_date_navigation(&$vars) {
   
   $link = FALSE;
   // Month navigation titles are used as links in the block view.
-	if (!empty($view->date_info->block) && $view->date_info->granularity == 'month') {
-	  $link = TRUE;
+  if (!empty($view->date_info->block) && $view->date_info->granularity == 'month') {
+    $link = TRUE;
   }
   
   $nav_title = theme('date_nav_title', $view->date_info->granularity, $view, $link);
@@ -101,29 +101,29 @@ function theme_date_nav_title($granularity, $view, $link = FALSE, $format = NULL
   switch ($granularity) {
     case 'year':
       $title = $view->date_info->year;
-      $url = $view->date_info->url .'/'. $view->date_info->year;
+      $url = $view->date_info->url . '/' . $view->date_info->year;
       break;
     case 'month':
       $format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'F Y' : 'F');
       $title = date_format_date($view->date_info->min_date, 'custom', $format);
-      $url = $view->date_info->url .'/'. $view->date_info->year .'-'. date_pad($view->date_info->month);
+      $url = $view->date_info->url . '/' . $view->date_info->year . '-' . date_pad($view->date_info->month);
       break;
     case 'day':
       $format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'l, F j Y' : 'l, F j');
       $title = date_format_date($view->date_info->min_date, 'custom', $format);
-      $url = $view->date_info->url .'/'. $view->date_info->year .'-'. date_pad($view->date_info->month) .'-'. date_pad($view->date_info->day);
+      $url = $view->date_info->url . '/' . $view->date_info->year . '-' . date_pad($view->date_info->month) . '-' . date_pad($view->date_info->day);
       break;
     case 'week':
-    	$format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'F j Y' : 'F j');
+      $format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'F j Y' : 'F j');
       $title = t('Week of @date', array('@date' => date_format_date($view->date_info->min_date, 'custom', $format)));
-    	$url = $view->date_info->url .'/'. $view->date_info->year .'-W'. date_pad($view->date_info->week);
-    	break;
+      $url = $view->date_info->url . '/' . $view->date_info->year . '-W' . date_pad($view->date_info->week);
+      break;
   }
   // TODO Update this.
   if (!empty($view->date_info->mini) || $link) {
-  	// Month navigation titles are used as links in the mini view.
+    // Month navigation titles are used as links in the mini view.
    $attributes = array('title' => t('View full page month'));
-  	return l($title, $view->date_info->url, array('attributes' => $attributes));
+    return l($title, $view->date_info->url, array('attributes' => $attributes));
   }
   else {
     return $title;
@@ -152,14 +152,14 @@ function theme_date_nav_title($granularity, $view, $link = FALSE, $format = NULL
  * 
  *    'alarm'
  *      sub-array of alarm information for the event, including:
- *      - 'action' - the action to take, either 'DISPLAY' or 'EMAIL'
- *      - 'trigger' - the time period for the trigger, like -P2D.
- *      - 'repeat' - the number of times to repeat the alarm.
- *      - 'duration' - the time period between repeated alarms, like P1D.
- *      - 'description' - the description of the alarm.
+ *      - 'action' .- the action to take, either 'DISPLAY' .or 'EMAIL'
+ *      - 'trigger' .- the time period for the trigger, like -P2D.
+ *      - 'repeat' .- the number of times to repeat the alarm.
+ *      - 'duration' .- the time period between repeated alarms, like P1D.
+ *      - 'description' .- the description of the alarm.
  *      An email alarm should have two additional parts:
- *      - 'email' - a comma-separated list of email recipients.
- *      - 'summary' - the subject of the alarm email.
+ *      - 'email' .- a comma-separated list of email recipients.
+ *      - 'summary' .- the subject of the alarm email.
  *
  * @param $calname
  *   Name of the calendar.  Use site name if none is specified.
@@ -244,7 +244,7 @@ function template_preprocess_date_views_filter_form(&$vars) {
  *   A themed HTML string representing the date selection boxes.
  */
 function theme_date_timezone($element) {
-  return '<div class="date-clear">'. theme('form_element', $element, $element['#children']) .'</div>';
+  return '<div class="date-clear">' . theme('form_element', $element, $element['#children']) . '</div>';
 }
 
 /**
@@ -261,12 +261,12 @@ function theme_date_select($element) {
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 
   if (empty($element['#date_float'])) {
-    $class .= ' date-clear-block';
+    $class .= ' .date-clear-block';
   }
   if (isset($element['#children'])) {
     $output = $element['#children'];
   }
-  return '<div class="'. $class .'">'. theme('form_element', $element, $output) .'</div>';
+  return '<div class="' . $class . '">' . theme('form_element', $element, $output) . '</div>';
 }
 
 /**
@@ -283,12 +283,12 @@ function theme_date_text($element) {
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 
   if (empty($element['#date_float'])) {
-    $class .= ' date-clear-block';
+    $class .= ' .date-clear-block';
   }
   if (isset($element['#children'])) {
     $output = $element['#children'];
   }
-  return '<div class="'. $class .'">'. theme('form_element', $element, $output) .'</div>';
+  return '<div class="' . $class . '">' . theme('form_element', $element, $output) . '</div>';
 }
 
 /**
@@ -296,12 +296,12 @@ function theme_date_text($element) {
  */
 function theme_date_select_element($element) {
   $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('select', $element) .'</div>';
+  return '<div class="date-' . $part . '">' . theme('select', $element) . '</div>';
 }
 
 function theme_date_textfield_element($element) {
   $part = array_pop($element['#parents']);
-  return '<div class="date-'. $part .'">'. theme('textfield', $element) .'</div>';
+  return '<div class="date-' . $part . '">' . theme('textfield', $element) . '</div>';
 }
 
 /**
@@ -326,7 +326,7 @@ function theme_date_part_minsec_prefix($element) {
  * Format labels for each date part in a date_select.
  *
  * @param $part_type
- *   the type of field used for this part, 'textfield' or 'select'
+ *   the type of field used for this part, 'textfield' .or 'select'
  * @param $element
  *   An associative array containing the properties of the element.
  *   Properties used: title, value, options, description, required and attributes.
@@ -350,7 +350,7 @@ function theme_date_part_label_second($part_type, $element) {
   return date_t('Second', 'datetime');
 }
 function theme_date_part_label_ampm($part_type, $element) {
-  return ' ';
+  return ' . ';
 }
 function theme_date_part_label_timezone($part_type, $element) {
   return t('Timezone');
@@ -374,7 +374,7 @@ function theme_date_calendar_day($date) {
 
 function theme_date_time_ago($start_date, $end_date, $interval = 2) {
   // If no date is sent, then return nothing
-  if (empty($start_date) || empty($end_date)){
+  if (empty($start_date) || empty($end_date)) {
     return NULL;
   }
 
@@ -392,7 +392,7 @@ function theme_date_time_ago($start_date, $end_date, $interval = 2) {
     //return t('Started !time ago', array('!time' => $dates['value']['interval']));
     return t('ongoing');
   }
-  // 3) Date is in the past (format_interval added 'ago' to the value).
+  // 3) Date is in the past (format_interval added 'ago' .to the value).
   else {
     return date_format_interval($start_date, $interval);
   }

@@ -10,9 +10,9 @@
  * Implementation of hook_init().
  */
 function date_init() {
-  require_once('./'. drupal_get_path('module', 'date') .'/date.theme');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date.theme');
   if (module_exists('token')) {
-    require_once('./'. drupal_get_path('module', 'date') .'/date_token.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_token.inc');
   }
 }
 /**
@@ -36,7 +36,7 @@ function date_menu() {
   return $items;  
 }
 
-function date_perm() {
+function date_permission() {
   return array('view date repeats');
 }
 
@@ -105,7 +105,7 @@ function date_content_is_empty($item, $field) {
   if (empty($item['value'])) {
     return TRUE;
   }
-  elseif($field['todate'] == 'required' && empty($item['value2'])) {
+  elseif ($field['todate'] == 'required' && empty($item['value2'])) {
     return TRUE;
   }
   return FALSE;
@@ -244,13 +244,8 @@ function date_field_formatter_info() {
  * Implementation of hook_theme().
  */
 function date_theme() {
-  $path = drupal_get_path('module', 'date');
-  require_once "./$path/date.theme";
+  require_once DRUPAL_ROOT . "/$path/date.theme";
 
-  $base = array(
-    'file' => 'date.theme',
-    'path' => "$path",
-  );
   $themes = array(
     'date_combo' => array(
       'arguments' => array('element' => NULL)),
@@ -289,7 +284,7 @@ function date_theme() {
     $format_types = date_get_format_types('', TRUE);
     if (!empty($format_types)) {
       foreach ($format_types as $type => $type_info) {
-        $themes['date_formatter_' . $type] = $base + array(
+        $themes['date_formatter_' . $type] = array(
           'arguments' => array('element' => NULL), 
           'function' => 'theme_date_display_combination',
         );
@@ -470,13 +465,13 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
       break;
 
     case 'validate':
-      require_once('./'. drupal_get_path('module', 'date') .'/date_elements.inc');
+      require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
       return _date_field_validate($op, $node, $field, $items, $teaser, $page);
       break;
 
     case 'insert':
     case 'update':
-      require_once('./'. drupal_get_path('module', 'date') .'/date_elements.inc');
+      require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
       $items = $additions[$field['field_name']];
       $node->$field['field_name'] = $additions;
       return _date_field_update($op, $node, $field, $items, $teaser, $page);
@@ -498,7 +493,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
  * included only when processing forms.
  */
 function date_widget(&$form, &$form_state, &$field, $items, $delta) {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_elements.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
   return _date_widget($form, $form_state, $field, $items, $delta);
 }
 
@@ -509,7 +504,7 @@ function date_widget(&$form, &$form_state, &$field, $items, $delta) {
  * included only when processing forms.
  */
 function date_elements() {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_elements.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
   return _date_elements();
 }
 
@@ -517,7 +512,7 @@ function date_elements() {
  * Implementation of Devel module's hook_content_generate().
  */
 function date_content_generate($node, $field) {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_content_generate.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_content_generate.inc');
   return _date_content_generate($node, $field);
 }
 
@@ -526,17 +521,17 @@ function date_content_generate($node, $field) {
  * processing field settings.
  */
 function date_widget_settings($op, $widget) {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_admin.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
   return _date_widget_settings($op, $widget);
 }
 
 function date_field_settings($op, $field) {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_admin.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
   return _date_field_settings($op, $field);
 }
 
 function date_formatter_settings($form_state = NULL, $field, $options = array(), $views_form = FALSE) {
-  require_once('./'. drupal_get_path('module', 'date') .'/date_admin.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
   return _date_formatter_settings($form_state, $field, $options, $views_form);
 }
 
@@ -551,10 +546,10 @@ function date_formatter_format($formatter, $field_name) {
     case 'format_interval':
       return 'format_interval';
     case 'default':
-      $format = variable_get('date_format_'. $field['default_format'], $default);
+      $format = variable_get('date_format_' . $field['default_format'], $default);
       break;
     default:
-      $format = variable_get('date_format_'. $formatter, $default);
+      $format = variable_get('date_format_' . $formatter, $default);
       break;
   }
  
@@ -597,12 +592,12 @@ function date_prepare_node($node, $field, $type_name, $context, $options) {
   // Otherwise removed values that should not be displayed.
   if (!empty($options['multiple']['multiple_from']) || !empty($options['multiple']['multiple_to']) || !empty($max_count)) {
     $format = date_type_format($field['type']);
-    include_once(drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+    include_once(drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
     $date_handler = new date_sql_handler($field);
-    $arg0 = !empty($options['multiple']['multiple_from']) ? $date_handler->arg_replace($options['multiple']['multiple_from']) : variable_get('date_min_year', 100) .'-01-01T00:00:00';
-    $arg1 = !empty($options['multiple']['multiple_to']) ? $date_handler->arg_replace($options['multiple']['multiple_to']) : variable_get('date_max_year', 4000) .'-12-31T23:59:59';
+    $arg0 = !empty($options['multiple']['multiple_from']) ? $date_handler->arg_replace($options['multiple']['multiple_from']) : variable_get('date_min_year', 100) . '-01-01T00:00:00';
+    $arg1 = !empty($options['multiple']['multiple_to']) ? $date_handler->arg_replace($options['multiple']['multiple_to']) : variable_get('date_max_year', 4000) . '-12-31T23:59:59';
     if (!empty($arg0) && !empty($arg1)) {
-      $arg = $arg0 .'--'. $arg1;
+      $arg = $arg0 . '--' . $arg1;
     }
     elseif (!empty($arg0)) {
       $arg = $arg0;
@@ -658,9 +653,9 @@ function date_handler_fields($view) {
         continue; 
       }
       foreach ($view->date_info->date_fields as $date_field) {
-        if (strstr($date_field, '.'. $field_name)) {
-          $delta_field = 'node_data_'. $field_name .'_delta';
-          $field_names[$field_name] = array('options' => $group, 'delta_field' => $delta_field, 'view_field' => drupal_clone($field));
+        if (strstr($date_field, ' . ' . $field_name)) {
+          $delta_field = 'node_data_' . $field_name . '_delta';
+          $field_names[$field_name] = array('options' => $group, 'delta_field' => $delta_field, 'view_field' => clone($field));
           // Get rid of the huge view object in the field handler.
           unset($field_names[$field_name]['view_field']->view);
         }
@@ -821,23 +816,23 @@ function date_formatter_settings_validate(&$form, &$form_state) {
   $type_name = $form['extra']['type_name']['#value'];
   $context = $form['extra']['context']['#value'];
   $form_values = $form_state['values'][$field_name][$context]['format']['extra'];
-  $value = 'date:'. $type_name .':'. $context .':'. $field_name;
-  variable_set($value .'_show_repeat_rule', $form_values['repeat']['show_repeat_rule']);
-  variable_set($value .'_multiple_number', $form_values['multiple']['multiple_number']);
-  variable_set($value .'_multiple_from', $form_values['multiple']['multiple_from']);
-  variable_set($value .'_multiple_to', $form_values['multiple']['multiple_to']);
-  variable_set($value .'_fromto', $form_values['fromto']['fromto']);
+  $value = 'date:' . $type_name . ':' . $context . ':' . $field_name;
+  variable_set($value . '_show_repeat_rule', $form_values['repeat']['show_repeat_rule']);
+  variable_set($value . '_multiple_number', $form_values['multiple']['multiple_number']);
+  variable_set($value . '_multiple_from', $form_values['multiple']['multiple_from']);
+  variable_set($value . '_multiple_to', $form_values['multiple']['multiple_to']);
+  variable_set($value . '_fromto', $form_values['fromto']['fromto']);
   
   form_set_value($form, $form_state['values'][$field_name][$context]['format']['base'], $form_state);
 }
 
 function date_formatter_get_settings($field_name, $type_name, $context) {
   $options = array();
-  $value = 'date:'. $type_name .':'. $context .':'. $field_name;
-  $options['repeat']['show_repeat_rule'] = variable_get($value .'_show_repeat_rule', 'show');
-  $options['multiple']['multiple_number'] = variable_get($value .'_multiple_number', '');
-  $options['multiple']['multiple_from'] = variable_get($value .'_multiple_from', '');
-  $options['multiple']['multiple_to'] = variable_get($value .'_multiple_to', '');
-  $options['fromto']['fromto'] = variable_get($value .'_fromto', 'both');  
+  $value = 'date:' . $type_name . ':' . $context . ':' . $field_name;
+  $options['repeat']['show_repeat_rule'] = variable_get($value . '_show_repeat_rule', 'show');
+  $options['multiple']['multiple_number'] = variable_get($value . '_multiple_number', '');
+  $options['multiple']['multiple_from'] = variable_get($value . '_multiple_from', '');
+  $options['multiple']['multiple_to'] = variable_get($value . '_multiple_to', '');
+  $options['fromto']['fromto'] = variable_get($value . '_fromto', 'both');  
   return $options;
 }

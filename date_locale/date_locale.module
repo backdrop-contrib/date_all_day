@@ -152,7 +152,7 @@ function date_locale_format_form($form_state) {
       '#title' => t('Language'),
       '#type' => 'select',
       '#options' => $languages,
-      '#multiple' => false,
+      '#multiple' => FALSE,
     );
 
     $form['buttons']['submit'] = array(
@@ -174,8 +174,8 @@ function date_locale_format_form($form_state) {
     // Display the current language name.
     $form['language_information'] = array(
       '#value' => t('Date format settings for %language_name', array('%language_name' => $language_name)),
-      '#prefix' =>'<p style="font-size: 1.2em;">',
-      '#suffix' =>'</p>',
+      '#prefix' => '<p style="font-size: 1.2em;">',
+      '#suffix' => '</p>',
     );
 
     // Get list of date format types.
@@ -200,7 +200,7 @@ function date_locale_format_form($form_state) {
       else {
         $default = variable_get('date_format_' . $type, array_shift(array_keys($formats)));
       }
-      include_once('./'. drupal_get_path('module', 'date_api') .'/date_api.admin.inc');
+      include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api.admin.inc');
       date_api_date_format_select_field($form, $type, $type_info, $default, $choices);
     }
 
@@ -270,9 +270,9 @@ function date_locale_format_form_formats_cancel($form, &$form_state) {
  *
  * @param $langcode
  *   Language code, can be 2 characters, e.g. 'en' or 5 characters, e.g.
- *   'en-CA'.
+ *   'en-CA' .
  * @param $type
- *   Date format type, e.g. 'short', 'medium'.
+ *   Date format type, e.g. 'short', 'medium' .
  * @param $format
  *   The date format string.
  */

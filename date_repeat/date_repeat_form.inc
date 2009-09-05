@@ -35,7 +35,7 @@
  * Generate the repeat setting form.
  */
 function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
@@ -236,7 +236,7 @@ function date_repeat_merge($form_values, $element) {
  * Build a RRULE out of the form values.
  */
 function date_repeat_rrule_validate($element, &$form_state) {
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   $form_values = $form_state['values'];
   $field_name = $element['#parents'][0];
   $item = $form_values[$field_name]['rrule'];
@@ -262,5 +262,5 @@ function theme_date_repeat_current_exceptions($rows = array()) {
  * Themes the date repeat element.
  */
 function theme_date_repeat($element) {
-  return theme('form_element', $element, '<div class="container-inline">'. drupal_render($element). '</div>');
+  return theme('form_element', $element, '<div class="container-inline">' . drupal_render($element). '</div>');
 }

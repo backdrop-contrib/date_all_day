@@ -42,7 +42,7 @@
  *
  * #date_label_position
  *   Handling option for date part labels, like 'Year', 'Month', and 'Day',
- *   can be 'above' the date part, 'within' it, or 'none', default is 'above'.
+ *   can be 'above' the date part, 'within' it, or 'none', default is 'above' .
  *   The 'within' option shows the label as the first option in a select list
  *   or the default value for an empty textfield, taking up less screen space.
  *
@@ -146,8 +146,8 @@ function date_text_process($element, $edit, $form_state, $form) {
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
-  $element['date']['#attributes'] = array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') .' date-date');
-  $element['date']['#description'] = ' '. t('Format: @date', array('@date' => date($element['#date_format'], time())));
+  $element['date']['#attributes'] = array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') . ' date-date');
+  $element['date']['#description'] = ' ' . t('Format: @date', array('@date' => date($element['#date_format'], REQUEST_TIME)));
   
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
@@ -251,7 +251,7 @@ function date_parts_element($element, $date, $format) {
     $sub_element[$field] = array(
       '#weight' => $order[$field],
       '#required' => $element['#required'],
-      '#attributes' => array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') .' date-'. $field),
+      '#attributes' => array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') . ' date-' . $field),
       );
     switch ($field) {
       case 'year':
@@ -300,7 +300,7 @@ function date_parts_element($element, $date, $format) {
     }
 
     // Add handling for the date part label.
-    $label = theme('date_part_label_'. $field, $part_type, $element);
+    $label = theme('date_part_label_' . $field, $part_type, $element);
     if (in_array($field, $element['#date_text_parts'])) {
       $sub_element[$field]['#type'] = 'textfield';
       $sub_element[$field]['#theme'] = 'date_textfield_element';
@@ -308,10 +308,10 @@ function date_parts_element($element, $date, $format) {
       if ($element['#date_label_position'] == 'within') {
         if (is_array($sub_element[$field]['#options'])) {
           $sub_element[$field]['#options'] = array(
-            '-'. $label => '-'. $label) + $sub_element[$field]['#options'];
+            '-' . $label => '-' . $label) + $sub_element[$field]['#options'];
         }
         if (empty($sub_element[$field]['#default_value'])) {
-          $sub_element[$field]['#default_value'] = '-'. $label;
+          $sub_element[$field]['#default_value'] = '-' . $label;
         }
       }
       elseif ($element['#date_label_position'] != 'none') {
@@ -323,7 +323,7 @@ function date_parts_element($element, $date, $format) {
       $sub_element[$field]['#theme'] = 'date_select_element';
       if ($element['#date_label_position'] == 'within') {
         $sub_element[$field]['#options'] = array(
-          '' => '-'. $label) + $sub_element[$field]['#options'];
+          '' => '-' . $label) + $sub_element[$field]['#options'];
       }
       elseif ($element['#date_label_position'] != 'none') {
         $sub_element[$field]['#title'] = $label;
@@ -346,7 +346,7 @@ function date_parts_element($element, $date, $format) {
       '#attributes' => array('class' => 'date-ampm'),
     );
     if ($element['#date_label_position'] == 'within') {
-      $sub_element['ampm']['#options'] = array('' => '-'. theme('date_part_label_ampm', 'ampm', $element)) + $sub_element['ampm']['#options'];
+      $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', 'ampm', $element)) + $sub_element['ampm']['#options'];
     }
     elseif ($element['#date_label_position'] != 'none') {
       $sub_element['ampm']['#title'] = theme('date_part_label_ampm', 'ampm', $element);
@@ -467,7 +467,7 @@ function date_select_validate($element, &$form_state) {
     $errors[] = t('A valid value is required.');
   }
   if (!empty($errors)) {
-    array_unshift($errors, t('Field %field has errors.', array('%field' => $label)));
+    array_unshift($errors, t('Field %field has errors. ', array('%field' => $label)));
     form_set_error($error_field, implode(' ', $errors));
   }
   
@@ -488,7 +488,7 @@ function date_select_input_value($element) {
   if (date_is_valid($element['#value'], DATE_ARRAY, $granularity)) {
     // Use fuzzy_datetime here to be sure year-only dates
     // aren't inadvertantly shifted to the wrong year by trying
-    // to save '2009-00-00 00:00:00'.
+    // to save '2009-00-00 00:00:00' .
     return date_fuzzy_datetime(date_convert($element['#value'], DATE_ARRAY, DATE_DATETIME));
   }
   return NULL;
@@ -514,7 +514,7 @@ function date_text_validate($element, &$form_state) {
     form_error($element, t('A valid date is required for %title.', array('%title' => $label))); 
   }
   elseif (empty($value) && !empty($element['#value']['date'])) {
-    form_error($element, t('%title is invalid.', array('%title' => $label))); 
+    form_error($element, t('%title is invalid. ', array('%title' => $label))); 
   }
   elseif (!empty($value)) {
     form_set_value($element, $value, $form_state);
@@ -538,7 +538,7 @@ function date_text_input_value($element) {
   }
   // TODO come back and try to find a way to use strtotime to guess
   // a valid value. Previous attempts to do it were too forgiving and
-  // invalid input was just silently converted to 'now'.
+  // invalid input was just silently converted to 'now' .
   // See http://drupal.org/node/265076.
 
   return NULL;
@@ -576,7 +576,7 @@ function date_convert_from_custom($date, $format) {
   foreach ($array as $key => $value) {
     $patterns[] = "`(^|[^\\\\\\\\])". $key ."`"; // the letter with no preceding '\'
     $repl1[] = '${1}(.)';                  // a single character
-    $repl2[] = '${1}('. $value .')';       // the
+    $repl2[] = '${1}(' . $value .')';       // the
   }
   $patterns[] = "`\\\\\\\\([". implode(array_keys($array)) ."])`";
   $repl1[] = '${1}';
@@ -588,14 +588,14 @@ function date_convert_from_custom($date, $format) {
   $regex1 = preg_replace($patterns, $repl1, $format_regexp, 1);
   $regex1 = str_replace('A', '(.)', $regex1);
   $regex1 = str_replace('a', '(.)', $regex1);
-  preg_match('`^'. $regex1 .'$`', stripslashes($format), $letters);
+  preg_match('`^' . $regex1 . '$`', stripslashes($format), $letters);
   array_shift($letters);
 
   // extract values
   $regex2 = preg_replace($patterns, $repl2, $format_regexp, 1);
   $regex2 = str_replace('A', '(AM|PM)', $regex2);
   $regex2 = str_replace('a', '(am|pm)', $regex2);
-  preg_match('`^'. $regex2 .'$`', $date, $values);
+  preg_match('`^' . $regex2 . '$`', $date, $values);
   array_shift($values);
   
   // if we did not find all the values for the patterns in the format, abort

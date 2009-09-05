@@ -103,7 +103,7 @@ function date_repeat_dow_options() {
   $options = array();
   foreach (date_repeat_dow_count_options() as $count_key => $count_value) {
     foreach (date_repeat_dow_day_options() as $dow_key => $dow_value) {
-      $options[$count_key . $dow_key] = $count_value .' '. $dow_value;
+      $options[$count_key . $dow_key] = $count_value . ' ' . $dow_value;
     }
   }
   return $options;
@@ -150,8 +150,8 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     return;
   }
   
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
-  require_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
   
   // Make sure there will be an empty description for any unused parts.
   $description = array(
@@ -169,16 +169,16 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
   $interval = INTERVAL_options();
   switch ($rrule['FREQ']) {
     case 'WEEKLY':
-      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every week', 'every @count weeks') .' ';
+      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every week', 'every @count weeks') . ' ';
       break;
     case 'MONTHLY':
-      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every month', 'every @count months') .' ';
+      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every month', 'every @count months') . ' ';
       break;
     case 'YEARLY':
-      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every year', 'every @count years') .' ';
+      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every year', 'every @count years') . ' ';
       break;
     default:
-      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every day', 'every @count days') .' ';
+      $description['!interval'] = format_plural($rrule['INTERVAL'], 'every day', 'every @count days') . ' ';
       break;
   }
   
@@ -188,15 +188,15 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     $results = array();
     foreach ($rrule['BYDAY'] as $byday) {
       $day = substr($byday, -2);
-      $count = intval(str_replace(' '. $day, '', $byday));
-      if ($count = intval(str_replace(' '. $day, '', $byday))) {
+      $count = intval(str_replace(' ' . $day, '', $byday));
+      if ($count = intval(str_replace(' ' . $day, '', $byday))) {
         $results[] = trim(t('!repeats_every_interval on the !date_order !day_of_week', array('!repeats_every_interval ' => '', '!date_order' => strtolower($counts[$count]), '!day_of_week' => $days[$day])));
       }
       else {
         $results[] = trim(t('!repeats_every_interval every !day_of_week', array('!repeats_every_interval ' => '', '!day_of_week' => $days[$day])));
       }
     }
-    $description['!byday'] = implode(' '. t('and') .' ', $results);
+    $description['!byday'] = implode(' ' . t('and') . ' ', $results);
   }
   if (!empty($rrule['BYMONTH'])) {
     if (sizeof($rrule['BYMONTH']) < 12) {
@@ -234,7 +234,7 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     $day_names = date_repeat_dow_day_options();
     $description['!week_starts_on'] = trim(t('!repeats_every_interval where the week start on !day_of_week', array('!repeats_every_interval ' => '', '!day_of_week' => $day_names[trim($rrule['WKST'])])));
   }
-  return t('Repeats !interval !bymonth !byday !count !until !except.', $description);
+  return t('Repeats !interval !bymonth !byday !count !until !except. ', $description);
 }
 
 /**
@@ -262,7 +262,7 @@ function date_repeat_split_rrule($rrule) {
  * Analyze a RRULE and return dates that match it.
  */
 function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone = NULL) {
-  require_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_calc.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
   return _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone);
 }
 
@@ -270,6 +270,6 @@ function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone
  * Generate the repeat rule setting form.
  */
 function date_repeat_rrule_process($element, $edit, $form_state, $form) {
-  require_once('./'. drupal_get_path('module', 'date_repeat') .'/date_repeat_form.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_form.inc');
   return _date_repeat_rrule_process($element, $edit, $form_state, $form);
 }

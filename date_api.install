@@ -50,22 +50,22 @@ function date_api_set_variables() {
  */
 function date_api_schema() {
   $schema['date_format_types'] = array(
-    'description' => 'For storing configured date format types.',
+    'description' => 'For storing configured date format types. ',
     'fields' => array(
       'type' => array(
-        'description' => 'The date format type, e.g. medium.',
+        'description' => 'The date format type, e.g. medium. ',
         'type' => 'varchar',
         'length' => 200,
         'not null' => TRUE,
       ),
       'title' => array(
-        'description' => 'The human readable name of the format type.',
+        'description' => 'The human readable name of the format type. ',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ),
       'locked' => array(
-        'description' => 'Whether or not this is a system provided format.',
+        'description' => 'Whether or not this is a system provided format. ',
         'type' => 'int',
         'size' => 'tiny',
         'default' => 0,
@@ -76,28 +76,28 @@ function date_api_schema() {
   );
 
   $schema['date_formats'] = array(
-    'description' => 'For storing configured date formats.',
+    'description' => 'For storing configured date formats. ',
     'fields' => array(
       'dfid' => array(
-        'description' => 'The date format identifier.',
+        'description' => 'The date format identifier. ',
         'type' => 'serial',
         'not null' => TRUE,
         'unsigned' => TRUE,
       ),
       'format' => array(
-        'description' => 'The date format string.',
+        'description' => 'The date format string. ',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The date format type, e.g. medium.',
+        'description' => 'The date format type, e.g. medium. ',
         'type' => 'varchar',
         'length' => 200,
         'not null' => TRUE,
       ),
       'locked' => array(
-        'description' => 'Whether or not this format can be modified.',
+        'description' => 'Whether or not this format can be modified. ',
         'type' => 'int',
         'size' => 'tiny',
         'default' => 0,
@@ -109,22 +109,22 @@ function date_api_schema() {
   );
 
   $schema['date_format_locale'] = array(
-    'description' => 'For storing configured date formats for each locale.',
+    'description' => 'For storing configured date formats for each locale. ',
     'fields' => array(
       'format' => array(
-        'description' => 'The date format string.',
+        'description' => 'The date format string. ',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The date format type, e.g. medium.',
+        'description' => 'The date format type, e.g. medium. ',
         'type' => 'varchar',
         'length' => 200,
         'not null' => TRUE,
       ),
       'language' => array(
-        'description' => 'A {languages}.language for this format to be used with.',
+        'description' => 'A {languages}.language for this format to be used with. ',
         'type' => 'varchar',
         'length' => 12,
         'not null' => TRUE,
@@ -248,7 +248,7 @@ function date_api_requirements($phase) {
       if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
         $error = TRUE;
         $severity = REQUIREMENT_ERROR;
-        $value = $t('The Date API module requires the <a href="@link">Date PHP4 module</a> for PHP versions less than 5.2.', array('@link' => url('admin/build/modules')));
+        $value = $t('The Date API module requires the <a href="@link">Date PHP4 module</a> for PHP versions less than 5.2. ', array('@link' => url('admin/build/modules')));
       }
       if ($error) {
         $requirements['date_php4'] = array(
@@ -300,7 +300,7 @@ function date_api_update_6000() {
   // don't attempt to upgrade if views is not yet upgraded.
   if (module_exists('views') && drupal_get_installed_schema_version('views', TRUE) < 6000) {
     $ret = array();
-    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates.', array('@update-php' => base_path() .'update.php?op=selection')), 'warning', FALSE);
+    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates. ', array('@update-php' => base_path() . 'update.php?op=selection')), 'warning', FALSE);
     $ret['#abort'] = array('success' => FALSE, 'query' => t('date.module has updates, but cannot be updated until views.module is updated first.'));
     
     return $ret;
@@ -318,7 +318,7 @@ function date_api_update_6001() {
   // don't attempt to upgrade if views is not yet upgraded.
   if (module_exists('views') && drupal_get_installed_schema_version('views', TRUE) < 6000) {
     $ret = array();
-    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates.', array('@update-php' => base_path() .'update.php?op=selection')), 'warning', FALSE);
+    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates. ', array('@update-php' => base_path() . 'update.php?op=selection')), 'warning', FALSE);
     $ret['#abort'] = array('success' => FALSE, 'query' => t('date.module has updates, but cannot be updated until views.module is updated first.'));
     
     return $ret;
@@ -344,7 +344,7 @@ function date_api_update_6002() {
   // don't attempt to upgrade if views is not yet upgraded.
   if (module_exists('views') && drupal_get_installed_schema_version('views', TRUE) < 6000) {
     $ret = array();
-    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates.', array('@update-php' => base_path() .'update.php?op=selection')), 'warning', FALSE);
+    drupal_set_message(t('date module cannot be updated until after Views has been updated. Please return to <a href="@update-php">update.php</a> and run the remaining updates. ', array('@update-php' => base_path() . 'update.php?op=selection')), 'warning', FALSE);
     $ret['#abort'] = array('success' => FALSE, 'query' => t('date.module has updates, but cannot be updated until views.module is updated first.'));
     
     return $ret;
@@ -452,28 +452,28 @@ function date_api_update_6004() {
   $ret = array();
 
   $schema['date_formats'] = array(
-    'description' => 'For storing configured date formats.',
+    'description' => 'For storing configured date formats. ',
     'fields' => array(
       'dfid' => array(
-        'description' => 'The date format identifier.',
+        'description' => 'The date format identifier. ',
         'type' => 'serial',
         'not null' => TRUE,
         'unsigned' => TRUE,
       ),
       'format' => array(
-        'description' => 'The date format string.',
+        'description' => 'The date format string. ',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The date format type, e.g. medium.',
+        'description' => 'The date format type, e.g. medium. ',
         'type' => 'varchar',
         'length' => 200,
         'not null' => TRUE,
       ),
       'locked' => array(
-        'description' => 'Whether or not this format can be modified.',
+        'description' => 'Whether or not this format can be modified. ',
         'type' => 'int',
         'size' => 'tiny',
         'default' => 0,

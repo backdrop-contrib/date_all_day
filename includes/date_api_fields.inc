@@ -14,17 +14,17 @@ function _date_api_fields($base = 'node') {
   if (empty($base)) {
     $base = 'node';
   }
-  $cid = 'date_api_fields_'. $base;
+  $cid = 'date_api_fields_' . $base;
   cache_clear_all($cid, 'cache_views');
   
   $all_fields = date_api_views_fetch_fields($base, 'field');
   $fields = array();
   foreach ((array) $all_fields as $name => $val) {
     $fromto = array();
-    $tmp = explode('.', $name);
+    $tmp = explode(' . ', $name);
     $field_name = $tmp[1];
     $table_name = $tmp[0];
-    $alias = str_replace('.', '_', $name);
+    $alias = str_replace(' . ', '_', $name);
       
     if (!$handler = views_get_handler($table_name, $field_name, 'field')) {
       continue; 
@@ -49,10 +49,10 @@ function _date_api_fields($base = 'node') {
     
     // Allow custom modules to provide date fields.
     // The is_a() function makes this work for any handler
-    // that was derived from 'views_handler_field_date'.
+    // that was derived from 'views_handler_field_date' .
     elseif (is_a($handler, 'views_handler_field_date')) {
       foreach (module_implements('date_api_fields') as $module) {
-        $function = $module .'_date_api_fields';
+        $function = $module . '_date_api_fields';
         if ($custom = $function("$table_name.$field_name")) {
           $type = 'custom';
           break;
@@ -78,27 +78,27 @@ function _date_api_fields($base = 'node') {
         $tz_handling = $handler->content_field['tz_handling'];
         $db_info = content_database_info($handler->content_field);
         if ($tz_handling == 'date') {
-          $offset_field = $table_name .'.'. $db_info['columns']['offset']['column'];
+          $offset_field = $table_name . ' . ' . $db_info['columns']['offset']['column'];
         }
         $related_fields = array(
-          $table_name .'.'. $field_name
+          $table_name . ' . ' . $field_name
           );
         if (isset($db_info['columns']['value2']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name .'.'. $db_info['columns']['value2']['column']));
+          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['value2']['column']));
         }
         if (isset($db_info['columns']['timezone']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name .'.'. $db_info['columns']['timezone']['column']));
-          $timezone_field = $table_name .'.'. $db_info['columns']['timezone']['column'];
+          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['timezone']['column']));
+          $timezone_field = $table_name . ' . ' . $db_info['columns']['timezone']['column'];
         }
         if (isset($db_info['columns']['rrule']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name .'.'. $db_info['columns']['rrule']['column']));
-          $rrule_field = $table_name .'.'. $db_info['columns']['rrule']['column'];
+          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['rrule']['column']));
+          $rrule_field = $table_name . ' . ' . $db_info['columns']['rrule']['column'];
         }
       }
       // Get the delta value into the query.
       if (!empty($handler->content_field['multiple'])) {
         array_push($related_fields, "$table_name.delta");
-        $delta_field = $table_name .'_delta';
+        $delta_field = $table_name . '_delta';
       }
 
       // Handling for cck fromto dates
@@ -109,8 +109,8 @@ function _date_api_fields($base = 'node') {
           case 'datestamp':
             $db_info = content_database_info($handler->content_field);
             $fromto = array(
-              $table_name .'_'. $db_info['columns']['value']['column'],
-              $table_name .'_'. (!empty($handler->content_field['todate']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column']),
+              $table_name . '_' . $db_info['columns']['value']['column'],
+              $table_name . '_' . (!empty($handler->content_field['todate']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column']),
               );
             break;
         }
@@ -133,7 +133,7 @@ function _date_api_fields($base = 'node') {
       $fields['name'][$name] = array(
         'type' => $type,
         'sql_type' => $sql_type,
-        'label' => $val['group'] .': '. $val['title'],
+        'label' => $val['group'] . ': ' . $val['title'],
         'granularity' => $granularity,
         'fullname' => $name,
         'table_name' => $table_name,

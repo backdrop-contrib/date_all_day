@@ -20,7 +20,7 @@ function _date_field_validate($op, &$node, $field, &$items, $teaser, $page) {
     foreach ($items as $delta => $item) {
       $process = date_process_values($field);
       foreach ($process as $processed) {
-        $error_field = $field['field_name'] .']['. $delta .']['. $processed;
+        $error_field = $field['field_name'] . '][' . $delta . '][' . $processed;
         $error_field .= $field['widget']['type'] == 'date_select' ? '][year' : '';
         if ($processed == 'value' && $field['todate']
           && !date_is_valid($item['value'], $field['type'], $field['granularity'])
@@ -113,7 +113,7 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
     return;
   }
 
-  require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
   $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone_name());
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling
@@ -161,7 +161,7 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
   
   // Add a date repeat form element, if needed.
   if (module_exists('date_repeat') && $field['repeat'] == 1) {
-    require_once('./'. drupal_get_path('module', 'date') .'/date_repeat.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
     _date_repeat_widget($element, $field, $items, $delta);
     $element['rrule']['#weight'] = $field['widget']['weight'] + .4;
   }
@@ -201,7 +201,7 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
       }
     }
     // Special case for 'now' when using dates with no timezone,
-    // make sure 'now' isn't adjusted to UTC value of 'now'.
+    // make sure 'now' isn't adjusted to UTC value of 'now' .
     elseif ($field['tz_handling'] == 'none') {
       $date = date_now();
     }
@@ -319,7 +319,7 @@ function date_combo_process($element, $edit, &$form_state, $form) {
   
   // If this field uses the 'To', add matching element
   // for the 'To' date, and adapt titles to make it clear which
-  // is the 'From' and which is the 'To'.
+  // is the 'From' and which is the 'To' .
 
   if (!empty($field['todate'])) {
     $element['#date_float'] = TRUE;
@@ -327,10 +327,10 @@ function date_combo_process($element, $edit, &$form_state, $form) {
     $element[$to_field] = $element[$from_field];
     $element[$to_field]['#title'] = t('To date');
     $element[$to_field]['#default_value'] = isset($element['#value'][$to_field]) ? $element['#value'][$to_field] : '';
-    $element[$to_field]['#required'] = false;
+    $element[$to_field]['#required'] = FALSE;
     $element[$to_field]['#weight'] += .1;
     if ($field['widget']['type'] == 'date_select') {
-      $description .= ' '. t("Empty 'To date' values will use the 'From date' values.");
+      $description .= ' ' . t("Empty 'To date' values will use the 'From date' values.");
     }
     $element['#fieldset_description'] = $description;
   }
@@ -543,7 +543,7 @@ function date_widget_validate($element, &$form_state) {
   $fields = content_fields();
   $field = $form_state['#field_info'][$element['#field_name']];
   if (module_exists('date_repeat') && array_key_exists('rrule', $form_values[$field_name])) {
-    require_once('./'. drupal_get_path('module', 'date') .'/date_repeat.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
     return _date_repeat_widget_validate($element, $form_state);
   }
 }
@@ -573,7 +573,7 @@ function theme_date_combo($element) {
   
   // Group from/to items together in fieldset.
   $fieldset = array(
-    '#title' => check_plain($field['widget']['label']) .' '. ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
+    '#title' => check_plain($field['widget']['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => $element['#children'],
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,

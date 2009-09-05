@@ -12,7 +12,7 @@ function date_sql_concat($array) {
   switch ($db_type) {
     case('mysql'):
     case('mysqli'):
-      return "CONCAT(". implode(",", $array) .")";
+      return "CONCAT(" . implode(",", $array) . ")";
     case('pgsql'):
       return implode(" || ", $array);
   }
@@ -30,7 +30,7 @@ function date_sql_coalesce($array) {
     case('mysql'):
     case('mysqli'):
     case('pgsql'):
-      return "COALESCE(". implode(',', $array) .")";
+      return "COALESCE(" . implode(',', $array) . ")";
   }  
 }
 
@@ -130,7 +130,7 @@ class date_sql_handler {
       elseif ($type == 'pgsql') {
         db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
       }
-      $already_set = true;
+      $already_set = TRUE;
     }
   }
   
@@ -152,7 +152,7 @@ class date_sql_handler {
    * Helper function to create cross-database SQL dates.
    *
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @param $offset
    *   The name of a field that holds the timezone offset or an
    *   offset value. If NULL, the normal Drupal timezone handling
@@ -315,9 +315,9 @@ class date_sql_handler {
    * Helper function to create cross-database SQL date formatting.
    *
    * @param $format
-   *   A format string for the result, like 'Y-m-d H:i:s'.
+   *   A format string for the result, like 'Y-m-d H:i:s' .
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @return
    *   An appropriate SQL string for the db type and field type.
    */
@@ -356,9 +356,9 @@ class date_sql_handler {
    * Helper function to create cross-database SQL date extraction.
    *
    * @param $extract_type
-   *   The type of value to extract from the date, like 'MONTH'.
+   *   The type of value to extract from the date, like 'MONTH' .
    * @param $field
-   *   The real table and field name, like 'tablename.fieldname'.
+   *   The real table and field name, like 'tablename.fieldname' .
    * @return
    *   An appropriate SQL string for the db type and field type.
    */
@@ -419,7 +419,7 @@ class date_sql_handler {
    * @param string $field
    *   The db table and field name, like "$table.$field".
    * @param string $operator
-   *   The db comparison operator to use, like '='.
+   *   The db comparison operator to use, like '=' .
    * @param int $value
    *   The value to compare the extracted date part to, could be a
    *   field name or a date string or NOW().
@@ -437,7 +437,7 @@ class date_sql_handler {
     elseif ($type == 'DATE') {
       $date = date_make_date($value, date_default_timezone_name(), DATE_DATETIME);
       if (!empty($adjustment)) {
-        date_modify($date, $adjustment .' seconds');
+        date_modify($date, $adjustment . ' seconds');
       }
       // When comparing a field to a date we can avoid doing timezone 
       // conversion by altering the comparison date to the db timezone.
@@ -446,7 +446,7 @@ class date_sql_handler {
         date_timezone_set($date, timezone_open($this->db_timezone));
         $this->local_timezone = $this->db_timezone;
       }
-      $value = "'". date_format_date($date, 'custom', DATE_FORMAT_DATETIME) ."'";
+      $value = "'" . date_format_date($date, 'custom', DATE_FORMAT_DATETIME) . "'";
     }    
     if ($this->local_timezone != $this->db_timezone) {
       $field = $this->sql_field($field);
@@ -465,7 +465,7 @@ class date_sql_handler {
    * @param string $field
    *   The db table and field name, like "$table.$field".
    * @param string $operator
-   *   The db comparison operator to use, like '='.
+   *   The db comparison operator to use, like '=' .
    * @param int $value
    *   The integer value to compare the extracted date part to.
    * @return 
@@ -489,7 +489,7 @@ class date_sql_handler {
    * @param string $field
    *   The db table and field name, like "$table.$field".
    * @param string $operator
-   *   The db comparison operator to use, like '='.
+   *   The db comparison operator to use, like '=' .
    * @param string $value
    *   The value to compare the extracted date part to, could be a
    *   field name or a date string or NOW().
@@ -533,7 +533,7 @@ class date_sql_handler {
    * Part information.
    *
    * @param $op
-   *   'min', 'max', 'format', 'sep', 'empty_now', 'empty_min', 'empty_max'. 
+   *   'min', 'max', 'format', 'sep', 'empty_now', 'empty_min', 'empty_max' . 
    *   Returns all info if empty.
    * @param $part
    *   'year', 'month', 'day', 'hour', 'minute', or 'second.
@@ -580,7 +580,7 @@ class date_sql_handler {
    * For example, array('year' => 2008, 'month' => 05) will fill
    * in the day, hour, minute and second with the earliest possible
    * values if type = 'min', the latest possible values if type = 'max',
-   * and the current values if type = 'now'.
+   * and the current values if type = 'now' .
    */
   function complete_date($selected, $type = 'now') {
     if (empty($selected)) {
@@ -602,7 +602,7 @@ class date_sql_handler {
       }
     }
     
-    $compare = array_merge($this->part_info('empty_'. $type), $selected);
+    $compare = array_merge($this->part_info('empty_' . $type), $selected);
     // If this is a max date, make sure the last day of 
     // the month is the right one for this date.
     if ($type == 'max') {
@@ -617,7 +617,7 @@ class date_sql_handler {
   }
   /**
    * Convert a format string into help text,
-   * i.e. 'Y-m-d' becomes 'YYYY-MM-DD'.
+   * i.e. 'Y-m-d' becomes 'YYYY-MM-DD' .
    *
    * @param unknown_type $format
    * @return unknown
@@ -634,24 +634,24 @@ class date_sql_handler {
    */
   function part_is_valid($value, $type) {
     if ( !preg_match('/^[0-9]*$/', $value) ) {
-      return false;
+      return FALSE;
     }
     $value = intval($value);
     if ($value <= 0) return false;
     switch ($type) {
       case 'year':
-        if ($value < DATE_MIN_YEAR) return false;
+        if ($value < DATE_MIN_YEAR) return FALSE;
         break;
       case 'month':
-        if ($value < 0 || $value > 12) return false;
+        if ($value < 0 || $value > 12) return FALSE;
         break;
       case 'day':
-        if ($value < 0 || $value > 31) return false;
+        if ($value < 0 || $value > 31) return FALSE;
         break;
       case 'week':
-        if ($value < 0 || $value > 53) return false;
+        if ($value < 0 || $value > 53) return FALSE;
     }
-    return true;
+    return TRUE;
   }
 
   function views_formats($granularity, $type = 'sql') {
@@ -766,7 +766,7 @@ class date_sql_handler {
   }
 
   /**
-   * Convert strings like '+1 day' to the ISO equivalent, like 'P1D'.
+   * Convert strings like '+1 day' to the ISO equivalent, like 'P1D' .
    */
   function arg_replace($arg) {
     if (!preg_match('/([+|-])\s?([0-9]{1,32})\s?([day(s)?|week(s)?|month(s)?|year(s)?|hour(s)?|minute(s)?|second(s)?]{1,10})/', $arg, $results)) {
@@ -826,7 +826,7 @@ class date_sql_handler {
     // Build a range from a period-only argument (assumes the min date is now.)
     if (empty($parts[0]['date']) && !empty($parts[0]['period']) && (empty($parts[1]))) {
       $min_date = date_now();
-      $max_date = drupal_clone($min_date);
+      $max_date = clone($min_date);
       foreach ($parts[0]['period'] as $part => $value) {
         date_modify($max_date, "+$value $part");
       }
@@ -836,7 +836,7 @@ class date_sql_handler {
     // Build a range from a period to period argument
     if (empty($parts[0]['date']) && !empty($parts[0]['period']) && !empty($parts[1]['period'])) {
       $min_date = date_now();
-      $max_date = drupal_clone($min_date);
+      $max_date = clone($min_date);
       foreach ($parts[0]['period'] as $part => $value) {
         date_modify($min_date, "+$value $part");
       }
@@ -859,7 +859,7 @@ class date_sql_handler {
       // Build a range from start date + period.
       elseif (!empty($parts[1]['period'])) {
         foreach ($parts[1]['period'] as $part => $value) {
-          $max_date = drupal_clone($min_date);
+          $max_date = clone($min_date);
           date_modify($max_date, "+$value $part");
         }
         date_modify($max_date, '-1 second');

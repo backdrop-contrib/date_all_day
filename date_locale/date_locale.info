@@ -4,4 +4,7 @@ description = Allows the site admin to configure multiple formats for date/time 
 package = Date/Time
 dependencies[] = date_api
 dependencies[] = locale
-core = 6.x
+core = 7.x
+php = 5.2
+files[] = date_locale.module
+

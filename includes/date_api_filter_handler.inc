@@ -19,7 +19,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   // Add a date handler to the filter.
   function construct() {
     parent::construct();
-    require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_sql.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();
     $this->date_handler->granularity = $this->options['granularity'];
@@ -111,13 +111,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       );
    
     $form['granularity'] = $this->date_handler->granularity_form($this->options['granularity']);
-    $form['granularity']['#description'] = '<p>'. t("Select a granularity for the date filter. For instance, selecting 'day' will create a filter where users can select the year, month, and day.") .'</p>';
+    $form['granularity']['#description'] = '<p>' . t("Select a granularity for the date filter. For instance, selecting 'day' will create a filter where users can select the year, month, and day.") . '</p>';
     
     $form['year_range'] = array(
       '#title' => t('Date year range'),
       '#type' => 'textfield',
       '#default_value' => $this->options['year_range'],
-      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010'. When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)'."),
+      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
     
     $fields = date_api_fields($this->definition['base']);
@@ -214,7 +214,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#type' => 'textfield',
       '#title' => t('Date default'),
       '#default_value' => $this->options['default_date'],
-      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day'. The To date default value is used when the operator is set to 'between' or 'not between'.") . $extra .'</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') .'</p></div>',
+      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The To date default value is used when the operator is set to 'between' or 'not between' .") . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
       );
     $form['value']['default_to_date'] = array(
       '#type' => 'textfield',
@@ -241,11 +241,11 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    * A form element to select date part values.
    *
    * @param string $prefix
-   *   A prefix for the date values, 'value', 'min', or 'max'.
+   *   A prefix for the date values, 'value', 'min', or 'max' .
    * @param string $source
    *   The operator for this element.
    * @param string $which
-   *   Which element to provide, 'all', 'value', or 'minmax'.
+   *   Which element to provide, 'all', 'value', or 'minmax' .
    * @param array $operator_values
    *   An array of the allowed operators for this element.
    * @param array $limit
@@ -255,7 +255,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    *   The form date part element for this instance.
    */
   function date_parts_form($form_state, $prefix, $source, $which, $operator_values) {
-    require_once('./'. drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
     switch($prefix) {
       case 'min':
         $name = t('From date');
@@ -291,7 +291,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     );
     if ($which == 'all') {
       $dependency = array(
-        '#process' => array($type .'_process', 'views_process_dependency'),
+        '#process' => array($type . '_process', 'views_process_dependency'),
         '#dependency' => array($source => $operator_values),
       );
       $form[$prefix] += $dependency;
@@ -304,13 +304,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (empty($options)) {
       $options = $this->options;
     }
-    // This is a date that needs to be constructed from options like 'now'.
+    // This is a date that needs to be constructed from options like 'now' .
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {
       // For PHP 5.2+, take advantage of any strings that native PHP 
       // date_create() can handle. For older versions use strtotime().
       if (version_compare(PHP_VERSION, '5.2', '<')) {
-        $now = strtotime($default_option .' UTC');
+        $now = strtotime($default_option . ' UTC');
         $date = date_create("@$now", timezone_open('UTC'));
       }
       else {
@@ -364,8 +364,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         }
       }
     }
-    $field = implode(' '. $this->options['date_method'] .' ', $output);
-    $output = "$field ". check_plain($this->operator) . ' ';
+    $field = implode(' ' . $this->options['date_method'] . ' ', $output);
+    $output = "$field " . check_plain($this->operator) . ' ';
     $parts = $handler->date_parts();
     $widget_options = $this->widget_options();
     // If the filter is exposed, display the granularity.
@@ -441,11 +441,11 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     // Handle the simple operators first.
     if ($operator == 'empty') {
       $this->add_date_field($field);
-      return $field['fullname'] .' IS NULL';
+      return $field['fullname'] . ' IS NULL';
     }
     elseif ($operator == 'not empty') {
       $this->add_date_field($field);
-      return $field['fullname'] .' IS NOT NULL';
+      return $field['fullname'] . ' IS NOT NULL';
     }
 
     // Views treats the default values as though they are submitted
@@ -478,14 +478,14 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       switch ($operator) {
         case '>':
         case '>=':
-          $range[1] = date_make_date(date_pad($year_range[1], 4) .'-12-31 23:59:59');  
+          $range[1] = date_make_date(date_pad($year_range[1], 4) . '-12-31 23:59:59');  
           if ($operator == '>') {
             date_modify($range[0], '+1 second');
           }
           break;
         case '<':
         case '<=':
-          $range[0] = date_make_date(date_pad($year_range[0], 4) .'-01-01 00:00:00');
+          $range[0] = date_make_date(date_pad($year_range[0], 4) . '-01-01 00:00:00');
           if ($operator == '<') {
             date_modify($range[1], '-1 second');
           }

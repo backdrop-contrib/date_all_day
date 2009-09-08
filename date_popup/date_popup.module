@@ -30,13 +30,8 @@ function date_popup_load() {
   if ($loaded) {
     return;
   }
+  drupal_add_library('ui.datepicker');
   $path = drupal_get_path('module', 'date_popup');
-  if (module_exists('jquery_ui')) {
-    jquery_ui_add('ui.datepicker');
-  }
-  else {
-    drupal_add_js($path .'/lib/ui.datepicker.js');
-  }
   if (variable_get('date_popup_timepicker', 'default') == 'default') {
     drupal_add_js($path .'/lib/jquery.timeentry.pack.js');
   }
@@ -170,6 +165,7 @@ function date_popup_process($element, $form_state, $form) {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
 
   $date = NULL;
+  $edit = $form_state['values'];
   $granularity = date_format_order($element['#date_format']);
   
   if (!empty($edit) && is_array($edit) && !empty($edit['date'])) {
@@ -542,7 +538,8 @@ function theme_date_popup($element) {
  */
 function date_popup_menu() {
   $items = array();
-
+  // TODO Fix this later.
+  return $items;
   $items['admin/settings/date_popup'] = array(
     'title' => 'Date Popup Configuration',
     'description' => 'Allows the user to configure the Date Popup settings.',
@@ -558,7 +555,6 @@ function date_popup_menu() {
  * General configuration form for controlling the Date Popup behaviour.
  */
 function date_popup_settings() {
-
   $form['#prefix'] = t('<p>The Date Popup calendar datepicker uses the jQuery UI datepicker. A version of that is included with the Date Popup module, but you are strongly encouraged to use the <a href="http://drupal.org/project/jquery_ui">jQuery UI module</a> instead. If the jQuery UI module is installed, the Date Popup will use the datepicker from that module, which is likely to be more current. If you are having any problems with Popups and you are not already using jQuery UI, please do that as a first step before reporting problems.</p>');
   $form['#prefix'] .= t('<p>The Date Popup module uses a jQuery timepicker module. There is no "official" jQuery UI timepicker, and not everyone likes the one that is included here. If you do not want to use the timepicker, you can turn it off below and users will get a regular textfield instead.</p>');
   

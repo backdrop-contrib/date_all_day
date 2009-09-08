@@ -44,8 +44,8 @@ function date_repeat_node($node) {
   return FALSE;
 }
 
-function date_repeat_type($type_name) {
-  $type = content_types($type_name);
+function date_repeat_type($bundle) {
+  $type = content_types($bundle);
   if (!empty($type['fields'])) {
     foreach ($type['fields'] as $field_name => $field) {
       if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['repeat']) {
@@ -56,8 +56,8 @@ function date_repeat_type($type_name) {
   return FALSE;
 }
 
-function date_repeat_fields($type_name) {
-  $type = content_types($type_name);
+function date_repeat_fields($bundle) {
+  $type = content_types($bundle);
   $fields = array();
   if (!empty($type['fields'])) {
     foreach ($type['fields'] as $field_name => $field) {
@@ -89,7 +89,7 @@ function date_is_repeat_field($field) {
     'date_text_repeat',
     'date_popup_repeat',
     );
-  if (in_array($field['widget']['type'], $repeat_widgets)) {
+  if (in_array($instance['widget']['type'], $repeat_widgets)) {
       return TRUE;
   }
   return FALSE;
@@ -102,7 +102,7 @@ function date_field_is_empty($item, $field) {
   if (empty($item['value'])) {
     return TRUE;
   }
-  elseif ($field['todate'] == 'required' && empty($item['value2'])) {
+  elseif ($field['settings']['todate'] == 'required' && empty($item['value2'])) {
     return TRUE;
   }
   return FALSE;
@@ -115,21 +115,20 @@ function date_field_info() {
   $settings = array(
     'settings' => array(
       'todate' => '',
-      'repeat' => FALSE,
-      'repeat_collapsed' => TRUE,
-      'granularity' => array('year', 'month', 'day', 'hour', 'minute'),
+      'repeat' => 0,
+      'granularity' => drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute')),
       'tz_handling' => 'site',
       'timezone_db' => 'UTC',
-      'default_format' => 'medium',
     ),
     'instance_settings' => array(
       'default_value' => 'blank', 
       'default_value_code' => '', 
       'default_value2' => 'blank', 
       'default_value_code2' => '', 
+      'default_format' => 'medium',
+      'repeat_collapsed' => 0,
     ),
   );
-
   return array(
     'date' => array(
       'label' => 'Date',
@@ -222,8 +221,8 @@ function date_field_widget_info() {
   return $info;
 }
 
-function date_input_value($field, $element) {
-  switch ($field['widget']['type']) {
+function date_input_value($field, $instance, $element) {
+  switch ($instance['widget']['type']) {
     case 'date_text':
     case 'date_text_repeat':
       $function = 'date_text_input_value';
@@ -280,8 +279,12 @@ function date_field_formatter_info() {
  */
 function date_theme() {
   $path = drupal_get_path('module', 'date');
-  require_once DRUPAL_ROOT . "/$path/date.theme";
+  require_once "./$path/date.theme";
 
+  $base = array(
+    'file' => 'date.theme',
+    'path' => "$path",
+  );
   $themes = array(
     'date_combo' => array(
       'arguments' => array('element' => NULL)),
@@ -299,16 +302,16 @@ function date_theme() {
       'arguments' => array('element' => NULL)),
     'date' => array(
       'arguments' => array('element' => NULL)),
-    'date_formatter_default' => array(
+    'date_formatter_default' => $base + array(
       'arguments' => array('element' => NULL), 
       'function' => 'theme_date_display_combination'),
-    'date_formatter_format_interval' => array(
+    'date_formatter_format_interval' => $base + array(
       'arguments' => array('element' => NULL), 
       'function' => 'theme_date_format_interval'),
-    'date_formatter_format_calendar_day' => array(
+    'date_formatter_format_calendar_day' => $base + array(
       'arguments' => array('element' => NULL), 
       'function' => 'theme_date_format_calendar_day'),
-    'date_repeat_display' => array(
+    'date_repeat_display' => $base + array(
       'arguments' => array('field' => NULL, 
       'item' => NULL, 'node' => NULL, 'dates' => NULL),
       'function' => 'theme_date_repeat_display',
@@ -320,7 +323,7 @@ function date_theme() {
     $format_types = date_get_format_types('', TRUE);
     if (!empty($format_types)) {
       foreach ($format_types as $type => $type_info) {
-        $themes['date_formatter_' . $type] = array(
+        $themes['date_formatter_' . $type] = $base + array(
           'arguments' => array('element' => NULL), 
           'function' => 'theme_date_display_combination',
         );
@@ -368,8 +371,8 @@ function date_formatter_process($element) {
   $format = date_formatter_format($formatter, $field_name);
   $item = $element['#item'];
   $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-  $timezone = date_get_timezone($field['tz_handling'], $timezone);
-  $timezone_db = date_get_timezone_db($field['tz_handling']);
+  $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
+  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
   $process = date_process_values($field);
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
@@ -381,7 +384,7 @@ function date_formatter_process($element) {
       if ($field['type'] == DATE_ISO) {
         $value = str_replace(' ', 'T', date_fuzzy_datetime($value));
       }
-      $date = date_make_date($value, $timezone_db, $field['type'], $field['granularity']);
+      $date = date_make_date($value, $timezone_db, $field['type'], $field['settings']['granularity']);
       $dates[$processed] = array();
       $dates[$processed]['db']['object'] = $date;
       $dates[$processed]['db']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
@@ -440,15 +443,15 @@ function date_formatter_process($element) {
 }
 
 /**
- * $field['granularity'] will contain an array like ('hour' => 'hour', 'month' => 0)
+ * $field['settings']['granularity'] will contain an array like ('hour' => 'hour', 'month' => 0)
  * where the values turned on return their own names and the values turned off return a zero
  * need to reconfigure this into a simple array of the turned on values
  */
 function date_granularity($field) {
-  if (!is_array($field) || !is_array($field['granularity'])) {
-    $field['granularity'] = drupal_map_assoc(array('year', 'month', 'day'));
+  if (!is_array($field) || !is_array($field['settings']['granularity'])) {
+    $field['settings']['granularity'] = drupal_map_assoc(array('year', 'month', 'day'));
   }
-  return array_values(array_filter($field['granularity']));
+  return array_values(array_filter($field['settings']['granularity']));
 }
 
 /**
@@ -456,7 +459,7 @@ function date_granularity($field) {
  * field that need to be processed.
  */
 function date_process_values($field) {
-  return $field['todate'] ? array('value', 'value2') : array('value');
+  return $field['settings']['todate'] ? array('value', 'value2') : array('value');
 }
 
 /**
@@ -491,8 +494,8 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
   $additions[$field['field_name']] = $items;
   foreach ($items as $delta => $item) {
     $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-    $additions[$field['field_name']][$delta]['timezone'] = date_get_timezone($field['tz_handling'], $timezone);
-    $additions[$field['field_name']][$delta]['timezone_db'] = date_get_timezone_db($field['tz_handling']);
+    $additions[$field['field_name']][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+    $additions[$field['field_name']][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
     $additions[$field['field_name']][$delta]['date_type'] = $field['type'];
   }
   switch ($op) {
@@ -621,7 +624,7 @@ function date_views_api() {
 /**
  * Helper function to adapt node date fields to formatter settings.
  */
-function date_prepare_node($node, $field, $type_name, $context, $options) {
+function date_prepare_node($node, $field, $bundle, $context, $options) {
   
   // If there are options to limit multiple values, 
   // alter the node values to match. 
@@ -733,15 +736,15 @@ function date_handler_fields($view) {
    $handler->construct($field['type']);
    
    // If this date field stores a timezone in the DB, tell the handler about it.
-   if ($field['tz_handling'] == 'date') {
+   if ($field['settings']['tz_handling'] == 'date') {
      $handler->db_timezone_field = $db_info['columns']['timezone']['column'];
    }
    else {
-     $handler->db_timezone = date_get_timezone_db($field['tz_handling']);
+     $handler->db_timezone = date_get_timezone_db($field['settings']['tz_handling']);
    }
    
    if (empty($compare_tz)) {
-     $compare_tz = date_get_timezone($field['tz_handling']);
+     $compare_tz = date_get_timezone($field['settings']['tz_handling']);
    }
    $handler->local_timezone = $compare_tz;
 
@@ -837,7 +840,7 @@ function date_content_display_form(&$form, &$form_state) {
         $field = $date_fields[$field_name];
         foreach ($element as $context => $value) {
           if (!in_array($context, array('human_name', 'weight', 'parent', 'label'))) {
-            $options['type_name'] = $form['#type_name'];
+            $options['bundle'] = $form['#bundle'];
             $options['context'] = $context;
             $base_form = $form[$field_name][$context]['format'];
             $form[$field_name][$context]['format'] = array();
@@ -859,10 +862,10 @@ function date_formatter_settings_validate(&$form, &$form_state) {
   $field = $form['extra']['field']['#value'];
   $field_name = $field['field_name'];
   
-  $type_name = $form['extra']['type_name']['#value'];
+  $bundle = $form['extra']['bundle']['#value'];
   $context = $form['extra']['context']['#value'];
   $form_values = $form_state['values'][$field_name][$context]['format']['extra'];
-  $value = 'date:' . $type_name . ':' . $context . ':' . $field_name;
+  $value = 'date:' . $bundle . ':' . $context . ':' . $field_name;
   variable_set($value . '_show_repeat_rule', $form_values['repeat']['show_repeat_rule']);
   variable_set($value . '_multiple_number', $form_values['multiple']['multiple_number']);
   variable_set($value . '_multiple_from', $form_values['multiple']['multiple_from']);
@@ -872,9 +875,9 @@ function date_formatter_settings_validate(&$form, &$form_state) {
   form_set_value($form, $form_state['values'][$field_name][$context]['format']['base'], $form_state);
 }
 
-function date_formatter_get_settings($field_name, $type_name, $context) {
+function date_formatter_get_settings($field_name, $bundle, $context) {
   $options = array();
-  $value = 'date:' . $type_name . ':' . $context . ':' . $field_name;
+  $value = 'date:' . $bundle . ':' . $context . ':' . $field_name;
   $options['repeat']['show_repeat_rule'] = variable_get($value . '_show_repeat_rule', 'show');
   $options['multiple']['multiple_number'] = variable_get($value . '_multiple_number', '');
   $options['multiple']['multiple_from'] = variable_get($value . '_multiple_from', '');

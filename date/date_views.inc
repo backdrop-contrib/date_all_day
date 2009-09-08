@@ -21,10 +21,10 @@ function _date_views_data($field) {
   $data[$table_alias][$field['field_name'] . '_value']['sort']['date_type'] = $date_type;
 
   // Add in another set of fields, filters, and aguments for the To date.
-  if ($field['todate']) {
+  if ($field['settings']['todate']) {
     $data[$table_alias][$field['field_name'] . '_value2'] = $data[$table_alias][$field['field_name'] . '_value'];
-    $data[$table_alias][$field['field_name'] . '_value']['title'] = t('!label (!field value)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
-    $data[$table_alias][$field['field_name'] . '_value2']['title'] = t('!label (!field value2)', array('!label' => t($field['widget']['label']), '!field' => t($field['field_name'])));
+    $data[$table_alias][$field['field_name'] . '_value']['title'] = t('!label (!field value)', array('!label' => t($field['label']), '!field' => t($field['field_name'])));
+    $data[$table_alias][$field['field_name'] . '_value2']['title'] = t('!label (!field value2)', array('!label' => t($field['label']), '!field' => t($field['field_name'])));
   }
 
   // Create another argument for the date browser, using the configuration already created.
@@ -34,7 +34,7 @@ function _date_views_data($field) {
   unset($data[$table_alias][$field['field_name'] . '_browser']['field']);
   unset($data[$table_alias][$field['field_name'] . '_browser']['filter']);
   unset($data[$table_alias][$field['field_name'] . '_browser']['sort']);
-  if ($field['todate']) {
+  if ($field['settings']['todate']) {
     $data[$table_alias][$field['field_name'] . '_browser2'] = $data[$table_alias][$field['field_name'] . '_value2'];
     $data[$table_alias][$field['field_name'] . '_browser2']['title'] = t('Date Browser (!field value2)', array('!field' => t($field['field_name'])));
     $data[$table_alias][$field['field_name'] . '_browser2']['argument']['handler'] = 'date_views_browser_argument_handler';
@@ -660,7 +660,7 @@ function date_views_browser_navigation($view, $period) {
  *  Return field or value for a timezone offset.
  */
 function date_views_offset($field) {
-  switch ($field['tz_handling']) {
+  switch ($field['settings']['tz_handling']) {
   case(DATE_ISO):
     $offset = 'node_data_' . $field['field_name'] . ' . ' . $field['field_name'] . '_offset';
     break;

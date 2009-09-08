@@ -88,7 +88,7 @@ function _date_api_elements() {
  * @return array
  *   the timezone form element
  */
-function date_timezone_process($element, $edit, $form_state, $form) {
+function date_timezone_process($element, $form_state, $form) {
   $element['#tree'] = TRUE;
   $element['timezone'] = array(
     '#type' => 'select',
@@ -128,7 +128,7 @@ function date_timezone_process($element, $edit, $form_state, $form) {
  * processing (that was not true in Views 1).
  * 
  */
-function date_text_process($element, $edit, $form_state, $form) {
+function date_text_process($element, $form_state, $form) {
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
   
@@ -142,7 +142,8 @@ function date_text_process($element, $edit, $form_state, $form) {
     $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_DATETIME, $granularity);
   }
   $element['#tree'] = TRUE;
-
+  $element['#theme_wrappers'] = array('date_text');
+  
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
@@ -186,7 +187,7 @@ function date_text_process($element, $edit, $form_state, $form) {
  * processing (that was not true in Views 1).
  * 
  */
-function date_select_process($element, $edit, $form_state, $form) {
+function date_select_process($element, $form_state, $form) {
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
   if (!empty($edit)) {
@@ -196,6 +197,7 @@ function date_select_process($element, $edit, $form_state, $form) {
     $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_DATETIME, $granularity);
   }
   $element['#tree'] = TRUE;
+  $element['#theme_wrappers'] = array('date_select');
   date_increment_round($date, $element['#date_increment']);
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
   
@@ -299,7 +301,7 @@ function date_parts_element($element, $date, $format) {
         $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
         break;
     }
-
+    
     // Add handling for the date part label.
     $label = theme('date_part_label_' . $field, $part_type, $element);
     if (in_array($field, $element['#date_text_parts'])) {
@@ -307,7 +309,7 @@ function date_parts_element($element, $date, $format) {
       $sub_element[$field]['#theme'] = 'date_textfield_element';
       $sub_element[$field]['#size'] = 7;
       if ($element['#date_label_position'] == 'within') {
-        if (is_array($sub_element[$field]['#options'])) {
+        if (!empty($sub_element[$field]['#options']) && is_array($sub_element[$field]['#options'])) {
           $sub_element[$field]['#options'] = array(
             '-' . $label => '-' . $label) + $sub_element[$field]['#options'];
         }

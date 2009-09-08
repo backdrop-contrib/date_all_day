@@ -165,7 +165,7 @@ function date_popup_elements() {
  * processing (that was not true in Views 1).
  * 
  */
-function date_popup_process($element, $edit, $form_state, $form) {
+function date_popup_process($element, $form_state, $form) {
   date_popup_load();
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
 
@@ -184,6 +184,8 @@ function date_popup_process($element, $edit, $form_state, $form) {
   date_increment_round($date, $element['#date_increment']);
   $granularity = date_format_order($element['#date_format']);
   $element['#tree'] = TRUE;
+  $element['#theme_wrappers'] = array('date_popup');
+  
   $element['#granularity'] = $granularity;
   $element['date'] = date_popup_process_date($element, $edit, $date);
   $element['time'] = date_popup_process_time($element, $edit, $date);

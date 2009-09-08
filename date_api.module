@@ -42,7 +42,7 @@ define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})
  * Implementation of hook_init().
  */
 function date_api_init() {
-  drupal_add_css(drupal_get_path('module', 'date_api') . '/date.css');
+  drupal_add_css(drupal_get_path('module', 'date_api') . '/date.css', array('weight' => CSS_THEME));
 }
 
 /**
@@ -1675,31 +1675,35 @@ function date_api_elements() {
 
 function date_api_theme() {
   $path = drupal_get_path('module', 'date_api');
+  $base = array(
+    'file' => 'theme.inc',
+    'path' => "$path/theme",
+  );
   return array(
-    'date_nav_title' => array('arguments' => array('type' => NULL, 'view' => NULL)),
-    'date_vcalendar' => array('arguments' => array('events' => NULL, 'calname' => NULL)),
-    'date_vevent' => array('arguments' => array('event' => NULL)),
-    'date_valarm' => array('arguments' => array('alarm' => NULL)),
-    'date_timezone' => array('arguments' => array('element' => NULL)),
-    'date_select' => array('arguments' => array('element' => NULL)),
-    'date_text' => array('arguments' => array('element' => NULL)),
-    'date_select_element' => array('arguments' => array('element' => NULL)),
-    'date_textfield_element' => array('arguments' => array('element' => NULL)),
-    'date_date_part_hour_prefix' => array('arguments' => array('element' => NULL)),
-    'date_part_minsec_prefix' => array('arguments' => array('element' => NULL)),
-    'date_part_label_year' => array('arguments' => array('element' => NULL)),
-    'date_part_label_month' => array('arguments' => array('element' => NULL)),
-    'date_part_label_day' => array('arguments' => array('element' => NULL)),
-    'date_part_label_hour' => array('arguments' => array('element' => NULL)),
-    'date_part_label_minute' => array('arguments' => array('element' => NULL)),
-    'date_part_label_second' => array('arguments' => array('element' => NULL)),
-    'date_part_label_ampm' => array('arguments' => array('element' => NULL)),
-    'date_part_label_timezone' => array('arguments' => array('element' => NULL)),
-    'date_views_filter_form' => array(
+    'date_nav_title' => $base + array('arguments' => array('type' => NULL, 'view' => NULL)),
+    'date_vcalendar' => $base + array('arguments' => array('events' => NULL, 'calname' => NULL)),
+    'date_vevent' => $base + array('arguments' => array('event' => NULL)),
+    'date_valarm' => $base + array('arguments' => array('alarm' => NULL)),
+    'date_timezone' => $base + array('arguments' => array('element' => NULL)),
+    'date_select' => $base + array('arguments' => array('element' => NULL)),
+    'date_text' => $base + array('arguments' => array('element' => NULL)),
+    'date_select_element' => $base + array('arguments' => array('element' => NULL)),
+    'date_textfield_element' => $base + array('arguments' => array('element' => NULL)),
+    'date_date_part_hour_prefix' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_minsec_prefix' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_year' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_month' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_day' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_hour' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_minute' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_second' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_ampm' => $base + array('arguments' => array('element' => NULL)),
+    'date_part_label_timezone' => $base + array('arguments' => array('element' => NULL)),
+    'date_views_filter_form' => $base + array(
       'template' => 'date-views-filter-form',
       'arguments' => array('form' => NULL)),
-    'date_calendar_day' => array('arguments' => array('date' => NULL)),  
-    'date_time_ago' => array('arguments' => array('start_date' => NULL, 'end_date' => NULL, 'interval' => NULL)));
+    'date_calendar_day' => $base + array('arguments' => array('date' => NULL)),  
+    'date_time_ago' => $base + array('arguments' => array('start_date' => NULL, 'end_date' => NULL, 'interval' => NULL)));
 }
 
 /**

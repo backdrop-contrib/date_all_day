@@ -111,20 +111,20 @@ function date_tools_page() {
     $calendars = array();
     $node_types = node_get_types();
     foreach ($calendar_options as $key => $option) {
-      $type_name = str_replace('calendar_', '', $key);
-      if (array_key_exists($type_name, $node_types)) {
-        $type = $node_types[$type_name];
+      $bundle = str_replace('calendar_', '', $key);
+      if (array_key_exists($bundle, $node_types)) {
+        $type = $node_types[$bundle];
         $calendars[] = array(
-          l($type->name, 'admin/content/node-type/' . $type_name . '/fields'), 
+          l($type->name, 'admin/content/node-type/' . $bundle . '/fields'), 
           l($key, 'admin/build/views/edit/' . $key), 
-          t('The calendar %view is a default calendar created for the content type %type_name. ', array('%view' => $key, '%type_name' => $type->name)),
+          t('The calendar %view is a default calendar created for the content type %bundle. ', array('%view' => $key, '%bundle' => $type->name)),
           l(t('remove !view', array('!view' => $key)), 'date/tools/remove/' . $key),
         );
       }
       else {
         // Do some cleanup while we're here if we have default calendars
         // for non-existent content types.
-        calendar_remove($type_name);
+        calendar_remove($bundle);
       }
     }
     if (!empty($calendars)) {
@@ -177,7 +177,7 @@ function date_tools_wizard_form() {
     '#type' => 'fieldset',
     '#title' => t('Content type'),
     );
-  $form['type']['type_name'] = array(
+  $form['type']['bundle'] = array(
     '#type' => 'textfield',
     '#default_value' => 'date',
     '#title' => t('Content type name'),
@@ -284,15 +284,15 @@ function date_tools_wizard_form() {
 }
 
 function date_tools_wizard_form_validate(&$form, &$form_state) {
-  $type_name = $form_state['values']['type_name'];
+  $bundle = $form_state['values']['bundle'];
   $field_name = 'field_' . $form_state['values']['field_name'];
-  if (db_result(db_query("SELECT type FROM {node_type} WHERE type='%s'", $type_name))) {
+  if (db_result(db_query("SELECT type FROM {node_type} WHERE type='%s'", $bundle))) {
     drupal_set_message(t('This content type name already exists, adding new field to existing content type.'));
   }
-  if (!preg_match('!^[a-z0-9_]+$!', $type_name)) {
-    form_set_error('type_name', t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
+  if (!preg_match('!^[a-z0-9_]+$!', $bundle)) {
+    form_set_error('bundle', t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
   }
-  if (db_result(db_query("SELECT field_name FROM {content_node_field_instance} WHERE field_name='%s' AND type_name='%s'", $field_name, $type_name))) {
+  if (db_result(db_query("SELECT field_name FROM {content_node_field_instance} WHERE field_name='%s' AND bundle='%s'", $field_name, $bundle))) {
     form_set_error('field_name', t('This field name already exists.'));
   }
   if (!date_has_time($form_state['values']['granularity']) && $form_state['values']['tz_handling'] != 'none') {
@@ -308,7 +308,7 @@ function date_tools_wizard_form_submit(&$form, &$form_state) {
     $form['#redirect'] = 'admin/build/views/edit/' . $view_name;
   }
   else {
-    $form['#redirect'] = 'admin/content/node-type/' . str_replace('_', '-', $form_state['values']['type_name']) . '/fields';
+    $form['#redirect'] = 'admin/content/node-type/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
   }
 }
 
@@ -330,15 +330,15 @@ function date_tools_wizard_build($form_values) {
     $type_settings['signup_node_default_state'] = 'enabled_on';
     $type_settings['signup_date_field'] = $field_name;
     variable_set('signup_fieldset_collapsed', 0);
-    variable_set("signup_date_field_$type_name", $field_name);
-    variable_set('signup_node_default_state_' . $type_name, 'enabled_on');
+    variable_set("signup_date_field_$bundle", $field_name);
+    variable_set('signup_node_default_state_' . $bundle, 'enabled_on');
   }
-  if (!array_key_exists($type_name, $types)) {
-    date_tools_wizard_create_content_type($name, $type_name, $type_description, $type_settings);
+  if (!array_key_exists($bundle, $types)) {
+    date_tools_wizard_create_content_type($name, $bundle, $type_description, $type_settings);
   }
   else {
     $types = node_get_types();
-    $type = $types[$type_name];
+    $type = $types[$bundle];
     if (!empty($type_settings)) {
       foreach ($type_settings as $key => $setting) {
         $type->$key = $setting;
@@ -351,7 +351,7 @@ function date_tools_wizard_build($form_values) {
   $field_settings = array(
     'field_name' => $field_name,
     'label' => $label,
-    'type_name' => $type_name,
+    'bundle' => $bundle,
     'type' => $field_type,
     'widget_type' => $widget_type,
     'granularity' => $granularity,
@@ -368,21 +368,21 @@ function date_tools_wizard_build($form_values) {
   $location_field = array();
   $location_field_name = '';
   if (!empty($location)) {
-    $location_field = date_tools_wizard_create_location_field($type_name);
+    $location_field = date_tools_wizard_create_location_field($bundle);
     $location_field_name = $location_field['field_name'];
   }
   $view_name = '';
   if (!empty($calendar)) {
-    $view_name = date_tools_wizard_create_calendar($name, $type_name, $date_field, $location_field);
+    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field, $location_field);
     if (!empty($blocks)) {
-      date_tools_wizard_create_blocks($type_name);  
+      date_tools_wizard_create_blocks($bundle);  
     }
   }
   return $view_name;
   
 }
 
-function date_tools_wizard_create_ical_feed($type_name, $feed_url, $feed_title) {
+function date_tools_wizard_create_ical_feed($bundle, $feed_url, $feed_title) {
   
   // If the ical_feed content type has not yet been created, create it.
   $ical_feed_type = node_get_types('name', 'ical_feed');
@@ -405,7 +405,7 @@ function date_tools_wizard_create_ical_feed($type_name, $feed_url, $feed_title) 
           'feedapi_node' => array (
             'enabled' => 1,
             'weight' => '0',
-            'content_type' => $type_name,
+            'content_type' => $bundle,
             'node_date' => 'feed',
             'promote' => '3',
             'x_dedupe' => '0',
@@ -440,7 +440,7 @@ function date_tools_wizard_create_ical_feed($type_name, $feed_url, $feed_title) 
     'items_delete' => 0,
     'processors' => array(
       'feedapi_node' => array(
-        'content_type' => $type_name,
+        'content_type' => $bundle,
         'node_date' => 'feed',
         'promote' => 3,
         'x_dedupe' => 0,
@@ -590,14 +590,14 @@ function date_tools_wizard_tz_handling() {
   return date_timezone_handling_options();
 }
 
-function date_tools_wizard_create_content_type($name, $type_name, $description, $type_settings = array()) {
+function date_tools_wizard_create_content_type($name, $bundle, $description, $type_settings = array()) {
   
   date_tools_wizard_include();
   
   // Create the content type.
   $values  = array (
     'name' => $name,
-    'type' => $type_name,
+    'type' => $bundle,
     'description' => $description,
     'title_label' => 'Title',
     'body_label' => 'Body',
@@ -611,13 +611,13 @@ function date_tools_wizard_create_content_type($name, $type_name, $description, 
       'revision' => 0,
     ),
     'language_content_type' => '0',
-    'old_type' => $type_name,
+    'old_type' => $bundle,
     'orig_type' => '',
     'module' => 'node',
     'custom' => '1',
     'modified' => '1',
     'locked' => '0',
-    'url_str' => str_replace('_', '-', $type_name),
+    'url_str' => str_replace('_', '-', $bundle),
   );
   
   // Allow overrides of these values.
@@ -630,12 +630,12 @@ function date_tools_wizard_create_content_type($name, $type_name, $description, 
   
   if ($type == 'ical_feed') {
     // Default type to not be promoted and have comments disabled.
-    variable_set('node_options_' . $type_name, array('status'));
-    variable_set('comment_' . $type_name, COMMENT_NODE_DISABLED);
+    variable_set('node_options_' . $bundle, array('status'));
+    variable_set('comment_' . $bundle, COMMENT_NODE_DISABLED);
 
     // Don't display date and author information for this type by default.
     $theme_settings = variable_get('theme_settings', array());
-    $theme_settings['toggle_node_info_' . $type_name] = FALSE;
+    $theme_settings['toggle_node_info_' . $bundle] = FALSE;
     variable_set('theme_settings', $theme_settings);
   }
   
@@ -650,7 +650,7 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   date_tools_wizard_include();
   
   $field_name = $overrides['field_name'];
-  $type_name = $overrides['type_name'];
+  $bundle = $overrides['bundle'];
   
   // Create the date field.
   
@@ -658,7 +658,7 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   $base_overrides = array(
   
     'field_name' => $field_name,
-    'type_name' => $type_name,
+    'bundle' => $bundle,
     
     // Can be set to 0 (none), 1 (unlimited or repeating), 
     // or 2-9 for a fixed number of values.
@@ -726,12 +726,12 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   return $field;
 }
 
-function date_tools_wizard_create_location($type_name) {
+function date_tools_wizard_create_location($bundle) {
   // Get the basic field array with content module default values.
   return content_field_default_values($field_type);
 }
 
-function date_tools_wizard_create_calendar($name, $type_name, $date_field, $location_field = array()) {
+function date_tools_wizard_create_calendar($name, $bundle, $date_field, $location_field = array()) {
   
   $location_name = !empty($location_field) ? $location_field['field_name'] : '';
   $date_name = !empty($date_field) ? $date_field['field_name'] : '';
@@ -739,18 +739,18 @@ function date_tools_wizard_create_calendar($name, $type_name, $date_field, $loca
   
   // Add a default calendar for this content type.
   $calendar_options = variable_get('calendar_default_view_options', array());
-  if (array_key_exists('calendar_' . $type_name, $calendar_options)) {
-    unset($calendar_options['calendar_' . $type_name]);
+  if (array_key_exists('calendar_' . $bundle, $calendar_options)) {
+    unset($calendar_options['calendar_' . $bundle]);
   }
   $option = array(
-    'name' => 'calendar_' . $type_name,
+    'name' => 'calendar_' . $bundle,
     'description' => 'An event calendar for ' . $date_field['widget']['label'],
     'path' => $path,
-    'types' => array($type_name => $name),
+    'types' => array($bundle => $name),
     'date_fields' => array($date_name),
     'display_fields' => !empty($location_name) ? array('title' => array(), $date_name => array(), $location_name => array()) : array('title' => array(), $date_name => array()),
   );
-  $calendar_options['calendar_' . $type_name] = $option;
+  $calendar_options['calendar_' . $bundle] = $option;
   variable_set('calendar_default_view_options', $calendar_options);
   
   // Make sure menu items get rebuilt as necessary.
@@ -763,15 +763,15 @@ function date_tools_wizard_create_calendar($name, $type_name, $date_field, $loca
   cache_clear_all();  
   
   // Remove this view from cache so we can edit it properly.
-  views_object_cache_clear('view', 'calendar_' . $type_name);  
+  views_object_cache_clear('view', 'calendar_' . $bundle);  
 
   // Force Views to empty its cache and find the new view.
   views_discover_default_views();
 
-  return 'calendar_' . $type_name;
+  return 'calendar_' . $bundle;
 }
 
-function date_tools_wizard_create_blocks($type_name) {
+function date_tools_wizard_create_blocks($bundle) {
   // Add calendar blocks to the default theme.
   $current_theme = variable_get('theme_default', 'garland');
   
@@ -788,12 +788,12 @@ function date_tools_wizard_create_blocks($type_name) {
   
   // Mini calendar block. 
   $block->module = 'views';
-  $block->delta = 'calendar_' . $type_name . '-calendar_block_1';
+  $block->delta = 'calendar_' . $bundle . '-calendar_block_1';
   date_tools_wizard_add_block($block); 
   
   // Upcoming events block.
   $block->module = 'views';
-  $block->delta = 'calendar_' . $type_name . '-block_1';
+  $block->delta = 'calendar_' . $bundle . '-block_1';
   date_tools_wizard_add_block($block);
   return;      
 }
@@ -825,7 +825,7 @@ function date_tools_copy_type_form($target = TRUE) {
   // Find out what content types contain date fields and set them up as target options.
   foreach ($fields as $field_name => $field) {
     if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
-      $type_options[$field['type_name']] = $node_types[$field['type_name']];
+      $type_options[$field['bundle']] = $node_types[$field['bundle']];
     }
   }
 
@@ -874,18 +874,18 @@ function date_tools_copy_type_fields_form($type, $extended = FALSE) {
 
   // Find out what content types contain date fields and set them up as target options.
   foreach ($fields as $field_name => $field) {
-    if ($field['type_name'] == $type) {
+    if ($field['bundle'] == $type) {
       if ($field['type'] == 'date' || $field['type'] == 'datestamp') {
-        $date_options[$field_name] = $field['widget']['label'];
+        $date_options[$field_name] = $instance['label'];
       }
       if ($field['type'] == 'text') {
-        $description_options[$field_name] = $field['widget']['label'];
-        $location_options[$field_name] = $field['widget']['label'];
-        $uid_options[$field_name] = $field['widget']['label'];
-        $url_options[$field_name] = $field['widget']['label'];
+        $description_options[$field_name] = $instance['label'];
+        $location_options[$field_name] = $instance['label'];
+        $uid_options[$field_name] = $instance['label'];
+        $url_options[$field_name] = $instance['label'];
       }
       if ($field['type'] == 'link') {
-        $url_options[$field_name] = $field['widget']['label'];
+        $url_options[$field_name] = $instance['label'];
       }
     }
   }
@@ -1144,7 +1144,7 @@ function date_tools_copy_convert_events( $source_type, $target_type, $date_field
   $field   = content_fields($date_field);
 
   // Get date tz handling, could be date, site, GMT, or none.
-  $tz_handling  = $field['tz_handling'];
+  $tz_handling  = $field['settings']['tz_handling'];
 
   // Get event tz handling, could be event, site, or user.
   $event_tz_handling = variable_get('event_timezone_display', 'event');

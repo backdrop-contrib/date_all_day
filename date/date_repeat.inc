@@ -28,21 +28,21 @@
  * element, we'll compute the repeat sequence in the widget validation
  * to create the element delta values.
  */
-function _date_repeat_widget(&$element, $field, $items, $delta) {
+function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
   $element['rrule'] = array(
     '#type' => 'date_repeat_rrule',
     '#default_value' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
     '#date_timezone' => $element['#date_timezone'],
-    '#date_format'      => date_limit_format(date_input_format($element, $field), $field['granularity']),
-    '#date_text_parts'  => (array) $field['widget']['text_parts'],
-    '#date_increment'   => $field['widget']['increment'],
-    '#date_year_range'  => $field['widget']['year_range'],
-    '#date_label_position' => $field['widget']['label_position'],
+    '#date_format'      => date_limit_format(date_input_format($element, $field), $field['settings']['granularity']),
+    '#date_text_parts'  => (array) $instance['widget']['settings']['text_parts'],
+    '#date_increment'   => $instance['widget']['settings']['increment'],
+    '#date_year_range'  => $instance['widget']['settings']['year_range'],
+    '#date_label_position' => $instance['widget']['settings']['label_position'],
     '#prev_value' => isset($items[0]['value']) ? $items[0]['value'] : '',
     '#prev_value2' => isset($items[0]['value2']) ? $items[0]['value2'] : '',
     '#prev_rrule' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
-    '#date_repeat_widget' => str_replace('_repeat', '', $field['widget']['type']),
-    '#date_repeat_collapsed' => $field['repeat_collapsed'],
+    '#date_repeat_widget' => str_replace('_repeat', '', $instance['widget']['type']),
+    '#date_repeat_collapsed' => $instance['settings']['repeat_collapsed'],
     );
 
   return $element;
@@ -135,14 +135,14 @@ function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
   // By the time we get here, the start and end dates have been 
   // adjusted back to UTC, but we want localtime dates to do
   // things like '+1 Tuesday', so adjust back to localtime.
-  $timezone = date_get_timezone($field['tz_handling'], $item['timezone']);
-  $timezone_db = date_get_timezone_db($field['tz_handling']);
-  $start = date_make_date($item['value'], $timezone_db, $field['type'], $field['granularity']);
+  $timezone = date_get_timezone($field['settings']['tz_handling'], $item['timezone']);
+  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
+  $start = date_make_date($item['value'], $timezone_db, $field['type'], $field['settings']['granularity']);
   if ($timezone != $timezone_db) {
     date_timezone_set($start, timezone_open($timezone));
   }
   if (!empty($item['value2']) && $item['value2'] != $item['value']) {
-    $end = date_make_date($item['value2'], date_get_timezone_db($field['tz_handling']), $field['type'], $field['granularity']);
+    $end = date_make_date($item['value2'], date_get_timezone_db($field['settings']['tz_handling']), $field['type'], $field['settings']['granularity']);
     date_timezone_set($end, timezone_open($timezone));
   }
   else {
@@ -172,7 +172,7 @@ function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
     // date_repeat_calc always returns DATE_DATETIME dates, which is
     // not necessarily $field['type'] dates.
     // Convert returned dates back to db timezone before storing.
-    $date_start = date_make_date($date, $timezone, DATE_DATETIME, $field['granularity']);  
+    $date_start = date_make_date($date, $timezone, DATE_DATETIME, $field['settings']['granularity']);  
     date_timezone_set($date_start, timezone_open($timezone_db));    
     $date_end = clone($date_start);
     date_modify($date_end, '+' . $duration . ' seconds');

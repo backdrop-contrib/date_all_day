@@ -8,12 +8,12 @@
  *
  * Included only when needed.
  */
-function _date_content_generate($node, $field) {
+function _date_content_generate($node, $field, $instance) {
   include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
   
   $node_field = array();
-  if (isset($field['widget']['year_range'])) {
-    $split = explode(':', $field['widget']['year_range']);
+  if (isset($instance['widget']['settings']['year_range'])) {
+    $split = explode(':', $instance['widget']['settings']['year_range']);
     $back = str_replace('-', '', $split[0]);
     $forward = str_replace('+', '', $split[1]);
   }
@@ -24,12 +24,12 @@ function _date_content_generate($node, $field) {
   // Pick a random year within the time range,
   // and a random second within that year.
   $year = date_format(date_now(), 'Y') - $back + mt_rand(0, ($forward + $back));
-  $start = date_make_date($year . '-01-01 00:00:00', date_get_timezone_db($field['tz_handling']));
+  $start = date_make_date($year . '-01-01 00:00:00', date_get_timezone_db($field['settings']['tz_handling']));
   $leap = date_format($start, 'L');
   $max_days = $leap ? 366 : 365;
   $seconds = mt_rand(0, ($max_days * 86400));
   date_modify($start, "+$seconds seconds");
-  $increment = $field['widget']['increment'];
+  $increment = $instance['widget']['settings']['increment'];
   date_increment_round($start, $increment);
     
   // Modify To date by 1 hour to 3 days, shorter for repeating dates
@@ -40,7 +40,7 @@ function _date_content_generate($node, $field) {
   date_modify($start2, '+' . mt_rand(60, $max) . ' minutes');  
   date_increment_round($start2, $increment);
       
-  if ($field['tz_handling'] == 'date') {
+  if ($field['settings']['tz_handling'] == 'date') {
     // Choose a random timezone.
     // Not all keys exist, so we have to check.
     $timezones = array_keys(date_timezone_names(TRUE));
@@ -53,7 +53,7 @@ function _date_content_generate($node, $field) {
     }
   }
   else {
-    $timezone = date_get_timezone($field['tz_handling']);
+    $timezone = date_get_timezone($field['settings']['tz_handling']);
   }
     
   switch ($field['type']) {
@@ -68,7 +68,7 @@ function _date_content_generate($node, $field) {
       break;
   }
   $node_field['value'] = date_format($start, $format);
-  if ($field['todate']) {
+  if ($field['settings']['todate']) {
     $node_field['value2'] = date_format($start2, $format);
   }
   date_timezone_set($start, timezone_open($timezone));

@@ -34,7 +34,7 @@
 /**
  * Generate the repeat setting form.
  */
-function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
+function _date_repeat_rrule_process($element, $form_state, $form) {
   require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   
   if (empty($element['#date_repeat_widget'])) {

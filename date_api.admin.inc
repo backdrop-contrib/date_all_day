@@ -62,7 +62,7 @@ function date_api_add_date_formats_form($form_state) {
   $form['add_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Format string'),
-    '#attributes' => array('class' => 'custom-format'),
+    '#attributes' => array('class' => array('custom-format')),
     '#description' => t('A user-defined date format. See the <a href="@url">PHP manual</a> for available options. This format is currently set to display as <span>%date</span>. ', array('@url' => 'http://php.net/manual/function.date.php', '%date' => date_format_date(date_now(), 'custom', '-'))),
   );
 
@@ -236,7 +236,7 @@ function date_api_date_format_select_field(&$form, $type, $type_info, $default, 
     '#suffix' => ($show_remove == 1 && $type_info['locked'] == 0) ? '</div>' : '</div></div>',
     '#type' => 'select',
     '#title' => t('!type date format', array('!type' => $type_info['title'])),
-    '#attributes' => array('class' => 'date-format'),
+    '#attributes' => array('class' => array('date-format')),
     '#default_value' => (isset($choices[$default]) ? $default : 'custom'),
     '#options' => $choices,
   );

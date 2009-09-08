@@ -61,7 +61,7 @@
 function _date_api_elements() {
   $date_base = array(
     '#input' => TRUE, '#tree' => TRUE,
-    '#date_timezone' => date_default_timezone_name(),
+    '#date_timezone' => date_default_timezone(),
     '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#date_text_parts' => array(),
     '#date_increment' => 1,
@@ -106,7 +106,7 @@ function date_timezone_process($element, $edit, $form_state, $form) {
     $element['#element_validate'] = array('date_timezone_validate');
   }
   // TODO This sometimes causes problems, do we need it?
-  //$element['#attributes'] = array('class' => 'date-timezone clear-block');
+  //$element['#attributes'] = array('class' => array('date-timezone clear-block'));
   return $element;
 }
 
@@ -146,7 +146,8 @@ function date_text_process($element, $edit, $form_state, $form) {
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
-  $element['date']['#attributes'] = array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') . ' date-date');
+  $element['date']['#attributes'] = array('class' => isset($element['#attributes']['class']) ? $element['#attributes']['class'] += array('date-date') : array('date-date'));
+  
   $element['date']['#description'] = ' ' . t('Format: @date', array('@date' => date($element['#date_format'], REQUEST_TIME)));
   
   // Keep the system from creating an error message for the sub-element.
@@ -251,7 +252,7 @@ function date_parts_element($element, $date, $format) {
     $sub_element[$field] = array(
       '#weight' => $order[$field],
       '#required' => $element['#required'],
-      '#attributes' => array('class' => (isset($element['#attributes']['class']) ? $element['#attributes']['class'] : '') . ' date-' . $field),
+      '#attributes' => array('class' => isset($element['#attributes']['class']) ? $element['#attributes']['class'] += array('date-' . $field) : array('date-' . $field)),
       );
     switch ($field) {
       case 'year':
@@ -343,7 +344,7 @@ function date_parts_element($element, $date, $format) {
       '#default_value' => is_object($date) ? (date_format($date, 'G') >= 12 ? 'pm' : 'am') : '',
       '#options' => drupal_map_assoc(date_ampm()),
       '#weight' => 8,
-      '#attributes' => array('class' => 'date-ampm'),
+      '#attributes' => array('class' => array('date-ampm')),
     );
     if ($element['#date_label_position'] == 'within') {
       $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', 'ampm', $element)) + $sub_element['ampm']['#options'];

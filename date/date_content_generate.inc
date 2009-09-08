@@ -46,7 +46,7 @@ function _date_content_generate($node, $field) {
     $timezones = array_keys(date_timezone_names(TRUE));
     $key = mt_rand(0, count($timezones) - 1);
     if (!array_key_exists($key, $timezones)) {
-      $timezone = date_default_timezone_name();
+      $timezone = date_default_timezone();
     }
     else {
       $timezone = $timezones[$key];

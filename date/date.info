@@ -1,7 +1,6 @@
 ; $Id$
 name = Date
 description = Defines CCK date/time fields and widgets.
-dependencies[] = content
 dependencies[] = date_api
 package = Date/Time
 core = 7.x

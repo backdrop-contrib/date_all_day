@@ -1188,14 +1188,14 @@ function date_tools_copy_convert_events( $source_type, $target_type, $date_field
     }
 
     // Set the date timezone value.
-    $timezone = !empty($event->timezone) && $tz_handling == 'date' && $event_tz_handling == 'event' ? $timezones[$event->timezone] : date_default_timezone_name();
+    $timezone = !empty($event->timezone) && $tz_handling == 'date' && $event_tz_handling == 'event' ? $timezones[$event->timezone] : date_default_timezone();
 
     // If this is a deprecated timezone, replace it.
     require_once(drupal_get_path('module', 'date_timezone') . '/date_timezone.install');
     $timezone = _date_timezone_replacement($timezone);
 
     // Find the original timezone value (might not be the same as the date timezone).
-    $event_timezone = !empty($event->timezone) ? $timezones[$event->timezone] : date_default_timezone_name();
+    $event_timezone = !empty($event->timezone) ? $timezones[$event->timezone] : date_default_timezone();
     // If this is a deprecated timezone, replace it.
     $event_timezone = _date_timezone_replacement($event_timezone);
     

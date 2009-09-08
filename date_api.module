@@ -50,64 +50,70 @@ function date_api_init() {
  */
 function date_api_menu() {
   $items = array();
-  $items['admin/settings/date-time/formats'] = array(
+  $items['admin/config/regional/settings/formats'] = array(
     'title' => 'Formats',
     'description' => 'Allow users to configure date formats',
     'type' => MENU_LOCAL_TASK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_api_date_formats_form'),
     'access arguments' => array('administer site configuration'),
     'weight' => 1,
   );
-  $items['admin/settings/date-time/formats/configure'] = array(
+  $items['admin/config/regional/settings/formats/configure'] = array(
     'title' => 'Configure',
     'description' => 'Allow users to configure date formats',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_api_date_formats_form'),
     'access arguments' => array('administer site configuration'),
     'weight' => 1,
   );
-  $items['admin/settings/date-time/formats/lookup'] = array(
+  $items['admin/config/regional/settings/formats/lookup'] = array(
     'title' => 'Date and time lookup',
     'type' => MENU_CALLBACK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'date_api_date_time_lookup',
     'access arguments' => array('administer site configuration'),
   );
-  $items['admin/settings/date-time/formats/custom'] = array(
+  $items['admin/config/regional/settings/formats/custom'] = array(
     'title' => 'Custom formats',
     'description' => 'Allow users to configure custom date formats. ',
     'type' => MENU_LOCAL_TASK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'date_api_configure_custom_date_formats',
     'access arguments' => array('administer site configuration'),
     'weight' => 2,
   );
-  $items['admin/settings/date-time/formats/add'] = array(
+  $items['admin/config/regional/settings/formats/add'] = array(
     'title' => 'Add format',
     'description' => 'Allow users to add additional date formats. ',
     'type' => MENU_LOCAL_TASK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_api_add_date_formats_form'),
     'access arguments' => array('administer site configuration'),
     'weight' => 3,
   );
-  $items['admin/settings/date-time/formats/delete/%'] = array(
+  $items['admin/config/regional/settings/formats/delete/%'] = array(
     'title' => 'Delete date format',
     'description' => 'Allow users to delete a configured date format. ',
     'type' => MENU_CALLBACK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_api_delete_format_form', 5),
     'access arguments' => array('administer site configuration'),
   );
-  $items['admin/settings/date-time/delete/%'] = array(
+  $items['admin/config/regional/settings/delete/%'] = array(
     'title' => 'Delete date format type',
     'description' => 'Allow users to delete a configured date format type. ',
     'type' => MENU_CALLBACK,
+    'file' => 'date_api.admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_api_delete_format_type_form', 4),
     'access arguments' => array('administer site configuration'),
   );
-
   return $items;
 }
 
@@ -115,11 +121,11 @@ function date_api_menu() {
  * Implementation of hook_menu_alter().
  */
 function date_api_menu_alter(&$callbacks) {
-  // Add a new 'admin/settings/date-time/configure' path and make it the same as
-  // the 'admin/settings/date-time' .  Also set it to be the default local task -
+  // Add a new 'admin/config/regional/settings/configure' path and make it the same as
+  // the 'admin/config/regional/settings' .  Also set it to be the default local task -
   // needed to make tabs work as expected.
-  $callbacks['admin/settings/date-time/configure'] = $callbacks['admin/settings/date-time'];
-  $callbacks['admin/settings/date-time/configure']['type'] = MENU_DEFAULT_LOCAL_TASK;
+  $callbacks['admin/config/regional/settings/configure'] = $callbacks['admin/config/regional/settings'];
+  $callbacks['admin/config/regional/settings/configure']['type'] = MENU_DEFAULT_LOCAL_TASK;
 }
 
 /**
@@ -554,7 +560,7 @@ function date_timezone_abbr($refresh = FALSE) {
  * 
  * @param string $string
  * @param string $context
- * @param int $langcode
+ * @param int array('langcode' => $langcode)
  * @return translated value of the string
  */
 function date_t($string, $context, $langcode = NULL) {
@@ -606,20 +612,20 @@ function date_t($string, $context, $langcode = NULL) {
  * for better translation.
  */
 function date_t_strings(&$replace, $langcode) {
-  $replace[$langcode]['day_name'] = explode('|', trim(t('!day-name Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday', array('!day-name' => ''), $langcode)));
-  $replace[$langcode]['day_abbr'] = explode('|', trim(t('!day-abbreviation Sun|Mon|Tue|Wed|Thu|Fri|Sat', array('!day-abbreviation' => ''), $langcode)));
-  $replace[$langcode]['day_abbr1'] = explode('|', trim(t('!day-abbreviation S|M|T|W|T|F|S', array('!day-abbreviation' => ''), $langcode)));
-  $replace[$langcode]['day_abbr2'] = explode('|', trim(t('!day-abbreviation SU|MO|TU|WE|TH|FR|SA', array('!day-abbreviation' => ''), $langcode)));
-  $replace[$langcode]['ampm'] = explode('|', trim(t('!ampm-abbreviation am|pm|AM|PM', array('!ampm-abbreviation' => ''), $langcode)));
-  $replace[$langcode]['datetime'] = explode('|', trim(t('!datetime Year|Month|Day|Week|Hour|Minute|Second|All Day|All day', array('!datetime' => ''), $langcode)));
-  $replace[$langcode]['datetime_plural'] = explode('|', trim(t('!datetime_plural Years|Months|Days|Weeks|Hours|Minutes|Seconds', array('!datetime_plural' => ''), $langcode)));
-  $replace[$langcode]['date_order'] = explode('|', trim(t('!date_order Every|First|Second|Third|Fourth|Fifth', array('!date_order' => ''), $langcode)));
-  $replace[$langcode]['date_order_reverse'] = explode('|', trim(t('!date_order |Last|Next to last|Third from last|Fourth from last|Fifth from last', array('!date_order' => ''), $langcode)));
-  $replace[$langcode]['date_nav'] = explode('|', trim(t('!date_nav Prev|Next|Today', array('!date_nav' => ''), $langcode)));
+  $replace[$langcode]['day_name'] = explode('|', trim(t('!day-name Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday', array('!day-name' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['day_abbr'] = explode('|', trim(t('!day-abbreviation Sun|Mon|Tue|Wed|Thu|Fri|Sat', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['day_abbr1'] = explode('|', trim(t('!day-abbreviation S|M|T|W|T|F|S', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['day_abbr2'] = explode('|', trim(t('!day-abbreviation SU|MO|TU|WE|TH|FR|SA', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['ampm'] = explode('|', trim(t('!ampm-abbreviation am|pm|AM|PM', array('!ampm-abbreviation' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['datetime'] = explode('|', trim(t('!datetime Year|Month|Day|Week|Hour|Minute|Second|All Day|All day', array('!datetime' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['datetime_plural'] = explode('|', trim(t('!datetime_plural Years|Months|Days|Weeks|Hours|Minutes|Seconds', array('!datetime_plural' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['date_order'] = explode('|', trim(t('!date_order Every|First|Second|Third|Fourth|Fifth', array('!date_order' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['date_order_reverse'] = explode('|', trim(t('!date_order |Last|Next to last|Third from last|Fourth from last|Fifth from last', array('!date_order' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['date_nav'] = explode('|', trim(t('!date_nav Prev|Next|Today', array('!date_nav' => ''), array('langcode' => $langcode))));
   
   // These start with a pipe so the January value will be in position 1 instead of position 0.
-  $replace[$langcode]['month_name'] = explode('|', trim(t('!month-name |January|February|March|April|May|June|July|August|September|October|November|December', array('!month-name' => ''), $langcode)));
-  $replace[$langcode]['month_abbr'] = explode('|', trim(t('!month-abbreviation |Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec', array('!month-abbreviation' => ''), $langcode)));
+  $replace[$langcode]['month_name'] = explode('|', trim(t('!month-name |January|February|March|April|May|June|July|August|September|October|November|December', array('!month-name' => ''), array('langcode' => $langcode))));
+  $replace[$langcode]['month_abbr'] = explode('|', trim(t('!month-abbreviation |Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec', array('!month-abbreviation' => ''), array('langcode' => $langcode))));
 }
 
 /**
@@ -777,7 +783,7 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME, $granula
   // site timezone is not yet set up to avoid fatal installation
   // errors.
   if (empty($timezone) || !date_timezone_is_valid($timezone)) {
-    $timezone = date_default_timezone_name();
+    $timezone = date_default_timezone();
   }
     
   // Special handling for partial dates that don't need precision.
@@ -823,13 +829,13 @@ function date_timezone_is_valid($timezone) {
  *   Identify the default timezone for a user, if available, otherwise the site.
  *   Must return a value even if no timezone info has been set up.
  */
-function date_default_timezone_name($check_user = TRUE) {
+function date_default_timezone($check_user = TRUE) {
   global $user;
-  if ($check_user && variable_get('configurable_timezones', 1) && !empty($user->timezone_name)) {
-    return $user->timezone_name;
+  if ($check_user && variable_get('configurable_timezones', 1) && !empty($user->timezone)) {
+    return $user->timezone;
   }
   else {
-    $default = variable_get('date_default_timezone_name', '');
+    $default = variable_get('date_default_timezone', '');
     return empty($default) ? 'UTC' : $default;
   }
 }
@@ -840,9 +846,9 @@ function date_default_timezone_name($check_user = TRUE) {
  * @return a timezone name
  *   Identify the default timezone for a user, if available, otherwise the site.
  */
-function date_default_timezone($check_user = TRUE) {
-  $timezone = date_default_timezone_name($check_user);
-  return timezone_open(date_default_timezone_name($check_user));
+function date_default_timezone_object($check_user = TRUE) {
+  $timezone = date_default_timezone($check_user);
+  return timezone_open(date_default_timezone($check_user));
 }
 
 /**
@@ -1033,7 +1039,7 @@ function date_difference($date1_in, $date2_in, $measure = 'seconds', $type = DAT
  * chosen first day of week for this site.
  */
 function date_week_range($week, $year) {
-  $min_date = date_make_date($year . '-01-01 00:00:00', date_default_timezone_name());
+  $min_date = date_make_date($year . '-01-01 00:00:00', date_default_timezone());
   date_timezone_set($min_date, date_default_timezone());
 
   // move to the right week
@@ -1711,15 +1717,15 @@ function date_api_set_db_timezone($offset = '+00:00') {
 function date_get_timezone($handling, $timezone = '') {
   switch ($handling) {
     case('date'):
-      $timezone = !empty($timezone) ? $timezone : date_default_timezone_name();
+      $timezone = !empty($timezone) ? $timezone : date_default_timezone();
       break;
     case('utc'):
       $timezone = 'UTC';
       break;
     default:
-      $timezone = date_default_timezone_name();
+      $timezone = date_default_timezone();
   }
-  return $timezone > '' ? $timezone : date_default_timezone_name();
+  return $timezone > '' ? $timezone : date_default_timezone();
 }
 
 /**
@@ -1728,7 +1734,7 @@ function date_get_timezone($handling, $timezone = '') {
 function date_get_timezone_db($handling, $timezone = '') {
   switch ($handling) {
     case('none'):
-      $timezone = date_default_timezone_name();
+      $timezone = date_default_timezone();
       break;
     default:
       $timezone = 'UTC';
@@ -2378,8 +2384,8 @@ function date_api_system_modules_submit($form, &$form_state) {
 /**
  * Implementation of hook_form_alter().
  *
- * Remove the 'date_formats' section from the 'admin/settings/date-time' page.
- * This form section is now part of the form at 'admin/settings/date-time/formats' .
+ * Remove the 'date_formats' section from the 'admin/config/regional/settings' page.
+ * This form section is now part of the form at 'admin/config/regional/settings/formats' .
  * We add the formats as values to the form to avoid errors on submission
  * of the form when expected values are missing in system_date_time_settings_submit().
  */
@@ -2402,7 +2408,7 @@ function date_api_form_system_date_time_settings_alter(&$form, $form_state, $for
  */
 function date_api_add_system_javascript() {
   drupal_add_js(drupal_get_path('module', 'date_api') . '/date_api.js', 'module');
-  drupal_add_js(array('dateDateTime' => array('lookup' => url('admin/settings/date-time/formats/lookup'))), 'setting');
+  drupal_add_js(array('dateDateTime' => array('lookup' => url('admin/config/regional/settings/formats/lookup'))), 'setting');
 }
 
 

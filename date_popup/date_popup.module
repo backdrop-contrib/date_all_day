@@ -142,7 +142,7 @@ function date_popup_elements() {
     'date_popup' => array(
       '#input' => TRUE,
       '#tree' => TRUE,
-      '#date_timezone' => date_default_timezone_name(),
+      '#date_timezone' => date_default_timezone(),
       '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',

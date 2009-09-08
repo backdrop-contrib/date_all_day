@@ -35,7 +35,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
   require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
   
   if (empty($timezone)) {
-    $timezone = date_default_timezone_name();
+    $timezone = date_default_timezone();
   }
   
   // Make sure the 'EXCEPTIONS' string isn't appended to the rule.

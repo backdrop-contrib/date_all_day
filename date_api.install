@@ -20,29 +20,7 @@ function date_api_set_variables() {
   /**
    * Set an API version in a way that other modules can test for compatibility.
    */
-  variable_set('date_api_version', '5.2');
- 
-  if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
-    module_enable(array('date_php4'));
-  }
-  // The timezone module was originally going to be optional
-  // but too many things break without it.
-  if (!module_exists('date_timezone')) {
-    module_enable(array('date_timezone'));
-  }
-
-  /**
-   * NULL is used for the default setting of date_default_timezone_name
-   * to have a way to tell that no site timezone name has been implemented.
-   * Otherwise, many functions would use 'UTC' incorrectly and
-   * produce unreliable and odd results. This way functions can test for a
-   * value and not use this if it is empty.
-   * 
-   * The odd construct of using variable_get() instead of variable_set()
-   * is so we don't accidentally write over an existing value. If
-   * no value is set, variable_get() will set it to NULL.
-   */
-  variable_get('date_default_timezone_name', NULL);
+  variable_set('date_api_version', '7.2');
 }
 
 /**
@@ -137,23 +115,6 @@ function date_api_schema() {
 }
 
 /**
- * Implementation of hook_schema_alter(). We alter $schema by reference.
- *
- * @param $schema
- * The system-wide schema collected by drupal_get_schema().
- */
-function date_api_schema_alter(&$schema) {
-  // Add field to existing schema.
-  $schema['users']['fields']['timezone_name'] = array(
-    'type' => 'varchar',
-    'length' => 50,
-    'not null' => TRUE,
-    'default' => '',
-    'description' => t('Per-user timezone name.'),
-  );
-}
-
-/**
  * Implementation of hook_install().
  */
 function date_api_install() {
@@ -208,8 +169,7 @@ function date_api_enable() {
  */
 function date_api_uninstall() {
   $ret = array();
-  db_drop_field($ret, "users", "timezone_name");
-
+  
   cache_clear_all('date_timezone_identifiers_list', 'cache');
   $variables = array(
     'date_api_version',
@@ -231,46 +191,6 @@ function date_api_uninstall() {
   }
 
   drupal_uninstall_schema('date_api');
-  return $ret;
-}
-
-/**
- * Implementation of hook_requirements().
- * Make sure Date PHP4 is installed if running less than PHP 5.2.
- */
-function date_api_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-  switch ($phase) {
-    case 'runtime':
-      $tz_name = variable_get('date_default_timezone_name', NULL);
-      $error = FALSE;
-      if (version_compare(PHP_VERSION, '5.2', '<') && !module_exists('date_php4')) {
-        $error = TRUE;
-        $severity = REQUIREMENT_ERROR;
-        $value = $t('The Date API module requires the <a href="@link">Date PHP4 module</a> for PHP versions less than 5.2. ', array('@link' => url('admin/build/modules')));
-      }
-      if ($error) {
-        $requirements['date_php4'] = array(
-          'title' => $t('Date API requirements'),
-          'value' => $value,
-          'severity' => $severity,
-          );
-      }
-      break;
-     case 'install':
-      break;
-  }
-  return $requirements;
-}
-
-
-/**
- * Implementation of hook_update().
- */
-function date_api_update_5000() {
-  $ret = array();
-  $ret[] = update_sql("ALTER TABLE {users} ADD timezone_name varchar(50) NOT NULL default ''");
   return $ret;
 }
 

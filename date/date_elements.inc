@@ -104,7 +104,7 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  *   the local timezone, are converted back to their UTC values and stored.
  *
  */
-function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
+function _date_field_widget(&$form, &$form_state, &$field, $instance, $langcode, $items, $delta = 0) {
   
   // Be sure users that haven't run the update yet don't get
   // a badly broken value.
@@ -114,7 +114,7 @@ function _date_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
   }
 
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
-  $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone_name());
+  $timezone = date_get_timezone($field['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling
   // with this a while, I can find no way to get it displayed in the form
@@ -304,7 +304,7 @@ function date_combo_process($element, $edit, &$form_state, $form) {
       // From/to selectors with lots of parts will look better if displayed 
       // on two rows instead of in a single row.
       if (!empty($field['todate']) && count($field['granularity']) > 3) {
-        $element[$from_field]['#attributes'] = array('class' => 'date-clear');
+        $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
       }
       $element[$from_field]['#type'] = 'date_select';
       break;

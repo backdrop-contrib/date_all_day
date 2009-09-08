@@ -12,9 +12,7 @@ function _date_widget_settings($op, &$field) {
   switch ($op) {
     case 'callbacks':
       return array('default value' => CONTENT_CALLBACK_CUSTOM);
-    case 'form':
-      return date_widget_settings_form($field);
-
+    
     case 'save':
       return array('default_value', 'default_value_code', 'default_value2', 'default_value_code2', 'input_format', 'input_format_custom', 'increment', 'text_parts', 'year_range', 'label_position');
 
@@ -38,43 +36,19 @@ function _date_widget_settings($op, &$field) {
   }
 }
 
-/**
- * Custom widget settings manipulation.
- *
- * CCK widget settings can't use form_set_value(),
- * so do it in a custom function.
- */
-function date_widget_settings_validate(&$form, &$form_state) {
-  // TODO Not sure there is any limitation any more in this version. Need to check.  
-  if ($form_state['values']['widget_type'] == 'date_popup') {
-    // Only a limited set of formats is available for the Date Popup module
-    if (!empty($form_state['values']['input_format_custom']) || !in_array($form_state['values']['input_format'], date_popup_formats())) {
-      form_set_value($form['input_format_custom'], NULL, $form_state);
-      form_set_value($form['input_format'], DATE_FORMAT_DATETIME, $form_state);
-    }
-  }
-  if (isset($form_state['values']['advanced']['label_position'])) {
-    form_set_value($form['label_position'], $form_state['values']['advanced']['label_position'], $form_state);
-  }
-  // Munge the table display for text parts back into an array of text parts.
-  if (is_array($form_state['values']['advanced']['text_parts'])) {
-    form_set_value($form['text_parts'], array_keys(array_filter($form_state['values']['advanced']['text_parts'])), $form_state);
-  }
-}
-
-function date_widget_settings_form($widget) {
-  $form = array(
-    '#element_validate' => array('date_widget_settings_validate'),
-    );
+function _date_field_instance_settings_form($field, $instance) {
+  $widget = $instance['widget'];
+  $settings = $instance['settings'];
+  
   $form['input']['default_value'] = array(
     '#type' => 'select', '#title' => t('Default value'),
-    '#default_value' => !empty($widget['default_value']) ? $widget['default_value'] : 'blank',
+    '#default_value' => $settings['default_value'],
     '#options' => array('blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
   $form['input']['default_value2'] = array(
     '#type' => 'select', '#title' => t('Default value for To date'),
-    '#default_value' => !empty($widget['default_value2']) ? $widget['default_value2'] : 'same',
+    '#default_value' => $settings['default_value2'],
     '#options' => array('same' => t('Same as From date'), 'blank' => t('Blank'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#description' => t("A default value to use for this field. If you select 'Relative', add details below."),
     );
@@ -87,12 +61,22 @@ function date_widget_settings_form($widget) {
     );
   $form['input']['default']['default_value_code'] = array(
     '#type' => 'textfield', '#title' => t('Custom value for From date'),
-    '#default_value' => isset($widget['default_value_code']) ? $widget['default_value_code'] : '',
+    '#default_value' => $settings['default_value_code'],
     );
 
   $form['input']['default']['default_value_code2'] = array(
     '#type' => 'textfield', '#title' => t('Custom value for To date'),
-    '#default_value' => !empty($widget['default_value_code2']) ? $widget['default_value_code2'] : '',
+    '#default_value' => $settings['default_value_code2'],
+    );
+  return $form;
+}
+
+function _date_field_widget_settings_form($field, $instance) {
+  $widget = $instance['widget'];
+  $settings = $widget['settings'];
+  
+  $form = array(
+    '#element_validate' => array('date_field_widget_settings_form_validate'),
     );
 
   $options = array();
@@ -112,7 +96,7 @@ function date_widget_settings_form($widget) {
   }
   $form['input']['input_format'] = array(
     '#type' => 'select', '#title' => t('Input format'),
-    '#default_value' => !empty($widget['input_format']) ? $widget['input_format'] : $default_format,
+    '#default_value' => $settings['input_format'],
     '#options' => $options,
     '#description' => t('Set the order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
   );
@@ -121,7 +105,7 @@ function date_widget_settings_form($widget) {
   if ($widget['type'] != 'date_popup') {
     $form['input']['format']['input_format_custom'] = array(
       '#type' => 'textfield',  '#title' => t('Custom input format'),
-      '#default_value' => !empty($widget['input_format_custom']) ? $widget['input_format_custom'] : '',
+      '#default_value' => $settings['input_format_custom'],
       '#description' => t("The custom format, if provided, will override the input format selected above. The custom format, if provided, will override the selected display or input options. Define a php date format string like 'm-d-Y H:i' (see <a href=\"@link\">http://php.net/date</a> for more details).", array('@link' => 'http://php.net/date')),
     );
   }
@@ -135,14 +119,14 @@ function date_widget_settings_form($widget) {
     $form['input']['year_range'] = array(
       '#type' => 'textfield',
       '#title' => t('Years back and forward'),
-      '#default_value' => !empty($widget['year_range']) ? $widget['year_range'] : '-3:+3',
+      '#default_value' => $settings['year_range'],
       '#size' => 10,
       '#maxsize' => 10,
       '#description' => t('Number of years to go back and forward in the year selection list, default is -3:+3.'),
       );
     $form['input']['increment'] = array(
       '#type' => 'select', '#title' => t('Time increment'),
-      '#default_value' => isset($widget['increment']) ? $widget['increment'] : 1,
+      '#default_value' => $settings['increment'],
       '#options' => array(1 => 1, 5 => 5, 10 => 10, 15 => 15, 30 => 30),
       '#description' => t('Increment the minute and second fields by this amount.'),
     );
@@ -150,21 +134,21 @@ function date_widget_settings_form($widget) {
   else {
     $form['increment'] = array(
       '#type' => 'hidden',
-      '#value' => !empty($widget['increment']) ? $widget['increment'] : 1,
+      '#value' => $settings['increment'],
       );
     $form['year_range'] = array(
       '#type' => 'hidden',
-      '#value' => isset($widget['year_range']) ? $widget['year_range'] : '-3:+3',
+      '#value' => $settings['year_range'],
       );
   }
 
   $form['label_position'] = array(
     '#type' => 'value',
-    '#value' => !empty($widget['label_position']) ? $widget['label_position'] : 'above',
+    '#value' => $settings['label_position'],
     );
   $form['text_parts'] = array(
     '#type' => 'value',
-    '#value' => isset($widget['text_parts']) ? $widget['text_parts'] : '',
+    '#value' => $settings['text_parts'],
     );
   $form['input']['advanced'] = array(
     '#tree' => TRUE,
@@ -176,14 +160,14 @@ function date_widget_settings_form($widget) {
   $form['input']['advanced']['label_position'] = array(
     '#type' => 'radios',
     '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
-    '#default_value' => !empty($widget['label_position']) ? $widget['label_position'] : 'above',
+    '#default_value' => $settings['label_position'],
     '#title' => t('Position of date part labels'),
     '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' will display them as titles above each date part. 'Within' will insert the label as the first option in the select list and in blank textfields. 'None' will not label any of the date parts. The exact text in the label is controlled by themes like 'date_part_label_year' and 'date_part_label_month' ."),
     );
   $form['input']['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts' : '',
     );
-  $text_parts = isset($widget['text_parts']) ? (array) $widget['text_parts'] : array();
+  $text_parts = (array) $settings['text_parts'];
   foreach (date_granularity_names() as $key => $value) {
     if ($widget['type'] == 'date_select') {
       $form['input']['advanced']['text_parts'][$key] = array(
@@ -200,6 +184,30 @@ function date_widget_settings_form($widget) {
     }
   }
   return $form;
+}
+
+/**
+ * Custom widget settings manipulation.
+ *
+ * CCK widget settings can't use form_set_value(),
+ * so do it in a custom function.
+ */
+function date_field_widget_settings_form_validate(&$form, &$form_state) {
+  // TODO Not sure there is any limitation any more in this version. Need to check.  
+  if ($form_state['values']['widget_type'] == 'date_popup') {
+    // Only a limited set of formats is available for the Date Popup module
+    if (!empty($form_state['values']['input_format_custom']) || !in_array($form_state['values']['input_format'], date_popup_formats())) {
+      form_set_value($form['input_format_custom'], NULL, $form_state);
+      form_set_value($form['input_format'], DATE_FORMAT_DATETIME, $form_state);
+    }
+  }
+  if (isset($form_state['values']['advanced']['label_position'])) {
+    form_set_value($form['label_position'], $form_state['values']['advanced']['label_position'], $form_state);
+  }
+  // Munge the table display for text parts back into an array of text parts.
+  if (is_array($form_state['values']['advanced']['text_parts'])) {
+    form_set_value($form['text_parts'], array_keys(array_filter($form_state['values']['advanced']['text_parts'])), $form_state);
+  }
 }
 
 /**
@@ -289,10 +297,8 @@ function _date_field_settings($op, $field) {
   }
 }
 
-/**
- *  Callback for field columns.
- */
-function date_columns($field) {
+function _date_field_schema($field) {
+  $db_columns = array();
   if ($field['type'] == 'date') {
     $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'sortable' => TRUE, 'views' => TRUE);
   }
@@ -319,10 +325,12 @@ function date_columns($field) {
   if (isset($field['repeat']) && $field['repeat'] == 1) {
     $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE, 'views' => FALSE);
   }
-  return $db_columns;
+  return array('columns' => $db_columns);  
 }
 
-function date_field_settings_form($field) {
+function _date_field_settings_form($field, $instance) {
+  $settings = $field['settings'];
+  
   $form = array(
     '#element_validate' => array('date_field_settings_validate'),
   );
@@ -333,7 +341,7 @@ function date_field_settings_form($field) {
   else {
     $granularity = array('year', 'month', 'day', 'hour', 'minute');
   }
-  $tz_handling = isset($field['tz_handling']) ? $field['tz_handling'] : (date_has_time($granularity) ? 'site' : 'none');
+  $tz_handling = $settings['tz_handling'];
   
   // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat') && date_is_repeat_field($field)) {
@@ -350,7 +358,7 @@ function date_field_settings_form($field) {
     '#type' => 'radios', '#title' => t('To Date'),
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
     '#description' => $description,
-    '#default_value' => isset($field['todate']) ? $field['todate'] : '',
+    '#default_value' => $settings['todate'],
     );
   $form['input']['granularity'] = array(
     '#type' => 'select', '#title' => t('Granularity'),
@@ -366,7 +374,7 @@ function date_field_settings_form($field) {
   $form['default_format'] = array(
     '#type' => 'select', 
     '#title' => t('Default Display'),
-    '#default_value' => !empty($field['default_format']) ? $field['default_format'] : 'medium',
+    '#default_value' => $settings['default_format'],
     '#options' => $format_types,
     '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/settings/date-time/formats')),
     );
@@ -390,7 +398,7 @@ function date_field_settings_form($field) {
   if (module_exists('date_repeat') && date_is_repeat_field($field)) {
     $form['repeat_collapsed'] = array(
       '#type' => 'radios',
-      '#default_value' => !empty($field['repeat_collapsed']) ? intval($field['repeat_collapsed']) : 0,
+      '#default_value' => $settings['repeat_collapsed'],
       '#options' => array(0 => t('Expanded'), 1 => t('Collapsed')),
       '#title' => t('Repeat display'),
       '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),

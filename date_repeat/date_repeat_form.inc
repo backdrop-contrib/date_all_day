@@ -54,7 +54,7 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
   $parts = date_repeat_split_rrule($rrule);
   $rrule = $parts[0];
   $exceptions = $parts[1];
-  $timezone = !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone_name();
+  $timezone = !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone();
   $merged_values = date_repeat_merge($rrule, $element);
   
   $UNTIL = '';
@@ -181,7 +181,7 @@ function _date_repeat_rrule_process($element, $edit, $form_state, $form) {
       'datetime' => array(
         '#type' => $element['#date_repeat_widget'],
         '#default_value' => $EXCEPT,
-        '#date_timezone' => !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone_name(),
+        '#date_timezone' => !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone(),
         '#date_format' => !empty($element['#date_format']) ? $element['#date_format'] : 'Y-m-d',
         '#date_text_parts'  => !empty($element['#date_text_parts']) ? $element['#date_text_parts'] : array(),
         '#date_year_range'  => !empty($element['#date_year_range']) ? $element['#date_year_range'] : '-3:+3',

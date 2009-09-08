@@ -4,44 +4,6 @@
  * @file
  * Installation code for CCK date module.
  */
-/**
- * Implementation of hook_install().
- */
-/**
- * Implementation of hook_install().
- * Reset the date caches.
- */
-function date_install() {
-  drupal_load('module', 'content');
-  content_notify('install', 'date');
-}
-
-/**
- * Implementation of hook_uninstall().
- */
-function date_uninstall() {
-  drupal_load('module', 'content');
-  content_notify('uninstall', 'date');
-}
-
-/**
- * Implementation of hook_enable().
- * Reset the calendar caches.
- */
-function date_enable() {
-  drupal_load('module', 'content');
-  content_notify('enable', 'date');
-}
-
-/**
- * Implementation of hook_disable().
- * Empty the date caches.
- */
-function date_disable() {
-  drupal_load('module', 'content');
-  content_notify('disable', 'date');
-}
-
 function date_update_last_removed() {
   return 7;
 }

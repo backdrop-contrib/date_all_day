@@ -18,10 +18,9 @@
 #  date_copy.module,v 1.16.2.1.2.10 2008/11/01 13:06:26 karens
 #
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
+msgstr "[fuzzy] Project-Id-Version: \n"
 "POT-Creation-Date: 2009-03-07 19:12+0100\n"
-"PO-Revision-Date: 2009-03-08 11:30+0100\n"
+"PO-Revision-Date: 2009-03-08 15:46+0100\n"
 "Last-Translator: Alexander Haß\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"

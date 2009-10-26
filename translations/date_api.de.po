@@ -16,8 +16,7 @@
 #  date_timezone.info,v 1.3.4.1 2008/06/27 14:14:01 karens
 #
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
+msgstr "Project-Id-Version: \n"
 "POT-Creation-Date: 2009-03-07 19:12+0100\n"
 "PO-Revision-Date: 2009-03-08 15:46+0100\n"
 "Last-Translator: Alexander Haß\n"
@@ -35,9 +34,8 @@ msgstr "Entfernen"
 
 # not literally
 #: date_api.admin.inc:48
-#, fuzzy
 msgid "No custom formats configured. Please <a href=\"@link\">add</a> some."
-msgstr "Keine benutzerdefinierten Formate konfiguriert. Ein Format <a href=\"@link\">hinzufügen</a>."
+msgstr "Keine Benutzerdefinierte Formate definiert <a href=\"@link\">Hinzufügen</a>"
 
 #: date_api.admin.inc:64
 msgid "Format string"
@@ -45,9 +43,8 @@ msgstr "Zeichenkette formatieren"
 
 # last sentence translation needs work
 #: date_api.admin.inc:66
-#, fuzzy
 msgid "A user-defined date format. See the <a href=\"@url\">PHP manual</a> for available options. This format is currently set to display as <span>%date</span>."
-msgstr "Ein benutzerdefiniertes Datumsformat. Weitere Informationen zu den verfügbaren Optionen befinden sich im <a href=\"@url\">PHP-Handbuch</a>. Derzeit ist dieses Format für die Anzeige auf <span>%date</span> eingestellt."
+msgstr "Eine benutzerdefiniertes Datumsformat. Die verfügbaren Optionen gemäß dem <a href=\\\"@url\\\">PHP-Handbuch</a>. Dieses Format ist eingestellt auf<span>%date</span>."
 
 #: date_api.admin.inc:72
 msgid "Save configuration"
@@ -55,7 +52,7 @@ msgstr "Konfiguration speichern"
 
 #: date_api.admin.inc:91
 msgid "Date formats"
-msgstr "Datumformate"
+msgstr "Datumsformate"
 
 #: date_api.admin.inc:162
 msgid "Are you sure you want to remove the format %format?"
@@ -82,9 +79,8 @@ msgid "Removed date format type %format."
 msgstr "Der Datumsformattyp %format wurde entfernt."
 
 #: date_api.admin.inc:231
-#, fuzzy
 msgid "!type date format"
-msgstr "Datumsformat (!type)"
+msgstr "!type Datumsformat"
 
 #: date_api_elements.inc:404
 msgid "The year must be a number between %min and %max."
@@ -147,17 +143,14 @@ msgid "Invalid calendar file."
 msgstr "Ungültige Kalenderdatei."
 
 #: date_api.module:421
-#, fuzzy
 msgid "Long"
 msgstr "Lang"
 
 #: date_api.module:422
-#, fuzzy
 msgid "Medium"
 msgstr "Mittel"
 
 #: date_api.module:423
-#, fuzzy
 msgid "Short"
 msgstr "Kurz"
 
@@ -184,7 +177,7 @@ msgstr "!day-abbreviation SO|MO|DI|MI|DO|FR|SA"
 # not translatable!
 #: date_api.module:619
 msgid "!ampm-abbreviation am|pm|AM|PM"
-msgstr ""
+msgstr "!ampm-abbreviation am|pm|AM|PM"
 
 #: date_api.module:620
 msgid "!datetime Year|Month|Day|Week|Hour|Minute|Second|All Day|All day"
@@ -203,9 +196,8 @@ msgid "!date_order |Last|Next to last|Third from last|Fourth from last|Fifth fro
 msgstr "!date_order |Letzten|Vorletzten|Drittvorletzten|Viertvorletzten|Fünftvorletzten"
 
 #: date_api.module:624
-#, fuzzy
 msgid "!date_nav Prev|Next|Today"
-msgstr "!date_nav Vorherige|Nächste|Heute"
+msgstr "!date_nav Vorheriger|Nächster|Heute"
 
 #: date_api.module:627
 msgid "!month-name |January|February|March|April|May|June|July|August|September|October|November|December"
@@ -225,9 +217,8 @@ msgstr "Formate"
 
 # EN: missing period
 #: date_api.module:55;65
-#, fuzzy
 msgid "Allow users to configure date formats"
-msgstr "Ermöglicht Benutzern die Konfiguration von Datumsformaten."
+msgstr "Ermöglicht Benutzern die Konfiguration von benutzerdefinierten Datumsformaten"
 
 #: date_api.module:64
 msgid "Configure"
@@ -279,7 +270,7 @@ msgstr "Name der Zeitzone pro Benutzer"
 
 #: date_api.install:286;304;330
 msgid "date module cannot be updated until after Views has been updated. Please return to <a href=\"@update-php\">update.php</a> and run the remaining updates."
-msgstr "Das date.module kann nicht aktualisiert werden, bis Views aktualisiert wurde. Bitte zur <a href=\"@update-php\">update.php</a> wechseln, um alle ausstehenden Aktualisierungen auszuführen."
+msgstr "Das Modul date kann erst nach dem Modul Views aktualisiert werden. Bitte auf <a href=\"@update-php\">update.php</a> die anderen ausstehenden Aktualisierungen durchführen."
 
 #: date_api.install:287;305;331
 msgid "date.module has updates, but cannot be updated until views.module is updated first."

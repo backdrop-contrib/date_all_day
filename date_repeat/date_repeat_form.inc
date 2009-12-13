@@ -255,7 +255,7 @@ function theme_date_repeat_current_exceptions($rows = array()) {
       $rows_info[] = array(drupal_render($value['action']), drupal_render($value['display']));
     }
   }
-  return theme('table', array(t('Delete'), t('Current exceptions')), $rows_info);
+  return theme('table', array('header' => array(t('Delete'), t('Current exceptions')), 'rows' => $rows_info));
 }
 
 /**

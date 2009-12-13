@@ -39,7 +39,7 @@ function date_popup_load() {
 }
 
 /**
- * Implementation of hook_init().
+ * Implement hook_init().
  */
 function date_popup_init() {
   drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/datepicker.css');
@@ -100,12 +100,12 @@ function date_popup_js_settings_id($id, $func, $settings) {
 
 function date_popup_theme() {
   return array(
-    'date_popup' => array('arguments' => array('element' => NULL)),
+    'date_popup' => array('render element' => 'element'),
     );
 }
 
 /**
- * Implementation of hook_elements().
+ * Implement hook_element_info().
  *
  * Set the #type to date_popup and fill the element #default_value with
  * a date adjusted to the proper local timezone in datetime format (YYYY-MM-DD HH:MM:SS).
@@ -132,7 +132,7 @@ function date_popup_theme() {
  *   default is -3:+3 (3 back and 3 forward).
  *
  */
-function date_popup_elements() {
+function date_popup_element_info() {
   return array(
     'date_popup' => array(
       '#input' => TRUE,
@@ -520,7 +520,8 @@ function datepicker_format_replacements() {
  *
  * Use a class that will float date and time next to each other.
  */
-function theme_date_popup($element) {
+function theme_date_popup($variables) {
+  $element = $variables['element'];
   $output = '';
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 
@@ -534,7 +535,7 @@ function theme_date_popup($element) {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implement hook_menu().
  */
 function date_popup_menu() {
   $items = array();

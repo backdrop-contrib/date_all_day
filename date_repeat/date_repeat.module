@@ -15,21 +15,22 @@
  *
  */
 /**
- * Implementation of hook_elements().
+ * Implement hook_element_info().
  */
-function date_repeat_elements() {
+function date_repeat_element_info() {
   $type['date_repeat_rrule'] = array(
     '#input' => TRUE,
     '#process' => array('date_repeat_rrule_process'),
     '#element_validate' => array('date_repeat_rrule_validate'),
+    '#theme_wrappers' => array('date_repeat_rrule'),
   );
   return $type;
 }
 
 function date_repeat_theme() {
   return array(
-    'date_repeat' => array('arguments' => array('element' => NULL)),
-    'date_repeat_current_exceptions' => array('arguments' => array('element' => NULL)),
+    'date_repeat' => array('render element' => 'element'),
+    'date_repeat_current_exceptions' => array('render element' => 'element'),
   );
 }
 

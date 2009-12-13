@@ -7,13 +7,13 @@
  */
 
 /**
- * Implementation of hook_init().
+ * Implement hook_init().
  */
 function date_init() {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date.theme');
 }
 /**
- * Implementation of hook_menu().
+ * Implement hook_menu().
  */
 function date_menu() {
   $items = array();
@@ -96,7 +96,7 @@ function date_is_repeat_field($field) {
 }
 
 /**
- * Implementation of hook_content_is_empty().
+ * Implement hook_content_is_empty().
  */
 function date_field_is_empty($item, $field) {
   if (empty($item['value'])) {
@@ -109,7 +109,7 @@ function date_field_is_empty($item, $field) {
 }
 
 /**
- * Implementation of hook_field_info().
+ * Implement hook_field_info().
  */
 function date_field_info() {
   $settings = array(
@@ -158,14 +158,14 @@ function date_default_format($type) {
   }
   else {
     // example input formats must show all possible date parts, so add seconds.
-    $formats = str_replace('i', 'i:s', array_keys(date_get_formats('short')));
+    $formats = str_replace('i', 'i:s', array_keys(system_get_date_formats('short')));
     $formats = drupal_map_assoc($formats);
     $default_format = str_replace('i', 'i:s', variable_get('date_format_short', 'm/d/Y - H:i'));
   }
   return $default_format;
 }
 /**
- * Implementation of hook_widget_info().
+ * Implement hook_widget_info().
  */
 function date_field_widget_info() {
   $settings = array(
@@ -238,7 +238,7 @@ function date_input_value($field, $instance, $element) {
 }
 
 /**
- * Implementation of hook_field_formatter_info().
+ * Implement hook_field_formatter_info().
  */
 function date_field_formatter_info() {
   $formatters = array(
@@ -258,7 +258,7 @@ function date_field_formatter_info() {
     ),  
   );
 
-  $format_types = date_get_format_types('', TRUE);
+  $format_types = _system_date_format_types_build();
   if (!empty($format_types)) {
     foreach ($format_types as $type => $type_info) {
       $formatters[$type] = array(
@@ -275,7 +275,7 @@ function date_field_formatter_info() {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implement hook_theme().
  */
 function date_theme() {
   $path = drupal_get_path('module', 'date');
@@ -286,45 +286,60 @@ function date_theme() {
     'path' => "$path",
   );
   $themes = array(
-    'date_combo' => array(
-      'arguments' => array('element' => NULL)),
+    'date_combo' => array('render element' => 'element'),
     'date_all_day' => array(
-      'arguments' => array(
-        'which' => NULL, 'date1' => NULL, 'date2' => NULL, 
-        'format' => NULL, 'node' => NULL, 'view' => NULL)),
+      'variables' => array(
+        'field' => NULL, 
+        'which' => NULL, 
+        'date1' => NULL, 
+        'date2' => NULL, 
+        'format' => NULL, 
+        'node' => NULL, 
+        'view' => NULL
+      )
+    ),
     'date_all_day_label' => array(
-      'arguments' => array()),
+      'variables' => array()),
     'date_display_single' => array(
-      'arguments' => array('date' => NULL, 'timezone' => NULL)),
+      'variables' => array(
+        'date' => NULL, 
+        'timezone' => NULL
+    )),
     'date_display_range' => array(
-      'arguments' => array('date1' => NULL, 'date2' => NULL, 'timezone' => NULL)),
-    'date_text_parts' => array(
-      'arguments' => array('element' => NULL)),
-    'date' => array(
-      'arguments' => array('element' => NULL)),
+      'variables' => array(
+        'date1' => NULL, 
+        'date2' => NULL, 
+        'timezone' => NULL
+    )),
+    'date_text_parts' => array('render element' => 'element'),
+    'date' => array('render element' => 'element'),
     'date_formatter_default' => $base + array(
-      'arguments' => array('element' => NULL), 
+      'render element' => 'element', 
       'function' => 'theme_date_display_combination'),
     'date_formatter_format_interval' => $base + array(
-      'arguments' => array('element' => NULL), 
+      'render element' => 'element', 
       'function' => 'theme_date_format_interval'),
     'date_formatter_format_calendar_day' => $base + array(
-      'arguments' => array('element' => NULL), 
+      'render element' => 'element', 
       'function' => 'theme_date_format_calendar_day'),
     'date_repeat_display' => $base + array(
-      'arguments' => array('field' => NULL, 
-      'item' => NULL, 'node' => NULL, 'dates' => NULL),
+      'variables' => array(
+        'field' => NULL, 
+        'item' => NULL, 
+        'node' => NULL, 
+        'dates' => NULL
+      ),
       'function' => 'theme_date_repeat_display',
       ),  
   );
 
   // Table isn't available first time date_theme() is called in update.php.
   if (db_table_exists('date_format_types')) {
-    $format_types = date_get_format_types('', TRUE);
+    $format_types = _system_date_format_types_build();
     if (!empty($format_types)) {
       foreach ($format_types as $type => $type_info) {
         $themes['date_formatter_' . $type] = $base + array(
-          'arguments' => array('element' => NULL), 
+          'render element' => 'element', 
           'function' => 'theme_date_display_combination',
         );
       }
@@ -428,8 +443,8 @@ function date_formatter_process($element) {
   $all_day = '';
   $all_day2 = '';
   if ($format != 'format_interval') {
-    $all_day1 = theme('date_all_day', $field, 'date1', $date1, $date2, $format, $node);
-    $all_day2 = theme('date_all_day', $field, 'date2', $date1, $date2, $format, $node);
+    $all_day1 = theme('date_all_day', array('field' => $field,'which' => 'date1', 'date1' => $date1, 'date2' => $date2, 'format' => $format, 'node' => $node));
+    $all_day2 = theme('date_all_day', array('field' => $field, 'which' => 'date2', 'date1' => $date1, 'date2' => $date2, 'format' => $format, 'node' => $node));
   }
   if ((!empty($all_day1) && $all_day1 != $dates['value']['formatted']) 
   || (!empty($all_day2) && $all_day2 != $dates['value2']['formatted'])) {
@@ -463,7 +478,7 @@ function date_process_values($field) {
 }
 
 /**
- * Implementation of hook_help().
+ * Implement hook_help().
  */
 function date_help($path, $arg) {
   switch ($path) {
@@ -474,7 +489,7 @@ function date_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implement hook_form_alter().
  * Make sure date information gets updated.
  */
 function date_form_alter(&$form, &$form_state, $form_id) {
@@ -484,7 +499,7 @@ function date_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implementation of hook_field().
+ * Implement hook_field().
  *
  * Validation and submission operation code is moved into a separate
  * file and included only when processing forms.
@@ -526,29 +541,36 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
 }
 
 /**
- * Implementation of hook_widget().
+ * Implement hook_widget().
  *
  * This code and all the processes it uses are in a separate file,
  * included only when processing forms.
  */
-function date_field_widget(&$form, &$form_state, &$field, $instance, $langcode, $items, $delta) {
+function date_field_widget(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
-  return _date_field_widget($form, $form_state, $field, $instance, $langcode, $items, $delta);
+  return _date_field_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
 }
 
 /**
- * Implementation of hook_elements().
+ * Implement hook_field_widget_error().
+ */
+function date_field_widget_error($element, $error) {
+  form_error($element['value'], $error['message']);
+} 	
+
+/**
+ * Implement hook_element_info().
  *
  * This code and all the processes it uses are in a separate file,
  * included only when processing forms.
  */
-function date_elements() {
+function date_element_info() {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
-  return _date_elements();
+  return _date_element_info();
 }
 
 /**
- * Implementation of Devel module's hook_content_generate().
+ * Implement Devel module's hook_content_generate().
  */
 function date_content_generate($node, $field) {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_content_generate.inc');
@@ -569,9 +591,9 @@ function date_field_widget_settings_form($field, $instance) {
   return _date_field_widget_settings_form($field, $instance);
 }
 
-function date_field_settings_form($field, $instance) {
+function date_field_settings_form($field, $instance, $has_data) {
   require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
-  return _date_field_settings_form($field, $instance);
+  return _date_field_settings_form($field, $instance, $has_data);
 }
 
 function date_formatter_settings($form_state = NULL, $field, $options = array(), $views_form = FALSE) {
@@ -612,7 +634,7 @@ function date_formatter_format($formatter, $field_name) {
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implement hook_views_api().
  */
 function date_views_api() {
   return array(
@@ -757,7 +779,7 @@ function date_handler_fields($view) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implement hook_form_alter().
  *
  * Adding ability to configure new date format types.
  */

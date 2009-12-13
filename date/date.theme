@@ -45,7 +45,8 @@
  *   $dates['value2']['formatted_date'] - only the date part of the formatted To date
  *   $dates['value2']['formatted_time'] - only the time part of the formatted To date
  */
-function theme_date_display_combination($element) {
+function theme_date_display_combination($variables) {
+  $element = $variables['element'];
   static $repeating_ids = array();
   
   $node = $element['#node'];
@@ -80,7 +81,7 @@ function theme_date_display_combination($element) {
   if (!in_array($node->nid, $repeating_ids) && module_exists('date_repeat') 
   && !empty($item['rrule']) && $options['repeat']['show_repeat_rule'] == 'show') {
     require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
-    $output .= theme('date_repeat_display', $field, $item, $node);
+    $output .= theme('date_repeat_display', array('field' => $field, 'item' => $item, 'node' => $node));
     $repeating_ids[] = $node->nid;
   }
    
@@ -130,7 +131,7 @@ function theme_date_display_combination($element) {
   }
   // From and To dates match or there is no To date, display a complete single date.
   elseif ($date1 == $date2 || empty($date2)) {
-    $output .= theme('date_display_single', $date1, $timezone);
+    $output .= theme('date_display_single', array('date' => $date1, 'timezone' => $timezone));
   }
   // Same day, different times, don't repeat the date but show both From and To times.
   elseif (date_has_time($field['settings']['granularity']) && $dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {
@@ -141,13 +142,13 @@ function theme_date_display_combination($element) {
     $time1 = preg_replace('([\)\]]$)', '', $time1);
     $time2 = preg_replace('`^([\(\[])`', '', $dates['value2']['formatted_time']);
     $time2 = preg_replace('([\)\]]$)', '', $time2);
-    $time = theme('date_display_range', $time1, $time2);
+    $time = theme('date_display_range', array('date1' => $time1, 'date2' => $time2));
     $replaced = str_replace($time1, $time, $date1);
-    $output .= theme('date_display_single', $replaced, $timezone);
+    $output .= theme('date_display_single', array('date' => $replaced, 'timezone' => $timezone));
   }
   // Different days, display both in their entirety.
   else {
-    $output .= theme('date_display_range', $date1, $date2, $timezone);
+    $output .= theme('date_display_range', array('date1' => $date1, 'date2' => $date2, 'timezone' => $timezone));
   }
   
   return $output;
@@ -174,7 +175,8 @@ function theme_date_display_range($date1, $date2, $timezone = NULL) {
  *  @return a formatted display
  *
  */
-function theme_date_format_interval($element) {
+function theme_date_format_interval($variables) {
+  $element = $variables['element'];
   $node = $element['#node'];
   $field_name = $element['#field_name'];
   $context = !empty($node->content) ? $node->content[$field_name]['#context'] : 'full';
@@ -214,7 +216,7 @@ function theme_date_format_interval($element) {
     $element['#node'] = $node;
   }
   $dates = date_formatter_process($element);
-  return theme('date_time_ago', $dates['value']['local']['object'], $dates['value2']['local']['object']);
+  return theme('date_time_ago', array('start_date' => $dates['value']['local']['object'], 'end_date' => $dates['value2']['local']['object']));
 }
 
 /**

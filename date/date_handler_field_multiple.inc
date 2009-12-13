@@ -156,7 +156,7 @@ class date_handler_field_multiple extends content_handler_field_multiple {
 
         if (count($rendered) > 1) {
           // TODO: could we use generic field display ?
-          return theme('content_view_multiple_field', $rendered, $field, $values);
+          return theme('field_view_multiple_field', $rendered, $field, $values);
         }
         elseif ($rendered) {
           return $rendered[0];

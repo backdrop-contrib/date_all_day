@@ -25,13 +25,19 @@ function _date_field_validate($op, &$node, $field, $instance, &$items, $teaser, 
         if ($processed == 'value' && $field['settings']['todate']
           && !date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
           && (date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
-          form_set_error($error_field, t("A 'From date' date is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['widget']['label']))));
+          $errors[$field['field_name']][$delta][] = array(
+              'error' => 'valid_nid',
+              'message' => t("A 'From date' date is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['widget']['label']))),
+            );
         }
         if ($processed == 'value2'
           && $field['settings']['todate'] == 'required' && ($field['required']
           && date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
           && !date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
-          form_set_error($error_field, t("A 'To date' is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))));
+          $errors[$field['field_name']][$delta][] = array(
+            'error' => 'valid_nid',
+            'message' => t("A 'To date' is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
+            );          
         }
       }
     }
@@ -104,8 +110,8 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  *   the local timezone, are converted back to their UTC values and stored.
  *
  */
-function _date_field_widget(&$form, &$form_state, &$field, $instance, $langcode, $items, $delta = 0) {
-  
+function _date_field_widget(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+  $element = $base;
   // Be sure users that haven't run the update yet don't get
   // a badly broken value.
   if (!empty($field['repeat']) && !strstr($instance['widget']['type'], '_repeat')) {
@@ -141,8 +147,7 @@ function _date_field_widget(&$form, &$form_state, &$field, $instance, $langcode,
     $date = date_local_date($form, $form_state, $delta, $items[$delta], $timezone, $field, $instance, $processed);
     $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
-
-  $element = array(
+  $element += array(
     '#type' => 'date_combo',
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
@@ -166,7 +171,7 @@ function _date_field_widget(&$form, &$form_state, &$field, $instance, $langcode,
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
   }
   return $element;
-}
+}  	 
 
 /**
  * Create local date object.
@@ -233,13 +238,13 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
 }
 
 /**
- * Implementation of hook_elements().
+ * Implementation of hook_element_info().
  *
  * date_combo will create a 'from' and optional 'to' date, along with
  * an optional 'timezone' column for date-specific timezones. Each
  * 'from' and 'to' date will be constructed from date_select or date_text.
  */
-function _date_elements() {
+function _date_element_info() {
   $type = array();
   $type['date_combo'] = array(
     '#input' => TRUE,
@@ -247,6 +252,7 @@ function _date_elements() {
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
     '#process' => array('date_combo_process'),
     '#element_validate' => array('date_combo_validate'),
+    '#theme_wrappers' => array('date_combo_process'),
     );
   return $type;
 }
@@ -527,10 +533,10 @@ function date_combo_validate($element, &$form_state) {
   }
   if (!empty($errors)) {
     if ($field['cardinality']) {
-      form_set_error($error_field, t('There are errors in @field_name value #@delta:', array('@field_name' => $instance['label'], '@delta' => $delta + 1)) . theme('item_list', $errors));
+      form_set_error($error_field, t('There are errors in @field_name value #@delta:', array('@field_name' => $instance['label'], '@delta' => $delta + 1)) . theme('item_list', array('items' => $errors)));
     }
     else {
-      form_set_error($error_field, t('There are errors in @field_name:', array('@field_name' => $instance['label'])) . theme('item_list', $errors));      
+      form_set_error($error_field, t('There are errors in @field_name:', array('@field_name' => $instance['label'])) . theme('item_list', array('items' => $errors)));      
     }
   }
 }
@@ -581,5 +587,5 @@ function theme_date_combo($element) {
     '#description' => $element['#fieldset_description'],
     '#attributes' => array(),
   );
-  return theme('fieldset', $fieldset);
+  return theme('fieldset', array('fieldset' => $fieldset));
 }

@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_elements().
+ * Implementation of hook_element_info().
  *
  * Parameters for date form elements, designed to have sane defaults so any
  * or all can be omitted.
@@ -58,7 +58,7 @@
  *   i.e. array('year') will format the year as a textfield and other
  *   date parts as drop-down selects.
  */
-function _date_api_elements() {
+function _date_api_element_info() {
   $date_base = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#date_timezone' => date_default_timezone(),
@@ -70,13 +70,16 @@ function _date_api_elements() {
     );
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_process'),
+    '#theme_wrappers' => array('date_select'),
     ));
   $type['date_text'] = array_merge($date_base, array(
     '#process' => array('date_text_process'),
+    '#theme_wrappers' => array('date_text'),
     ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#process' => array('date_timezone_process'),
+    '#theme_wrappers' => array('date_text'),
     );
   return $type;
 }
@@ -98,6 +101,7 @@ function date_timezone_process($element, $form_state, $form) {
     '#weight' => $element['#weight'],
     '#required' => $element['#required'],
     '#theme' => 'date_select_element',
+    '#theme_wrappers' => array('form_element'),
   );
   if (isset($element['#element_validate'])) {
     array_push($element['#element_validate'], 'date_timezone_validate');

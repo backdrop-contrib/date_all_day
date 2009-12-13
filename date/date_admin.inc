@@ -6,6 +6,8 @@
  * Moved to separate file since there is a lot of code here that is not needed often.
  */
 function _date_field_instance_settings_form($field, $instance) {
+  dsm($field);
+  dsm($instance);
   $widget = $instance['widget'];
   $settings = $instance['settings'];
   
@@ -45,7 +47,7 @@ function _date_field_instance_settings_form($field, $instance) {
   }
   
   $format_types = array();  
-  foreach (date_get_format_types('', TRUE) as $name => $info) {
+  foreach (_system_date_format_types_build() as $name => $info) {
     $format_types[$name] = $info['title'];
   }
   
@@ -101,7 +103,7 @@ function _date_field_widget_settings_form($field, $instance) {
   }
   else {
     // example input formats must show all possible date parts, so add seconds.
-    $formats = str_replace('i', 'i:s', array_keys(date_get_formats('short')));
+    $formats = str_replace('i', 'i:s', array_keys(system_get_date_formats('short')));
     $formats = drupal_map_assoc($formats);
     $default_format = str_replace('i', 'i:s', variable_get('date_format_short', 'm/d/Y - H:i'));
   }
@@ -231,15 +233,16 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
  * Display the text/select options for date parts in a table
  * for easier readability.
  */
-function theme_date_text_parts($element) {
+function theme_date_text_parts($variables) {
+  $element = $variables['element'];
   $names = date_granularity_names();
   $rows = array();
   foreach ($names as $key => $part) {
     if ($element[$key]['#type'] == 'hidden') {
-      $rows[] = drupal_render($element[$key]);
+      $rows[] = drupal_render_children($element[$key]);
     }
     else {
-      $rows[] = array($names[$key], drupal_render($element[$key][0]), drupal_render($element[$key][1]));
+      $rows[] = array($names[$key], drupal_render_children($element[$key][0]), drupal_render_children($element[$key][1]));
     }
   }
   if ($element['year']['#type'] == 'hidden') {
@@ -247,7 +250,7 @@ function theme_date_text_parts($element) {
   }
   else {
     $header = array(t('Input Type'), t('Select list'), t('Text field'));
-    return theme('table', $header, $rows);
+    return theme('table', array('header' => $header, 'rows' => $rows));
   }
 }
 
@@ -282,7 +285,7 @@ function _date_field_schema($field) {
   return array('columns' => $db_columns);  
 }
 
-function _date_field_settings_form($field, $instance) {
+function _date_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
   
   $form = array(
@@ -310,6 +313,7 @@ function _date_field_settings_form($field, $instance) {
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
     '#description' => $description,
     '#default_value' => $settings['todate'],
+    '#disabled' => $has_data,
     );
   $description = t('Set the date elements to be stored (at least a year is required).');
   $form['granularity'] = array(
@@ -319,6 +323,7 @@ function _date_field_settings_form($field, $instance) {
     '#options' => date_granularity_names(),
     '#multiple' => TRUE,
     '#description' => $description,
+    '#disabled' => $has_data,
     );
   $description = t('Select the timezone handling method to be used for this date field.');
   $form['tz_handling'] = array(
@@ -327,6 +332,7 @@ function _date_field_settings_form($field, $instance) {
     '#default_value' => $tz_handling,
     '#options' => date_timezone_handling_options(),
     '#description' => $description,
+    '#disabled' => $has_data,
   );
   // Force this value to hidden because we don't want to allow it to be changed right now,
   // but allow it to be a variable if needed.

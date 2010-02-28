@@ -9,9 +9,10 @@
 #  date_navigation_plugin_style.inc,v 1.1.2.7 2008/12/02 17:32:35 karens
 #
 msgid ""
-msgstr "[fuzzy] [fuzzy] Project-Id-Version: \n"
+msgstr ""
+"Project-Id-Version: \n"
 "POT-Creation-Date: 2009-03-07 19:12+0100\n"
-"PO-Revision-Date: 2009-03-08 15:46+0100\n"
+"PO-Revision-Date: 2009-03-08 11:33+0100\n"
 "Last-Translator: Alexander Haß\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -22,14 +23,16 @@ msgstr "[fuzzy] [fuzzy] Project-Id-Version: \n"
 "X-Poedit-Country: GERMANY\n"
 
 #: includes/date_api.views.inc:78;85
+#, fuzzy
 msgid "Date browser"
-msgstr "Datumsbrowser"
+msgstr "Datumssuche"
 
 #: includes/date_api.views.inc:79
 msgid "Date back/next navigation to attach to other displays. Requires the Date argument."
-msgstr "Die vorwärts/rückwärts Navigation für ein Datum an anderen Anzeigen anhängen. Hierfür ist das Datum als Argument erforderlich."
+msgstr "Die vorwärts/rückwärts Navigation für ein Datum an anderen Anzeigen anhängen. Hierfür ist das Datumsargument erforderlich."
 
 #: includes/date_api.views.inc:101
+#, fuzzy
 msgid "Date browser style"
 msgstr "Design der Datumssuche"
 
@@ -46,22 +49,23 @@ msgid "Undated"
 msgstr "Undatiert"
 
 #: includes/date_api.views.inc:139
+#, fuzzy
 msgid "Filter any Views date field."
-msgstr "Nach Datumsfeldern in Ansichten filtern."
+msgstr "Alle Datumsfelder in Ansichten filtern."
 
 #: includes/date_api_argument_handler.inc:67
 msgid "Select the type of date value to be used in defaults, summaries, and navigation. For example, a granularity of 'month' will set the default date to the current month, summarize by month in summary views, and link to the next and previous month when using date navigation."
-msgstr "Wählen Sie den Typ des Datumsformats als Standard, für Zusammenfassungen und zur Navigation. Zum Beispiel wird eine Granularität von \"Monat\" das Standard-Datum auf den aktuellen Monat festgelegen, in einer Zusammenfassung für Monate einen Link zum nächsten und vorhergehenden Monat für die Navigation einfügen."
+msgstr ""
 
 #: includes/date_api_argument_handler.inc:71
 #: includes/date_api_filter_handler.inc:109
 msgid "Date year range"
-msgstr "Zeitabschnitt in Jahren"
+msgstr ""
 
 #: includes/date_api_argument_handler.inc:74
 #: includes/date_api_filter_handler.inc:112
 msgid "Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010'. When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)'."
-msgstr "Legen Sie die zulässige minimale und maximale Bandbreite für Jahre für dieses Argument fest, entweder als Versatz zum aktuellen Jahr  -X:+X z.B. -3:+3 \"oder ein absolutes Minimum und Maximum für die Jahreszahl, wie '2005:2010'. Wenn das Argument ein Datum außerhalb des  definierten Bereichs ist, wird \"Seite nicht gefunden (404)\" zurückgegeben."
+msgstr ""
 
 #: includes/date_api_argument_handler.inc:83
 #: includes/date_api_filter_handler.inc:121
@@ -70,7 +74,7 @@ msgstr "Datumsfeld(er)"
 
 #: includes/date_api_argument_handler.inc:88
 msgid "Select one or more date fields to filter with this argument. Do not select both the 'From date' and 'To date' for CCK date fields, only one of them is needed."
-msgstr "Wählen Sie eine oder mehrere Datumsfelder als Argument für Filter. Für CCK-Datumsfelder nicht geichzeitig das „Von“-Datum und „Bis“-Datum auswählen, da nur eins benötigt wird."
+msgstr "Eines oder mehrere Daten zum Filtern mit diesem Argument auswählen. Für CCK-Datumsfelder sollten nicht das „Von“-Datum und „Bis“-Datum ausgewählt werden, da nur eins benötigt wird."
 
 #: includes/date_api_argument_handler.inc:91
 #: includes/date_api_filter_handler.inc:129
@@ -90,7 +94,7 @@ msgstr "UND"
 #: includes/date_api_argument_handler.inc:95
 #: includes/date_api_filter_handler.inc:133
 msgid "Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2)."
-msgstr "Methoden für mehrerer Datumsfelder in derselben Abfrage. Einträge zurückgeben, die bezüglich eines Datumsfeldes übereinstimmen (date = field_1 OR field_2), oder diejenigen Einträge die in beiden Datumsfeldern übereinstimmen (date = field_1 AND field_2)."
+msgstr ""
 
 #: includes/date_api_argument_handler.inc:107
 msgid "You must select at least one date field for this argument."
@@ -99,7 +103,7 @@ msgstr "Für dieses Argument muss mindestens ein Datumsfeld ausgewählt werden."
 #: includes/date_api_argument_handler.inc:111
 #: includes/date_api_filter_handler.inc:144
 msgid "Date year range must be in the format -9:+9 or 2005:2010."
-msgstr "Der Datumsbereich der Jahre muss in dem Format '-9:+9' oder '2005:2010' angegeben werden."
+msgstr "Der Datumsbereich der Jahre muss in dem Format -9:+9 oder 2005:2010 angegeben werden."
 
 #: includes/date_api_filter_handler.inc:76
 msgid "Select"
@@ -119,7 +123,7 @@ msgstr "Das Formularelement zur Datumsauswahl auswählen."
 
 #: includes/date_api_filter_handler.inc:106
 msgid "Select a granularity for the date filter. For instance, selecting 'day' will create a filter where users can select the year, month, and day."
-msgstr "Wählen Sie eine Granularität für den Datumsfilter. Beispielsweise wird die Auswahl von 'Tag' einen Filter erstellen, für den Benutzer das Jahr, den Monat und Tag auswählen können."
+msgstr "Die Granularität für den Datumsfilter auswählen. Beispielsweise wird die Auswahl von „Tag“ einen Filter erstellen, indem Benutzer das Jahr, den Monat und Tag auswählen können."
 
 #: includes/date_api_filter_handler.inc:126
 msgid "Select date field(s) to filter with this argument."
@@ -143,11 +147,11 @@ msgstr "Relativer Wert"
 
 #: includes/date_api_filter_handler.inc:212
 msgid "Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day'. The To date default value is used when the operator is set to 'between' or 'not between'."
-msgstr "Relative Werte verwenden, wenn oben kein Datum gesetzt ist. Verwenden Sie 'now' um standardmäßig das aktuelle Datum zu setzen oder fügen Sie Modifikatoren hinzu, wie 'now +1 day'. Der Standardwert wird verwendet, wenn der Operator auf 'between' oder 'not between' eingestellt ist."
+msgstr ""
 
 #: includes/date_api_filter_handler.inc:212
 msgid "If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter."
-msgstr "Wenn Benutzer diesen Filter verwenden können, dann werden die Startwerte für den Filter gesetzt. Lassen Sie beide Werte leer, um ohne Werte in dem Filter zu starten."
+msgstr ""
 
 #: includes/date_api_filter_handler.inc:216
 msgid "To date default"
@@ -171,14 +175,17 @@ msgid "@min and @max"
 msgstr "@min und @max"
 
 #: includes/date_navigation_plugin_style.inc:24
+#, fuzzy
 msgid "The %style cannot use more than one Date: Date argument."
-msgstr "%style kann nicht mehr als ein Datum verwenden: Datumsargument."
+msgstr "Das %style kann nicht mehr als ein Datum verwenden: Datumsargument."
 
 #: includes/date_navigation_plugin_style.inc:27
+#, fuzzy
 msgid "The %style requires the Date: Date argument be set to default to the current date."
-msgstr "%style erfordert das Datum: Für das Datumsargument wird das aktuelle Datum verwendet."
+msgstr "Das %style erfordert das Datum: Für das Datumsargument wird das aktuelle Datum verwendet."
 
 #: includes/date_navigation_plugin_style.inc:34
+#, fuzzy
 msgid "The %style requires the Date: Date argument."
-msgstr "%style erfordert das Datum: Datumsargument."
+msgstr "Das %style erfordert das Datum: Datumsargument."
 

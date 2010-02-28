@@ -23,7 +23,7 @@
 /**
  * Load needed files.
  * 
- * Play nice with jQuery UI, if it is installed.
+ * Play nice with jQuery UI.
  */
 function date_popup_load() {
   static $loaded = FALSE;

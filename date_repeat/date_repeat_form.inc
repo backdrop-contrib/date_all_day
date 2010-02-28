@@ -35,7 +35,7 @@
  * Generate the repeat setting form.
  */
 function _date_repeat_rrule_process($element, $form_state, $form) {
-  require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
@@ -122,7 +122,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     '#title' => t('Advanced'),
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
-    '#description' => t("If no advanced options are selected, the date will repeat on the day of week of the start date for weekly repeats, otherwise on the month and day of the start date. Use the options below to override that behavior to select specific months and days to repeat on. Use the 'Except' box to input dates that should be omitted from the results.") .' ',
+    '#description' => t("If no advanced options are selected, the date will repeat on the day of week of the start date for weekly repeats, otherwise on the month and day of the start date. Use the options below to override that behavior to select specific months and days to repeat on. Use the 'Except' box to input dates that should be omitted from the results.") . ' ',
     '#prefix' => '<div class="date-clear">',
     '#suffix' => '</div>',
     );
@@ -214,13 +214,13 @@ function date_repeat_merge($form_values, $element) {
   if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
       
   if (is_array($form_values['UNTIL']['datetime'])) {
-    $function = $element['#date_repeat_widget'] .'_input_value';
+    $function = $element['#date_repeat_widget'] . '_input_value';
     $until_element = $element;
     $until_element['#value'] = $form_values['UNTIL']['datetime'];
     $form_values['UNTIL']['datetime'] = $function($until_element);
   }
   if (isset($form_values['EXDATE']) && is_array($form_values['EXDATE'])) {
-    $function = $element['#date_repeat_widget'] .'_input_value';
+    $function = $element['#date_repeat_widget'] . '_input_value';
     $exdate_element = $element;
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
@@ -236,7 +236,7 @@ function date_repeat_merge($form_values, $element) {
  * Build a RRULE out of the form values.
  */
 function date_repeat_rrule_validate($element, &$form_state) {
-  require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  require_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $form_values = $form_state['values'];
   $field_name = $element['#parents'][0];
   $item = $form_values[$field_name]['rrule'];

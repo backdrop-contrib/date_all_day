@@ -55,7 +55,7 @@ function date_api_views_handlers() {
 function date_api_views_plugins() {
   $path = drupal_get_path('module', 'date_api');
   $views_path = drupal_get_path('module', 'views');
-  require_once "./$path/theme/theme.inc";
+  require_once DRUPAL_ROOT . "/$path/theme/theme.inc";
   return array(
     'module' => 'date_api', // This just tells our themes are elsewhere.
     'display' => array(

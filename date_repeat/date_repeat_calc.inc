@@ -32,7 +32,7 @@
  * Compute dates that match the requested rule, within a specified date range.
  */
 function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
-  require_once(' ./' . drupal_get_path('module', 'date_api') .'/date_api_ical.inc');
+  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   
   if (empty($timezone)) {
     $timezone = date_default_timezone();
@@ -78,16 +78,16 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
   // Find the time period to jump forward between dates.
   switch ($rrule['FREQ']) {
    case 'DAILY':
-     $jump = $interval .' days';
+     $jump = $interval . ' days';
      break;
    case 'WEEKLY':
-     $jump = $interval .' weeks';
+     $jump = $interval . ' weeks';
      break;
    case 'MONTHLY':
-     $jump = $interval .' months';
+     $jump = $interval . ' months';
      break;
    case 'YEARLY':
-     $jump = $interval .' years';
+     $jump = $interval . ' years';
      break;
   }
 
@@ -162,7 +162,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
   // just repeating the start date. Because of imputed BYDAY above, this
   // will only test TRUE for a DAILY or less frequency (like HOURLY).
 
-  else if (empty($rrule['BYDAY'])) {
+  elseif (empty($rrule['BYDAY'])) {
     // $current_day will keep track of where we are in the calculation.
     $current_day = clone($start_date);
     $finished = FALSE;
@@ -306,7 +306,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
           if ($finished || $rrule['FREQ'] == 'WEEKLY') {
             $period_finished = TRUE;
           }
-          else if ($rrule['FREQ'] != 'WEEKLY' && date_format($current_day, $format) != $current_period) {
+          elseif ($rrule['FREQ'] != 'WEEKLY' && date_format($current_day, $format) != $current_period) {
             $period_finished = TRUE;
           }
         }
@@ -326,11 +326,11 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
             date_modify($current_day, '-1 week');
             break;
           case 'MONTHLY':
-            date_modify($current_day, '-' . (date_format($current_day, 'j') - 1) .' days');
+            date_modify($current_day, '-' . (date_format($current_day, 'j') - 1) . ' days');
             date_modify($current_day, '-1 month');
             break;
           case 'YEARLY':
-            date_modify($current_day, '-' . date_format($current_day, 'z') .' days');
+            date_modify($current_day, '-' . date_format($current_day, 'z') . ' days');
             date_modify($current_day, '-1 year');
             break;
         }
@@ -360,10 +360,10 @@ function date_repeat_adjust_rrule($rrule, $start_date) {
   if (empty($rrule['BYDAY']) && $rrule['FREQ'] == 'WEEKLY') {
     $rrule['BYDAY'] = array(date_repeat_dow2day(date_format($start_date, 'w')));
   }
-  else if (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && $rrule['FREQ'] == 'MONTHLY') {
+  elseif (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && $rrule['FREQ'] == 'MONTHLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
   }
-  else if (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && empty($rrule['BYYEARDAY']) && $rrule['FREQ'] == 'YEARLY') {
+  elseif (empty($rrule['BYDAY']) && empty($rrule['BYMONTHDAY']) && empty($rrule['BYYEARDAY']) && $rrule['FREQ'] == 'YEARLY') {
     $rrule['BYMONTHDAY'] = array(date_format($start_date, 'j'));
     if (empty($rrule['BYMONTH'])) {
       $rrule['BYMONTH'] = array(date_format($start_date, 'n'));
@@ -373,7 +373,7 @@ function date_repeat_adjust_rrule($rrule, $start_date) {
   // and have BYDAYS like 2SU or -1SA, simplify them to SU or SA since the
   // position rules make no sense in other periods and just add complexity.
 
-  else if (!empty($rrule['BYDAY']) && !in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
+  elseif (!empty($rrule['BYDAY']) && !in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
     foreach ($rrule['BYDAY'] as $delta => $BYDAY) {
       $rrule['BYDAY'][$delta] = substr($BYDAY, -2);
     }
@@ -486,13 +486,13 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
     }
     
     if (empty($day)) {
-      date_modify($date, $direction . $count .' days');
+      date_modify($date, $direction . $count . ' days');
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
-      date_modify($date, $order[$direction . $count] .' ' . $day);
+      date_modify($date, $order[$direction . $count] . ' ' . $day);
     }
     
     // If that takes us outside the current month, don't go there.
@@ -532,13 +532,13 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
     }
     
     if (empty($day)) {
-      date_modify($date, $direction . $count .' days');
+      date_modify($date, $direction . $count . ' days');
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
-      date_modify($date, $order[$direction . $count] .' ' . $day);
+      date_modify($date, $order[$direction . $count] . ' ' . $day);
     }
     
     // If that takes us outside the current year, don't go there.

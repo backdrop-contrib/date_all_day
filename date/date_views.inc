@@ -143,23 +143,23 @@ class date_views_browser_argument_handler extends views_handler_argument_formula
     $handler = $this->date_handler;
     $handler->granularity = $handler->granularity_keys($options['granularity']);
     switch ($handler->granularity[0]) {
-      case('year'):
+      case ('year'):
         $this->format = 'Y';
         $this->sql_format = 'Y';
         break;
-      case('month'):
+      case ('month'):
         $this->format = 'F Y';
         $this->sql_format = 'Y-m';
         break;
-      case('day'):
+      case ('day'):
         $this->format = 'F j Y';
         $this->sql_format = 'Y-m-d';
         break;
-      case('hour'):
+      case ('hour'):
         $this->format = 'F j Y - H';
         $this->sql_format = 'Y-m-d\TH';
         break;
-      case('week'):
+      case ('week'):
         $this->format = 'F j Y (W)';
         $this->sql_format = 'Y-\WW';
         break;
@@ -387,22 +387,22 @@ function date_range_value($value, $value_type = 'min') {
   if (trim($value) == '@' || trim($value) == '') return $now;
 
   switch (strlen($value)) {
-  case(4):
+  case (4):
     $return = ($value_type == 'min' ? $value . '-01-01T00:00:00' : $value . '-12-31T23:59:59');
     break;
-  case(7):
+  case (7):
     $return = ($value_type == 'min' ? $value . '-01T00:00:00' : $value . '-31T23:59:59');
     break;
-  case(10):
+  case (10):
     $return = ($value_type == 'min' ? $value . 'T00:00:00' : $value . 'T23:59:59');
     break;
-  case(13):
+  case (13):
     $return = ($value_type == 'min' ? $value . ':00:00' : $value . ':59:59');
     break;
-  case(16):
+  case (16):
     $return = ($value_type == 'min' ? $value . ':00' : $value . ':59');
     break;
-  case(19):
+  case (19):
     $return = $value;
     break;
   default:
@@ -569,13 +569,13 @@ function date_views_browser_get_views($reset = FALSE) {
  */
 function date_views_browser_period($period = 'month') {
   switch ($period) {
-  case('year'):
+  case ('year'):
     return 'P1Y';
-  case('week'):
+  case ('week'):
     return 'P1W';
-  case('day'):
+  case ('day'):
     return 'P1D';
-  case('hour'):
+  case ('hour'):
     return 'P1H';
   default:
     return 'P1M';
@@ -661,10 +661,10 @@ function date_views_browser_navigation($view, $period) {
  */
 function date_views_offset($field) {
   switch ($field['settings']['tz_handling']) {
-  case(DATE_ISO):
+  case (DATE_ISO):
     $offset = 'node_data_' . $field['field_name'] . ' . ' . $field['field_name'] . '_offset';
     break;
-  case('site'):
+  case ('site'):
     $offset = variable_get('date_default_timezone', 0);
     break;
   default:
@@ -992,45 +992,45 @@ class views_date_handler {
     // Note there is no space after FROM to avoid db_rewrite problems
     // see http://drupal.org/node/79904.
     switch ($extract_type) {
-    case('DATE'):
+    case ('DATE'):
       return $field;
-    case('YEAR'):
+    case ('YEAR'):
       return "EXTRACT(YEAR FROM($field))";
-    case('MONTH'):
+    case ('MONTH'):
       return "EXTRACT(MONTH FROM($field))";
-    case('DAY'):
+    case ('DAY'):
       return "EXTRACT(DAY FROM($field))";
-    case('HOUR'):
+    case ('HOUR'):
       return "EXTRACT(HOUR FROM($field))";
-    case('MINUTE'):
+    case ('MINUTE'):
       return "EXTRACT(MINUTE FROM($field))";
-    case('SECOND'):
+    case ('SECOND'):
       return "EXTRACT(SECOND FROM($field))";
-    case('WEEK'):  // ISO week number for date
+    case ('WEEK'):  // ISO week number for date
       switch ($this->db_type) {
-        case('mysql'):
-        case('mysqli'):
+        case ('mysql'):
+        case ('mysqli'):
           // WEEK using arg 3 in mysql should return the same value as postgres EXTRACT
           return "WEEK($field, 3)";
-        case('pgsql'):
+        case ('pgsql'):
           return "EXTRACT(WEEK FROM($field))";
       }
-    case('DOW'):
+    case ('DOW'):
       switch ($this->db_type) {
-        case('mysql'):
-        case('mysqli'):
+        case ('mysql'):
+        case ('mysqli'):
           // mysql returns 1 for Sunday through 7 for Saturday
           // php date functions and postgres use 0 for Sunday and 6 for Saturday
           return "INTEGER(DAYOFWEEK($field) - 1)";
-        case('pgsql'):
+        case ('pgsql'):
           return "EXTRACT(DOW FROM($field))";
       }
-    case('DOY'):
+    case ('DOY'):
       switch ($this->db_type) {
-        case('mysql'):
-        case('mysqli'):
+        case ('mysql'):
+        case ('mysqli'):
           return "DAYOFYEAR($field)";
-        case('pgsql'):
+        case ('pgsql'):
           return "EXTRACT(DOY FROM($field))";
       }
     }

@@ -628,7 +628,7 @@ function date_format_interval($date, $granularity = 2) {
   }
 
   $interval = REQUEST_TIME - date_format($date, 'U');
-  if($interval > 0 ) {
+  if ($interval > 0 ) {
     return t('!time ago', array('!time' => format_interval($interval, $granularity)));
   } 
   else {
@@ -1321,7 +1321,7 @@ function date_valid_day($day, $month = NULL, $year = NULL) {
  * @return string the padded value
  */
 function date_pad($value, $size = 2) {
-  return sprintf("%0". $size ."d", $value);
+  return sprintf("%0" . $size . "d", $value);
 }
 
 /**
@@ -1549,15 +1549,6 @@ function date_nongranularity($granularity) {
 }
 
 /**
- * Implement hook_simpletest().
- */
-function date_api_simpletest() {
-  $dir = drupal_get_path('module', 'date_api') . '/tests';
-  $tests = file_scan_directory($dir, '\.test$');
-  return array_keys($tests);
-}
-
-/**
  * Implement hook_element_info().
  */
 function date_api_element_info() {
@@ -1628,10 +1619,10 @@ function date_api_set_db_timezone($offset = '+00:00') {
  */
 function date_get_timezone($handling, $timezone = '') {
   switch ($handling) {
-    case('date'):
+    case ('date'):
       $timezone = !empty($timezone) ? $timezone : date_default_timezone();
       break;
-    case('utc'):
+    case ('utc'):
       $timezone = 'UTC';
       break;
     default:
@@ -1645,7 +1636,7 @@ function date_get_timezone($handling, $timezone = '') {
  */
 function date_get_timezone_db($handling, $timezone = '') {
   switch ($handling) {
-    case('none'):
+    case ('none'):
       $timezone = date_default_timezone();
       break;
     default:

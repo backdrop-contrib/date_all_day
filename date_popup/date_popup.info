@@ -7,3 +7,7 @@ core = 7.x
 php = 5.2
 files[] = date_popup.module
 files[] = date_popup.install
+files[] = date_popup.js
+files[] = themes/calendar.css
+files[] = themes/datepicker.css
+files[] = themes/timeentry.css

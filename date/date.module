@@ -11,6 +11,8 @@
  */
 function date_init() {
   module_load_include('theme', 'date', 'date');
+  //drupal_flush_all_caches();
+  //dsm(_theme_build_registry());
 }
 /**
  * Implement hook_menu().
@@ -324,7 +326,11 @@ function date_theme() {
         'date2' => NULL, 
         'timezone' => NULL
     )),
-    'date_text_parts' => array('render element' => 'element'),
+    'date_text_parts' => array(
+      'render element' => 'element',
+      'file' => 'date_admin.inc',
+      'path' => $path,
+    ),
     'date' => array('render element' => 'element'),
     'date_repeat_display' => $base + array(
       'variables' => array(

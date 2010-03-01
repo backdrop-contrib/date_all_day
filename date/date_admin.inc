@@ -237,18 +237,18 @@ function theme_date_text_parts($variables) {
   $rows = array();
   foreach ($names as $key => $part) {
     if ($element[$key]['#type'] == 'hidden') {
-      $rows[] = drupal_render_children($element[$key]);
+      $rows[] = drupal_render($element[$key]);
     }
     else {
-      $rows[] = array($names[$key], drupal_render_children($element[$key][0]), drupal_render_children($element[$key][1]));
+      $rows[] = array($names[$key], drupal_render($element[$key][0]), drupal_render($element[$key][1]));
     }
   }
   if ($element['year']['#type'] == 'hidden') {
-    return implode($rows);
+    return implode($rows) . drupal_render_children($element);
   }
   else {
     $header = array(t('Input Type'), t('Select list'), t('Text field'));
-    return theme('table', array('header' => $header, 'rows' => $rows));
+    return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($element);
   }
 }
 

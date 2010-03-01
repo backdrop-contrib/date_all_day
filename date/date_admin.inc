@@ -6,8 +6,6 @@
  * Moved to separate file since there is a lot of code here that is not needed often.
  */
 function _date_field_instance_settings_form($field, $instance) {
-  dsm($field);
-  dsm($instance);
   $widget = $instance['widget'];
   $settings = $instance['settings'];
   

@@ -112,6 +112,7 @@ function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
  */
 function _date_field_widget(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   $element = $base;
+  
   // Be sure users that haven't run the update yet don't get
   // a badly broken value.
   if (!empty($field['repeat']) && !strstr($instance['widget']['type'], '_repeat')) {

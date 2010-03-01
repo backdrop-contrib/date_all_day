@@ -23,17 +23,6 @@ function date_api_set_variables() {
 
   // Set an API version in a way that other modules can test for compatibility.
   variable_set('date_api_version', '5.2');
-
-  // NULL is used for the default setting of date_default_timezone_name
-  // to have a way to tell that no site timezone name has been implemented.
-  // Otherwise, many functions would use 'UTC' incorrectly and
-  // produce unreliable and odd results. This way functions can test for a
-  // value and not use this if it is empty.
-  //
-  // The odd construct of using variable_get() instead of variable_set()
-  // is so we don't accidentally write over an existing value. If
-  // no value is set, variable_get() will set it to NULL.
-  variable_get('date_default_timezone_name', NULL);
 }
 
 /**
@@ -46,8 +35,6 @@ function date_api_install() {
   // means that date_api_enable() can be called before date_api_install()
   // finishes!  So the date_api schema needs to be installed before this line!
   date_api_set_variables();
-  $ret = array();
-  return $ret;
 }
 
 /**
@@ -62,8 +49,6 @@ function date_api_enable() {
  * Implementation of hook_uninstall().
  */
 function date_api_uninstall() {
-  $ret = array();
-  
   cache_clear_all('date_timezone_identifiers_list', 'cache');
   $variables = array(
     'date_api_version',
@@ -83,8 +68,6 @@ function date_api_uninstall() {
     db_query("DELETE FROM {views_display} WHERE display_plugin IN ('" . implode("','", $displays) . "')");
     db_query("DELETE FROM {cache_views}");
   }
-
-  return $ret;
 }
 
 function date_api_update_last_removed() {

@@ -245,16 +245,10 @@ function date_field_formatter_info() {
     'date_default' => array(
       'label' => t('Default'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'behaviors' => array(
-        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
-      ),
     ),  
     'format_interval' => array(
       'label' => t('As Time Ago'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'behaviors' => array(
-        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
-      ),
     ),  
   );
 
@@ -264,14 +258,30 @@ function date_field_formatter_info() {
       $formatters[$type] = array(
         'label' => $type_info['title'],
         'field types' => array('date', 'datestamp', 'datetime'),
-        'behaviors' => array(
-          'multiple values' => FIELD_BEHAVIOR_DEFAULT,
-        ),
       );
     }
   }
 
   return $formatters;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function date_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  $formatter = $display['type'];
+  
+  switch ($display['type']) {
+    case 'date_default':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => $item['value']);
+      }
+      break;
+  }
+
+  return $element;
 }
 
 /**
@@ -312,15 +322,6 @@ function date_theme() {
     )),
     'date_text_parts' => array('render element' => 'element'),
     'date' => array('render element' => 'element'),
-    'date_formatter_default' => $base + array(
-      'render element' => 'element', 
-      'function' => 'theme_date_display_combination'),
-    'date_formatter_format_interval' => $base + array(
-      'render element' => 'element', 
-      'function' => 'theme_date_format_interval'),
-    'date_formatter_format_calendar_day' => $base + array(
-      'render element' => 'element', 
-      'function' => 'theme_date_format_calendar_day'),
     'date_repeat_display' => $base + array(
       'variables' => array(
         'field' => NULL, 

@@ -57,7 +57,7 @@ function _date_field_instance_settings_form($field, $instance) {
     '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/settings/date-time/formats')),
     );
 
-  if (module_exists('date_repeat') && date_is_repeat_field($field)) {
+  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['repeat_collapsed'] = array(
       '#type' => 'radios',
       '#default_value' => $settings['repeat_collapsed'],
@@ -296,7 +296,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
   $tz_handling = $settings['tz_handling'];
   
   // If adding a repeat, override the Content module's handling of the multiple values option.
-  if (module_exists('date_repeat') && date_is_repeat_field($field)) {
+  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['multiple'] = array('#type' => 'hidden', '#value' => 1);
     $form['repeat'] = array('#type' => 'hidden', '#value' => 1);
   }

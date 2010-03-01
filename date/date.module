@@ -86,7 +86,7 @@ function date_repeat_page($node) {
   return $output;
 }
 
-function date_is_repeat_field($field) {
+function date_is_repeat_field($field, $instance) {
   $repeat_widgets = array(
     'date_select_repeat',
     'date_text_repeat',

@@ -303,4 +303,52 @@ function theme_date_all_day($field, $instance, $which, $date1, $date2, $format, 
 function theme_date_all_day_label() {
   return '(' . date_t('All day', 'datetime') .')';
 }
+
+/**
+ *  Theme from/to date combination on form.
+ */
+function theme_date_combo($element) {
+  $fields = content_fields();
+  $field = $fields[$element['#field_name']];
+  if (!$field['settings']['todate']) {
+    return $element['#children'];
+  }
+  
+  // Group from/to items together in fieldset.
+  $fieldset = array(
+    '#title' => check_plain($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
+    '#value' => $element['#children'],
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#description' => $element['#fieldset_description'],
+    '#attributes' => array(),
+  );
+  return theme('fieldset', array('fieldset' => $fieldset));
+}
+
+/**
+ * Display the text/select options for date parts in a table
+ * for easier readability.
+ */
+function theme_date_text_parts($variables) {
+  $element = $variables['element'];
+  $names = date_granularity_names();
+  $rows = array();
+  foreach ($names as $key => $part) {
+    if ($element[$key]['#type'] == 'hidden') {
+      $rows[] = drupal_render($element[$key]);
+    }
+    else {
+      $rows[] = array($names[$key], drupal_render($element[$key][0]), drupal_render($element[$key][1]));
+    }
+  }
+  if ($element['year']['#type'] == 'hidden') {
+    return implode($rows) . drupal_render_children($element);
+  }
+  else {
+    $header = array(t('Input Type'), t('Select list'), t('Text field'));
+    return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($element);
+  }
+}
+
 /** @} End of addtogroup themeable */

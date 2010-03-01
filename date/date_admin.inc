@@ -227,31 +227,6 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   }
 }
 
-/**
- * Display the text/select options for date parts in a table
- * for easier readability.
- */
-function theme_date_text_parts($variables) {
-  $element = $variables['element'];
-  $names = date_granularity_names();
-  $rows = array();
-  foreach ($names as $key => $part) {
-    if ($element[$key]['#type'] == 'hidden') {
-      $rows[] = drupal_render($element[$key]);
-    }
-    else {
-      $rows[] = array($names[$key], drupal_render($element[$key][0]), drupal_render($element[$key][1]));
-    }
-  }
-  if ($element['year']['#type'] == 'hidden') {
-    return implode($rows) . drupal_render_children($element);
-  }
-  else {
-    $header = array(t('Input Type'), t('Select list'), t('Text field'));
-    return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($element);
-  }
-}
-
 function _date_field_schema($field) {
   $db_columns = array();
   if ($field['type'] == 'date') {

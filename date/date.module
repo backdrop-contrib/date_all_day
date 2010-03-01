@@ -301,8 +301,10 @@ function date_theme() {
     'path' => "$path",
   );
   $themes = array(
-    'date_combo' => array('render element' => 'element'),
-    'date_all_day' => array(
+    'date_combo' => $base + array('render element' => 'element'),
+    'date_text_parts' => $base + array('render element' => 'element'),
+    'date' => $base + array('render element' => 'element'),
+    'date_all_day' => $base + array(
       'variables' => array(
         'field' => NULL, 
         'which' => NULL, 
@@ -313,25 +315,19 @@ function date_theme() {
         'view' => NULL
       )
     ),
-    'date_all_day_label' => array(
+    'date_all_day_label' => $base + array(
       'variables' => array()),
-    'date_display_single' => array(
+    'date_display_single' => $base + array(
       'variables' => array(
         'date' => NULL, 
         'timezone' => NULL
     )),
-    'date_display_range' => array(
+    'date_display_range' => $base + array(
       'variables' => array(
         'date1' => NULL, 
         'date2' => NULL, 
         'timezone' => NULL
     )),
-    'date_text_parts' => array(
-      'render element' => 'element',
-      'file' => 'date_admin.inc',
-      'path' => $path,
-    ),
-    'date' => array('render element' => 'element'),
     'date_repeat_display' => $base + array(
       'variables' => array(
         'field' => NULL, 

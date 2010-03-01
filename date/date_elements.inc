@@ -151,6 +151,7 @@ function _date_field_widget(&$form, &$form_state, $field, $instance, $langcode, 
   }
   $element += array(
     '#type' => 'date_combo',
+    '#theme_wrappers' => array('date_combo'),
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
@@ -316,13 +317,16 @@ function date_combo_process($element, &$form_state, $form) {
         $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
       }
       $element[$from_field]['#type'] = 'date_select';
+      $element[$from_field]['#theme_wrappers'] = array('date_select');
       break;
     case 'date_popup':
     case 'date_popup_repeat':  
       $element[$from_field]['#type'] = 'date_popup';
+      $element[$from_field]['#theme_wrappers'] = array('date_popup');
       break;
     default:
       $element[$from_field]['#type'] = 'date_text';
+      $element[$from_field]['#theme_wrappers'] = array('date_text');
       break;
   }
   
@@ -568,26 +572,4 @@ function date_input_format($element, $field, $instance) {
     return $instance['widget']['settings']['input_format'];
   }
   return variable_get('date_format_short', 'm/d/Y - H:i');
-}
-
-/**
- *  Theme from/to date combination on form.
- */
-function theme_date_combo($element) {
-  $fields = content_fields();
-  $field = $fields[$element['#field_name']];
-  if (!$field['settings']['todate']) {
-    return $element['#children'];
-  }
-  
-  // Group from/to items together in fieldset.
-  $fieldset = array(
-    '#title' => check_plain($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
-    '#value' => $element['#children'],
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-    '#description' => $element['#fieldset_description'],
-    '#attributes' => array(),
-  );
-  return theme('fieldset', array('fieldset' => $fieldset));
 }

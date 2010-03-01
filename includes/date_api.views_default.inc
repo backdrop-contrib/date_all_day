@@ -1,5 +1,14 @@
 <?php
-//$Id$
+// $Id$
+
+/**
+ * @file
+ * Default views for Date API.
+ */
+
+/**
+ * Implementation of hook_views_default_views().
+ */
 function date_api_views_default_views() {
  
 $view = new view;

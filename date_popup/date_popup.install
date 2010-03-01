@@ -1,5 +1,10 @@
 <?php
-//$Id$
+// $Id$
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Date Popup module.
+ */
 
 /**
  * Implementation of hook_install().

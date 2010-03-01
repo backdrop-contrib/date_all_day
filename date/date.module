@@ -10,7 +10,7 @@
  * Implement hook_init().
  */
 function date_init() {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date.theme');
+  module_load_include('theme', 'date', 'date');
 }
 /**
  * Implement hook_menu().
@@ -278,8 +278,7 @@ function date_field_formatter_info() {
  * Implement hook_theme().
  */
 function date_theme() {
-  $path = drupal_get_path('module', 'date');
-  require_once "./$path/date.theme";
+  module_load_include('theme', 'date', 'date');
 
   $base = array(
     'file' => 'date.theme',
@@ -519,13 +518,14 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
       break;
 
     case 'validate':
-      require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
+      module_load_include('inc', 'date', 'date_elements');
       return _date_field_validate($op, $node, $field, $items, $teaser, $page);
       break;
 
     case 'insert':
     case 'update':
-      require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
+      module_load_include('inc', 'date', 'date_elements');
+      
       $items = $additions[$field['field_name']];
       $node->$field['field_name'] = $additions;
       return _date_field_update($op, $node, $field, $items, $teaser, $page);
@@ -547,7 +547,7 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
  * included only when processing forms.
  */
 function date_field_widget(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
+  module_load_include('inc', 'date', 'date_elements');
   return _date_field_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
 }
 
@@ -565,7 +565,7 @@ function date_field_widget_error($element, $error) {
  * included only when processing forms.
  */
 function date_element_info() {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_elements.inc');
+  module_load_include('inc', 'date', 'date_elements');
   return _date_element_info();
 }
 
@@ -573,7 +573,7 @@ function date_element_info() {
  * Implement Devel module's hook_content_generate().
  */
 function date_content_generate($node, $field) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_content_generate.inc');
+  module_load_include('inc', 'date', 'date_content_generate');
   return _date_content_generate($node, $field);
 }
 
@@ -582,27 +582,27 @@ function date_content_generate($node, $field) {
  * processing field settings.
  */
 function date_field_instance_settings_form($field, $instance) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
+  module_load_include('inc', 'date', 'date_admin');
   return _date_field_instance_settings_form($field, $instance);
 }
 
 function date_field_widget_settings_form($field, $instance) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
+  module_load_include('inc', 'date', 'date_admin');
   return _date_field_widget_settings_form($field, $instance);
 }
 
 function date_field_settings_form($field, $instance, $has_data) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
+  module_load_include('inc', 'date', 'date_admin');
   return _date_field_settings_form($field, $instance, $has_data);
 }
 
 function date_formatter_settings($form_state = NULL, $field, $options = array(), $views_form = FALSE) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
+  module_load_include('inc', 'date', 'date_admin');
   return _date_formatter_settings($form_state, $field, $options, $views_form);
 }
 
 function date_field_schema($field) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_admin.inc');
+  module_load_include('inc', 'date', 'date_admin');
   return _date_field_schema($field); 
 }
 

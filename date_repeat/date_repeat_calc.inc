@@ -32,7 +32,7 @@
  * Compute dates that match the requested rule, within a specified date range.
  */
 function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
+  module_load_include('inc', 'date_api', 'date_api_ical');
   
   if (empty($timezone)) {
     $timezone = date_default_timezone();

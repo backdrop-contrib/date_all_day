@@ -1,5 +1,11 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ * Theme files for Date API.
+ */
+
 /**
  *  Preprocessor to construct back and next navigation from the date argument.
  */

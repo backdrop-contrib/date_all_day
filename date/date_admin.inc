@@ -1,5 +1,5 @@
 <?php
-//$Id$
+// $Id$
 /**
  * @file
  * Date administration code.

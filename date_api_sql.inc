@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * SQL helper for Date API.
+ */
+
+/**
  *  A helper function to do cross-database concatation of date parts
  *
  *  @param $array - an array of values to be concatonated in sql

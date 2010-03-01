@@ -1552,7 +1552,7 @@ function date_nongranularity($granularity) {
  * Implement hook_element_info().
  */
 function date_api_element_info() {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
+  module_load_include('inc', 'date_api', 'date_api_elements');
   return _date_api_element_info();
 }
 
@@ -1609,7 +1609,7 @@ function date_api_theme() {
  * Wrapper around date handler setting for timezone.
  */
 function date_api_set_db_timezone($offset = '+00:00') {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
+  module_load_include('inc', 'date_api', 'date_api_sql');
   $handler = new date_sql_handler();
   return $handler->set_db_timezone($offset);
 }
@@ -1653,7 +1653,7 @@ function date_api_views_fetch_fields($base, $type) {
   if (!module_exists('views')) {
     return array();
   }
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc');
+  module_load_include('inc', 'views', 'includes/admin');
   return views_fetch_fields($base, $type);
 }
 

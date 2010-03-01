@@ -1,5 +1,11 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ * Helper for identifying Date API fields for views.
+ */
+
 /**
  *  Identify all potential date/timestamp fields.
  *

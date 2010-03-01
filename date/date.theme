@@ -1,5 +1,5 @@
 <?php
-//$Id$
+// $Id$
 /**
  * @file
  * Theme functions.
@@ -80,7 +80,8 @@ function theme_date_display_combination($variables) {
   // displayed. Show it only with the first multiple value date.
   if (!in_array($node->nid, $repeating_ids) && module_exists('date_repeat') 
   && !empty($item['rrule']) && $options['repeat']['show_repeat_rule'] == 'show') {
-    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
+    module_load_include('inc', 'date', 'date_repeat');
+    
     $output .= theme('date_repeat_display', array('field' => $field, 'item' => $item, 'node' => $node));
     $repeating_ids[] = $node->nid;
   }

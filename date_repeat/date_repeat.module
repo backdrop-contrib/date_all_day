@@ -151,8 +151,8 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     return;
   }
   
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
+  module_load_include('inc', 'date_api', 'date_api_ical');
+  module_load_include('inc', 'date_repeat', 'date_repeat_calc');
   
   // Make sure there will be an empty description for any unused parts.
   $description = array(
@@ -263,7 +263,7 @@ function date_repeat_split_rrule($rrule) {
  * Analyze a RRULE and return dates that match it.
  */
 function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone = NULL) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
+  module_load_include('inc', 'date_repeat', 'date_repeat_calc');  
   return _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone);
 }
 
@@ -271,6 +271,6 @@ function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone
  * Generate the repeat rule setting form.
  */
 function date_repeat_rrule_process($element, $edit, $form_state, $form) {
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_repeat') . '/date_repeat_form.inc');
+  module_load_include('inc', 'date_repeat', 'date_repeat_form');
   return _date_repeat_rrule_process($element, $edit, $form_state, $form);
 }

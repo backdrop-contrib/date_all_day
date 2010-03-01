@@ -1,5 +1,11 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ * Views display plugin for Date API.
+ */
+
 /**
  * The plugin that handles date navigation attachments.
  * 

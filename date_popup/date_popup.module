@@ -162,7 +162,7 @@ function date_popup_element_info() {
  */
 function date_popup_process($element, $form_state, $form) {
   date_popup_load();
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  module_load_include('inc', 'date_api', 'date_api_elements');
 
   $date = NULL;
   $edit = $form_state['values'];
@@ -332,7 +332,8 @@ function date_popup_validate($element, &$form_state) {
     return;
   }
 
-  require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') .'/date_api_elements.inc');
+  module_load_include('inc', 'date_api', 'date_api_elements');
+  
   date_popup_load();
   $value = date_popup_input_value($element);
   

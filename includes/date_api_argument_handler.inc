@@ -1,12 +1,19 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ * Date API views argument handler.
+ */
+
 /**
  * Date API argument handler.
  */
 class date_api_argument_handler extends views_handler_argument_date {
   function construct() {
     parent::construct();
-    require_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_sql.inc');
+    module_load_include('inc', 'date_api', 'date_api_sql');
+    
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();
   }

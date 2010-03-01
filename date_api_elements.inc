@@ -477,7 +477,7 @@ function date_select_validate($element, &$form_state) {
     $errors[] = t('A valid value is required.');
   }
   if (!empty($errors)) {
-    array_unshift($errors, t('Field %field has errors. ', array('%field' => $label)));
+    array_unshift($errors, t('Field %field has errors.', array('%field' => $label)));
     form_set_error($error_field, implode(' ', $errors));
   }
   
@@ -524,7 +524,7 @@ function date_text_validate($element, &$form_state) {
     form_error($element, t('A valid date is required for %title.', array('%title' => $label))); 
   }
   elseif (empty($value) && !empty($element['#value']['date'])) {
-    form_error($element, t('%title is invalid. ', array('%title' => $label))); 
+    form_error($element, t('%title is invalid.', array('%title' => $label))); 
   }
   elseif (!empty($value)) {
     form_set_value($element, $value, $form_state);
@@ -584,11 +584,11 @@ function date_timezone_validate($element, &$form_state) {
 function date_convert_from_custom($date, $format) {
   $array = date_format_patterns();
   foreach ($array as $key => $value) {
-    $patterns[] = "`(^|[^\\\\\\\\])". $key ."`"; // the letter with no preceding '\'
+    $patterns[] = "`(^|[^\\\\\\\\])" . $key . "`"; // the letter with no preceding '\'
     $repl1[] = '${1}(.)';                  // a single character
-    $repl2[] = '${1}(' . $value .')';       // the
+    $repl2[] = '${1}(' . $value . ')';       // the
   }
-  $patterns[] = "`\\\\\\\\([". implode(array_keys($array)) ."])`";
+  $patterns[] = "`\\\\\\\\([" . implode(array_keys($array)) . "])`";
   $repl1[] = '${1}';
   $repl2[] = '${1}';
 

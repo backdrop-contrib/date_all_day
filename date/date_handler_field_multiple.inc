@@ -131,6 +131,7 @@ class date_handler_field_multiple extends content_handler_field_multiple {
       
       // Some formatters need to behave differently depending on the build_mode
       // (for instance: preview), so we provide one.
+      // TODO This has changed in D7.
       $node->build_mode = NODE_BUILD_NORMAL;
 
       // Render items.

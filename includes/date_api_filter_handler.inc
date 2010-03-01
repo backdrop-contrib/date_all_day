@@ -209,16 +209,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     
     // Add some text to make it clear when additional options are available.
-    $extra = '';
-    if (version_compare(PHP_VERSION, '5.2', '>=')) {
-      $extra = t(" You can use any values PHP's date_create() can understand, like between '12AM today' and '12AM tomorrow.");
-    }
+    $extra = t("You can use any values PHP's date_create() can understand, like between '12AM today' and '12AM tomorrow.");
     $form['value']['value']['#prefix'] = '<div class="form-item"><label>' . t('Absolute value') . '</label></div>';
     $form['value']['default_date'] = array(
       '#type' => 'textfield',
       '#title' => t('Date default'),
       '#default_value' => $this->options['default_date'],
-      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The To date default value is used when the operator is set to 'between' or 'not between' .") . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
+      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The To date default value is used when the operator is set to 'between' or 'not between'.") . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
       );
     $form['value']['default_to_date'] = array(
       '#type' => 'textfield',

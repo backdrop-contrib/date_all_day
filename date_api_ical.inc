@@ -1,5 +1,5 @@
 <?php
-/* $Id$ */
+// $Id$ */
 /**
  * @file
  * Parse iCal data.
@@ -120,7 +120,7 @@ function date_ical_parse($icaldatafolded = array()) {
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
     watchdog('date ical', 'Invalid calendar file.');
-    return false;
+    return FALSE;
   }
 
 
@@ -349,7 +349,7 @@ function date_ical_parse_date($field, $data) {
   $field_parts = preg_split('/[;:]/', $field);
   $properties = array();
   foreach ($field_parts as $part) {
-    if (strpos($part, '=') !== false) {
+    if (strpos($part, '=') !== FALSE) {
       $tmp = explode('=', $part);
       $properties[$tmp[0]] = $tmp[1];
     }
@@ -378,11 +378,11 @@ function date_ical_parse_date($field, $data) {
   }
   // If no format is specified, attempt a loose match
   else {
-    preg_match (DATE_REGEX_LOOSE, $data, $regs);
+    preg_match(DATE_REGEX_LOOSE, $data, $regs);
     $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
     if (isset($regs[4])) {
       $has_time = TRUE;
-      $datetime .= ' ' .date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
+      $datetime .= ' ' . date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
     }
   }
 

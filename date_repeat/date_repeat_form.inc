@@ -116,7 +116,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
   if (!empty($merged_values['BYDAY']) || !empty($merged_values['BYMONTH'])) {
     $collapsed = FALSE;
   }
-	// start the advanced fieldset
+  // start the advanced fieldset
   $element['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced'),
@@ -263,5 +263,5 @@ function theme_date_repeat_current_exceptions($rows = array()) {
  * Themes the date repeat element.
  */
 function theme_date_repeat($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . drupal_render($element). '</div>');
+  return theme('form_element', $element, '<div class="container-inline">' . drupal_render($element) . '</div>');
 }

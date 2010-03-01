@@ -140,7 +140,7 @@ function date_api_views_data() {
     $data[$base_table]['date_filter'] = array(
       'group' => t('Date'),
       'title' => t('Date (!base_table)', array('!base_table' => $base_table)),
-      'help' => t('Filter any Views !base_table date field. ', array('!base_table' => $base_table)),
+      'help' => t('Filter any Views !base_table date field.', array('!base_table' => $base_table)),
       'filter' => array(
         'handler' => 'date_api_filter_handler',
         'empty name field' => t('Undated'),

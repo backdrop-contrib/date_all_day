@@ -554,8 +554,10 @@ function date_views_browser_get_views($reset = FALSE) {
       if (!$argument_list) {
         return array();
       }
-      $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg INNER JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type='date_views_browser'");
-      while ($view = db_fetch_object($result)) {
+      $result = db_query("SELECT arg.*, view.name FROM {view_argument} arg INNER JOIN {view_view} view ON arg.vid=view.vid WHERE arg.type IN ($argument_list) AND view.page_type=:type", array(
+      ':type' => 'date_views_browser',
+      ));
+      foreach ($result as $view) {
         $date_views_browser_views[$view->name] = $view;
       }
       cache_set($cid, $date_views_browser_views, 'cache_views');
@@ -1328,7 +1330,7 @@ class views_handler_filter_custom_date extends views_handler_filter_numeric {
       }
       else {
         $value = $this->value[$prefix . $key];
-        $this->query->add_where($this->options['group'], $extract. " $operator %s", $value);
+        $this->query->add_where($this->options['group'], $extract . " $operator %s", $value);
       }
     }
   }
@@ -1435,7 +1437,7 @@ class views_handler_argument_date extends views_handler_argument_formula {
 
     // We need to alter the base alias so the groupby clause will group by
     // the relevant part of the date instead of a complete date.
-    $alias = $this->name_alias = $this->table_alias ."_". $this->real_field;
+    $alias = $this->name_alias = $this->table_alias . "_" . $this->real_field;
     $this->query->add_field(NULL, $this->get_formula(), $alias);
     $this->base_alias = $this->get_formula();
 
@@ -1470,7 +1472,7 @@ class views_handler_argument_date extends views_handler_argument_formula {
         // Find the next date part in the arg to evaluate
         $arg = intval(substr($this->argument, $i, $key == 'year' ? 4 : 2));
         $extract = $handler->sql_extract(strtoupper($key), "$this->table_alias.$this->real_field");
-        $this->query->add_where(0, $extract. " = %s", $arg);
+        $this->query->add_where(0, $extract . " = %s", $arg);
       }
       $i += $key == 'year' ? 5 : 3;
     }

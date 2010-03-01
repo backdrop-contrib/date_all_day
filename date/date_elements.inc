@@ -172,7 +172,7 @@ function _date_field_widget(&$form, &$form_state, $field, $instance, $langcode, 
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
   }
   return $element;
-}  	 
+} 
 
 /**
  * Create local date object.

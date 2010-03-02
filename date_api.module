@@ -1563,20 +1563,10 @@ function date_api_theme() {
     'path' => "$path/theme",
   );
   return array(
-    'date_nav_title' => $base + array('variables' => array(
-      'type' => NULL, 
-      'view' => NULL
-    )),
-    'date_vcalendar' => $base + array('variables' => array(
-      'events' => NULL, 
-      'calname' => NULL
-    )),
-    'date_vevent' => $base + array('variables' => array(
-      'event' => NULL
-    )),
-    'date_valarm' => $base + array('variables' => array(
-      'alarm' => NULL
-    )),
+    'date_nav_title' => $base + array('variables' => array('type' => NULL, 'view' => NULL)),
+    'date_vcalendar' => $base + array('variables' => array('events' => NULL, 'calname' => NULL)),
+    'date_vevent' => $base + array('variables' => array('event' => NULL)),
+    'date_valarm' => $base + array('variables' => array('alarm' => NULL)),
     'date_timezone' => $base + array('render element' => 'element'),
     'date_select' => $base + array('render element' => 'element'),
     'date_text' => $base + array('render element' => 'element'),
@@ -1584,25 +1574,18 @@ function date_api_theme() {
     'date_textfield_element' => $base + array('render element' => 'element'),
     'date_date_part_hour_prefix' => $base + array('render element' => 'element'),
     'date_part_minsec_prefix' => $base + array('render element' => 'element'),
-    'date_part_label_year' => $base + array('render element' => 'element'),
-    'date_part_label_month' => $base + array('render element' => 'element'),
-    'date_part_label_day' => $base + array('render element' => 'element'),
-    'date_part_label_hour' => $base + array('render element' => 'element'),
-    'date_part_label_minute' => $base + array('render element' => 'element'),
-    'date_part_label_second' => $base + array('render element' => 'element'),
-    'date_part_label_ampm' => $base + array('render element' => 'element'),
-    'date_part_label_timezone' => $base + array('render element' => 'element'),
-    'date_views_filter_form' => $base + array(
-      'template' => 'date-views-filter-form',
-      'render element' => 'form'),
-    'date_calendar_day' => $base + array('variables' => array(
-      'date' => NULL
-    )),  
-    'date_time_ago' => $base + array('variables' => array(
-      'start_date' => NULL, 
-      'end_date' => NULL, 
-      'interval' => NULL
-    )));
+    'date_part_label_year' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_month' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_day' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_hour' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_minute' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_second' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_ampm' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_timezone' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_views_filter_form' => $base + array('template' => 'date-views-filter-form', 'render element' => 'form'),
+    'date_calendar_day' => $base + array('variables' => array('date' => NULL)),  
+    'date_time_ago' => $base + array('variables' => array('start_date' => NULL, 'end_date' => NULL, 'interval' => NULL))
+  );
 }
 
 /**

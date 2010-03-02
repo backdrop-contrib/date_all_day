@@ -95,7 +95,7 @@ function date_timezone_process($element, $form_state, $form) {
   $element['#tree'] = TRUE;
   $element['timezone'] = array(
     '#type' => 'select',
-    '#title' => theme('date_part_label_timezone', 'select', $element),
+    '#title' => theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element)),
     '#default_value' => $element['#value'],
     '#options' => date_timezone_names($element['#required']),
     '#weight' => $element['#weight'],
@@ -310,7 +310,7 @@ function date_parts_element($element, $date, $format) {
     }
     
     // Add handling for the date part label.
-    $label = theme('date_part_label_' . $field, $part_type, $element);
+    $label = theme('date_part_label_' . $field, array('part_type' => $part_type, 'element' => $element));
     if (in_array($field, $element['#date_text_parts'])) {
       $sub_element[$field]['#type'] = 'textfield';
       $sub_element[$field]['#theme'] = 'date_textfield_element';
@@ -356,10 +356,10 @@ function date_parts_element($element, $date, $format) {
       '#attributes' => array('class' => array('date-ampm')),
     );
     if ($element['#date_label_position'] == 'within') {
-      $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', 'ampm', $element)) + $sub_element['ampm']['#options'];
+      $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', array('part_type' => 'ampm', 'eleement' => $element))) + $sub_element['ampm']['#options'];
     }
     elseif ($element['#date_label_position'] != 'none') {
-      $sub_element['ampm']['#title'] = theme('date_part_label_ampm', 'ampm', $element);
+      $sub_element['ampm']['#title'] = theme('date_part_label_ampm', array('part_type' => 'ampm', 'element' => $element));
     }
   }
   return $sub_element;

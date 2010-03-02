@@ -315,10 +315,8 @@ function date_theme() {
         'view' => NULL
       )
     ),
-    'date_all_day_label' => $base + array(
-      'variables' => array()),
-    'date_display_single' => $base + array(
-      'variables' => array(
+    'date_all_day_label' => $base + array('variables' => array()),
+    'date_display_single' => $base + array('variables' => array(
         'date' => NULL, 
         'timezone' => NULL
     )),

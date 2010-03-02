@@ -103,7 +103,11 @@ function template_preprocess_date_navigation(&$vars) {
 /**
  * Theme the calendar title
  */
-function theme_date_nav_title($granularity, $view, $link = FALSE, $format = NULL) {
+function theme_date_nav_title($vars) {
+  $granularity = $vars['granularity'];
+  $view = $vars['view'];
+  $link = !empty($vars['link']) ? $vars['link'] : FALSE;
+  $format = !empty($vars['format']) ? $vars['format'] : NULL;
   switch ($granularity) {
     case 'year':
       $title = $view->date_info->year;
@@ -337,7 +341,9 @@ function theme_date_part_minsec_prefix($element) {
  *   An associative array containing the properties of the element.
  *   Properties used: title, value, options, description, required and attributes.
  */
-function theme_date_part_label_year($part_type, $element) {
+function theme_date_part_label_year($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return date_t('Year', 'datetime');
 }
 function theme_date_part_label_month($part_type, $element) {
@@ -367,7 +373,8 @@ function theme_date_part_label_timezone($part_type, $element) {
  * Pass in a date object already set to the right timezone, 
  * format as a calendar page date. The calendar styling is created in css.
  */
-function theme_date_calendar_day($date) {
+function theme_date_calendar_day($vars) {
+  $date = $vars['date'];
   if (empty($date)) {
     return NULL;
   }
@@ -378,7 +385,10 @@ function theme_date_calendar_day($date) {
   '</div>';
 }
 
-function theme_date_time_ago($start_date, $end_date, $interval = 2) {
+function theme_date_time_ago($vars) {
+  $start_date = $vars['start_date'];
+  $end_date = $vars['end_date'];
+  $interval = !empty($vars['interval']) ? $vars['interval'] : 2;
   // If no date is sent, then return nothing
   if (empty($start_date) || empty($end_date)) {
     return NULL;

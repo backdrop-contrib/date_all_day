@@ -45,8 +45,8 @@
  *   $dates['value2']['formatted_date'] - only the date part of the formatted To date
  *   $dates['value2']['formatted_time'] - only the time part of the formatted To date
  */
-function theme_date_display_combination($variables) {
-  $element = $variables['element'];
+function theme_date_display_combination($vars) {
+  $element = $vars['element'];
   static $repeating_ids = array();
   
   $node = $element['#node'];
@@ -161,11 +161,16 @@ function theme_date_display_combination($variables) {
   return $output;
 }
 
-function theme_date_display_single($date, $timezone = NULL) {
+function theme_date_display_single($vars) {
+  $date = $vars['date'];
+  $timezone = !empty($vars['timezone']) ? $vars['timezone'] : NULL;
   return '<span class="date-display-single">' . $date . $timezone . '</span>';
 }
 
-function theme_date_display_range($date1, $date2, $timezone = NULL) {
+function theme_date_display_range($vars) {
+  $date1 = $vars['date1'];
+  $date2 = $vars['date2'];
+  $timezone = !empty($vars['timezone']) ? $vars['timezone'] : NULL;
   return '<span class="date-display-start">' . $date1 . '</span>' .
       '<span class="date-display-separator"> - </span>' .
       '<span class="date-display-end">' . $date2 . $timezone. '</span>';
@@ -182,8 +187,8 @@ function theme_date_display_range($date1, $date2, $timezone = NULL) {
  *  @return a formatted display
  *
  */
-function theme_date_format_interval($variables) {
-  $element = $variables['element'];
+function theme_date_format_interval($vars) {
+  $element = $vars['element'];
   $node = $element['#node'];
   $field_name = $element['#field_name'];
   $context = !empty($node->content) ? $node->content[$field_name]['#context'] : 'full';
@@ -233,7 +238,10 @@ function theme_date_format_interval($variables) {
  * add in ways to store the description in the date so it isn't regenerated
  * over and over and find a way to allow description to be shown or hidden.
  */
-function theme_date_repeat_display($field, $item, $node = NULL) {
+function theme_date_repeat_display($vars) {
+  $field = $vars['field'];
+  $item = $vars['item'];
+  $node = !empty($vars['node']) ? $vars['node'] : NULL;
   $output = '';
   if (!empty($item['rrule'])) {
     $output = date_repeat_rrule_description($item['rrule']);
@@ -254,7 +262,15 @@ function theme_date_repeat_display($field, $item, $node = NULL) {
  * @param object $view, the view this node comes from, if applicable.
  * @return formatted date.
  */
-function theme_date_all_day($field, $instance, $which, $date1, $date2, $format, $node, $view = NULL) {
+function theme_date_all_day($vars) {
+  $field = $vars['field'];
+  $instance = $vars['instance'];
+  $which = $vars['which'];
+  $date1 = $vars['date1'];
+  $date2 = $vars['date2'];
+  $format = $vars['format'];
+  $node = $vars['node'];
+  $view = !empty($vars['view']) ? $vars['view'] : NULL;
   if (empty($date1) || !is_object($date1) || $format == 'format_interval') {
     return;
   }
@@ -336,8 +352,8 @@ function theme_date_combo($element) {
  * Display the text/select options for date parts in a table
  * for easier readability.
  */
-function theme_date_text_parts($variables) {
-  $element = $variables['element'];
+function theme_date_text_parts($vars) {
+  $element = $vars['element'];
   $names = date_granularity_names();
   $rows = array();
   foreach ($names as $key => $part) {

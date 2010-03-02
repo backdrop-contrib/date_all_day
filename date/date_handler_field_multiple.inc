@@ -48,7 +48,7 @@ class date_handler_field_multiple extends content_handler_field_multiple {
       return parent::pre_render($values);
     }
     $field = $this->content_field;
-    $db_info = content_database_info($field);
+    $db_info = date_api_database_info($field);
     $options = $this->options;
     $this->view->date_info->date_handler_fields = date_handler_fields($this->view);
 

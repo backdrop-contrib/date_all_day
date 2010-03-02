@@ -49,8 +49,8 @@ function date_repeat_node($node) {
   return FALSE;
 }
 
-function date_repeat_type($bundle) {
-  $type = content_types($bundle);
+function date_repeat_type($bundle, $entity_type = 'node') {
+  $type = field_info_instances($entity_type, $bundle);
   if (!empty($type['fields'])) {
     foreach ($type['fields'] as $field_name => $field) {
       if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['repeat']) {
@@ -61,8 +61,8 @@ function date_repeat_type($bundle) {
   return FALSE;
 }
 
-function date_repeat_fields($bundle) {
-  $type = content_types($bundle);
+function date_repeat_fields($bundle, $entity_type = 'node') {
+  $type = field_info_instances($entity_type, $bundle);
   $fields = array();
   if (!empty($type['fields'])) {
     foreach ($type['fields'] as $field_name => $field) {
@@ -766,7 +766,7 @@ function date_handler_fields($view) {
  function date_field_get_sql_handler($field, $compare_tz = NULL) {
    module_load_include('inc', 'date_api', 'date_api_sql');
    
-   $db_info = content_database_info($field);
+   $db_info = date_api_database_info($field);
    
    // Create a DateAPI SQL handler class for this field type.                    
    $handler = new date_sql_handler();

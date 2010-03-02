@@ -563,9 +563,9 @@ function date_field($op, &$node, $field, &$items, $teaser, $page) {
  * This code and all the processes it uses are in a separate file,
  * included only when processing forms.
  */
-function date_field_widget(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
+  return _date_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
 }
 
 /**

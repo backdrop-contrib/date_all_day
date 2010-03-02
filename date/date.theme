@@ -82,7 +82,10 @@ function theme_date_display_combination($variables) {
   && !empty($item['rrule']) && $options['repeat']['show_repeat_rule'] == 'show') {
     module_load_include('inc', 'date', 'date_repeat');
     
-    $output .= theme('date_repeat_display', array('field' => $field, 'item' => $item, 'node' => $node));
+    $output .= theme('date_repeat_display', array(
+      'field' => $field, 
+      'item' => $item, 
+      'node' => $node));
     $repeating_ids[] = $node->nid;
   }
    
@@ -132,7 +135,10 @@ function theme_date_display_combination($variables) {
   }
   // From and To dates match or there is no To date, display a complete single date.
   elseif ($date1 == $date2 || empty($date2)) {
-    $output .= theme('date_display_single', array('date' => $date1, 'timezone' => $timezone));
+    $output .= theme('date_display_single', array(
+      'date' => $date1, 
+      'timezone' => $timezone
+    ));
   }
   // Same day, different times, don't repeat the date but show both From and To times.
   elseif (date_has_time($field['settings']['granularity']) && $dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {

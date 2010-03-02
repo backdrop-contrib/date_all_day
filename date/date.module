@@ -449,8 +449,20 @@ function date_formatter_process($element) {
   $all_day = '';
   $all_day2 = '';
   if ($format != 'format_interval') {
-    $all_day1 = theme('date_all_day', array('field' => $field,'which' => 'date1', 'date1' => $date1, 'date2' => $date2, 'format' => $format, 'node' => $node));
-    $all_day2 = theme('date_all_day', array('field' => $field, 'which' => 'date2', 'date1' => $date1, 'date2' => $date2, 'format' => $format, 'node' => $node));
+    $all_day1 = theme('date_all_day', array(
+      'field' => $field, 
+      'which' => 'date1', 
+      'date1' => $date1, 
+      'date2' => $date2, 
+      'format' => $format, 
+      'node' => $node));
+    $all_day2 = theme('date_all_day', array(
+      'field' => $field, 
+      'which' => 'date2', 
+      'date1' => $date1, 
+      'date2' => $date2, 
+      'format' => $format, 
+      'node' => $node));
   }
   if ((!empty($all_day1) && $all_day1 != $dates['value']['formatted']) 
   || (!empty($all_day2) && $all_day2 != $dates['value2']['formatted'])) {

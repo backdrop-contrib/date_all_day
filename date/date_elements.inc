@@ -269,9 +269,10 @@ function date_combo_process($element, &$form_state, $form) {
   }
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
-  $entity_type = $element['#entity_type'];
+  $bundle = $element['#bundle'];
+  $entity_type = $element['#object_type'];
   $field = field_info_field($element['#field_name']);
-  $instance = field_info_instance($entity_type, $element['#field_name'], $element['#bundle']);
+  $instance = field_info_instance($entity_type, $field_name, $bundle);
    
   $columns = $element['#columns'];
   if (isset($columns['rrule'])) {
@@ -283,7 +284,9 @@ function date_combo_process($element, &$form_state, $form) {
   $offset_field = 'offset';
   $offset_field2 = 'offset2';
 
-  if ($field['settings']['todate'] != 'required' && !empty($element['#default_value'][$to_field]) && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
+  if ($field['settings']['todate'] != 'required' 
+  && !empty($element['#default_value'][$to_field]) 
+  && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
     unset($element['#default_value'][$to_field]);
   }
 

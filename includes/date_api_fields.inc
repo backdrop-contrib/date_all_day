@@ -41,14 +41,17 @@ function _date_api_fields($base = 'node') {
     
     // For cck fields, get the date type.
     $custom = array();
-    if (isset($handler->content_field)) {
-      if ($handler->content_field['type'] == 'date') {
+    if (isset($handler->content_field_name)) {
+      $field_name = $this->content_field_name;
+      $field = field_info_field($field_name);
+    
+      if ($field['type'] == 'date') {
         $type = 'cck_string';
       }
-      elseif ($handler->content_field['type'] == 'datestamp') {
+      elseif ($field['type'] == 'datestamp') {
         $type = 'cck_timestamp';
       }
-      elseif ($handler->content_field['type'] == 'datetime') {
+      elseif ($field['type'] == 'datetime') {
         $type = 'cck_datetime';
       }
     }
@@ -80,9 +83,12 @@ function _date_api_fields($base = 'node') {
       $granularity = array('year', 'month', 'day', 'hour', 'minute');
        
       // Handling for content field dates
-      if (isset($handler->content_field['tz_handling'])) {
-        $tz_handling = $handler->content_field['tz_handling'];
-        $db_info = date_api_database_info($handler->content_field);
+      $field_name = $this->content_field_name;
+      $field = field_info_field($field_name);
+    
+      if (isset($field['tz_handling'])) {
+        $tz_handling = $field['tz_handling'];
+        $db_info = date_api_database_info($field);
         if ($tz_handling == 'date') {
           $offset_field = $table_name . ' . ' . $db_info['columns']['offset']['column'];
         }
@@ -108,19 +114,22 @@ function _date_api_fields($base = 'node') {
       }
 
       // Handling for cck fromto dates
-      if (isset($handler->content_field)) {
-        switch ($handler->content_field['type']) {
+      if (isset($handler->content_field_name)) {
+        $field_name = $this->content_field_name;
+        $field = field_info_field($field_name);
+    
+        switch ($field['type']) {
           case 'date':
           case 'datetime':
           case 'datestamp':
-            $db_info = date_api_database_info($handler->content_field);
+            $db_info = date_api_database_info($field);
             $fromto = array(
               $table_name . '_' . $db_info['columns']['value']['column'],
-              $table_name . '_' . (!empty($handler->content_field['todate']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column']),
+              $table_name . '_' . (!empty($field['todate']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column']),
               );
             break;
         }
-        $granularity = !empty($handler->content_field['granularity']) ? $handler->content_field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
+        $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
       }
       
       // CCK fields append a column name to the field, others do not
@@ -160,7 +169,7 @@ function _date_api_fields($base = 'node') {
           $fields['name'][$name][$key] = $val;
         }
       }
-      if (isset($handler->content_field)) {
+      if (isset($field)) {
         if (substr($field_name, -1) == '2') {
           $len = (strlen($field_name) - 7);
         }

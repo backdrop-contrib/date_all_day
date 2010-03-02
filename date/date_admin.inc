@@ -456,8 +456,8 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
   $widget_values['date_popup_repeat']['type'] = 'date_popup_repeat';
   
   // Get the basic field array with content module default values.
-  $field = content_field_default_values($field_type);
-  $instance = content_instance_default_values($field_type);
+  $field = field_info_field_settings($field_type);
+  $instance = field_info_instance_settings($field_type);
   
   // Update it with default values for this date field and widget type.
   foreach ($field_values[$field_type] as $key => $value) {

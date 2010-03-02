@@ -633,7 +633,7 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
   
   // Update the menu router information.
   menu_rebuild();
-  content_clear_type_cache();
+  field_cache_clear();
   
 }
 
@@ -711,16 +711,16 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   // using a helper function in the Date module.
   $field = date_field_default_values($field_type, $widget_type, $tz_handling, $overrides);
     
-  $field = content_field_instance_collapse($field);
-  $field = content_field_instance_create($field);
-  $field = content_field_instance_expand($field);
+  // TODO This is not right yet.
+  $field = field_create_field($field);
+  $instance = field_create_instance($field);
   
   return $field;
 }
 
 function date_tools_wizard_create_location($bundle) {
   // Get the basic field array with content module default values.
-  return content_field_default_values($field_type);
+  return field_info_field_settings($field_type);
 }
 
 function date_tools_wizard_create_calendar($name, $bundle, $date_field, $location_field = array()) {

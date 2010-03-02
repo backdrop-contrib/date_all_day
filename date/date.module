@@ -101,7 +101,7 @@ function date_is_repeat_field($field, $instance) {
 }
 
 /**
- * Implement hook_content_is_empty().
+ * Implement hook_field_is_empty().
  */
 function date_field_is_empty($item, $field) {
   if (empty($item['value'])) {

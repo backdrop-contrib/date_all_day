@@ -27,7 +27,8 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     parent::options_form($form, $form_state);
     unset($form['multiple']);
     
-    $field = $this->content_field;
+    $field_name = $this->content_field_name;
+    $field = field_info_field($field_name);
     $options = $this->options;
 
     $form += date_formatter_settings($form_state, $field, $options, TRUE);
@@ -47,7 +48,9 @@ class date_handler_field_multiple extends content_handler_field_multiple {
     if (isset($this->view->build_info['summary']) || empty($values) || !$this->defer_query) {
       return parent::pre_render($values);
     }
-    $field = $this->content_field;
+        
+    $field_name = $this->content_field_name;
+    $field = field_info_field($field_name);
     $db_info = date_api_database_info($field);
     $options = $this->options;
     $this->view->date_info->date_handler_fields = date_handler_fields($this->view);
@@ -114,8 +117,8 @@ class date_handler_field_multiple extends content_handler_field_multiple {
       return parent::render($values);
     }
 
-    $field = $this->content_field;
-    $field_name = $field['field_name'];
+    $field_name = $this->content_field_name;
+    $field = field_info_field($field_name);
     $options = $this->options;
 
     $vid = $values->{$this->field_alias};
@@ -138,30 +141,20 @@ class date_handler_field_multiple extends content_handler_field_multiple {
       $formatter_name = $options['format'];
       if ($items && ($formatter = _content_get_formatter($formatter_name, $field['type']))) {
         $rendered = array();
-        if (content_handle('formatter', 'multiple values', $formatter) == CONTENT_HANDLE_CORE) {
-          // Single-value formatter.
-          foreach ($items as $item) {
-            $output = content_format($field, $item, $formatter_name, $node);
-            if (!empty($output)) {
-              $rendered[] = $this->render_link($output, (object) array('nid' => $this->aliases['nid']));
-            }
-          }
+        
+        // Multiple values formatter.
+        $output = content_format($field, $items, $formatter_name, $values);
+        if (!empty($output)) {
+          $rendered[] = $this->render_link($output, (object) array('nid' => $this->aliases['nid']));
         }
-        else {
-          // Multiple values formatter.
-          $output = content_format($field, $items, $formatter_name, $values);
-          if (!empty($output)) {
-            $rendered[] = $this->render_link($output, (object) array('nid' => $this->aliases['nid']));
-          }
-        }
+      }
 
-        if (count($rendered) > 1) {
-          // TODO: could we use generic field display ?
-          return theme('field_view_multiple_field', $rendered, $field, $values);
-        }
-        elseif ($rendered) {
-          return $rendered[0];
-        }
+      if (count($rendered) > 1) {
+        // TODO: could we use generic field display ?
+        return theme('field_view_multiple_field', $rendered, $field, $values);
+      }
+      elseif ($rendered) {
+        return $rendered[0];
       }
     }
 

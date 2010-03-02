@@ -811,7 +811,7 @@ function date_tools_wizard_add_block($block) {
 function date_tools_copy_type_form($target = TRUE) {
   $form = array();
   $node_types = node_get_types('names');
-  $fields = content_fields();
+  $fields = field_info_fields();
   $type_options = array();
 
   // Find out what content types contain date fields and set them up as target options.
@@ -857,7 +857,7 @@ function date_tools_copy_type_form($target = TRUE) {
  */
 function date_tools_copy_type_fields_form($type, $extended = FALSE) {
   $form = array();
-  $fields = content_fields();
+  $fields = field_info_fields();
   $date_options = array();
   $description_options = array('' => '');
   $uid_options = array('' => '');

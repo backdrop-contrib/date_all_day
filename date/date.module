@@ -384,8 +384,7 @@ function date_formatter_process($element) {
     return $dates;
   }
   $field_name = $element['#field_name'];
-  $fields = content_fields();
-  $field = $fields[$field_name];
+  $field = field_info_field($field_name);
   $formatter = $element['#formatter'];
   $format = date_formatter_format($formatter, $field_name);
   $item = $element['#item'];
@@ -627,8 +626,7 @@ function date_field_schema($field) {
  * Helper function to return the date format used by a specific formatter.
  */
 function date_formatter_format($formatter, $field_name) {
-  $fields = content_fields();
-  $field = $fields[$field_name];
+  $field = field_info_field($field_name);
   $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
   switch ($formatter) {
     case 'format_interval':
@@ -866,7 +864,7 @@ function date_date_time_settings_submit($form, &$form_state) {
  * Insert Date field formatter settings into the Display Fields form.
  */
 function date_content_display_form(&$form, &$form_state) {
-  $fields = content_fields();
+  $fields = field_info_fields();
   $date_fields = array();
   foreach ($fields as $field) {
     if (in_array($field['type'], array('date', 'datestamp', 'datetime'))) {

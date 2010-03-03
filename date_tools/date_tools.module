@@ -23,7 +23,7 @@ function date_tools_help($section, $arg) {
   }
 }
 
-function date_tools_perm() {
+function date_tools_permission() {
   return array('administer date tools');
 }
 

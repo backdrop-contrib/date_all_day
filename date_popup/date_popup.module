@@ -521,8 +521,8 @@ function datepicker_format_replacements() {
  *
  * Use a class that will float date and time next to each other.
  */
-function theme_date_popup($variables) {
-  $element = $variables['element'];
+function theme_date_popup($vars) {
+  $element = $vars['element'];
   $output = '';
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 

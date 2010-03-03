@@ -53,7 +53,7 @@ function theme_date_display_combination($vars) {
   $field_name = $element['#field_name'];
   $context = !empty($node->content) && !empty($node->content[$field_name]) ? $node->content[$field_name]['#context'] : 'full';
   $type_name = $element['#type_name'];
-  $field = field_info_field($field_name);
+  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   $item = $element['#item'];
     
   // Get the formatter settings, either the default settings for this node
@@ -192,7 +192,7 @@ function theme_date_format_interval($vars) {
   $field_name = $element['#field_name'];
   $context = !empty($node->content) ? $node->content[$field_name]['#context'] : 'full';
   $type_name = $element['#type_name'];
-  $field = field_info_field($field_name);
+  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   $item = $element['#item'];
     
   // Get the formatter settings, either the default settings for this node
@@ -327,8 +327,9 @@ function theme_date_all_day_label() {
 /**
  *  Theme from/to date combination on form.
  */
-function theme_date_combo($element) {
-  $field = field_info_field($element['#field_name']);
+function theme_date_combo($vars) {
+  $element = $vars['element'];
+  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   if (!$field['settings']['todate']) {
     return $element['#children'];
   }

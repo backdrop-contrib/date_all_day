@@ -253,7 +253,8 @@ function template_preprocess_date_views_filter_form(&$vars) {
  * @return
  *   A themed HTML string representing the date selection boxes.
  */
-function theme_date_timezone($element) {
+function theme_date_timezone($vars) {
+  $element = $vars['element'];
   return '<div class="date-clear">' . theme('form_element', $element, $element['#children']) . '</div>';
 }
 
@@ -266,7 +267,8 @@ function theme_date_timezone($element) {
  * @return
  *   A themed HTML string representing the date selection boxes.
  */
-function theme_date_select($element) {
+function theme_date_select($vars) {
+  $element = $vars['element'];
   $output = '';
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 
@@ -288,7 +290,8 @@ function theme_date_select($element) {
  * @return
  *   A themed HTML string representing the date selection boxes.
  */
-function theme_date_text($element) {
+function theme_date_text($vars) {
+  $element = $vars['element'];
   $output = '';
   $class = 'container-inline-date';
   // Add #date_float to allow date parts to float together on the same line. 
@@ -304,13 +307,17 @@ function theme_date_text($element) {
 /**
  *  Themes for date input form elements
  */
-function theme_date_select_element($element) {
-  $part = array_pop($element['#parents']);
+function theme_date_select_element($vars) {
+  $element = $vars['element'];
+  $parents = $element['#parents'];
+  $part = array_pop($parents);
   return '<div class="date-' . $part . '">' . theme('select', $element) . '</div>';
 }
 
-function theme_date_textfield_element($element) {
-  $part = array_pop($element['#parents']);
+function theme_date_textfield_element($vars) {
+  $element = $vars['element'];
+  $parents = $element['#parents'];
+  $part = array_pop($parents);
   return '<div class="date-' . $part . '">' . theme('textfield', $element) . '</div>';
 }
 
@@ -320,13 +327,15 @@ function theme_date_textfield_element($element) {
  * Separators float up to the title level for elements with titles,
  * so won't work if this element has titles above the element date parts.
  */
-function theme_date_part_hour_prefix($element) {
+function theme_date_part_hour_prefix($vars) {
+  $element = $vars['element'];
   if ($element['#date_label_position'] != 'above') {
     return '<span class="form-item date-spacer">&nbsp;-&nbsp;</span>';
   }
 }
 
-function theme_date_part_minsec_prefix($element) {
+function theme_date_part_minsec_prefix($vars) {
+  $element = $vars['element'];
   if ($element['#date_label_position'] != 'above') {
     return '<span class="form-item date-spacer">:</span>';
   }
@@ -346,25 +355,37 @@ function theme_date_part_label_year($vars) {
   $element = $vars['element'];
   return date_t('Year', 'datetime');
 }
-function theme_date_part_label_month($part_type, $element) {
+function theme_date_part_label_month($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return date_t('Month', 'datetime');
 }
-function theme_date_part_label_day($part_type, $element) {
+function theme_date_part_label_day($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return date_t('Day', 'datetime');
 }
-function theme_date_part_label_hour($part_type, $element) {
+function theme_date_part_label_hour($vars) {
   return date_t('Hour', 'datetime');
 }
-function theme_date_part_label_minute($part_type, $element) {
+function theme_date_part_label_minute($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return date_t('Minute', 'datetime');
 }
-function theme_date_part_label_second($part_type, $element) {
+function theme_date_part_label_second($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return date_t('Second', 'datetime');
 }
-function theme_date_part_label_ampm($part_type, $element) {
+function theme_date_part_label_ampm($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return ' . ';
 }
-function theme_date_part_label_timezone($part_type, $element) {
+function theme_date_part_label_timezone($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
   return t('Timezone');
 }
 

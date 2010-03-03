@@ -329,7 +329,7 @@ function theme_date_all_day_label() {
  */
 function theme_date_combo($vars) {
   $element = $vars['element'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
+  $field = field_info_field($element['#field_name']);
   if (!$field['settings']['todate']) {
     return $element['#children'];
   }

@@ -252,7 +252,7 @@ function _date_field_schema($field) {
     $db_columns['offset'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
     if (!empty($field['settings']['todate'])) $db_columns['offset2'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
   }
-  if (isset($field['repeat']) && $field['repeat'] == 1) {
+  if (isset($field['settings']['repeat']) && $field['settings']['repeat'] == 1) {
     $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE, 'views' => FALSE);
   }
   return array('columns' => $db_columns);  
@@ -479,7 +479,7 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
     }
   }
   // Make sure multiple gets set correctly for repeating dates.
-  if ($field['repeat']) $field['cardinality'] = 1;
+  if ($field['settings']['repeat']) $field['cardinality'] = 1;
   
   // Reset columns and db_storage, which may need to be 
   // adjusted to the new values.
@@ -600,7 +600,7 @@ function _date_formatter_settings($form_state = NULL, $field, $options = array()
   }
   
   $form['repeat'] = array(
-    '#access' => $field['repeat'],
+    '#access' => $field['settings']['repeat'],
     '#weight' => 7,
   );
   if (isset($options['repeat']) && isset($options['repeat']['show_repeat_rule'])) {

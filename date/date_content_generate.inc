@@ -36,7 +36,7 @@ function _date_content_generate($node, $field, $instance) {
   // Modify To date by 1 hour to 3 days, shorter for repeating dates
   // longer for others.
   $start2 = clone($start);
-  $max = !empty($field['repeat']) ? 720 : 4320;
+  $max = !empty($field['settings']['repeat']) ? 720 : 4320;
   $max = 240;
   date_modify($start2, '+' . mt_rand(60, $max) . ' minutes');  
   date_increment_round($start2, $increment);
@@ -78,7 +78,7 @@ function _date_content_generate($node, $field, $instance) {
   date_timezone_set($start2, timezone_open($timezone));
   $node_field['offset2'] = date_offset_get($start2);          
   
-  if (!empty($field['repeat'])) {
+  if (!empty($field['settings']['repeat'])) {
     include_once(' ./' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
     include_once(' ./' . drupal_get_path('module', 'date') . '/date_repeat.inc');
     include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');

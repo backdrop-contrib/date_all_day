@@ -115,7 +115,7 @@ function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langc
   
   // Be sure users that haven't run the update yet don't get
   // a badly broken value.
-  if (!empty($field['repeat']) && !strstr($instance['widget']['type'], '_repeat')) {
+  if (!empty($field['settings']['repeat']) && !strstr($instance['widget']['type'], '_repeat')) {
     $field['cardinality'] = 0;
     return;
   }
@@ -168,7 +168,7 @@ function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langc
   }
   
   // Add a date repeat form element, if needed.
-  if (module_exists('date_repeat') && $field['repeat'] == 1) {
+  if (module_exists('date_repeat') && $field['settings']['repeat'] == 1) {
     module_load_include('inc', 'date', 'date_repeat');    
     _date_repeat_widget($element, $field, $items, $delta);
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
@@ -356,7 +356,7 @@ function date_combo_process($element, &$form_state, $form) {
   
   // Create label for error messages that make sense in multiple values
   // and when the title field is left blank.
-  if (!empty($field['cardinality']) && empty($field['repeat'])) {
+  if (!empty($field['cardinality']) && empty($field['settings']['repeat'])) {
     $element[$from_field]['#date_title'] = t('@field_name From date value #@delta', array('@field_name' => $instance['label'], '@delta' => $delta + 1));
     if (!empty($field['settings']['todate'])) {
       $element[$to_field]['#date_title'] = t('@field_name To date value #@delta', array('@field_name' => $instance['label'], '@delta' => $delta + 1));

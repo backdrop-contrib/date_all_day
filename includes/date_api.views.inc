@@ -53,6 +53,7 @@ function date_api_views_handlers() {
  * Implementation of hook_views_plugins
  */
 function date_api_views_plugins() {
+  $path = drupal_get_path('module', 'date_api') .'/includes';
   $views_path = drupal_get_path('module', 'views');
   module_load_include('inc', 'date_api', 'theme/theme');
   

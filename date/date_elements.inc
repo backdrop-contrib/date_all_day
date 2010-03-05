@@ -20,12 +20,10 @@ function _date_field_validate($obj_type, $object, $field, $instance, $langcode, 
     foreach ($items as $delta => $item) {
       $process = date_process_values($field, $instance);
       foreach ($process as $processed) {
-        $error_field = $field['field_name'] . '][' . $delta . '][' . $processed;
-        $error_field .= $instance['widget']['type'] == 'date_select' ? '][year' : '';
         if ($processed == 'value' && $field['settings']['todate']
           && !date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
           && (date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
-          $errors[$field['field_name']][$delta][] = array(
+          $errors[$field['field_name']][$langcode][$delta][] = array(
               'error' => 'valid_nid',
               'message' => t("A 'From date' date is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['widget']['label']))),
             );
@@ -34,7 +32,7 @@ function _date_field_validate($obj_type, $object, $field, $instance, $langcode, 
           && $field['settings']['todate'] == 'required' && ($field['required']
           && date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
           && !date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
-          $errors[$field['field_name']][$delta][] = array(
+          $errors[$field['field_name']][$langcode][$delta][] = array(
             'error' => 'valid_nid',
             'message' => t("A 'To date' is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
             );          
@@ -58,12 +56,12 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
   $additions[$field['field_name']] = $items;
   foreach ($items as $delta => $item) {
     $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-    $additions[$field['field_name']][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-    $additions[$field['field_name']][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
-    $additions[$field['field_name']][$delta]['date_type'] = $field['type'];
+    $additions[$field['field_name']][$langcode][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+    $additions[$field['field_name']][$langcode][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+    $additions[$field['field_name']][$langcode][$delta]['date_type'] = $field['type'];
   }  
   $items = $additions[$field['field_name']];
-  $node->$field['field_name'] = $additions;
+  $object->$field['field_name'] = $additions;
       
   $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
   $timezone = date_get_timezone($field['settings']['tz_handling'], array_key_exists('timezone', $items[0]) ? $items[0]['timezone'] : '');
@@ -408,6 +406,7 @@ function date_combo_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
+  $langcode = $element['#langcode'];
   
   // If the whole field is empty and that's OK, stop now.
   if (empty($element['#post'][$field_name]) && !$element['#required']) {
@@ -416,8 +415,8 @@ function date_combo_validate($element, &$form_state) {
   
   // Repeating dates have a different form structure, so get the
   // right item values.
-  $item = isset($form_values[$field_name]['rrule']) ? $form_values[$field_name] : $form_values[$field_name][$delta];
-  $posted = isset($form_values[$field_name]['rrule']) ? $element['#post'][$field_name] : $element['#post'][$field_name][$delta];
+  $item = isset($form_values[$field_name]['rrule']) ? $form_values[$field_name] : $form_values[$field_name][$langcode][$delta];
+  $posted = isset($form_values[$field_name]['rrule']) ? $element['#post'][$field_name] : $element['#post'][$field_name][$langcode][$delta];
     
   $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   $from_field = 'value';

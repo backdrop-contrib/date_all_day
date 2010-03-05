@@ -8,7 +8,7 @@
  * Fields that want multiple value grouping options in addition to basic
  * field and formatter handling can extend this class.
  */
-class date_handler_field_multiple extends content_handler_field_multiple {
+class date_handler_field_multiple extends views_handler_field_field {
   
   function option_definition() {
     $options = parent::option_definition();

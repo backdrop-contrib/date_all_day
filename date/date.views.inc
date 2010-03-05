@@ -15,7 +15,7 @@ function date_views_handlers() {
     // A date-specific handler for grouping multiple values.
     'handlers' => array(
       'date_handler_field_multiple' => array(
-        'parent' => 'content_handler_field_multiple',
+        'parent' => 'views_handler_field_field',
       ),
      ),
    );

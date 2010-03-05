@@ -514,46 +514,42 @@ function date_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implement hook_field().
- *
- * Validation and submission operation code is moved into a separate
- * file and included only when processing forms.
+ * Implements hook_field_load().
  */
-function date_field($op, &$node, $field, &$items, $teaser, $page) {
-  // Add some information needed to interpret token values.
-  $additions[$field['field_name']] = $items;
-  foreach ($items as $delta => $item) {
-    $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-    $additions[$field['field_name']][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-    $additions[$field['field_name']][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
-    $additions[$field['field_name']][$delta]['date_type'] = $field['type'];
-  }
-  switch ($op) {
-    case 'load':
-      return $additions;
-      break;
+function date_field_load($obj_type, $object, $field, $instance, $langcode, &$items) {
+  foreach ($entities as $id => $entity) {
+    foreach ($items[$id] as $delta => $item) {
+      // If the file does not exist, mark the entire item as empty.
+      $timezone = isset($item['timezone']) ? $item['timezone'] : '';
+      $items[$id][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+      $items[$id][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+      $items[$id][$delta]['date_type'] = $field['type'];
+    }
+  }  
+}
 
-    case 'validate':
-      module_load_include('inc', 'date', 'date_elements');
-      return _date_field_validate($op, $node, $field, $items, $teaser, $page);
-      break;
+/**
+ * Implements hook_field_validate().
+ */
+function date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items) {
+  module_load_include('inc', 'date', 'date_elements');
+  return _date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items);
+}
 
-    case 'insert':
-    case 'update':
-      module_load_include('inc', 'date', 'date_elements');
-      
-      $items = $additions[$field['field_name']];
-      $node->$field['field_name'] = $additions;
-      return _date_field_update($op, $node, $field, $items, $teaser, $page);
-      break;
+/**
+ * Implements hook_field_update().
+ */
+function date_field_update($obj_type, $object, $field, $instance, $langcode, &$items) {
+  module_load_include('inc', 'date', 'date_elements');
+  return _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items);  
+}
 
-    case 'sanitize':
-      foreach ($items as $delta => $item) {
-        //$dates = date_formatter_process($field, $item, $node, $formatter);
-        //$node->$field['field_name'][$delta]['dates'] = $dates;
-      }
-      break;
-  }
+/**
+ * Implements hook_field_insert().
+ */
+function date_field_insert($obj_type, $object, $field, $instance, $langcode, &$items) {
+  module_load_include('inc', 'date', 'date_elements');
+  return _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items);
 }
 
 /**
@@ -791,73 +787,6 @@ function date_handler_fields($view) {
   $handler->set_db_timezone();
 
   return $handler;
-}
-
-/**
- * Implement hook_form_alter().
- *
- * Adding ability to configure new date format types.
- */
-function date_form_date_api_date_formats_form_alter(&$form, $form_state, $form_id = 'date_api_date_formats_form') {
-  // Add form entry field for adding new format type.
-  $form['add_format_type'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Add format type'),
-    '#weight' => 1,
-  );
-  $form['add_format_type']['add_date_format_title'] = array(
-    '#title' => t('Name'),
-    '#description' => t('The human-readable name for this format type.'),
-    '#type' => 'textfield',
-    '#size' => 20,
-    '#prefix' => '<div class="date-container"><div class="date-format-name">',
-    '#suffix' => '</div>',
-  );
-  $form['add_format_type']['add_date_format_type'] = array(
-    '#title' => t('Type'),
-    '#description' => t('The machine-readable name of this format type. <br>This name must contain only lowercase letters, numbers, and underscores and must be unique.'),
-    '#type' => 'textfield',
-    '#size' => 20,
-    '#prefix' => '<div class="date-format-type">',
-    '#suffix' => '</div></div>',
-  );
-
-  $form['#submit'][] = 'date_date_time_settings_submit';
-  $form['#validate'][] = 'date_date_time_settings_validate';
-  $form['buttons']['#weight'] = 5;
-}
-
-/**
- * Validate new date format type details.
- */
-function date_date_time_settings_validate($form, &$form_state) {
-  if (!empty($form_state['values']['add_date_format_type']) && !empty($form_state['values']['add_date_format_title'])) {
-    if (!preg_match("/^[a-zA-Z0-9_]+$/", $form_state['values']['add_date_format_type'])) {
-      form_set_error('add_date_format_type', t('The format type must contain only alphanumeric characters and underscores.'));
-    }
-    $types = date_get_format_types();
-    if (in_array($form_state['values']['add_date_format_type'], array_keys($types))) {
-      form_set_error('add_date_format_type', t('This format type already exists.  Please enter a unique type.'));
-    }
-  }
-}
-
-/**
- * Save date format type to database.
- */
-function date_date_time_settings_submit($form, &$form_state) {
-  if (!empty($form_state['values']['add_date_format_type']) && !empty($form_state['values']['add_date_format_title'])) {
-    $format_type = array();
-    $format_type['title'] = $form_state['values']['add_date_format_title'];
-    $format_type['type'] = $form_state['values']['add_date_format_type'];
-    $format_type['locked'] = 0;
-    $format_type['is_new'] = 1;
-    date_format_type_save($format_type);
-  }
-
-  // Unset, to prevent this getting saved as a variables.
-  unset($form_state['values']['add_date_format_type']);
-  unset($form_state['values']['add_date_format_title']);
 }
 
 /**

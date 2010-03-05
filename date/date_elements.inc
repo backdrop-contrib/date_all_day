@@ -11,7 +11,7 @@
 /**
  * Private implementation of hook_field validate operation.
  */
-function _date_field_validate($op, &$node, $field, $instance, &$items, $teaser, $page) {
+function _date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items) {
   $field_name = $field['field_name'];
 
   // Don't try to validate if there were any errors before this point
@@ -47,12 +47,24 @@ function _date_field_validate($op, &$node, $field, $instance, &$items, $teaser, 
 /**
  * Private implementation of hook_field update and insert operations.
  */
-function _date_field_update($op, &$node, $field, &$items, $teaser, $page) {
+function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items) {
   $field_name = $field['field_name'];
+
   if (empty($items)) {
     //$node->$field_name = array(); // Not sure about this, CCK should handle it.
     return;
   }
+  // Add some information needed to interpret token values.
+  $additions[$field['field_name']] = $items;
+  foreach ($items as $delta => $item) {
+    $timezone = isset($item['timezone']) ? $item['timezone'] : '';
+    $additions[$field['field_name']][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+    $additions[$field['field_name']][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+    $additions[$field['field_name']][$delta]['date_type'] = $field['type'];
+  }  
+  $items = $additions[$field['field_name']];
+  $node->$field['field_name'] = $additions;
+      
   $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
   $timezone = date_get_timezone($field['settings']['tz_handling'], array_key_exists('timezone', $items[0]) ? $items[0]['timezone'] : '');
   $db_info = date_api_database_info($field);

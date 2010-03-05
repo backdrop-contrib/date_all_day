@@ -57,15 +57,16 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
 
   // Set default values for the date filter.
-  function options(&$options) {
-    parent::options($options);
-    $options['date_fields'] = array();
-    $options['date_method'] = 'OR';
-    $options['granularity'] = 'day';
-    $options['form_type'] = 'date_select';
-    $options['default_date'] = '';
-    $options['default_to_date'] = '';
-    $options['year_range'] = '-3:+3';    
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['date_fields'] = array('default' => '');
+    $options['date_method'] = array('default' => 'OR');
+    $options['granularity'] = array('default' => 'day');
+    $options['form_type'] = array('default' => 'date_select');
+    $options['default_date'] = array('default' => '');
+    $options['default_to_date'] = array('default' => '');
+    $options['year_range'] = array('default' => '-3:+3');
+    return $options;
   }
   
   function option_definition() {

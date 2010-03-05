@@ -49,26 +49,23 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
   $field_name = $field['field_name'];
 
   if (empty($items)) {
-    //$node->$field_name = array(); // Not sure about this, CCK should handle it.
     return;
   }
   // Add some information needed to interpret token values.
-  $additions[$field['field_name']] = $items;
-  foreach ($items as $delta => $item) {
+  $values = $items;
+  foreach ($values as $delta => $item) {
     $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-    $additions[$field['field_name']][$langcode][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-    $additions[$field['field_name']][$langcode][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
-    $additions[$field['field_name']][$langcode][$delta]['date_type'] = $field['type'];
+    $items[$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+    $items[$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+    $items[$delta]['date_type'] = $field['type'];
   }  
-  $items = $additions[$field['field_name']];
-  $object->$field['field_name'] = $additions;
+  $object->$field['field_name'][$langcode] = $items;
       
   $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
   $timezone = date_get_timezone($field['settings']['tz_handling'], array_key_exists('timezone', $items[0]) ? $items[0]['timezone'] : '');
   $db_info = date_api_database_info($field);
   $columns = array_keys($db_info['columns']);
 
-  $values = $items;
   foreach ($values as $delta => $item) {
 
     // Special case for ISO dates which may have been given artificial values for
@@ -80,7 +77,7 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
       }
     }
   }
-  $node->$field['field_name'] = $items;
+  $object->$field['field_name'][$langcode] = $items;
 }
 
 /**

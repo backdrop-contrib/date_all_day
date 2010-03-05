@@ -60,11 +60,6 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
     $items[$delta]['date_type'] = $field['type'];
   }  
   $object->$field['field_name'][$langcode] = $items;
-      
-  $format = $field['type'] == DATE_ISO ? DATE_FORMAT_ISO : DATE_FORMAT_UNIX;
-  $timezone = date_get_timezone($field['settings']['tz_handling'], array_key_exists('timezone', $items[0]) ? $items[0]['timezone'] : '');
-  $db_info = date_api_database_info($field);
-  $columns = array_keys($db_info['columns']);
 
   foreach ($values as $delta => $item) {
 
@@ -403,7 +398,7 @@ function date_combo_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
-  $langcode = $element['#langcode'];
+  $langcode = $element['#language'];
   
   // If the whole field is empty and that's OK, stop now.
   if (empty($element['#post'][$field_name]) && !$element['#required']) {

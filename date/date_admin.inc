@@ -54,7 +54,7 @@ function _date_field_instance_settings_form($field, $instance) {
     '#title' => t('Default Display'),
     '#default_value' => $settings['default_format'],
     '#options' => $format_types,
-    '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/settings/date-time/formats')),
+    '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/config/regional/date-time/formats')),
     );
 
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {

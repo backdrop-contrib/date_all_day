@@ -516,7 +516,7 @@ function date_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implements hook_field_load().
  */
-function date_field_load($obj_type, $object, $field, $instance, $langcode, &$items) {
+function date_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
   foreach ($entities as $id => $entity) {
     foreach ($items[$id] as $delta => $item) {
       // If the file does not exist, mark the entire item as empty.
@@ -531,25 +531,25 @@ function date_field_load($obj_type, $object, $field, $instance, $langcode, &$ite
 /**
  * Implements hook_field_validate().
  */
-function date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items) {
+function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items, &$errors) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items);
+  return _date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items);
 }
 
 /**
  * Implements hook_field_update().
  */
-function date_field_update($obj_type, $object, $field, $instance, $langcode, &$items) {
+function date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items);  
+  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items);  
 }
 
 /**
  * Implements hook_field_insert().
  */
-function date_field_insert($obj_type, $object, $field, $instance, $langcode, &$items) {
+function date_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items);
+  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items);
 }
 
 /**

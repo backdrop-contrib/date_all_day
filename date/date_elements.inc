@@ -11,7 +11,7 @@
 /**
  * Private implementation of hook_field validate operation.
  */
-function _date_field_validate($obj_type, $object, $field, $instance, $langcode, &$items) {
+function _date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items) {
   $field_name = $field['field_name'];
 
   // Don't try to validate if there were any errors before this point
@@ -45,7 +45,7 @@ function _date_field_validate($obj_type, $object, $field, $instance, $langcode, 
 /**
  * Private implementation of hook_field update and insert operations.
  */
-function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$items) {
+function _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
   $field_name = $field['field_name'];
 
   if (empty($items)) {
@@ -59,7 +59,7 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
     $items[$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
     $items[$delta]['date_type'] = $field['type'];
   }  
-  $object->$field['field_name'][$langcode] = $items;
+  $entity->$field['field_name'][$langcode] = $items;
 
   foreach ($values as $delta => $item) {
 
@@ -72,7 +72,7 @@ function _date_field_update($obj_type, $object, $field, $instance, $langcode, &$
       }
     }
   }
-  $object->$field['field_name'][$langcode] = $items;
+  $entity->$field['field_name'][$langcode] = $items;
 }
 
 /**

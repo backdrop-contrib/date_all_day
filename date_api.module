@@ -667,7 +667,7 @@ function date_now($timezone = NULL) {
  */
 function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME, $granularity = array('year', 'month', 'day', 'hour', 'minute')) {
   // No value or one that can't be used.
-  if (empty($date) || is_array($date)) {
+  if (empty($date) || ($type != DATE_ARRAY && is_array($date))) {
     return NULL;
   }
 

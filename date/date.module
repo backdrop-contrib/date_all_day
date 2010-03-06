@@ -183,7 +183,7 @@ function date_field_widget_info() {
       'label_position' => 'above',
      ),
     'behaviors' => array(
-      'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
       'default value' => FIELD_BEHAVIOR_CUSTOM,
     ),
   );

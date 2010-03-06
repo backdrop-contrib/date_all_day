@@ -114,17 +114,10 @@ function _date_field_update($entity_type, $entity, $field, $instance, $langcode,
  */
 function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   $element = $base;
-  
-  // Be sure users that haven't run the update yet don't get
-  // a badly broken value.
-  if (!empty($field['settings']['repeat']) && !strstr($instance['widget']['type'], '_repeat')) {
-    $field['cardinality'] = 0;
-    return;
-  }
 
-  module_load_include('inc', 'date_api', 'date_api_elements');
-  
+  module_load_include('inc', 'date_api', 'date_api_elements');  
   $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
+  
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling
   // with this a while, I can find no way to get it displayed in the form

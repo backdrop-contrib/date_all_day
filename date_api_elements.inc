@@ -128,9 +128,6 @@ function date_timezone_process($element, $form_state, $form) {
  * In regular FAPI processing $edit is empty until the form is submitted
  * when it will contain an array.
  * 
- * Views widget processing now receives the same values as normal FAPI
- * processing (that was not true in Views 1).
- * 
  */
 function date_text_process($element, $form_state, $form) {
   $date = NULL;
@@ -188,24 +185,22 @@ function date_text_process($element, $form_state, $form) {
  * In regular FAPI processing $edit is empty until the form is submitted
  * when it will contain an array.
  * 
- * Views widget processing now receives the same values as normal FAPI
- * processing (that was not true in Views 1).
- * 
  */
 function date_select_process($element, $form_state, $form) {
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
-  $edit = $form_state['values'];
   
-  if (!empty($edit)) {
-    $date = date_make_date($edit, $element['#date_timezone'], DATE_ARRAY, $granularity);
+  if (is_array($element['#value'])) {
+    $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_ARRAY, $granularity);
   }
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_DATETIME, $granularity);
   }
+
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_select');
   date_increment_round($date, $element['#date_increment']);
+  
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
   
   // Store a hidden value for all date parts not in the current display.
@@ -225,6 +220,7 @@ function date_select_process($element, $form_state, $form) {
   else {
     $element['#element_validate'] = array('date_select_validate');
   }
+
   return $element;
 }
 

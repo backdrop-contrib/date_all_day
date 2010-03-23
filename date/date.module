@@ -711,6 +711,7 @@ function date_field_schema($field) {
 function date_formatter_format($formatter, $field_name) {
   $field = field_info_field($field_name);
   $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
+  
   switch ($formatter) {
     case 'format_interval':
       return 'format_interval';

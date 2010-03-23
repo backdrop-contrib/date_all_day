@@ -69,18 +69,18 @@ function _date_api_element_info() {
     '#date_label_position' => 'above',
     );
   $type['date_select'] = array_merge($date_base, array(
-    '#process' => array('date_select_process'),
+    '#process' => array('date_select_element_process'),
     '#theme_wrappers' => array('date_select'),
     ));
   $type['date_text'] = array_merge($date_base, array(
-    '#process' => array('date_text_process'),
+    '#process' => array('date_text_element_process'),
     '#theme_wrappers' => array('date_text'),
     ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
-    '#process' => array('date_timezone_process'),
+    '#process' => array('date_timezone_element_process'),
     '#theme_wrappers' => array('date_text'),
-    );
+    );  
   return $type;
 }
 
@@ -91,7 +91,7 @@ function _date_api_element_info() {
  * @return array
  *   the timezone form element
  */
-function date_timezone_process($element, $form_state, $form) {
+function date_timezone_element_process($element, $form_state, $form) {
   $element['#tree'] = TRUE;
   $element['timezone'] = array(
     '#type' => 'select',
@@ -129,10 +129,11 @@ function date_timezone_process($element, $form_state, $form) {
  * when it will contain an array.
  * 
  */
-function date_text_process($element, $form_state, $form) {
+function date_text_element_process($element, $form_state, $form) {
   $date = NULL;
+  
   $granularity = date_format_order($element['#date_format']);
-  $edit = $form_state['values'];
+  $edit = !empty($form_state['input']) ? $form_state['values'] : array();
   
   // We sometimes get $edit without $edit['date'] from
   // Views exposed filters.
@@ -143,6 +144,7 @@ function date_text_process($element, $form_state, $form) {
   elseif (!empty($element['#value'])) {
     $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_DATETIME, $granularity);
   }
+  
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_text');
   
@@ -166,6 +168,7 @@ function date_text_process($element, $form_state, $form) {
   if (!empty($element['#force_value'])) {
     $element['date']['#value'] = $element['date']['#default_value'];
   }
+
   return $element;
 }
 
@@ -186,7 +189,7 @@ function date_text_process($element, $form_state, $form) {
  * when it will contain an array.
  * 
  */
-function date_select_process($element, $form_state, $form) {
+function date_select_element_process($element, $form_state, $form) {
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
   

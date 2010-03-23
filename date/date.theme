@@ -40,7 +40,6 @@ function theme_date_display_combination($vars) {
   $formatter   = $display['type'];
   $options     = $display['settings'];
   $dates       = $vars['dates'];
-
   $output = '';
     
   // Check the formatter settings to see if the repeat rule should be
@@ -207,6 +206,7 @@ function theme_date_all_day($vars) {
   $format   = $vars['format'];
   $entity   = $vars['entity'];
   $view     = !empty($vars['view']) ? $vars['view'] : NULL;
+  
   if (empty($date1) || !is_object($date1) || $format == 'format_interval') {
     return;
   }

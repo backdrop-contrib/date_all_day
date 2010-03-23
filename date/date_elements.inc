@@ -168,6 +168,7 @@ function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langc
     _date_repeat_widget($element, $field, $items, $delta);
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
   }
+  
   return $element;
 } 
 
@@ -250,7 +251,7 @@ function _date_element_info() {
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
     '#process' => array('date_combo_process'),
     '#element_validate' => array('date_combo_validate'),
-    '#theme_wrappers' => array('date_combo_process'),
+    '#theme_wrappers' => array('date_combo_element_process'),
     );
   return $type;
 }
@@ -258,7 +259,7 @@ function _date_element_info() {
 /**
  * Process an individual date element.
  */
-function date_combo_process($element, &$form_state, $form) {
+function date_combo_element_process($element, &$form_state, $form) {
   if (isset($element['#access']) && empty($element['#access'])) {
     return;
   }
@@ -368,6 +369,7 @@ function date_combo_process($element, &$form_state, $form) {
   // Make sure field info will be available to the validator which
   // does not get the values in $form.
   $form_state['#field_info'][$field['field_name']] = $field;
+  
   return $element;
 }
 

@@ -25,27 +25,38 @@
  * 
  * Play nice with jQuery UI.
  */
-function date_popup_load() {
+function date_popup_add() {
   static $loaded = FALSE;
   if ($loaded) {
     return;
   }
-  drupal_add_library('ui.datepicker');
-  $path = drupal_get_path('module', 'date_popup');
-  if (variable_get('date_popup_timepicker', 'default') == 'default') {
-    drupal_add_js($path .'/lib/jquery.timeentry.pack.js');
-  }
+  drupal_add_library('system', 'ui.datepicker');
+  drupal_add_library('date_popup', 'timeentry');
   $loaded = TRUE;
 }
 
+function date_popup_library() {
+  $libraries = array();
+  $path = drupal_get_path('module', 'date_popup');
+  $libraries['timeentry'] = array(
+    'title' => 'Time Entry',
+    'website' => 'http://plugins.jquery.com/project/timeEntry',
+    'version' => '1.4.7',
+    'js' => array(
+      $path . '/jquery.timeentry.min.js' => array(),
+    ),
+    'css' => array(
+      $path . '/themes/timeentry.css' => array('preprocess' => FALSE),
+    ),
+  );
+  return $libraries;
+}
+  
 /**
  * Implement hook_init().
  */
 function date_popup_init() {
   drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/datepicker.css');
-  if (variable_get('date_popup_timepicker', 'default') == 'default') {
-    drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/timeentry.css');
-  }
 }
 
  /**
@@ -141,7 +152,8 @@ function date_popup_element_info() {
       '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',
-      '#process' => array('date_popup_process'),
+      '#process' => array('date_popup_element_process'),
+      '#theme_wrappers' => array('date_popup'),
       ),
     );
 }
@@ -160,12 +172,14 @@ function date_popup_element_info() {
  * processing (that was not true in Views 1).
  * 
  */
-function date_popup_process($element, $form_state, $form) {
-  date_popup_load();
+function date_popup_element_process($element, $form_state, $form) {
+
+  date_popup_add();
   module_load_include('inc', 'date_api', 'date_api_elements');
 
   $date = NULL;
-  $edit = $form_state['values'];
+  $edit = !empty($form_state['input']) ? $form_state['values'] : array();
+  
   $granularity = date_format_order($element['#date_format']);
   
   if (!empty($edit) && is_array($edit) && !empty($edit['date'])) {
@@ -334,7 +348,7 @@ function date_popup_validate($element, &$form_state) {
 
   module_load_include('inc', 'date_api', 'date_api_elements');
   
-  date_popup_load();
+  date_popup_add();
   $value = date_popup_input_value($element);
   
   // If the created date is valid, set it.
@@ -364,7 +378,7 @@ function date_popup_validate($element, &$form_state) {
  *   Useful anytime the time value is optional. 
  */
 function date_popup_input_value($element, $auto_complete = FALSE) {
-  date_popup_load();
+  date_popup_add();
   $granularity = date_format_order($element['#date_format']);
   $format = $element['#date_format'];
   $format = strtr($format, timepicker_format_replacements());
@@ -405,41 +419,9 @@ function date_popup_time_formats($with_seconds = FALSE) {
  * version.
  */
 function date_popup_formats() {
-  return array_keys(date_format_options());
-}
-
-/**
- * Store personalized format options for each user.
- *
- * TODO see what is needed to remove this completely.
- * It is now only used by Date Popup and not really needed there.
- *
- * @return array
- */
-function date_format_options() {
-  global $user;
-  $options = array();
-  $formats = date_get_formats();
-  $options = array();
-  module_load_include('inc', 'date', 'date_admin');
-  $now = date_example_date();
-  if (!empty($now)) {
-    foreach ($formats as $type => $format_types) {
-      foreach ($format_types as $format => $format_attributes) {
-        // Create an option that shows date only without time, along with the
-        // default string which has both date and time.
-        $no_time = date_limit_format($format, array('month', 'day', 'year'));
-        $zones = array('', 'O', 'P', 'e');
-        foreach ($zones as $zone) {
-          $time_format = !empty($zone) ? $format .' ' . $zone : $format;
-          $options[$no_time] = date_format_date($now, 'custom', $no_time);
-          $options[$time_format] = date_format_date($now, 'custom', $time_format);
-        }
-      }
-    }
-    asort($options);
-  }
-  return $options;
+  $formats = str_replace('i', 'i:s', array_keys(system_get_date_formats('short')));
+  $formats = drupal_map_assoc($formats);
+  return $formats;  
 }
 
 /**

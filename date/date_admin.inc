@@ -281,7 +281,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
 
   $description = t("Display a matching second date field as a 'To date' . If marked 'Optional' field will be presented but not required. If marked 'Required' the 'To date' will be required if the 'From date' is required or filled in.");
   $form['todate'] = array(
-    '#type' => 'radios', 
+    '#type' => 'select', 
     '#title' => t('To Date'),
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
     '#description' => $description,

@@ -48,7 +48,7 @@
 function theme_date_display_combination($vars) {
   $element = $vars['element'];
   static $repeating_ids = array();
-  
+
   $node = $element['#node'];
   $field_name = $element['#field_name'];
   $context = !empty($node->content) && !empty($node->content[$field_name]) ? $node->content[$field_name]['#context'] : 'full';
@@ -330,20 +330,22 @@ function theme_date_all_day_label() {
 function theme_date_combo($vars) {
   $element = $vars['element'];
   $field = field_info_field($element['#field_name']);
+  $instance = field_info_instance($element['#object_type'], $element['#field_name'], $element['#bundle']);
   if (!$field['settings']['todate']) {
     return $element['#children'];
   }
-  
+
   // Group from/to items together in fieldset.
   $fieldset = array(
     '#title' => check_plain($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
-    '#value' => $element['#children'],
+    '#value' => '',
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,
     '#description' => $element['#fieldset_description'],
     '#attributes' => array(),
+    '#children' => $element['#children'],
   );
-  return theme('fieldset', array('fieldset' => $fieldset));
+  return theme('fieldset', array('element' => $fieldset));
 }
 
 /**

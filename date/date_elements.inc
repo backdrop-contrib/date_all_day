@@ -249,9 +249,9 @@ function _date_element_info() {
     '#input' => TRUE,
     '#delta' => 0,
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
-    '#process' => array('date_combo_process'),
+    '#process' => array('date_combo_element_process'),
     '#element_validate' => array('date_combo_validate'),
-    '#theme_wrappers' => array('date_combo_element_process'),
+    '#theme_wrappers' => array('date_combo'),
     );
   return $type;
 }

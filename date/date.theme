@@ -12,26 +12,6 @@
  */
 /**
  * Theme from/to date combination in the view.
- *
- * Useful values:
- * 
- *   $node->date_id 
- *     If set, this will show only an individual date on a field with 
- *     multiple dates. The value should be a string that contains
- *     the following values, separated with colons:
- *     - module name of the module adding the item
- *     - node nid
- *     - field name
- *     - delta value of the field to be displayed
- *     - other information the module's custom theme might need
- * 
- *     Used by the calendar module and available for other uses.
- *     example: 'date:217:field_date:3:test'
- * 
- *   $node->date_repeat_show
- *     If true, tells the theme to show all the computed values
- *     of a repeating date. If not true or not set, only the
- *     start date and the repeat rule will be displayed.
  * 
  *   $dates['format'] - the format string used on these dates
  *   $dates['value']['local']['object'] - the local date object for the From date
@@ -46,65 +26,39 @@
  *   $dates['value2']['formatted_time'] - only the time part of the formatted To date
  */
 function theme_date_display_combination($vars) {
-  $element = $vars['element'];
   static $repeating_ids = array();
 
-  $node = $element['#node'];
-  $field_name = $element['#field_name'];
-  $context = !empty($node->content) && !empty($node->content[$field_name]) ? $node->content[$field_name]['#context'] : 'full';
-  $type_name = $element['#type_name'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $item = $element['#item'];
-    
-  // Get the formatter settings, either the default settings for this node
-  // type or the View settings stored in $node->date_info.
-  $options = date_formatter_get_settings($field_name, $type_name, $context);
-  if (!empty($node->date_info) && !empty($node->date_info->formatter_settings)) {
-    $options = $node->date_info->formatter_settings;
-  }
-    
-  // If date_id is set for this field and the delta doesn't match, don't display it.
-  if (!empty($node->date_id)) {
-    foreach ((array) $node->date_id as $key => $id) {
-      list($module, $nid, $field_name, $delta, $other) = explode(':', $id);
-      if ($field_name == $field['field_name'] && isset($item['#delta']) && $delta != $item['#delta']) {
-        return;
-      }
-    }
-  }
+  $entity_type = $vars['entity_type'];
+  $entity      = $vars['entity'];
+  $field       = $vars['field'];
+  $instance    = $vars['instance'];
+  $langcode    = $vars['langcode'];
+  $item        = $vars['item'];
+  $delta       = $vars['delta'];
+  $display     = $vars['display'];
+  $field_name  = $field['field_name'];
+  $formatter   = $display['type'];
+  $options     = $display['settings'];
+  $dates       = $vars['dates'];
 
   $output = '';
     
   // Check the formatter settings to see if the repeat rule should be
   // displayed. Show it only with the first multiple value date.
-  if (!in_array($node->nid, $repeating_ids) && module_exists('date_repeat') 
-  && !empty($item['rrule']) && $options['repeat']['show_repeat_rule'] == 'show') {
+  if (!in_array($entity->nid, $repeating_ids) && module_exists('date_repeat') 
+  && !empty($item['rrule']) && $options['show_repeat_rule'] == 'show') {
     module_load_include('inc', 'date', 'date_repeat');
-    
-    $output .= theme('date_repeat_display', array(
+    $repeat_vars = array(
       'field' => $field, 
       'item' => $item, 
-      'node' => $node));
-    $repeating_ids[] = $node->nid;
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+    );
+    $output .= theme('date_repeat_display', $repeat_vars);
+    $repeating_ids[] = $entity->nid;
   }
    
-  // If this is a full node or a pseudo node created by grouping
-  // multiple values, see exactly which values are supposed to be visible.
-  if (isset($node->$field_name)) {
-    $node = date_prepare_node($node, $field, $type_name, $context, $options);
-    // Did the current value get removed by formatter settings?
-    if (empty($node->{$field_name}[$item['#delta']])) {
-      return $output;
-    }
-    // Adjust the $element values to match the changes.
-    $element['#node'] = $node;
-  }
-    
-  // Call the right theme for this formatter.
-  // Update the element with values that might have been altered by 
-  // date_prepare_node() and figure out which values to display.
-  $dates = date_formatter_process($element);
-  switch ($options['fromto']['fromto']) {
+  switch ($options['fromto']) {
     case 'value':
       $date1 = $dates['value']['formatted'];
       $date2 = $date1;
@@ -179,7 +133,7 @@ function theme_date_display_range($vars) {
  * Theme a format interval for a date element
  *
  *  @param $field = the field settings
- *  @param $node = node information, this is not always available and not
+ *  @param $entity = node information, this is not always available and not
  *     always the full node, it depends on what value was provided to the formatter.
  *     Only the nid is always guaranteed to be available.
  *  @param $dates - an array of date information, see explanation for date_field_object for details.
@@ -187,46 +141,30 @@ function theme_date_display_range($vars) {
  *
  */
 function theme_date_format_interval($vars) {
-  $element = $vars['element'];
-  $node = $element['#node'];
-  $field_name = $element['#field_name'];
-  $context = !empty($node->content) ? $node->content[$field_name]['#context'] : 'full';
-  $type_name = $element['#type_name'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $item = $element['#item'];
+  $formatter   = $vars['formatter'];
+  $entity_type = $vars['entity_type'];
+  $entity      = $vars['entity'];
+  $field       = $vars['field'];
+  $instance    = $vars['instance'];
+  $langcode    = $vars['langcode'];
+  $item        = $vars['item'];
+  $delta       = $vars['delta'];
+  $display     = $vars['display'];
+  $field_name  = $field['field_name'];
+  $options     = $display['settings'];
+  $dates       = $vars['dates'];
     
   // Get the formatter settings, either the default settings for this node
-  // type or the View settings stored in $node->date_info.
-  $options = date_formatter_get_settings($field_name, $type_name, $context);
-  if (!empty($node->date_info) && !empty($node->date_info->formatter_settings)) {
-    $options = $node->date_info->formatter_settings;
+  // type or the View settings stored in $entity->date_info.
+  if (!empty($entity->date_info) && !empty($entity->date_info->formatter_settings)) {
+    $options = $entity->date_info->formatter_settings;
   }
-  
-  // If date_id is set for this field and the delta doesn't match, don't display it.
-  if (!empty($node->date_id)) {
-    foreach ((array) $node->date_id as $key => $id) {
-      list($module, $nid, $field_name, $delta, $other) = explode(':', $id);
-      if ($field_name == $field['field_name'] && isset($item['#delta']) && $delta != $item['#delta']) {
-        return;
-      }
-    }
-  }
-   
-  // If this is not coming from Views, it is the full node.
-  // If we aren't retrieving a specific value, adjust the node values 
-  // to match the formatter settings, removing values we should not see.
-  if (!empty($node->content) && empty($node->date_id)) {
-    $node = date_prepare_node($node, $field, $type_name, $context, $options);
-    
-    // Did the current value get removed by formatter settings?
-    if (empty($node->{$field_name}[$item['#delta']])) {
-      return;
-    }
-    // Adjust the $element values to match the changes.
-    $element['#node'] = $node;
-  }
-  $dates = date_formatter_process($element);
-  return theme('date_time_ago', array('start_date' => $dates['value']['local']['object'], 'end_date' => $dates['value2']['local']['object']));
+
+  $time_ago_vars = array(
+    'start_date' => $dates['value']['local']['object'], 
+    'end_date' => $dates['value2']['local']['object'],
+  );
+  return theme('date_time_ago', $time_ago_vars);
 }
 
 /**
@@ -239,7 +177,7 @@ function theme_date_format_interval($vars) {
 function theme_date_repeat_display($vars) {
   $field = $vars['field'];
   $item = $vars['item'];
-  $node = !empty($vars['node']) ? $vars['node'] : NULL;
+  $entity = !empty($vars['node']) ? $vars['node'] : NULL;
   $output = '';
   if (!empty($item['rrule'])) {
     $output = date_repeat_rrule_description($item['rrule']);
@@ -256,19 +194,19 @@ function theme_date_repeat_display($vars) {
  * @param object $date1, a date/time object for the 'from' date.
  * @param object $date2, a date/time object for the 'to' date.
  * @param string $format
- * @param object $node, the node this date comes from (may be incomplete, always contains nid).
+ * @param object $entity, the node this date comes from (may be incomplete, always contains nid).
  * @param object $view, the view this node comes from, if applicable.
  * @return formatted date.
  */
 function theme_date_all_day($vars) {
-  $field = $vars['field'];
+  $field    = $vars['field'];
   $instance = $vars['instance'];
-  $which = $vars['which'];
-  $date1 = $vars['date1'];
-  $date2 = $vars['date2'];
-  $format = $vars['format'];
-  $node = $vars['node'];
-  $view = !empty($vars['view']) ? $vars['view'] : NULL;
+  $which    = $vars['which'];
+  $date1    = $vars['date1'];
+  $date2    = $vars['date2'];
+  $format   = $vars['format'];
+  $entity   = $vars['entity'];
+  $view     = !empty($vars['view']) ? $vars['view'] : NULL;
   if (empty($date1) || !is_object($date1) || $format == 'format_interval') {
     return;
   }

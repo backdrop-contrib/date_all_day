@@ -19,7 +19,7 @@ function date_init() {
  */
 function date_menu() {
   $items = array();
-  // Repeat dates tab on node
+  // Repeat dates tab on entity
   if (!module_exists('date_repeat')) {
     return $items;
   }
@@ -42,8 +42,8 @@ function date_permission() {
   ));
 }
 
-function date_repeat_node($node) {
-  if (date_repeat_type($node->type)) {
+function date_repeat_entity($entity) {
+  if (date_repeat_type($entity->bundle)) {
     return user_access('view date repeats');
   }
   return FALSE;
@@ -74,16 +74,16 @@ function date_repeat_fields($bundle, $entity_type = 'node') {
   return $fields;
 }
 
-function date_repeat_page($node) {
-  drupal_set_title($node->title);
-  $node->date_repeat_show_all = TRUE;
-  $node->build_mode = NODE_BUILD_NORMAL;
-  $node->content = array();
-  $field_names = date_repeat_fields($node->type);
-  $view = content_view($node, FALSE, TRUE);
+function date_repeat_page($entity) {
+  drupal_set_title($entity->title);
+  $entity->date_repeat_show_all = TRUE;
+  $entity->build_mode = NODE_BUILD_NORMAL;
+  $entity->content = array();
+  $field_names = date_repeat_fields($entity->type);
+  $view = content_view($entity, FALSE, TRUE);
   $output = '';
   foreach ($field_names as $field_name) {
-    $output .= drupal_render($node->content[$field_name]);
+    $output .= drupal_render($entity->content[$field_name]);
   }
   return $output;
 }
@@ -250,10 +250,19 @@ function date_field_formatter_info() {
     'date_default' => array(
       'label' => t('Default'),
       'field types' => array('date', 'datestamp', 'datetime'),
+      'settings' => array(
+        'show_repeat_rule' => 'show',
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_to' => '',
+        'fromto' => 'both',      
+      ),
     ),  
     'format_interval' => array(
       'label' => t('As Time Ago'),
       'field types' => array('date', 'datestamp', 'datetime'),
+      'settings' => array(
+      ),
     ),  
   );
 
@@ -272,16 +281,80 @@ function date_field_formatter_info() {
 
 /**
  * Implements hook_field_formatter_view().
+ * 
+ * Useful values:
+ * 
+ *   $entity->date_id 
+ *     If set, this will show only an individual date on a field with 
+ *     multiple dates. The value should be a string that contains
+ *     the following values, separated with colons:
+ *     - module name of the module adding the item
+ *     - node nid
+ *     - field name
+ *     - delta value of the field to be displayed
+ *     - other information the module's custom theme might need
+ * 
+ *     Used by the calendar module and available for other uses.
+ *     example: 'date:217:field_date:3:test'
+ * 
+ *   $entity->date_repeat_show
+ *     If true, tells the theme to show all the computed values
+ *     of a repeating date. If not true or not set, only the
+ *     start date and the repeat rule will be displayed.
+ * 
  */
 function date_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
   $formatter = $display['type'];
+  $vars = array(
+    'entity' => $entity,
+    'entity_type' => $entity_type,
+    'field' => $field,
+    'instance' => $instance,
+    'langcode' => $langcode,
+    'items' => $items,
+    'display' => $display,
+    'dates' => array(),
+  );
+  
+  // See if we are only supposed to display a selected
+  // item from multiple value date fields.
+  $selected_deltas = array();
+  if (!empty($entity->date_id)) {
+    foreach ((array) $entity->date_id as $key => $id) {
+      list($module, $nid, $field_name, $selected_delta, $other) = explode(':', $id);
+      if ($field_name == $field['field_name']) {
+        $selected_deltas[] = $selected_delta;
+      }
+    }
+  }  
   
   switch ($display['type']) {
-    case 'date_default':
+    case 'format_interval':
       foreach ($items as $delta => $item) {
-        $element[$delta] = array('#markup' => $item['value']);
+        if (!empty($entity->date_id) && !in_array($delta, $selected_deltas)) {
+          continue;
+        }
+        else {
+          $vars['delta'] = $delta;
+          $vars['item'] = $item;
+          $vars['dates'] = date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
+          $element[$delta] = array('#markup' => theme('date_format_interval', $vars));
+        }
+      }
+      break;
+    default:
+      foreach ($items as $delta => $item) {
+        if (!empty($entity->date_id) && !in_array($delta, $selected_deltas)) {
+          continue;
+        }
+        else {
+          $vars['delta'] = $delta;
+          $vars['item'] = $item;
+          $vars['dates'] = date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
+          $element[$delta] = array('#markup' => theme('date_display_combination', $vars));
+        }
       }
       break;
   }
@@ -307,11 +380,13 @@ function date_theme() {
     'date_all_day' => $base + array(
       'variables' => array(
         'field' => NULL, 
+        'instance' => NULL,
         'which' => NULL, 
         'date1' => NULL, 
         'date2' => NULL, 
         'format' => NULL, 
-        'node' => NULL, 
+        'entity_type' => NULL,
+        'entity' => NULL, 
         'view' => NULL
       )
     ),
@@ -330,25 +405,39 @@ function date_theme() {
       'variables' => array(
         'field' => NULL, 
         'item' => NULL, 
-        'node' => NULL, 
+        'entity_type' => NULL,
+        'entity' => NULL, 
         'dates' => NULL
       ),
       'function' => 'theme_date_repeat_display',
       ),  
+     'date_display_combination' => $base + array(
+       'variables' => array(
+         'entity_type' => NULL,
+         'entity' => NULL,
+         'field' => NULL, 
+         'instance' => NULL, 
+         'langcode' => NULL, 
+         'item' => NULL,
+         'delta' => NULL, 
+         'display' => NULL,
+         'dates' => NULL,
+        ),
+     ), 
+     'date_display_interval' => $base + array(
+       'variables' => array(
+         'entity_type' => NULL,
+         'entity' => NULL,
+         'field' => NULL, 
+         'instance' => NULL, 
+         'langcode' => NULL, 
+         'item' => NULL, 
+         'delta' => NULL,
+         'display' => NULL,
+         'dates' => NULL,
+        ),
+     ),     
   );
-
-  // Table isn't available first time date_theme() is called in update.php.
-  if (db_table_exists('date_format_types')) {
-    $format_types = _system_date_format_types_build();
-    if (!empty($format_types)) {
-      foreach ($format_types as $type => $type_info) {
-        $themes['date_formatter_' . $type] = $base + array(
-          'render element' => 'element', 
-          'function' => 'theme_date_display_combination',
-        );
-      }
-    }
-  }
 
   return $themes;
 }
@@ -359,7 +448,7 @@ function date_theme() {
  * Use the Date API to get an object representation of a date field
  *
  * @param array $field
- * @param array $item - a node field item, like $node->myfield[0]
+ * @param array $item - a entity field item, like $entity->myfield[0]
  *
  * @return array that holds the From and To date objects
  *  Each date object looks like:
@@ -376,18 +465,14 @@ function date_theme() {
  *         )
  *      )
  */
-function date_formatter_process($element) {
-  $node = $element['#node'];
+function date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display) {
   $dates = array();
   $timezone = date_default_timezone();
   if (empty($timezone)) {
     return $dates;
   }
-  $field_name = $element['#field_name'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $formatter = $element['#formatter'];
+  $field_name = $field['field_name'];
   $format = date_formatter_format($formatter, $field_name);
-  $item = $element['#item'];
   $timezone = isset($item['timezone']) ? $item['timezone'] : '';
   $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
   $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
@@ -452,14 +537,16 @@ function date_formatter_process($element) {
       'date1' => $date1, 
       'date2' => $date2, 
       'format' => $format, 
-      'node' => $node));
+      'entity_type' => $entity_type,
+      'entity' => $entity));
     $all_day2 = theme('date_all_day', array(
       'field' => $field, 
       'which' => 'date2', 
       'date1' => $date1, 
       'date2' => $date2, 
       'format' => $format, 
-      'node' => $node));
+      'entity_type' => $entity_type,
+      'entity' => $entity));
   }
   if ((!empty($all_day1) && $all_day1 != $dates['value']['formatted']) 
   || (!empty($all_day2) && $all_day2 != $dates['value2']['formatted'])) {
@@ -655,20 +742,20 @@ function date_views_api() {
 }
 
 /**
- * Helper function to adapt node date fields to formatter settings.
+ * Helper function to adapt entity date fields to formatter settings.
  */
-function date_prepare_node($node, $field, $bundle, $context, $options) {
-  
+function date_prepare_entity($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display) {
+  return $entity;
   // If there are options to limit multiple values, 
-  // alter the node values to match. 
+  // alter the entity values to match. 
   $field_name = $field['field_name'];
   
   $max_count = $options['multiple']['multiple_number'];
     
   // If no results should be shown, empty the values and return.
   if (is_numeric($max_count) && $max_count == 0) {
-    $node->{$field_name} = array();
-    return $node;
+    $entity->{$field_name} = array();
+    return $entity;
   }
   
   // Otherwise removed values that should not be displayed.
@@ -693,14 +780,14 @@ function date_prepare_node($node, $field, $bundle, $context, $options) {
       $end = date_format($range[1], $format);
       // Empty out values we don't want to see.
       $count = 0;
-      foreach ($node->$field_name as $delta => $value) {
-        if (!empty($node->date_repeat_show_all)) {
+      foreach ($entity->$field_name as $delta => $value) {
+        if (!empty($entity->date_repeat_show_all)) {
           break;
         }
         elseif ((!empty($max_count) && is_numeric($max_count) && $count >= $max_count) ||
         (!empty($value['value'])  && $value['value'] < $start) || 
         (!empty($value['value2']) && $value['value2'] > $end)) {
-          unset($node->{$field_name}[$delta]);
+          unset($entity->{$field_name}[$delta]);
         }
         else {
           $count++;
@@ -708,7 +795,7 @@ function date_prepare_node($node, $field, $bundle, $context, $options) {
       }
     }
   }
-  return $node;
+  return $entity;
 }
 
 /**
@@ -736,7 +823,7 @@ function date_handler_fields($view) {
       }
       foreach ($view->date_info->date_fields as $date_field) {
         if (strstr($date_field, ' . ' . $field_name)) {
-          $delta_field = 'node_data_' . $field_name . '_delta';
+          $delta_field = 'entity_data_' . $field_name . '_delta';
           $field_names[$field_name] = array('options' => $group, 'delta_field' => $delta_field, 'view_field' => clone($field));
           // Get rid of the huge view object in the field handler.
           unset($field_names[$field_name]['view_field']->view);

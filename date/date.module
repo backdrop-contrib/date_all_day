@@ -26,9 +26,9 @@ function date_menu() {
   $items['node/%node/repeats'] = array(
     'title' => 'Repeats',
     'page callback' => 'date_repeat_page', 
-    'page arguments' => array(1), 
-    'access callback' => 'date_repeat_node', 
-    'access arguments' => array(1),
+    'page arguments' => array(1, 'node'), 
+    'access callback' => 'date_repeat_entity', 
+    'access arguments' => array(1, 'node'),
     'type' => MENU_LOCAL_TASK, 
   );
 
@@ -42,48 +42,67 @@ function date_permission() {
   ));
 }
 
-function date_repeat_entity($entity) {
-  if (date_repeat_type($entity->bundle)) {
+/**
+ * See if the user can access repeat date 
+ * info on this entity.
+ */
+function date_repeat_entity($entity, $entity_type = 'node') {
+  if (date_repeat_type($entity, $entity_type = 'node')) {
     return user_access('view date repeats');
   }
   return FALSE;
 }
 
-function date_repeat_type($bundle, $entity_type = 'node') {
+/**
+ * See if there is a date field in this instance.
+ * 
+ * Field type is not in the $field array we get from
+ * field_info_instances(), we need to call
+ * field_info_field() to find that. 
+ */
+function date_repeat_type($entity, $entity_type = 'node') {
+  $bundle = '';
+  switch ($entity_type) {
+    case 'node':
+      $bundle = $entity->type;
+      break;
+  }
   $type = field_info_instances($entity_type, $bundle);
-  if (!empty($type['fields'])) {
-    foreach ($type['fields'] as $field_name => $field) {
-      if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
-        return TRUE;
-      }
+  foreach ($type as $field_name => $field) {
+    $field = field_info_field($field_name);
+    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
+      return TRUE;
     }
   }
   return FALSE;
 }
 
-function date_repeat_fields($bundle, $entity_type = 'node') {
+function date_repeat_fields($entity, $entity_type = 'node') {
+  $bundle = '';
+  switch ($entity_type) {
+    case 'node':
+      $bundle = $entity->type;
+      break;
+  }
   $type = field_info_instances($entity_type, $bundle);
   $fields = array();
-  if (!empty($type['fields'])) {
-    foreach ($type['fields'] as $field_name => $field) {
-      if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
-        $fields[] = $field_name;
-      }
+  foreach ($type as $field_name => $field) {
+    $field = field_info_field($field_name);
+    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
+      $fields[] = $field_name;
     }
   }
   return $fields;
 }
 
-function date_repeat_page($entity) {
+function date_repeat_page($entity, $entity_type = 'node') {
   drupal_set_title($entity->title);
   $entity->date_repeat_show_all = TRUE;
-  $entity->build_mode = NODE_BUILD_NORMAL;
   $entity->content = array();
-  $field_names = date_repeat_fields($entity->type);
-  $view = content_view($entity, FALSE, TRUE);
+  $field_names = date_repeat_fields($entity, $entity_type);
   $output = '';
   foreach ($field_names as $field_name) {
-    $output .= drupal_render($entity->content[$field_name]);
+    $output .= drupal_render(field_view_field($entity_type, $entity, $field_name, 'full'));
   }
   return $output;
 }

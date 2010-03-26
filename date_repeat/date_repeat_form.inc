@@ -36,7 +36,7 @@
  */
 function _date_repeat_rrule_process($element, $form_state, $form) {
   module_load_include('inc', 'date_api', 'date_api_ical');
-  
+
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
   }
@@ -63,16 +63,6 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     date_timezone_set($until_date, timezone_open($timezone));
     $UNTIL = date_format($until_date, DATE_FORMAT_DATETIME);
   }
-  $parent_collapsed = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
-  $element['#type'] = 'fieldset';
-  $element['#title'] = t('Repeat');
-  $element['#description'] = theme('advanced_help_topic', 'date_api', 'date-repeat-form') . t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.');
-  $element['#collapsible'] = TRUE;
-  $element['#collapsed'] = $parent_collapsed;
-  
-  // Make sure we don't get floating parts where we don't want them.
-  $element['#prefix'] = '<div class="date-clear">';
-  $element['#suffix'] = '</div>';
   
   $element['INTERVAL'] = array(
     '#type' => 'select',
@@ -82,7 +72,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     '#prefix' => '<div class="date-repeat-input">',
     '#suffix' => '</div>',
   );
-
+  
   $element['FREQ'] = array(
     '#type' => 'select',
     //'#title' => t('Frequency'),
@@ -192,6 +182,8 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
       'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
       );
   }
+  $element['#date_repeat_collapsed'] = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
+  
   return $element;
 }
 
@@ -249,7 +241,8 @@ function date_repeat_rrule_validate($element, &$form_state) {
 /**
  * Theme the exception list as a table so the buttons line up
  */
-function theme_date_repeat_current_exceptions($rows = array()) {
+function theme_date_repeat_current_exceptions($vars) {
+  $rows = $vars['rows'];
   $rows_info = array();
   foreach ($rows as $key => $value) {
     if (substr($key, 0, 1) != '#') {
@@ -260,8 +253,21 @@ function theme_date_repeat_current_exceptions($rows = array()) {
 }
 
 /**
- * Themes the date repeat element.
+ * Wrapper fieldset for repeat rule.
  */
-function theme_date_repeat($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . drupal_render($element) . '</div>');
+function theme_date_repeat_rrule($vars) {
+  $element = $vars['element'];
+  $class = $element['#date_repeat_collapsed'] ? array('collapsible', 'collapsed') : array('collapsible');
+  $fieldset = array(
+    '#title' => t('Repeat'),
+    '#value' => '',
+    '#description' => theme('advanced_help_topic', 'date_api', 'date-repeat-form') . t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.'),
+    '#attributes' => array('class' => $class),
+    '#children' => $element['#children'],
+  );
+  // Make sure we don't get floating parts where we don't want them.
+  $element['#prefix'] = '<div class="date-clear">';
+  $element['#suffix'] = '</div>';
+
+  return theme('fieldset', array('element' => $fieldset));
 }

@@ -205,8 +205,8 @@ function _date_field_widget_settings_form($field, $instance) {
     }
     else {
       $form['advanced']['text_parts'][$key] = array(
-        '#type' => 'hidden',
-        '#value' => in_array($key, (array) $widget['text_parts']) ? 1 : 0,
+        '#type' => 'value',
+        '#value' => in_array($key, (array) $settings['text_parts']) ? 1 : 0,
         );
     }
   }
@@ -272,7 +272,6 @@ function _date_field_settings_form($field, $instance, $has_data) {
   
   // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    $form['multiple'] = array('#type' => 'hidden', '#value' => 1);
     $form['repeat'] = array('#type' => 'hidden', '#value' => 1);
   }
   else {

@@ -31,9 +31,10 @@
 function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
   $element['rrule'] = array(
     '#type' => 'date_repeat_rrule',
+    '#theme_wrappers' => array('date_repeat_rrule'),
     '#default_value' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
     '#date_timezone' => $element['#date_timezone'],
-    '#date_format'      => date_limit_format(date_input_format($element, $field), $field['settings']['granularity']),
+    '#date_format'      => date_limit_format(date_input_format($element, $field, $instance), $field['settings']['granularity']),
     '#date_text_parts'  => (array) $instance['widget']['settings']['text_parts'],
     '#date_increment'   => $instance['widget']['settings']['increment'],
     '#date_year_range'  => $instance['widget']['settings']['year_range'],
@@ -44,7 +45,6 @@ function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
     '#date_repeat_widget' => str_replace('_repeat', '', $instance['widget']['type']),
     '#date_repeat_collapsed' => $instance['settings']['repeat_collapsed'],
     );
-
   return $element;
 }
 /**

@@ -277,8 +277,6 @@ function theme_date_combo($vars) {
   $fieldset = array(
     '#title' => check_plain($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => '',
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
     '#description' => $element['#fieldset_description'],
     '#attributes' => array(),
     '#children' => $element['#children'],

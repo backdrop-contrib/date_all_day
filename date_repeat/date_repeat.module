@@ -29,8 +29,8 @@ function date_repeat_element_info() {
 
 function date_repeat_theme() {
   return array(
-    'date_repeat' => array('render element' => 'element'),
     'date_repeat_current_exceptions' => array('render element' => 'element'),
+    'date_repeat_rrule' => array('render element' => 'element'),
   );
 }
 
@@ -270,7 +270,7 @@ function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone
 /**
  * Generate the repeat rule setting form.
  */
-function date_repeat_rrule_process($element, $edit, $form_state, $form) {
+function date_repeat_rrule_process($element, $form_state, $form) {
   module_load_include('inc', 'date_repeat', 'date_repeat_form');
-  return _date_repeat_rrule_process($element, $edit, $form_state, $form);
+  return _date_repeat_rrule_process($element, $form_state, $form);
 }

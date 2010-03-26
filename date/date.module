@@ -95,7 +95,10 @@ function date_is_repeat_field($field, $instance) {
     'date_popup_repeat',
     );
   if (in_array($instance['widget']['type'], $repeat_widgets)) {
-      return TRUE;
+    return TRUE;
+  }
+  elseif (in_array($instance['widget']['type']['#value'], $repeat_widgets)) {
+    return TRUE;
   }
   return FALSE;
 }
@@ -178,7 +181,7 @@ function date_field_widget_info() {
       'input_format' => date_default_format('date_select'), 
       'input_format_custom' => '', 
       'increment' => 1, 
-      'text_parts' => '', 
+      'text_parts' => array(), 
       'year_range' => '-3:+3', 
       'label_position' => 'above',
      ),
@@ -597,6 +600,14 @@ function date_help($path, $arg) {
 function date_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'content_display_overview_form') {
     date_content_display_form($form, $form_state);
+  }
+  elseif ($form_id == 'field_ui_field_edit_form') {
+    $field = $form['field'];
+    $instance = $form['instance'];
+    // If adding a repeat, override the Content module's handling of the multiple values option.
+    if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
+      $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => 1);
+    }
   }
 }
 

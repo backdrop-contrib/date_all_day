@@ -394,7 +394,7 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
   $base_field_values = array(
     'field_name' => '',
     'bundle' => '',
-    'multiple' => in_array($widget_type, $repeat_widgets) ? 1 : 0,
+    'cardinality' => in_array($widget_type, $repeat_widgets) ? FIELD_CARDINALITY_UNLIMITED : 0,
     'module' => 'date',
     'granularity' => array(
       'year' => 'year',
@@ -478,7 +478,7 @@ function date_field_default_values($field_type, $widget_type, $tz_handling, $ove
     }
   }
   // Make sure multiple gets set correctly for repeating dates.
-  if ($field['settings']['repeat']) $field['cardinality'] = 1;
+  if ($field['settings']['repeat']) $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
   
   // Reset columns and db_storage, which may need to be 
   // adjusted to the new values.
@@ -526,7 +526,7 @@ function _date_formatter_settings($form_state = NULL, $field, $options = array()
   );  
 
   $form['multiple'] = array(
-    '#access' => $field['cardinality'],
+    '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
     '#weight' => 6,
   );
 

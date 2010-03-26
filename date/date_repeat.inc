@@ -55,17 +55,25 @@ function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
  */
 function _date_repeat_widget_validate($element, &$form_state) {
   module_load_include('inc', 'date_repeat', 'date_repeat_form');
-  $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
-  $field = $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $item = $form_values[$field_name];
-  $values = date_repeat_merge($form_state['input'][$field_name][$element['#language']]['rrule'], $element['rrule']);
+  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
+  $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
+  
+  $form_values = $form_state['values'];
+  $item = $form_values;
+  $input = $form_state['input'];
+  foreach ($element['#parents'] as $key) {
+    $item = $item[$key];
+    $input = $input[$key];
+  }
+  $values = date_repeat_merge($input['rrule'], $element['rrule']);
+  dsm($values);
   
   // If no start date was set, clean up the form and return.
   // If no repeats are set, clean up the form and return.
-  if (empty($form_values[$field_name]['value']) || $values['FREQ'] == 'NONE') {
-    $form_values[$field_name][$element['#language']]['rrule'] = NULL;
-    form_set_value($element, array($form_values[$field_name]), $form_state);
+  if (empty($item['value']) || $values['FREQ'] == 'NONE') {
+    $item['rrule'] = NULL;
+    form_set_value($element, array($item), $form_state);
     return;
   }
 
@@ -87,15 +95,14 @@ function _date_repeat_widget_validate($element, &$form_state) {
   // TODO
   // Is it right to not do anything unless there are changes? Will that
   // confuse anyone? Commenting that out for now...
-  $rrule = $form_values[$field_name]['rrule'];
+  $rrule = $item['rrule'];
+
   if (!empty($rrule)
     //&& ($rrule != $element['rrule']['#prev_rrule']
-    //|| $form_values[$field_name][0]['value'] != $element['rrule']['#prev_value']
-    //|| $form_values[$field_name][0]['value2'] != $element['rrule']['#prev_value2'])
+    //|| $item['value'] != $element['rrule']['#prev_value']
+    //|| $item['value2'] != $element['rrule']['#prev_value2'])
     ) {
 
-    $item = $form_values[$field_name];
-    
     // Avoid undefined index problems on dates that don't have all parts.
     $possible_items = array('value', 'value2', 'timezone', 'offset', 'offset2');
     foreach ($possible_items as $key) {
@@ -104,13 +111,14 @@ function _date_repeat_widget_validate($element, &$form_state) {
       }
     }    
     $value = date_repeat_build_dates($rrule, $values, $field, $item);
+    array_pop($element['#parents']);
     form_set_value($element, $value, $form_state);
   }
   else {
     // If no changes are needed, move the RRULE back to the zero value
     // item of the field.
-    form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule, $form_state);
-    form_set_value($element['rrule'], NULL, $form_state);
+    //form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule, $form_state);
+    //form_set_value($element['rrule'], NULL, $form_state);
   }
 }
 
@@ -121,7 +129,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
  * whichever is missing will be created when needed.
  */
 function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
-  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
+  include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $field_name = $field['field_name'];
   
   if (empty($rrule)) {

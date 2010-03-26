@@ -188,7 +188,7 @@ function date_tools_wizard_build($form_values) {
     'granularity' => $granularity,
     'tz_handling' => $tz_handling,
     'repeat' => $repeat,
-    'multiple' => $repeat,
+    'cardinality' => $repeat ? FIELD_CARDINALITY_UNLIMITED : 0,
     );
 
   $field_settings['widget']['label'] = $label;

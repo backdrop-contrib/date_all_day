@@ -625,7 +625,7 @@ function date_form_alter(&$form, &$form_state, $form_id) {
     $instance = $form['instance'];
     // If adding a repeat, override the Content module's handling of the multiple values option.
     if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-      $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => 1);
+      $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => FIELD_CARDINALITY_UNLIMITED);
     }
   }
 }

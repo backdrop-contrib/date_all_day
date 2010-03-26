@@ -13,8 +13,7 @@
  */
 function _date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items) {
   $field_name = $field['field_name'];
-  dsm($items);
-  dsm($field);
+ 
   // Don't try to validate if there were any errors before this point
   // since the element won't have been munged back into a date.
   if (!form_get_errors()) {

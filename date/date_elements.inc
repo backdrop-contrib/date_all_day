@@ -267,7 +267,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
-  $entity_type = $element['#object_type'];
+  $entity_type = $element['#entity_type'];
   $field = $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
    

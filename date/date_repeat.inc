@@ -66,11 +66,11 @@ function _date_repeat_widget_validate($element, &$form_state) {
     $item = $item[$key];
     $input = $input[$key];
   }
-  $values = date_repeat_merge($input['rrule'], $element['rrule']);
-  
+  $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
+
   // If no start date was set, clean up the form and return.
   // If no repeats are set, clean up the form and return.
-  if (empty($item['value']) || $values['FREQ'] == 'NONE') {
+  if (empty($item['value']) || $rrule_values['FREQ'] == 'NONE') {
     $item['rrule'] = NULL;
     form_set_value($element, array($item), $form_state);
     return;
@@ -80,7 +80,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
   // The RRULE has already been created by this point, so go back
   // to the posted values to see if this was filled out.
   $error_field = implode('][', $element['#parents']) . '][rrule][UNTIL][datetime][date';
-  if (empty($values['UNTIL']['datetime'])) {
+  if (empty($rrule_values['UNTIL']['datetime'])) {
     form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
   }
   if (form_get_errors()) {
@@ -109,15 +109,14 @@ function _date_repeat_widget_validate($element, &$form_state) {
         $item[$key] = '';
       }
     }    
-    $value = date_repeat_build_dates($rrule, $values, $field, $item);
-    array_pop($element['#parents']);
+    $value = date_repeat_build_dates($rrule, $rrule_values, $field, $item);
     form_set_value($element, $value, $form_state);
   }
   else {
     // If no changes are needed, move the RRULE back to the zero value
     // item of the field.
-    //form_set_value(array('#parents' => array($field_name, 0, 'rrule')), $rrule, $form_state);
-    //form_set_value($element['rrule'], NULL, $form_state);
+    form_set_value(array('#parents' => array($field_name, $element['#language'], 0, 'rrule')), $rrule, $form_state);
+    form_set_value($element, NULL, $form_state);
   }
 }
 
@@ -127,15 +126,15 @@ function _date_repeat_widget_validate($element, &$form_state) {
  * Pass in either the RRULE or the $form_values array for the RRULE,
  * whichever is missing will be created when needed.
  */
-function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
+function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $item) {
   include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $field_name = $field['field_name'];
   
   if (empty($rrule)) {
-    $rrule = date_api_ical_build_rrule($values);
+    $rrule = date_api_ical_build_rrule($rrule_values);
   }
-  elseif (empty($values)) {
-    $values = date_ical_parse($rrule);
+  elseif (empty($rrule_values)) {
+    $rrule_values = date_ical_parse($rrule);
   }
     
   // By the time we get here, the start and end dates have been 
@@ -154,12 +153,11 @@ function date_repeat_build_dates($rrule = NULL, $values = NULL, $field, $item) {
   else {
     $end = $start;
   }
-
   $duration = date_difference($start, $end);
   $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
     
-  if (!empty($values['UNTIL']['datetime'])) {
-    $end = date_ical_date($values['UNTIL'], $timezone);
+  if (!empty($rrule_values['UNTIL']['datetime'])) {
+    $end = date_ical_date($rrule_values['UNTIL'], $timezone);
   }
   $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
   

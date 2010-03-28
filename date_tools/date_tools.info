@@ -6,4 +6,3 @@ package = Date/Time
 core = 7.x
 php = 5.2
 files[] = date_tools.module
-files[] = date_field.php

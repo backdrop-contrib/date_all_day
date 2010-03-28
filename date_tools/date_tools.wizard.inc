@@ -95,35 +95,27 @@ function date_tools_wizard_form() {
     '#default_value' => 0,
     '#title' => t('Add calendar blocks to the current theme'),
     );  
-  $form['location_field'] = array(
-    '#type' => 'value',
-    '#default_value' => '',
-    '#title' => t('Location field name'),
-    );  
-  $form['signup'] = array(
-    '#type' => 'select',
-    '#options' => array(0 => t('No'), 1 => t('Yes')),
-    '#default_value' => module_exists('signup'),
-    '#title' => t('Turn on signup'),
-    );  
      
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
     );      
+  
   return $form;
 }
 
 function date_tools_wizard_form_validate(&$form, &$form_state) {
   $bundle = $form_state['values']['bundle'];
   $field_name = 'field_' . $form_state['values']['field_name'];
-  if (db_result(db_query("SELECT type FROM {node_type} WHERE type='%s'", $bundle))) {
+  $existing_type = db_query("SELECT type FROM {node_type} WHERE type=:bundle", array(':bundle' => $bundle))->fetchField();
+  $existing_instance = db_query("SELECT field_name FROM {field_config_instance} WHERE field_name=:field_name AND bundle=:bundle AND entity_type=:entity_type", array(':field_name' => $field_name, ':bundle' => $bundle, ':entity_type' => 'node'))->fetchField();
+  if ($existing_type) {
     drupal_set_message(t('This content type name already exists, adding new field to existing content type.'));
   }
   if (!preg_match('!^[a-z0-9_]+$!', $bundle)) {
     form_set_error('bundle', t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
   }
-  if (db_result(db_query("SELECT field_name FROM {content_node_field_instance} WHERE field_name='%s' AND bundle='%s'", $field_name, $bundle))) {
+  if ($existing_instance) {
     form_set_error('field_name', t('This field name already exists.'));
   }
   if (!date_has_time($form_state['values']['granularity']) && $form_state['values']['tz_handling'] != 'none') {
@@ -155,20 +147,13 @@ function date_tools_wizard_build($form_values) {
   // Create a node type if it doesn't already exist.
   // This makes it possible to add additional date fields to 
   // an existing type.
-  $types = node_get_types('names');
+  $types = node_type_get_names();
   $type_settings = array();
-  if (!empty($signup)) {
-    $type_settings['signup_node_default_state'] = 'enabled_on';
-    $type_settings['signup_date_field'] = $field_name;
-    variable_set('signup_fieldset_collapsed', 0);
-    variable_set("signup_date_field_$bundle", $field_name);
-    variable_set('signup_node_default_state_' . $bundle, 'enabled_on');
-  }
   if (!array_key_exists($bundle, $types)) {
     date_tools_wizard_create_content_type($name, $bundle, $type_description, $type_settings);
   }
   else {
-    $types = node_get_types();
+    $types = node_type_get_types();
     $type = $types[$bundle];
     if (!empty($type_settings)) {
       foreach ($type_settings as $key => $setting) {
@@ -180,31 +165,45 @@ function date_tools_wizard_build($form_values) {
   }
   
   $field_settings = array(
-    'field_name' => $field_name,
-    'label' => $label,
-    'bundle' => $bundle,
-    'type' => $field_type,
-    'widget_type' => $widget_type,
-    'granularity' => $granularity,
-    'tz_handling' => $tz_handling,
-    'repeat' => $repeat,
-    'cardinality' => $repeat ? FIELD_CARDINALITY_UNLIMITED : 0,
-    );
-
-  $field_settings['widget']['label'] = $label;
-  $field_settings['widget']['type'] = $widget_type;
-    
+    'field' => array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => $repeat ? FIELD_CARDINALITY_UNLIMITED : 0,
+      'settings' => array(
+        'granularity' => $granularity,
+        'tz_handling' => $tz_handling,
+        'repeat' => $repeat,
+        'todate' => 'optional',
+       ),
+    ),
+    'instance' => array(
+      'field_name' => $field_name,
+      'label' => $label,
+      'bundle' => $bundle,
+      // Move the date right below the title.
+      'weight' => -4,
+      'widget' => array(
+        'type' => $widget_type,
+        // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
+        'settings' => array(
+          'increment' => 15,
+          // The number of years to go back and forward in drop-down year selectors.
+          'year_range' => '0:+1',
+        ),
+      ),
+      'settings' => array(
+        // Set a display format that will show complete date information, 
+        // to help test that values are correct.
+        'default_format' => 'long',
+      ),
+    )
+  );
+ 
   $date_field = date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $field_settings);
   
-  $location_field = array();
-  $location_field_name = '';
-  if (!empty($location)) {
-    $location_field = date_tools_wizard_create_location_field($bundle);
-    $location_field_name = $location_field['field_name'];
-  }
   $view_name = '';
   if (!empty($calendar)) {
-    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field, $location_field);
+    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field);
     if (!empty($blocks)) {
       date_tools_wizard_create_blocks($bundle);  
     }
@@ -213,96 +212,17 @@ function date_tools_wizard_build($form_values) {
   
 }
 
-function date_tools_wizard_create_ical_feed($bundle, $feed_url, $feed_title) {
-  
-  // If the ical_feed content type has not yet been created, create it.
-  $ical_feed_type = node_get_types('name', 'ical_feed');
-  if (empty($ical_feed_type)) {
-    $type_settings =  array(
-      'body_label' => '',
-      'feedapi' => array (
-        'enabled' => 1,
-        'refresh_on_create' => 0,
-        'update_existing' => 1,
-        'skip' => 0,
-        'items_delete' => '0',
-        'parsers' => array (
-          'parser_ical' => array (
-             'enabled' => 1,
-             'weight' => '0',
-          ),
-        ),
-        'processors' => array (
-          'feedapi_node' => array (
-            'enabled' => 1,
-            'weight' => '0',
-            'content_type' => $bundle,
-            'node_date' => 'feed',
-            'promote' => '3',
-            'x_dedupe' => '0',
-          ),
-        ),
-      ),
-    );
-    date_tools_wizard_create_content_type('ical_feed', $description, $type_settings);  
-  }
-  
-  // Then create a new feed node for this url.
-  $node = new stdClass();
-  $node->title = $feed_title;
-  $node->type = 'ical_feed';
-  
-  $node->feed = new stdClass;
-  $node->feed->url = $url;
-  $node->feed->feed_type = 'iCal Feed';
-  $node->feed->processors = array('feedapi_node');
-  $node->feed->parsers = array('ical_feed');
-  $node->feed->checked = 0;
-  $node->feed->hash = NULL;
-  $node->feed->link = '';
-  $node->feed->half_done = NULL;
-  $node->feed->skip = 0;
-
-  $node->feed->settings = array(
-    'feedapi_url' => $url,
-    'refresh_on_create' => 0,
-    'update_existing' => 1,
-    'skip' => 0,
-    'items_delete' => 0,
-    'processors' => array(
-      'feedapi_node' => array(
-        'content_type' => $bundle,
-        'node_date' => 'feed',
-        'promote' => 3,
-        'x_dedupe' => 0,
-      ),
-    ),
-  );
-  node_create($node);
-  $node->feed->feed_nid = $node->nid;
-  node_save($node);
-  
-  // TODO Can we map the node when we create it?
-  // TODO Can we refresh the node automatically after mapping it?
-  drupal_goto('node/' . $node->nid . '/map');
-  
-}
-
 function date_tools_wizard_include() {
   module_load_include('inc', 'node', 'content_types');
   module_load_include('inc', 'node', 'node.pages');
-  module_load_include('inc', 'content', 'includes/content.admin');
-  module_load_include('inc', 'content', 'includes/content.crud');
+  module_load_include('inc', 'field', 'field.crud');
   module_load_include('inc', 'date', 'date_admin');
 }
 
 function date_tools_wizard_options($options = array()) {
   $default_options = array(
     'popups', // Use popup features like Date Popup and Calendar Popup?
-    'signup', // Add Signup capability?
-    'feedapi',  // Add ical feed import?
     'repeat', // Use repeating dates?
-    'location',  // Add event locations?
     'linked',  // Create links between calendars and dates?
     );
   // Allow override of default options.
@@ -329,24 +249,6 @@ function date_tools_wizard_required_modules($options = array()) {
   if (in_array('repeat', $options)) {
     $modules = array_merge($modules, array('date_repeat'));
   }
-  if (in_array('location', $options) || in_array('linked', $options)) {
-    $modules = array_merge($modules, array('text', 'optionwidgets', 'nodereference'));
-  }
-  if (in_array('signup', $options)) {
-    $modules = array_merge($modules, array('signup'));
-  }
-  if (in_array('feedapi', $options)) {
-    
-    // iCal imports may use RRULEs that need to be interpreted.
-    if (!in_array('date_repeat', $modules)) {
-      $modules = array_merge($modules, array('date_repeat'));
-    }
-    if (!in_array('calendar_ical', $modules)) {
-      $modules = array_merge($modules, array('calendar_ical'));
-    }
-    $modules = array_merge($modules, array(
-      'feedapi', 'parser_ical', 'feedapi_node', 'feedapi_mapper'));
-  }
   return $modules;
 }
 
@@ -355,20 +257,12 @@ function date_tools_wizard_modules() {
     'date' => t('Date'),
     'date_api' => t('Date API'),
     'date_timezone' => t('Date Timezone'),
-    'content' => t('Content'),
+    'field' => t('Field'),
     'calendar' => t('Calendar'),
     'calendar_ical' => t('Calendar iCal'),
     'date_repeat' => t('Date Repeat'),
     'date_popup' => t('Date Popup'),
     'jcalendar' => t('Calendar Popup'),
-    'signup' => t('Signup'),
-    'text' => t('Text'),
-    'optionwidgets' => t('Optionwidgets'),
-    'nodereference' => t('Nodereference'),
-    'feedapi' => t('Feed API'),
-    'parser_ical' => t('Parser iCal'),
-    'feedapi_node' => t('Feed API Node'),
-    'feedapi_mapper' => t('Feed API Mapper'),
     'views' => t('Views'),
     'views_ui' => t('Views UI'),
     );
@@ -408,7 +302,7 @@ function date_tools_wizard_field_types() {
 
 function date_tools_wizard_widget_types() {
   $widget_types = array();  
-  foreach (date_widget_info() as $name => $info) {
+  foreach (date_field_widget_info() as $name => $info) {
     if (!strstr($name, '_repeat')) {
       $widget_types[$name] = $info['label'];
     }
@@ -456,19 +350,8 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
     $values[$key] = $value;
   }
 
-  $type = (object) _node_type_set_defaults($values);
+  $type = (object) node_type_set_defaults($values);
   node_type_save($type);
-  
-  if ($type == 'ical_feed') {
-    // Default type to not be promoted and have comments disabled.
-    variable_set('node_options_' . $bundle, array('status'));
-    variable_set('comment_' . $bundle, COMMENT_NODE_DISABLED);
-
-    // Don't display date and author information for this type by default.
-    $theme_settings = variable_get('theme_settings', array());
-    $theme_settings['toggle_node_info_' . $bundle] = FALSE;
-    variable_set('theme_settings', $theme_settings);
-  }
   
   // Update the menu router information.
   menu_rebuild();
@@ -479,92 +362,18 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
 
 function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $overrides = array()) {
   date_tools_wizard_include();
+    
+  // Get field default values for this combination of field and widget type.
+  $result = date_tools_default_values($field_type, $widget_type, $tz_handling, $overrides); 
   
-  $field_name = $overrides['field_name'];
-  $bundle = $overrides['bundle'];
-  
-  // Create the date field.
-  
-  // Set overrides that apply to all date fields.  
-  $base_overrides = array(
-  
-    'field_name' => $field_name,
-    'bundle' => $bundle,
-    
-    // Can be set to 0 (none), 1 (unlimited or repeating), 
-    // or 2-9 for a fixed number of values.
-    'multiple' => 0, 
-    
-    // Set a display format that will show complete date information, 
-    // to help test that values are correct.
-    'default_format' => 'long',
-    
-    // Set the date granularity.
-    'granularity' => array (
-      'year' => 'year',
-      'month' => 'month',
-      'day' => 'day',
-      'hour' => 'hour',
-      'minute' => 'minute',
-      ),
-    
-    // Shall this date include a 'To date'?, can be blank, 'optional', or 'required'  
-    'todate' => 'optional',
-    
-   );    
-  
-   // Widget overrides:
-   $widget_overrides = array(
-
-    // Move the date right below the title.
-    'weight' => -4,
-
-    // Set default values to 'blank', 'now', or 'relative' . To dates can also use 'same' .
-    'default_value' => 'now',
-    'default_value_code' => '', // The code to use with 'relative', like '+1 day' . 
-    'default_value2' => 'blank',
-    'default_value_code2' => '', // The code to use with 'relative', like '+1 day' . 
-    
-    // Set format string to use for input forms, it controls order and type of date parts.
-    // Input formats must have all date parts, including seconds.
-    'input_format_custom' => variable_get('date_format_short', 'm/d/Y - H:i') . ':s',
-    
-    // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
-    'increment' => 15,
-    
-    // Optional array of date parts that should be textfields in select widgets,
-    // can be any combination of year, month, day, hour, minute, second.
-    'text_parts' => array (),
-    
-    // The number of years to go back and forward in drop-down year selectors.
-    'year_range' => '0:+1',
-    
-    // The place for the date part labels, can be 'above', 'within', or 'none' .
-    'label_position' => 'above',
-  );
-  
-  $overrides = array_merge($base_overrides, $overrides);
-  $overrides['widget'] = array_merge($widget_overrides, $overrides['widget']);
-    
-  // Get field default values for this combination of field and widget type,
-  // using a helper function in the Date module.
-  $field = date_field_default_values($field_type, $widget_type, $tz_handling, $overrides);
-    
-  // TODO This is not right yet.
-  $field = field_create_field($field);
-  $instance = field_create_instance($field);
+  $field = field_create_field($result['field']);
+  $instance = field_create_instance($result['instance']);
   
   return $field;
 }
 
-function date_tools_wizard_create_location($bundle) {
-  // Get the basic field array with content module default values.
-  return field_info_field_settings($field_type);
-}
-
-function date_tools_wizard_create_calendar($name, $bundle, $date_field, $location_field = array()) {
+function date_tools_wizard_create_calendar($name, $bundle, $date_field) {
   
-  $location_name = !empty($location_field) ? $location_field['field_name'] : '';
   $date_name = !empty($date_field) ? $date_field['field_name'] : '';
   $path = 'calendar-' . str_replace('field_', '', $date_name);
   
@@ -579,7 +388,7 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field, $locatio
     'path' => $path,
     'types' => array($bundle => $name),
     'date_fields' => array($date_name),
-    'display_fields' => !empty($location_name) ? array('title' => array(), $date_name => array(), $location_name => array()) : array('title' => array(), $date_name => array()),
+    'display_fields' => array('title' => array(), $date_name => array()),
   );
   $calendar_options['calendar_' . $bundle] = $option;
   variable_set('calendar_default_view_options', $calendar_options);

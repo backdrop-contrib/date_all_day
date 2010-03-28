@@ -148,12 +148,11 @@ function date_field_info() {
       'timezone_db' => 'UTC',
     ),
     'instance_settings' => array(
-      'default_value' => 'blank', 
+      'default_value' => 'now', 
       'default_value_code' => '', 
       'default_value2' => 'blank', 
       'default_value_code2' => '', 
       'default_format' => 'medium',
-      'repeat_collapsed' => 0,
     ),
   );
   return array(
@@ -179,18 +178,17 @@ function date_field_info() {
 }
 
 function date_default_format($type) {
-  if ($type == 'date_popup' && module_exists('date_popup')) {
+  if (stristr($type, 'date_popup') && module_exists('date_popup')) {
     $formats = date_popup_formats();
     $default_format = array_shift($formats);
   }
   else {
     // example input formats must show all possible date parts, so add seconds.
-    $formats = str_replace('i', 'i:s', array_keys(system_get_date_formats('short')));
-    $formats = drupal_map_assoc($formats);
     $default_format = str_replace('i', 'i:s', variable_get('date_format_short', 'm/d/Y - H:i'));
   }
   return $default_format;
 }
+
 /**
  * Implement hook_widget_info().
  */
@@ -203,7 +201,8 @@ function date_field_widget_info() {
       'text_parts' => array(), 
       'year_range' => '-3:+3', 
       'label_position' => 'above',
-     ),
+      'repeat_collapsed' => 0,
+    ),
     'behaviors' => array(
       'multiple values' => FIELD_BEHAVIOR_DEFAULT,
       'default value' => FIELD_BEHAVIOR_CUSTOM,
@@ -759,7 +758,7 @@ function date_formatter_format($formatter, $field_name) {
   }
  
   if (empty($format)) {
-    $format = $default_format;
+    $format = $default;
   }
   // A selected format might include timezone information.
   $granularity = date_granularity($field);

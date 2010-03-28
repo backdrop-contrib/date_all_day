@@ -188,7 +188,7 @@ function date_tools_wizard_build($form_values) {
         'settings' => array(
           'increment' => 15,
           // The number of years to go back and forward in drop-down year selectors.
-          'year_range' => '0:+1',
+          'year_range' => '-0:+1',
         ),
       ),
       'settings' => array(
@@ -338,7 +338,7 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
     'language_content_type' => '0',
     'old_type' => $bundle,
     'orig_type' => '',
-    'module' => 'node',
+    'base' => 'node_content',
     'custom' => '1',
     'modified' => '1',
     'locked' => '0',
@@ -350,8 +350,7 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
     $values[$key] = $value;
   }
 
-  $type = (object) node_type_set_defaults($values);
-  node_type_save($type);
+  node_type_save((object) $values);
   
   // Update the menu router information.
   menu_rebuild();

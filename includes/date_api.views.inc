@@ -158,7 +158,7 @@ function date_api_views_data() {
 function date_api_fields($base = 'node', $reset = FALSE) {
   static $fields = array();
   $empty = array('name' => array(), 'alias' => array());
-  module_load_include('inc', 'date_api', 'date_api_fields');
+  module_load_include('inc', 'date_api', 'includes/date_api_fields');
   
   if (empty($fields[$base]) || $reset) {
     $cid = 'date_api_fields_' . $base;

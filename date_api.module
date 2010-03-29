@@ -1965,6 +1965,8 @@ function date_api_date_api_tables() {
 function date_api_database_info($field) {
   $data = $field['storage']['details']['sql'][FIELD_LOAD_CURRENT];
   $db_info = array('columns' => $data);
-  $db_info['table'] = key($data);
+  $current_table = _field_sql_storage_tablename($field);
+  $revision_table = _field_sql_storage_revision_tablename($field);
+  $db_info['table'] = $current_table;
   return $db_info;
 }

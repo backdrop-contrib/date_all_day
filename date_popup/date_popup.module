@@ -350,7 +350,6 @@ function date_popup_validate($element, &$form_state) {
   
   date_popup_add();
   $value = date_popup_input_value($element);
-  
   // If the created date is valid, set it.
   if (!empty($value)) {
     form_set_value($element, $value, $form_state);

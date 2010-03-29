@@ -24,7 +24,7 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function init(&$view, $options) {
     parent::init($view, $options);
-    
+
     // Identify the type of display we're using.
     $this->display_handler = $view->display_handler->definition['handler'];
     
@@ -51,7 +51,7 @@ class date_api_argument_handler extends views_handler_argument_date {
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['date_fields'] = array('default' => '');
+    $options['date_fields'] = array('default' => array());
     $options['year_range'] = array('default' => '-3:+3');
     $options['date_method'] = array('default' => 'OR');
     $options['granularity'] = array('default' => 'month');
@@ -82,11 +82,10 @@ class date_api_argument_handler extends views_handler_argument_date {
       '#default_value' => $this->options['year_range'],
       '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
-    
     $fields = date_api_fields($this->definition['base']);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $instance['label'];
+      $options[$name] = $field['field_name'];
     }
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),

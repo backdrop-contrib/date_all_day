@@ -16,21 +16,24 @@
  *    the hook_date_api_fields() for the core date fields.
  */
 function _date_api_fields($base = 'node') {
+  
   // Make sure $base is never empty.
   if (empty($base)) {
     $base = 'node';
   }
+  
   $cid = 'date_api_fields_' . $base;
   cache_clear_all($cid, 'cache_views');
-  
   $all_fields = date_api_views_fetch_fields($base, 'field');
+  $content_fields = field_views_data();
+  
   $fields = array();
   foreach ((array) $all_fields as $name => $val) {
     $fromto = array();
-    $tmp = explode(' . ', $name);
+    $tmp = explode('.', $name);
     $field_name = $tmp[1];
     $table_name = $tmp[0];
-    $alias = str_replace(' . ', '_', $name);
+    $alias = str_replace('.', '_', $name);
       
     if (!$handler = views_get_handler($table_name, $field_name, 'field')) {
       continue; 
@@ -39,10 +42,11 @@ function _date_api_fields($base = 'node') {
     $handler_name = $handler->definition['handler'];
     $type = '';
     
-    // For cck fields, get the date type.
+    // For Field module fields, get the date type.
     $custom = array();
-    if (isset($handler->content_field_name)) {
-      $field_name = $this->content_field_name;
+    if ($field_name == 'entity_id') {
+      
+      $field_name = $content_fields[$table_name]['entity_id']['field']['field_name'];
       $field = field_info_field($field_name);
     
       if ($field['type'] == 'date') {
@@ -81,10 +85,6 @@ function _date_api_fields($base = 'node') {
       $rrule_field = '';
       $delta_field = '';
       $granularity = array('year', 'month', 'day', 'hour', 'minute');
-       
-      // Handling for content field dates
-      $field_name = $this->content_field_name;
-      $field = field_info_field($field_name);
     
       if (isset($field['tz_handling'])) {
         $tz_handling = $field['tz_handling'];
@@ -115,8 +115,8 @@ function _date_api_fields($base = 'node') {
 
       // Handling for cck fromto dates
       if (isset($handler->content_field_name)) {
-        $field_name = $this->content_field_name;
-        $field = field_info_field($field_name);
+        $real_field_name = $this->content_field_name;
+        $field = field_info_field($real_field_name);
     
         switch ($field['type']) {
           case 'date':
@@ -132,8 +132,6 @@ function _date_api_fields($base = 'node') {
         $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
       }
       
-      // CCK fields append a column name to the field, others do not
-      // need a real field_name with no column name appended for cck date formatters
       switch ($type) {
         case 'cck_string':
           $sql_type = DATE_ISO;
@@ -169,21 +167,11 @@ function _date_api_fields($base = 'node') {
           $fields['name'][$name][$key] = $val;
         }
       }
-      if (isset($field)) {
-        if (substr($field_name, -1) == '2') {
-          $len = (strlen($field_name) - 7);
-        }
-        else {
-          $len = (strlen($field_name) - 6);
-        }
-        $fields['name'][$name]['real_field_name'] = substr($field_name, 0, $len);
-      }
-      else {
-        $fields['name'][$name]['real_field_name'] = $field_name;
-      }
+      $fields['name'][$name]['real_field_name'] = $field_name == 'entity_id' ? $real_field_name : $field_name;
       $fields['alias'][$alias] = $fields['name'][$name];
     }
   }
+
   cache_set($cid, $fields, 'cache_views');
   return $fields;
 }

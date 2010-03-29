@@ -69,7 +69,7 @@ class date_sql_handler {
   var $offset_field = NULL; // Use if the offset is stored in a field.
   
   function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
-    $this->db_type = $GLOBALS['db_type'];
+    $this->db_type = $this->get_db_type();
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
     $this->local_timezone = isset($local_timezone) ? $local_timezone : date_default_timezone();
@@ -81,6 +81,11 @@ class date_sql_handler {
     date_api_set_db_timezone();
   }
 
+  function get_db_type() {
+    global $db_type;
+    return $GLOBALS['databases']['default']['default']['driver'];
+  }
+  
   /**
    * See if the db has timezone name support.
    */
@@ -92,11 +97,9 @@ class date_sql_handler {
       switch ($this->db_type) {
         case 'mysql':
         case 'mysqli':
-          if (version_compare(db_version(), '4.1.3', '>=')) {
-            $test = db_result(db_query("SELECT CONVERT_TZ('2008-02-15 12:00:00', 'UTC', 'US/Central')"));
-            if ($test == '2008-02-15 06:00:00') {
-              $has_support = TRUE;
-            }
+          $test = db_result(db_query("SELECT CONVERT_TZ('2008-02-15 12:00:00', 'UTC', 'US/Central')"));
+          if ($test == '2008-02-15 06:00:00') {
+            $has_support = TRUE;
           }
           break;
         case 'pgsql':
@@ -129,9 +132,9 @@ class date_sql_handler {
    */
   function set_db_timezone($offset = '+00:00') {
     static $already_set = FALSE;
-    $type = $GLOBALS['db_type'];
+    $type = $this->get_db_type();
     if (!$already_set) {
-      if (($type == 'mysqli' || $type == 'mysql') && version_compare(db_version(), '4.1.3', '>=')) {
+      if (($type == 'mysqli' || $type == 'mysql')) {
         db_query("SET @@session.time_zone = '$offset'");
       }
       elseif ($type == 'pgsql') {
@@ -181,12 +184,7 @@ class date_sql_handler {
             $field = "FROM_UNIXTIME($field)";
             break;
           case DATE_ISO:
-            if (version_compare(db_version(), '4.1.1', '>=')) {
-              $field = "STR_TO_DATE($field, '%Y-%m-%%dT%T')";
-            }
-            else {
-              $field = "REPLACE($field, 'T', ' ')";
-            }
+            $field = "STR_TO_DATE($field, '%Y-%m-%%dT%T')";
             break;
           case DATE_DATETIME:
             break;
@@ -217,12 +215,7 @@ class date_sql_handler {
       switch ($this->db_type) {
         case 'mysql':
         case 'mysqli':
-          if (version_compare(db_version(), '4.1.1', '>=')) {
-            return "ADDTIME($field, SEC_TO_TIME($offset))";
-          }
-          else {
-            return "DATE_ADD($field, INTERVAL $offset SECOND)";
-          }
+          return "ADDTIME($field, SEC_TO_TIME($offset))";
         case 'pgsql':
           return "($field + INTERVAL '$offset SECONDS')";;
       }

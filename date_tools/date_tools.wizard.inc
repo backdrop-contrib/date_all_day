@@ -448,6 +448,6 @@ function date_tools_wizard_add_block($block) {
   }
   else {
     $block->bid = $bid;
-    drupal_write_record('blocks', $block, array($block->bid));
+    drupal_write_record('blocks', $block, array('bid'));
   }
 }

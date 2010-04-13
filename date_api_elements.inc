@@ -150,10 +150,10 @@ function date_text_element_process($element, $form_state, $form) {
   
   $element['date']['#type'] = 'textfield';
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
-  $element['date']['#default_value'] = is_object($date) ? date_format($date , $element['#date_format']) : '';
+  $element['date']['#default_value'] = is_object($date) ? date_format_date($date , 'custom', $element['#date_format']) : '';
   $element['date']['#attributes'] = array('class' => isset($element['#attributes']['class']) ? $element['#attributes']['class'] += array('date-date') : array('date-date'));
   
-  $element['date']['#description'] = ' ' . t('Format: @date', array('@date' => date($element['#date_format'], REQUEST_TIME)));
+  $element['date']['#description'] = ' ' . t('Format: @date', array('@date' => date_format_date(date_make_date(date($element['#date_format'], REQUEST_TIME)), 'custom', $element['#date_format']);
   
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.

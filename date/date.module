@@ -654,7 +654,7 @@ function date_field_load($entity_type, $entities, $field, $instances, $langcode,
  */
 function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items, &$errors) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items);
+  return _date_field_validate($entity_type, $entity, $field, $instance, $langcode, $items);
 }
 
 /**
@@ -662,7 +662,7 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
  */
 function date_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items);  
+  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);  
 }
 
 /**
@@ -670,7 +670,7 @@ function date_field_presave($entity_type, $entity, $field, $instance, $langcode,
  */
 function date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items);  
+  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);  
 }
 
 /**
@@ -678,7 +678,7 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
  */
 function date_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
   module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items);
+  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
 }
 
 /**

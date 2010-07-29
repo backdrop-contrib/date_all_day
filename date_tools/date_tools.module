@@ -231,12 +231,12 @@ function date_tools_default_values($field_type, $widget_type, $tz_handling, $ove
   $instance = array('field_name' => '', 'entity_type' => 'node', 'bundle' => '');
 
   // Update it with default values for this date field and widget type.
-  _date_tools_overrides(&$field, $field_values[$field_type]);
-  _date_tools_overrides(&$instance, $instance_values[$widget_type]);
+  _date_tools_overrides($field, $field_values[$field_type]);
+  _date_tools_overrides($instance, $instance_values[$widget_type]);
   
   // Allow overrides of specific default values. 
-  _date_tools_overrides(&$field, $overrides['field']);
-  _date_tools_overrides(&$instance, $overrides['instance']);
+  _date_tools_overrides($field, $overrides['field']);
+  _date_tools_overrides($instance, $overrides['instance']);
 
   // Make sure multiple gets set correctly for repeating dates.
   if ($field['settings']['repeat']) $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;

@@ -30,17 +30,6 @@ You should end up with a structure like:
 
 
 ==================================================================================
-Enable Date Timezone
-==================================================================================
-In most cases, you should enable the Date Timezone module any time you use the
-Date API to be able to set the site and user timezone names. It is not enabled by 
-default in case another module is setting timezone names in the database.
-
-Once you have enabled it, go to admin/settings/date-time and set the default 
-site timezone name. If you are using user timezones, go to your account settings
-and set up your own timezone name.
-
-==================================================================================
 Install CCK Date Fields:
 ==================================================================================
 

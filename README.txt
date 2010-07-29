@@ -1,15 +1,7 @@
 INFORMATION FOR DEVELOPERS
 
 Once the Date API is installed, all functions in the API are available to be used 
-anywhere by any module. If the Date Timezone module is installed, the system site 
-timezone selector and the user timezone selectors are overwritten to allow the 
-selection of timezone names instead of offsets. Proper timezone conversion 
-requires knowledge of those timezone names, something that is not currently 
-available in Drupal core, and the change in selectors makes it possible to track it.
-
-In most cases, you should enable the Date Timezone module any time you use the
-Date API to be able to set the site and user timezone names. It is not enabled by 
-default in case another module is setting timezone names in the database.
+anywhere by any module. 
 
 The API uses the PHP 5.2 date functions to create and manipulate dates.
 

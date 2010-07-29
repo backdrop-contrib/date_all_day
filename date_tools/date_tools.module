@@ -30,7 +30,11 @@ function date_tools_help($section, $arg) {
  * Implements hook_permission().
  */
 function date_tools_permission() {
-  return array('administer date tools');
+  return array(
+    'administer date tools' =>  array(
+      'title' => t('Administer date tools'),
+    ),
+  );
 }
 
 /**

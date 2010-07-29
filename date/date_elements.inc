@@ -289,7 +289,7 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   $element[$from_field] = array(
     '#field'         => $field,
-    '#title'         => (!$field['cardinality'] || $field['settings']['repeat']) ? t($instance['label']) : '',
+    '#title'         => t($instance['label']),
     '#weight'        => $instance['widget']['weight'],
     '#required'      => ($instance['required'] && $delta == 0) ? 1 : 0,
     '#default_value' => isset($element['#value'][$from_field]) ? $element['#value'][$from_field] : '',

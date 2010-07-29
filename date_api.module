@@ -1099,12 +1099,12 @@ function date_convert($date, $from_type, $to_type, $tz = 'UTC') {
  * Create valid datetime value from incomplete ISO dates or arrays.
  */
 function date_fuzzy_datetime($date) {
-  // A text ISO date, like MMMM-YY-DD HH:MM:SS
+  // A text ISO date, like YYYY-MM-DD HH:MM:SS
   if (!is_array($date)) {
     $date = date_iso_array($date);
   }
   // An date/time value in the format:
-  //  array('date' => MMMM-YY-DD, 'time' => HH:MM:SS).
+  //  array('date' => YYYY-MM-DD, 'time' => HH:MM:SS).
   elseif (array_key_exists('date', $date) || array_key_exists('time', $date)) {
     $date_part = array_key_exists('date', $date) ? $date['date'] : '';
     $time_part = array_key_exists('time', $date) ? $date['time'] : '';

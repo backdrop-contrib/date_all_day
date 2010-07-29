@@ -377,11 +377,6 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
     $zonenames = !empty($cached) ? $cached->data : array();
     if ($refresh || empty($cached) || empty($zonenames)) {
       $data = timezone_identifiers_list();
-      // Use include instead of include once in case the function gets 
-      // refreshed via devel or other API and is called more than once.
-      if (module_exists('date_php4')) {
-        include(' ./' . drupal_get_path('module', 'date_php4') . '/date_php4_missing_data.inc');
-      }
       foreach ($data as $delta => $zone) {
         // Because many time zones exist in PHP only for backward 
         // compatibility reasons and should not be used, the list is 

@@ -75,7 +75,7 @@ function date_tools_change_type_form_submit($form, &$form_state) {
   
   // Is there any data in this field? If not, we can
   // skip some steps.
-  $has_data = db_result(db_query("SELECT COUNT(*) FROM {". $table ."}"));
+  $has_data = db_query("SELECT COUNT(*) FROM {". $table ."}")->fetchField();
   
   // Create a backup copy of the original values.
   // The values are going to get corrupted when we

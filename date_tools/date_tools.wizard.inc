@@ -373,7 +373,7 @@ function date_tools_wizard_create_blocks($bundle) {
  * Add a block.
  */
 function date_tools_wizard_add_block($block) {
-  $bid = db_result(db_query("SELECT bid FROM {blocks} WHERE module='%s' AND delta='%s' AND theme='%s'", $block->module, $block->delta, $block->theme));
+  $bid = db_query("SELECT bid FROM {blocks} WHERE module='%s' AND delta='%s' AND theme='%s'", $block->module, $block->delta, $block->theme)->fetchField();
   if (empty($bid)) {
     $block->bid = NULL;
     drupal_write_record('blocks', $block);

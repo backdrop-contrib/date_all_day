@@ -123,7 +123,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $fields = date_api_fields($this->definition['base']);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $instance['label'];
+      $options[$name] = $field['label'];
     }
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),

@@ -102,6 +102,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
    
   function extra_options_form(&$form, &$form_state) {
+    parent::extra_options_form($form, $form_state);
     $form['form_type'] = array(
       '#type' => 'radios',
       '#title' => t('Date form type'),
@@ -142,7 +143,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#description' => t('Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2).'),
       );
   }
-
+  
   function extra_options_validate($form, &$form_state) {
     $check_fields = array_filter($form_state['values']['options']['date_fields']);
     if (empty($check_fields)) {
@@ -160,48 +161,132 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     
   /**
    * Add the selectors to the value form using the date handler.
+   *
+   * @TODO Come back and swap date_select, date_popup, or date_text in for '#type' => 'textfield'.
+   * Those types need to be debugged first, they are not totally working right.
+   * In the meantime the form will load without errors, but won't actually work, since
+   * the dates are not the expected values.
    */
   function value_form(&$form, &$form_state) {
-    // We use different values than the parent form, so we must
-    // construct our own form element.
-    $form['value'] = array();
+
     $form['value']['#tree'] = TRUE;
     
+    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+    $granularity = array_keys($this->date_handler->date_parts($this->options['granularity']));
+
     // We have to make some choices when creating this as an exposed
     // filter form. For example, if the operator is locked and thus
     // not rendered, we can't render dependencies; instead we only
     // render the form items we need.
     $which = 'all';
-    $source = '';
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
 
     if (!empty($form_state['exposed'])) {
+      $identifier = $this->options['expose']['identifier'];
+
       if (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator'])) {
         // exposed and locked.
         $which = in_array($this->operator, $this->operator_values(2)) ? 'minmax' : 'value';
       }
       else {
-        $source = 'edit-' . form_clean_id($this->options['expose']['operator']);
+        $source = 'edit-' . drupal_html_id($this->options['expose']['operator']);
       }
     }
 
-    $handler = $this->date_handler;
-       
-    if ($which == 'all' || $which == 'value') {
-      $form['value'] += $this->date_parts_form($form_state, 'value', $source, $which, $this->operator_values(1));
-      if ($this->force_value) {
-        $form['value']['value']['#force_value'] = TRUE;
+    if ($which == 'all') {
+      $form['value']['value'] = array(
+        '#type' => 'textfield',
+        '#title' => empty($form_state['exposed']) ? t('Value') : '',
+        '#size' => 30,
+        '#default_value' => $this->value['value'],
+        '#process' => array('views_process_dependency'),
+        '#dependency' => array($source => $this->operator_values(1)),
+      );
+      if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier]['value'])) {
+        $form_state['input'][$identifier]['value'] = $this->value['value'];
+      }
+    }
+    elseif ($which == 'value') {
+    
+      // Don't set a default date in the UI, only in the exposed form.
+      $default_date = '';
+      if (!empty($form_state['exposed'])) {
+        $default_date = $this->default_value('value');
+      }
+      
+      // When exposed we drop the value-value and just do value if
+      // the operator is locked.
+      $form['value'] = array(
+        '#type' => 'textfield',
+        '#title' => empty($form_state['exposed']) ? t('Value') : '',
+        '#size' => 30,
+        '#default_value' => !empty($this->value['value']) ? $this->value['value'] : $default_date,
+        '#date_format' => date_limit_format($format, $granularity),
+        '#date_label_position' => 'within',
+        '#date_year_range' => $this->options['year_range'],
+      );
+          
+      if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier])) {
+        $form_state['input'][$identifier] = $this->value['value'];
       }
     }
 
     if ($which == 'all' || $which == 'minmax') {
-      $form['value'] += $this->date_parts_form($form_state, 'min', $source, $which, $this->operator_values(2));
-      $form['value'] += $this->date_parts_form($form_state, 'max', $source, $which, $this->operator_values(2));
-      if ($this->force_value) {
-        $form['value']['min']['#force_value'] = TRUE;
-        $form['value']['max']['#force_value'] = TRUE;
+            
+      // Don't set a default date in the UI, only in the exposed form.
+      $default_date = '';
+      if (!empty($form_state['exposed'])) {
+        $default_date = $this->default_value('min');
+      }
+    
+      $form['value']['min'] = array(
+        '#type' => 'textfield',
+        '#title' => empty($form_state['exposed']) ? t('Min') : '',
+        '#size' => 30,
+        '#default_value' => !empty($this->value['min']) ? $this->value['min'] : $default_date,
+        '#date_format' => date_limit_format($format, $granularity),
+        '#date_label_position' => 'within',
+        '#date_year_range' => $this->options['year_range'],
+      );
+      
+      // Don't set a default date in the UI, only in the exposed form.
+      $default_date = '';
+      if (!empty($form_state['exposed'])) {
+        $default_date = $this->default_value('max');
+      }
+      
+      $form['value']['max'] = array(
+        '#type' => 'textfield',
+        '#title' => empty($form_state['exposed']) ? t('And max') : t('And'),
+        '#size' => 30,
+        '#default_value' => !empty($this->value['max']) ? $this->value['max'] : $default_date,
+        '#date_format' => date_limit_format($format, $granularity),
+        '#date_label_position' => 'within',
+        '#date_year_range' => $this->options['year_range'],
+      );
+      if ($which == 'all') {
+        $dependency = array(
+          '#process' => array('views_process_dependency'),
+          '#dependency' => array($source => $this->operator_values(2)),
+        );
+        $form['value']['min'] += $dependency;
+        $form['value']['max'] += $dependency;
+      }
+      if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier]['min'])) {
+        $form_state['input'][$identifier]['min'] = $this->value['min'];
+      }
+      if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier]['max'])) {
+        $form_state['input'][$identifier]['max'] = $this->value['max'];
+      }
+
+      if (!isset($form['value'])) {
+        // Ensure there is something in the 'value'.
+        $form['value'] = array(
+          '#type' => 'value',
+          '#value' => NULL
+        );
       }
     }
     
@@ -213,88 +298,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#title' => t('Date default'),
       '#default_value' => $this->options['default_date'],
       '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The To date default value is used when the operator is set to 'between' or 'not between'.") . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
-      );
+    );
     $form['value']['default_to_date'] = array(
       '#type' => 'textfield',
       '#title' => t('To date default'),
       '#default_value' => $this->options['default_to_date'],
-      );
-
-    // Test if this value is in the UI or exposed, only show these elements in the UI.
-    // We'll save it as an option rather than a value to store it for use
-    // in the exposed filter.
-    if (!empty($form_state['exposed'])) {
-      $form['value']['default_date']['#type'] = 'value';
-      $form['value']['default_date']['#value'] = $form['value']['default_date']['#default_value'];
-      $form['value']['default_to_date']['#type'] = 'value';
-      $form['value']['default_to_date']['#value'] = $form['value']['default_to_date']['#default_value'];
-      unset($form['value']['default_date']['#prefix']);
-      unset($form['value']['value']['#prefix']);
-    }
-    
-    $form['value']['#theme'] = 'date_views_filter_form';  
-  }
-
-  /**
-   * A form element to select date part values.
-   *
-   * @param string $prefix
-   *   A prefix for the date values, 'value', 'min', or 'max' .
-   * @param string $source
-   *   The operator for this element.
-   * @param string $which
-   *   Which element to provide, 'all', 'value', or 'minmax' .
-   * @param array $operator_values
-   *   An array of the allowed operators for this element.
-   * @param array $limit
-   *   An array of date parts to limit this element to.
-   *
-   * @return
-   *   The form date part element for this instance.
-   */
-  function date_parts_form($form_state, $prefix, $source, $which, $operator_values) {
-    module_load_include('inc', 'date_api', 'date_api_elements');
-    switch($prefix) {
-      case 'min':
-        $name = t('From date');
-        break;
-      case 'max':
-        $name = t('To date');
-        break;
-      default:
-        $name = '';
-        break;
-    }
-    
-    $type = $this->options['form_type'];
-    if ($type == 'date_popup' && !module_exists('date_popup')) {
-      $type = 'date_text';
-    }
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
-    $granularity = array_keys($this->date_handler->date_parts($this->options['granularity']));
-    
-    // Don't set a default date in the UI, only in the exposed form.
-    $default_date = '';
-    if (!empty($form_state['exposed'])) {
-      $default_date = $this->default_value($prefix);
-    }
-    $form[$prefix] = array(
-      '#type' => $type,
-      '#title' => $name,
-      '#size' => 20,
-      '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
-      '#date_format' => date_limit_format($format, $granularity),
-      '#date_label_position' => 'within',
-      '#date_year_range' => $this->options['year_range'],
     );
-    if ($which == 'all') {
-      $dependency = array(
-        '#process' => array($type . '_process', 'views_process_dependency'),
-        '#dependency' => array($source => $operator_values),
-      );
-      $form[$prefix] += $dependency;
-    }
-    return $form;
+    
   }
 
   function default_value($prefix, $options = NULL) {

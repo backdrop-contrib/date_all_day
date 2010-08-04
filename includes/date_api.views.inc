@@ -185,8 +185,7 @@ function date_api_fields($base = 'node', $reset = FALSE) {
  * value to compare to the local value.
  */
 function date_views_set_timezone(&$date_handler, &$view, $field) {
-  $tz_handling  = $field['settings']['tz_handling'];
-  switch ($tz_handling) {
+  switch ($field['tz_handling']) {
     case 'date' :
       $date_handler->db_timezone = 'UTC';
       $date_handler->local_timezone_field = $field['timezone_field'];

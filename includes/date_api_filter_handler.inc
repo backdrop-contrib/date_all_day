@@ -68,11 +68,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $options['year_range'] = array('default' => '-3:+3');
     return $options;
   }
-  
-  function option_definition() {
-    $options = parent::option_definition();
-    return $options;
-  }
 
   /**
    * Set the granularity of the date parts to use in the filter.

@@ -62,6 +62,25 @@ function date_type_format($type) {
 }
 
 /**
+ * Create a 'datetime' field type.
+ */
+function date_api_schema_alter(&$schema) {
+  foreach ($schema as &$table) {
+    foreach ($table['fields'] as &$field) {
+      if ($field['type'] == 'datetime') {
+        $field += array('mysql_type' => 'DATETIME', 'pgsql_type' => 'timestamp without time zone');
+      }
+      elseif ($field['type'] == 'date') {
+        $field += array('mysql_type' => 'DATE', 'pgsql_type' => 'date');
+      }
+      elseif ($field['type'] == 'time') {
+        $field += array('mysql_type' => 'TIME', 'pgsql_type' => 'time without time zone');
+      }
+    }
+  }
+}
+
+/**
  * An untranslated array of month names
  *
  * Needed for css, translation functions, strtotime(), and other places

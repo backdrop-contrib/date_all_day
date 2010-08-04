@@ -30,26 +30,6 @@
  *   date argument default to set a starting point for the view.
  */
 /**
- * Implementation of hook_views_handlers() to register all of the basic handlers
- * views uses.
- */
-function date_api_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'date_api') . '/includes',
-      ),
-    'handlers' => array(
-      'date_api_argument_handler' => array(
-        'parent' => 'views_handler_argument_date',
-      ),
-      'date_api_filter_handler' => array(
-        'parent' => 'views_handler_filter_numeric',
-      ),
-    ),
-  );
-}
-
-/**
  * Implementation of hook_views_plugins
  */
 function date_api_views_plugins() {

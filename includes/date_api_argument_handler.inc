@@ -360,7 +360,7 @@ class date_api_argument_handler extends views_handler_argument_date {
         }
         $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
         if ($sql) {
-          $this->query->add_where('date', $sql);
+          $this->query->add_where('date', $sql, array(), 'formula');
         }
       }
     }

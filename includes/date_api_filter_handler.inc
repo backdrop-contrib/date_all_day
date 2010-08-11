@@ -443,9 +443,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         if (!empty($sql)) {
           // Use set_where_group() with the selected date_method 
           // of 'AND' or 'OR' to combine the field WHERE clauses.
-          //$this->query->set_where_group($this->options['date_method'], 'date');
-          //$this->query->add_where('date', $sql);
-          dsm($sql);
+          $this->query->set_where_group($this->options['date_method'], 'date');
+          $this->query->add_where('date', $sql, array(), 'formula');
         }
       }
     }

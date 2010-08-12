@@ -504,7 +504,7 @@ function datepicker_format_replacements() {
 function theme_date_popup($vars) {
   $element = $vars['element'];
   $output = '';
-  $class = 'container-inline-date';
+  $class = 'container-inline-date form-item';
   // Add #date_float to allow date parts to float together on the same line. 
   if (empty($element['#date_float'])) {
     $class .= ' date-clear-block';

@@ -645,9 +645,11 @@ function date_field_load($entity_type, $entities, $field, $instances, $langcode,
     foreach ($items[$id] as $delta => $item) {
       // If the file does not exist, mark the entire item as empty.
       $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-      $items[$id][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-      $items[$id][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
-      $items[$id][$delta]['date_type'] = $field['type'];
+      if (is_array($item)) {
+        $items[$id][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+        $items[$id][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+        $items[$id][$delta]['date_type'] = $field['type'];
+      }
     }
   }
 }

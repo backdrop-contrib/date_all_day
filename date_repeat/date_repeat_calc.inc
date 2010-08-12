@@ -71,9 +71,9 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
   if (!empty($rrule['BYMONTHDAY']) && !in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
     $rrule['FREQ'] = 'MONTHLY';
   }
-  if (!empty($rrule['BYDAY']) && !in_array($rrule['FREQ'], array('MONTHLY', 'WEEKLY', 'YEARLY'))) {
-    $rrule['FREQ'] = 'MONTHLY';
-  }
+  else if (!empty($rrule['BYDAY']) && !in_array($rrule['FREQ'], array('MONTHLY', 'WEEKLY', 'YEARLY'))) {
+    $rrule['FREQ'] = 'WEEKLY';
+   }
   
   // Find the time period to jump forward between dates.
   switch ($rrule['FREQ']) {

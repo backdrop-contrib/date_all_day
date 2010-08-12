@@ -947,7 +947,7 @@ function date_week_range($week, $year) {
   date_modify($min_date, '+' . strval(7 * ($week - 1)) . ' days');
 
   // move backwards to the first day of the week
-  $first_day = variable_get('date_first_day', 0);
+  $first_day = variable_get('date_first_day', 1);
   $day_wday = date_format($min_date, 'w');
   date_modify($min_date, '-' . strval((7 + $day_wday - $first_day) % 7) . ' days');
 
@@ -1006,7 +1006,7 @@ function date_week($date) {
   if ($year_week != 1) $week++;
 
   // convert to ISO-8601 day number, to match weeks calculated above
-  $iso_first_day = 1 + (variable_get('date_first_day', 0) + 6) % 7;
+  $iso_first_day = 1 + (variable_get('date_first_day', 1) + 6) % 7;
 
   // if it's before the starting day, it's the previous week
   if (intval(date_format($date, 'N')) < $iso_first_day) $week--;

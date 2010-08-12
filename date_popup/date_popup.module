@@ -235,7 +235,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
     'currentText' => date_t('Today', 'date_nav'),
     'clearText' => t('Clear'),
     'closeText' => t('Close'),
-    'firstDay' => intval(variable_get('date_first_day', 0)),
+    'firstDay' => intval(variable_get('date_first_day', 1)),
     'dayNames' => date_week_days(TRUE),
     'dayNamesShort' => date_week_days_abbr(TRUE, TRUE, 3),
     'dayNamesMin' => date_week_days_abbr(TRUE, TRUE, 2),

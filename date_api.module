@@ -610,11 +610,8 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
         $datestring .= $format[++$i];
         break;
       default:
-        if (strpos('BdcgGhHiIjLmnsStTUwWYyz', $c) !== FALSE) {
+        if (strpos('BdcgGhHiIjLmnNorsStTuUwWYyz', $c) !== FALSE) {
           $datestring .= date_format($date, $c);
-        }
-        elseif ($c == 'r') {
-          $datestring .= format_date($date, 'custom', 'D, d M Y H:i:s O', $langcode);
         }
         else {
           $datestring .= $c;

@@ -400,6 +400,7 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
     $zonenames = !empty($cached) ? $cached->data : array();
     if ($refresh || empty($cached) || empty($zonenames)) {
       $data = timezone_identifiers_list();
+      asort($data);
       foreach ($data as $delta => $zone) {
         // Because many time zones exist in PHP only for backward 
         // compatibility reasons and should not be used, the list is 

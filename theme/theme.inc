@@ -95,8 +95,12 @@ function template_preprocess_date_navigation(&$vars) {
   if (!empty($view->date_info->block) && $view->date_info->granularity == 'month') {
     $link = TRUE;
   }
-  
-  $nav_title = theme('date_nav_title', $view->date_info->granularity, $view, $link);
+  $params = array(
+    'granularity' => $view->date_info->granularity, 
+    'view' => $view, 
+    'link' => $link,
+  );
+  $nav_title = theme('date_nav_title', $params);
   $vars['nav_title'] = $nav_title;
   $vars['block'] = !empty($view->date_info->block);
 }
@@ -108,6 +112,7 @@ function theme_date_nav_title($vars) {
   $view = $vars['view'];
   $link = !empty($vars['link']) ? $vars['link'] : FALSE;
   $format = !empty($vars['format']) ? $vars['format'] : NULL;
+  $title = '';
   switch ($granularity) {
     case 'year':
       $title = $view->date_info->year;

@@ -1572,7 +1572,7 @@ function date_api_theme() {
     'path' => "$path/theme",
   );
   return array(
-    'date_nav_title' => $base + array('variables' => array('type' => NULL, 'view' => NULL)),
+    'date_nav_title' => $base + array('variables' => array('granularity' => NULL, 'view' => NULL, 'link' => NULL)),
     'date_vcalendar' => $base + array('variables' => array('events' => NULL, 'calname' => NULL)),
     'date_vevent' => $base + array('variables' => array('event' => NULL)),
     'date_valarm' => $base + array('variables' => array('alarm' => NULL)),

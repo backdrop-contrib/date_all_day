@@ -34,6 +34,8 @@ class date_api_argument_handler extends views_handler_argument_date {
     $this->format = $date_handler->views_formats($date_handler->granularity, 'display');
     $this->sql_format = $date_handler->views_formats($date_handler->granularity, 'sql');
     
+    if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
+    
     // Set the view range, do this only if not already set in case there are multiple date arguments.
     if (empty($this->view->date_info->min_allowed_year)) {
       $range = date_range_years($this->options['year_range']);

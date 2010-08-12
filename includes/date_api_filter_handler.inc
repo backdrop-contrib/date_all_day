@@ -35,6 +35,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
     $handler->adjustment_field = isset($options['adjustment_field']) ? $options['adjustment_field'] : 0;
     
+    if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
+    
     // Set the view range, do this only if not already set in case there are multiple date arguments.
     if (empty($this->view->date_info->min_allowed_year)) {
       $range = date_range_years($this->options['year_range']);

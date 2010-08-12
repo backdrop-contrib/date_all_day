@@ -100,7 +100,7 @@ class date_sql_handler {
           }
           break;
         case 'pgsql':
-          $test = db_query("'2008-02-15 12:00:00 UTC' AT TIME ZONE 'US/Central'")->fetchField();
+          $test = db_query("SELECT '2008-02-15 12:00:00 UTC' AT TIME ZONE 'US/Central'")->fetchField();
           if ($test == '2008-02-15 06:00:00') {
             $has_support = TRUE;
           }
@@ -303,7 +303,7 @@ class date_sql_handler {
         case 'pgsql':
           // WITH TIME ZONE assumes the date is using the system
           // timezone, which should have been set to UTC.
-          return "TIMESTAMP WITH TIME ZONE $field AT TIME ZONE $localzone";
+          return "$field::timestamp with time zone AT TIME ZONE $localzone";
       }
     }
   }

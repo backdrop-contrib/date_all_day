@@ -213,7 +213,7 @@ function date_select_element_process($element, $form_state, $form) {
   foreach (date_nongranularity($granularity) as $field) {
     if ($field != 'timezone') {
       $element[$field] = array(
-        '#type' => 'hidden',
+        '#type' => 'value',
         '#value' => 0,
         );
     }
@@ -342,9 +342,12 @@ function date_parts_element($element, $date, $format) {
   }
  
   // Views exposed filters are treated as submitted even if not,
-  // so force the #default value in that case.  
-  if (!empty($element[$field]['#force_value'])) {
-    $sub_element[$field]['#value'] = $sub_element[$field]['#default_value'];
+  // so force the #default value in that case. Make sure we set
+  // a default that is in the option list.
+  if (!empty($element['#force_value'])) {
+    $options = $sub_element[$field]['#options'];
+    $default = !empty($sub_element[$field]['#default_value']) ? $sub_element[$field]['#default_value'] : array_shift($options);
+    $sub_element[$field]['#value'] = $default;
   }
   
   if (($hours_format == 'g' || $hours_format == 'h') && date_has_time($granularity)) {

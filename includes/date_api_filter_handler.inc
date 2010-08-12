@@ -59,7 +59,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   // Set default values for the date filter.
   function option_definition() {
     $options = parent::option_definition();
-    $options['date_fields'] = array('default' => '');
+    $options['date_fields'] = array('default' => array());
     $options['date_method'] = array('default' => 'OR');
     $options['granularity'] = array('default' => 'day');
     $options['form_type'] = array('default' => 'date_select');
@@ -412,14 +412,30 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       $form_state['values'][$this->options['expose']['identifier']] = $default;
     }
   }
-   
+
+  /**
+   * Called just prior to query(), this lets us set up table aliases for
+   * relationships. This can't be done in pre_query(), because the relationship
+   * isn't defined yet.
+   */
+  function set_relationship() {
+    parent::set_relationship();
+    $this->get_query_fields();
+    if (!empty($this->query_fields)) {
+      foreach ($this->query_fields as $query_field) {
+        $field = $query_field['field'];
+        $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+      }
+    }
+  }
+  
   /**
    * Custom implementation of query() so we can get the
    * AND and OR methods in the right places.
    */
   function query() {
-    $this->ensure_my_table();
-    $this->get_query_fields();
+    //$this->ensure_my_table();
+    //$this->get_query_fields();
     if (!empty($this->query_fields)) {
       foreach ((array) $this->query_fields as $query_field) {
         $field = $query_field['field'];

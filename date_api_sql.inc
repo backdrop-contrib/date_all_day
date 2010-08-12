@@ -181,7 +181,7 @@ class date_sql_handler {
             $field = "FROM_UNIXTIME($field)";
             break;
           case DATE_ISO:
-            $field = "STR_TO_DATE($field, '%Y-%m-%%dT%T')";
+            $field = "STR_TO_DATE($field, '%Y-%m-%dT%T')";
             break;
           case DATE_DATETIME:
             break;
@@ -325,10 +325,10 @@ class date_sql_handler {
         $replace = array(
           'Y' => '%Y', 'y' => '%y',
           'm' => '%m', 'n' => '%c',
-          'd' => '%%d', 'j' => '%e',
+          'd' => '%d', 'j' => '%e',
           'H' => '%H',
           'i' => '%i',
-          's' => '%%s',
+          's' => '%s',
           '\WW' => 'W%U',
           );
         $format = strtr($format, $replace);

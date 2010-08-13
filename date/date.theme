@@ -215,7 +215,9 @@ function theme_date_all_day($vars) {
   }
   
   $tmp = date_format_order($format);
-  $granularity = array_pop($tmp);
+  $granularity = array_intersect(array_keys(date_granularity_names()), date_format_order($format));
+  $granularity = array_pop($granularity);
+  
   if (empty($field['settings']['granularity'])) {
     $field['settings']['granularity'] = $tmp;
   }

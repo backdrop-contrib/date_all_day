@@ -972,13 +972,8 @@ function date_iso_week_range($week, $year) {
   $min_date = date_make_date($year .'-01-01 00:00:00', date_default_timezone_name());
   date_timezone_set($min_date, date_default_timezone());
   
-  for ($i = 1; $i < 8; $i++) {
-    if (date_format($min_date, 'W') == 1) {
-      break;
-    }
-    else {
-      date_modify($min_date, '+1 day');
-    }
+  if (date_format($min_date, 'W') != 1) {
+    date_modify($min_date, '+1 Monday');
   }
   // Jump ahead to the desired week for the beginning of the week range.
   if ($week > 1) {

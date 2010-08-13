@@ -467,7 +467,7 @@ function date_timezone_abbr($refresh = FALSE) {
  * @return translated value of the string
  */
 function date_t($string, $context, $langcode = NULL) {
-  //static $replace = array();
+  static $replace = array();
   
   if (empty($replace[$langcode])) {
     // The function to create the date string arrays is kept separate
@@ -610,8 +610,11 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
       case '\\':
         $datestring .= $format[++$i];
         break;
+      case 'r':
+        $datestring .= date_format_date($date, 'custom', 'D, d M Y H:i:s O', $langcode);
+        break;        
       default:
-        if (strpos('BdcgGhHiIjLmnNorsStTuUwWYyz', $c) !== FALSE) {
+        if (strpos('BdcgGhHiIjLmnNosStTuUwWYyz', $c) !== FALSE) {
           $datestring .= date_format($date, $c);
         }
         else {

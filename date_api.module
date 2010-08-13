@@ -938,6 +938,10 @@ function date_difference($date1_in, $date2_in, $measure = 'seconds', $type = DAT
  * chosen first day of week for this site.
  */
 function date_week_range($week, $year) {
+  if (variable_get('date_api_use_iso8601', FALSE)) {
+    return date_iso_week_range($week, $year);
+  }
+  
   $min_date = date_make_date($year . '-01-01 00:00:00', date_default_timezone());
   date_timezone_set($min_date, date_default_timezone());
 
@@ -956,6 +960,34 @@ function date_week_range($week, $year) {
   if (date_format($min_date, 'Y') != $year) {
     $min_date = date_make_date($year . '-01-01 00:00:00', date_default_timezone());
   }
+  return array($min_date, $max_date);
+}
+
+/** 
+ * Start and end dates for an ISO week.
+ */
+function date_iso_week_range($week, $year) {
+  
+  // Get to the first ISO week of the year.
+  $min_date = date_make_date($year .'-01-01 00:00:00', date_default_timezone_name());
+  date_timezone_set($min_date, date_default_timezone());
+  
+  for ($i = 1; $i < 8; $i++) {
+    if (date_format($min_date, 'W') == 1) {
+      break;
+    }
+    else {
+      date_modify($min_date, '+1 day');
+    }
+  }
+  // Jump ahead to the desired week for the beginning of the week range.
+  if ($week > 1) {
+    date_modify($min_date, '+ '. ($week - 1) .' weeks');
+  }
+  
+  // move forwards to the last day of the week
+  $max_date = drupal_clone($min_date);
+  date_modify($max_date, '+7 days');
   return array($min_date, $max_date);
 }
 
@@ -986,8 +1018,13 @@ function date_week($date) {
   $parts = explode('-', $date);
 
   $date = date_make_date($date . ' 12:00:00', 'UTC');
+  
+  // If we are using ISO weeks, this is easy.
+  if (variable_get('date_api_use_iso8601', FALSE)) {
+    return date_format($date, 'W');
+  }
+    
   $year_date = date_make_date($parts[0] . '-01-01 12:00:00', 'UTC');
-
   $week = intval(date_format($date, 'W'));
   $year_week = intval(date_format($year_date, 'W'));
   $date_year = intval(date_format($date, 'o'));
@@ -1976,4 +2013,30 @@ function date_api_database_info($field) {
   $revision_table = _field_sql_storage_revision_tablename($field);
   $db_info['table'] = $current_table;
   return $db_info;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Add a form element to configure whether or not week numbers are ISO-8601 (default: FALSE == US/UK/AUS norm).
+ */
+function date_api_form_system_date_time_settings_alter(&$form, $form_state, $form_id = 'system_date_time_settings') {
+  $form['locale']['date_api_use_iso8601'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Use ISO-8601 week numbers'),
+    '#default_value' => variable_get('date_api_use_iso8601', FALSE),
+    '#description'   => t('IMPORTANT! If checked, First day of week MUST be set to Monday'),
+  );
+  $form['#validate'][] = 'date_api_form_system_settings_validate';
+  $form = system_settings_form($form);
+}
+
+/**
+ * Validate that the option to use ISO weeks matches first day of week choice.
+ */
+function date_api_form_system_settings_validate(&$form, &$form_state) {
+  $form_values = $form_state['values'];
+  if ($form_values['date_api_use_iso8601'] && $form_values['date_first_day'] != 1) {
+    form_set_error('date_first_day', t('When using ISO-8601 week numbers, the first day of the week must be set to Monday.'));
+  }
 }

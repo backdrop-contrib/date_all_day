@@ -43,7 +43,7 @@ function date_popup_library() {
     'website' => 'http://plugins.jquery.com/project/timeEntry',
     'version' => '1.4.7',
     'js' => array(
-      $path . '/jquery.timeentry.min.js' => array(),
+      $path . '/jquery.timeentry.pack.js' => array(),
     ),
     'css' => array(
       $path . '/themes/timeentry.css' => array('preprocess' => FALSE),

@@ -592,10 +592,10 @@ function date_ical_escape_text($text) {
   // this and see if anything breaks.
   //$text = str_replace('"', '\"', $text);
   //$text = str_replace(":", "\:", $text);
-  $text = str_replace("\\", "\\\\", $text);
+  $text = preg_replace("/\\\b/","\\\\", $text);
   $text = str_replace(",", "\,", $text);
   $text = str_replace(";", "\;", $text);
-  $text = str_replace("\n", "\n ", $text);
+  $text = str_replace("\n", "\r\n ", $text);
   return trim($text);
 }
 

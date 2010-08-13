@@ -678,7 +678,10 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME, $granula
   if (empty($date) || ($type != DATE_ARRAY && is_array($date))) {
     return NULL;
   }
-
+  if (get_Class($date) != 'DateTime') {
+    $date = new DateTime($date);
+  }
+  
   // Make sure some value is set for the date and timezone even if the
   // site timezone is not yet set up to avoid fatal installation
   // errors.

@@ -421,7 +421,7 @@ function date_ical_parse_date($field, $data) {
  *   PROPERTIES include FREQ, INTERVAL, COUNT, BYDAY, BYMONTH, BYYEAR, UNTIL
  */
 function date_ical_parse_rrule($field, $data) {
-  $data = str_replace('RRULE:', '', $data);
+  $data = preg_replace("/RRULE.*:/", '', $data);
   $items = array('DATA' => $data);
   $rrule = explode(';', $data);
   foreach ($rrule as $key => $value) {

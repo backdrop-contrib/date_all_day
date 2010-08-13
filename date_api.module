@@ -1851,6 +1851,10 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
   $args = $view->args;
   $pos = $view->date_info->date_arg_pos;
   
+  // The View arguments array is indexed numerically but is not necessarily
+  // in numerical order. Sort the arguments to ensure the correct order.
+  ksort($args);
+    
   // If there are empty arguments before the date argument, 
   // pad them with the wildcard so the date argument will be in 
   // the right position.

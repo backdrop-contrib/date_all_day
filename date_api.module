@@ -1083,6 +1083,7 @@ function date_convert($date, $from_type, $to_type, $tz = 'UTC') {
         if ($date['ampm'] == 'pm' && $date['hour'] < 12) $date['hour'] += 12;
         if ($date['ampm'] == 'am' && $date['hour'] == 12) $date['hour'] -= 12;
       }
+      $date = date_clean_array($date);
       $datetime = date_pad(intval($date['year']), 4) . '-' . date_pad(intval($date['month'])) .
             '-' . date_pad(intval($date['day'])) . ' ' . date_pad(intval($date['hour'])) .
             ':' . date_pad(intval($date['minute'])) . ':' . date_pad(intval($date['second']));
@@ -1168,6 +1169,19 @@ function date_fuzzy_datetime($date) {
   }
   // Otherwise date must in in format:
   //  array('year' => YYYY, 'month' => MM, 'day' => DD).
+  $date = date_clean_array($date);
+  
+  $value = date_pad($date['year'], 4) . '-' . date_pad($date['month']) . '-' . 
+    date_pad($date['day']) . ' ' . date_pad($date['hour']) . ':' . 
+    date_pad($date['minute']) . ':' . date_pad($date['second']);
+  return $value;
+}
+
+/**
+ * Make sure all date arrays have all expected parts
+ * to avoid notices about missing indexes.
+ */
+function date_clean_array($date) {
   if (empty($date['year'])) {
     $date['year'] = date('Y');
   }
@@ -1177,10 +1191,16 @@ function date_fuzzy_datetime($date) {
   if (empty($date['day'])) {
     $date['day'] = 1;
   }
-  $value = date_pad($date['year'], 4) . '-' . date_pad($date['month']) . '-' . 
-    date_pad($date['day']) . ' ' . date_pad($date['hour']) . ':' . 
-    date_pad($date['minute']) . ':' . date_pad($date['second']);
-  return $value;
+  if (empty($date['hour'])) {
+    $date['hour'] = 0;
+  }
+  if (empty($date['minute'])) {
+    $date['minute'] = 0;
+  }
+  if (empty($date['second'])) {
+    $date['second'] = 0;
+  }
+  return $date;
 }
 
 /**

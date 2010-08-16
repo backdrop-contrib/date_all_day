@@ -553,6 +553,10 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
   if (empty($date)) {
     return '';
   }
+  if (get_Class($date) != 'DateTime') {
+    $date = new DateTime($date);
+  }
+  
   switch ($type) {
     case 'small':
     case 'short':
@@ -680,9 +684,6 @@ function date_make_date($date, $timezone = NULL, $type = DATE_DATETIME, $granula
   // No value or one that can't be used.
   if (empty($date) || ($type != DATE_ARRAY && is_array($date))) {
     return NULL;
-  }
-  if (get_Class($date) != 'DateTime') {
-    $date = new DateTime($date);
   }
   
   // Make sure some value is set for the date and timezone even if the

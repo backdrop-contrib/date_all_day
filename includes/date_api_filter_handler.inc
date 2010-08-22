@@ -123,7 +123,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
     
-    $fields = date_api_fields($this->definition['base']);
+    $fields = date_api_fields($this->definition['skip base']);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
@@ -371,7 +371,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     $handler = $this->date_handler;
     
-    $fields = date_api_fields($this->definition['base']);
+    $fields = date_api_fields($this->definition['skip base']);
     if (!empty($this->options['date_fields'])) {
       $output = array();
       foreach ($this->options['date_fields'] as $field) {

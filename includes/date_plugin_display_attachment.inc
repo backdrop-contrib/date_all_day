@@ -25,18 +25,21 @@ class date_plugin_display_attachment extends views_plugin_display_attachment {
     return parent::defaultable_sections($section);
   }
 
-  function option_definition() {
-    $options = parent::option_definition();
-    $options['style_plugin']['default'] = 'date_nav';
-    $options['items_per_page']['default'] = 0;
-    $options['row_plugin']['default'] = '';
-    //$options['defaults']['default']['style_plugin'] = FALSE;
-    $options['defaults']['default']['style_options'] = FALSE;
-    $options['defaults']['default']['items_per_page'] = FALSE;
-    $options['defaults']['default']['row_plugin'] = FALSE;
-    $options['defaults']['default']['row_options'] = FALSE;
+  /**
+   * Override some of the parent options.
+   */
+  function options(&$display) {
+    parent::options($display);
+    $display['style_plugin'] = 'date_nav';
+    $display['items_per_page'] = 0;
+    $display['row_plugin']['default'] = '';
+    $display['default']['style_plugin'] = FALSE;
+    $display['default']['style_options'] = FALSE;
+    $display['default']['items_per_page'] = FALSE;
+    $display['default']['row_plugin'] = FALSE;
+    $display['default']['row_options'] = FALSE;
 
-    return $options;
+    return $display;
   } 
 }
 

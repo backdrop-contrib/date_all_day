@@ -1630,7 +1630,7 @@ function date_api_theme() {
     'path' => "$path/theme",
   );
   return array(
-    'date_nav_title' => $base + array('variables' => array('granularity' => NULL, 'view' => NULL, 'link' => NULL)),
+    'date_nav_title' => $base + array('variables' => array('granularity' => NULL, 'view' => NULL, 'link' => NULL, 'format' => NULL)),
     'date_vcalendar' => $base + array('variables' => array('events' => NULL, 'calname' => NULL)),
     'date_vevent' => $base + array('variables' => array('event' => NULL)),
     'date_valarm' => $base + array('variables' => array('alarm' => NULL)),
@@ -1748,7 +1748,7 @@ function date_order() {
  */
 function date_api_views_api() {
   return array(
-    'api' => 2,
+    'api' => 3.0,
     'path' => drupal_get_path('module', 'date_api') . '/includes',
   );
 }

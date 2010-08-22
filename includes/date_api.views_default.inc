@@ -18,7 +18,7 @@ $view->tag = 'Date';
 $view->view_php = '';
 $view->base_table = 'node';
 $view->is_cacheable = FALSE;
-$view->api_version = 2;
+$view->api_version = 3;
 $view->disabled = TRUE; /* Edit this to true to make a default view disabled initially */
 $handler = $view->new_display('default', 'Defaults', 'default');
 $handler->override_option('arguments', array(

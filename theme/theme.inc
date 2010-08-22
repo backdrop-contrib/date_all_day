@@ -108,7 +108,11 @@ function template_preprocess_date_navigation(&$vars) {
 /**
  * Theme the calendar title
  */
-function theme_date_nav_title($granularity, $view, $link = FALSE, $format = NULL) {
+function theme_date_nav_title($params) {
+  $granularity = $params['granularity'];
+  $view = $params['view'];
+  $link = !empty($params['link']) ? $params['link'] : FALSE;
+  $format = !empty($params['format']) ? $params['format'] : NULL;
   switch ($granularity) {
     case 'year':
       $title = $view->date_info->year;

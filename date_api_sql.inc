@@ -4,6 +4,10 @@
 /**
  * @file
  * SQL helper for Date API.
+ *
+ * @TODO
+ * Add experimental support for sqllite (http://www.sqlite.org/lang_datefunc.html) and
+ * Oracle (http://psoug.org/reference/date_func.html and http://psoug.org/reference/datatypes.html) date/time functions.
  */
   
 /**

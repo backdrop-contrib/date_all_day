@@ -9,13 +9,14 @@
 /**
  * Date API argument handler.
  */
-class date_api_argument_handler extends views_handler_argument_date {
+class date_api_argument_handler extends views_handler_argument_formula {
   function construct() {
     parent::construct();
     module_load_include('inc', 'date_api', 'date_api_sql');
     
     $this->date_handler = new date_sql_handler();
-    $this->date_handler->construct();
+    $this->date_handler->construct();     
+
   }
 
   /**
@@ -228,14 +229,13 @@ class date_api_argument_handler extends views_handler_argument_date {
     
     // Add the computed field.
     $this->base_alias = $this->name_alias = $this->query->add_field(NULL, $this->formula, $field['query_name']);
-    $this->query->set_count_field(NULL, $formula, $field['query_name']);
-       
+    $this->query->set_count_field(NULL, $formula, $field['query_name']);   
     return $this->summary_basics(FALSE);
     
   }
 
   function get_query_fields() {
-    $fields = date_api_fields($this->definition['base']);
+    $fields = date_api_fields($this->definition['skip base']);
     $fields = $fields['name'];
     $min_date = isset($this->min_date) ? $this->min_date : NULL;
     $min_utc = isset($this->min_utc) ? $this->min_utc : NULL;
@@ -281,7 +281,9 @@ class date_api_argument_handler extends views_handler_argument_date {
     if (!empty($this->query_fields)) {
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
-        $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+        if ($field['table_name'] != $this->table) {
+          $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+        }  
       }
     }
   }  
@@ -292,6 +294,7 @@ class date_api_argument_handler extends views_handler_argument_date {
    * The argument sent may be found at $this->argument.
    */
   function query() {
+
     $block_identifier = date_block_identifier($this->view);
     if (!empty($this->view->block_identifier) || isset($_GET[$block_identifier])) {
       // Retrieve the block arguments in a way that will work for
@@ -350,6 +353,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     //$format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
     $this->get_query_fields();
+    $this->ensure_my_table();
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
@@ -371,8 +375,9 @@ class date_api_argument_handler extends views_handler_argument_date {
         $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
         if ($sql) {
           $this->query->add_where('date', $sql, array(), 'formula');
+
         }
       }
-    }
+    }   
   }
 }

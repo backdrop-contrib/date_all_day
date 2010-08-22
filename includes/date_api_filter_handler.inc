@@ -426,10 +426,12 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (!empty($this->query_fields)) {
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
-        $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+        if ($field['table_name'] != $this->table) {
+          $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+        }  
       }
     }
-  }
+  } 
   
   /**
    * Custom implementation of query() so we can get the
@@ -567,7 +569,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
   
   function get_query_fields() {
-    $fields = date_api_fields($this->definition['base']);
+    $fields = date_api_fields($this->definition['skip base']);
     $fields = $fields['name'];
     $this->query_fields = array();
     foreach ((array) $this->options['date_fields'] as $delta => $name) {

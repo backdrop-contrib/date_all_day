@@ -1056,7 +1056,7 @@ function date_entity_metadata_struct_getter($item, array $options, $name, $type)
 function date_field_views_data_alter(&$result, $field, $module) {
 
   // TODO, see if we really want to do this.
-  return
+  return;
   
   if (in_array($field['type'], array(DATE_ISO, DATE_DATETIME, DATE_UNIX))) {
     $columns = array('value', 'value2');

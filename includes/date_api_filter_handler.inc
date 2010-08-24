@@ -126,7 +126,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $fields = date_api_fields($this->definition['skip base']);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $field['label'];
+      $options[$name] = $field['real_field_name'];
     }
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),

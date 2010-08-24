@@ -9,7 +9,7 @@
 /**
  * Date API argument handler.
  */
-class date_api_argument_handler extends views_handler_argument_formula {
+class date_api_argument_handler extends views_handler_argument_date {
   function construct() {
     parent::construct();
     module_load_include('inc', 'date_api', 'date_api_sql');
@@ -88,7 +88,7 @@ class date_api_argument_handler extends views_handler_argument_formula {
     $fields = date_api_fields($this->definition['skip base']);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $field['field_name'];
+      $options[$name] = $field['real_field_name'];
     }
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),

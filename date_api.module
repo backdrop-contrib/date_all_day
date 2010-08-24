@@ -1704,7 +1704,9 @@ function date_api_views_fetch_fields($base, $type) {
     return array();
   }
   module_load_include('inc', 'views', 'includes/admin');
+  
   return views_fetch_fields($base, $type);
+   
 }
 
 /**

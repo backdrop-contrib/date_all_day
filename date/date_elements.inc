@@ -243,26 +243,6 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
 }
 
 /**
- * Implementation of hook_element_info().
- *
- * date_combo will create a 'from' and optional 'to' date, along with
- * an optional 'timezone' column for date-specific timezones. Each
- * 'from' and 'to' date will be constructed from date_select or date_text.
- */
-function _date_element_info() {
-  $type = array();
-  $type['date_combo'] = array(
-    '#input' => TRUE,
-    '#delta' => 0,
-    '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
-    '#process' => array('date_combo_element_process'),
-    '#element_validate' => array('date_combo_validate'),
-    '#theme_wrappers' => array('date_combo'),
-    );
-  return $type;
-}
-
-/**
  * Process an individual date element.
  */
 function date_combo_element_process($element, &$form_state, $form) {

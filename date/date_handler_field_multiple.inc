@@ -43,7 +43,7 @@ class date_handler_field_multiple extends views_handler_field_field {
     $field = field_info_field($field_name);
     $options = $this->options;
 
-    $form += date_formatter_settings($form_state, $field, $options, TRUE);
+    //$form += date_formatter_settings($form_state, $field, $options, TRUE);
     $form['multiple']['#weight']  = 1;   
     $form['multiple']['group'] = array(
       '#title' => t('Group multiple values'),

@@ -37,8 +37,8 @@ function date_field_formatter_info() {
  */
 function date_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
   $formatter = $display['type'];
+  module_load_include('inc', 'date', 'date_admin');
   switch ($formatter) {
     case 'format_interval':
       return date_interval_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
@@ -48,157 +48,18 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
 }
  
 /**
- * Settings for the default formatter.
- */ 
-function date_default_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {  
-  $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
-  $formatter = $display['type'];
-  $form = array();
-  
-  $form['format_type'] = array(
-    '#title' => t('Format:'),
-    '#type' => 'select',
-    '#options' => date_format_type_options(),
-    '#default_value' => $settings['format_type'],
-    '#weight' => 0,
-  );      
-        
-  $form['fromto'] = array(
-    '#title' => t('Display:'),
-    '#type' => 'select',
-    '#options' => array(
-      'both' => t('Both From and To dates'), 
-      'value' => t('From date only'), 
-      'value2' => t('To date only'),
-      ),
-    '#access' => $field['settings']['todate'],
-    '#default_value' => $settings['fromto'],
-    '#weight' => 1,
-  );  
-
-  // Make the string translatable by keeping it as a whole rather than
-  // translating prefix and suffix separately.
-  list($prefix, $suffix) = explode('@count', t('Show @count value(s)'));
-  $form['multiple_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Multiple values:'),
-    '#size' => 5,
-    '#field_prefix' => theme('advanced_help_topic', 'date_api', 'date-display') . $prefix,
-    '#field_suffix' => $suffix,
-    '#default_value' => $settings['multiple_number'],
-    '#weight' => 2,
-    '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
-    '#description' => t('Identify a specific number of values to display, or leave blank to show all values.'),
-  );
-  
-  list($prefix, $suffix) = explode('@isodate', t('starting from @isodate'));
-  $form['multiple_from'] = array(
-    '#type' => 'textfield',
-    '#size' => 15,
-    '#field_prefix' => $prefix,
-    '#field_suffix' => $suffix,
-    '#default_value' => $settings['multiple_from'],
-    '#weight' => 3,
-    '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
-  );
-
-  list($prefix, $suffix) = explode('@isodate', t('ending with @isodate'));
-  $form['multiple_to'] = array(
-    '#type' => 'textfield',
-    '#size' => 15,
-    '#field_prefix' => $prefix,
-    '#field_suffix' => $suffix,
-    '#default_value' => $settings['multiple_to'],
-    '#weight' => 4,
-    '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
-    '#description' => t('Identify specific start and/or end dates in the format YYYY-MM-DDTHH:MM:SS, or leave blank for all available dates.'),
-   );
-  
-  $form['show_repeat_rule'] = array(
-    '#title' => t('Repeat rule:'),
-    '#type' => 'select',
-    '#options' => array(
-      'show' => t('Display repeat rule'), 
-      'hide' => t('Hide repeat rule')),
-    '#default_value' => $settings['show_repeat_rule'],
-    '#access' => $field['settings']['repeat'],
-    '#weight' => 5,
-  );
-
-  return $form;
-}
-
-/**
- * Settings for the interval formatter.
- * @TODO Add settings here later.
- */
-function date_interval_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
-  $form = array();
-  return $form;
-}
-
-/**
  * Implements hook_field_formatter_settings_summary().
  */
 function date_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
   $formatter = $display['type'];
+  module_load_include('inc', 'date', 'date_admin');
   switch ($formatter) {
     case 'format_interval':
       return date_interval_formatter_settings_summary($field, $instance, $view_mode);
     default:
       return date_default_formatter_settings_summary($field, $instance, $view_mode);
   }
-}
-
-/**
- * Settings summary for the default formatter.
- */
-function date_default_formatter_settings_summary($field, $instance, $view_mode) {  
-  $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
-  $formatter = $display['type'];
-  $format_types = date_format_type_options();
-  $summary = array();
-  
-  $summary[] = t('Use the @format format type.', array('@format' => $format_types[$settings['format_type']]));
-  
-  $options = array(
-    'both' => t('Display both From and To dates'), 
-    'value' => t('Display From date only'), 
-    'value2' => t('Display To date only'),
-  );
-  $summary[] = $options[$settings['fromto']];
-  
-  if (!empty($field['cardinality'])) {
-    $summary[] = t('Show @count value(s) starting with @date1, ending with @date2', array(
-      '@count' => !empty($settings['multiple_number']) ? $settings['multiple_number'] : t('all'), 
-      '@date1' => !empty($settings['multiple_from']) ? $settings['multiple_from'] : t('earliest'), 
-      '@date2' => !empty($settings['multiple_to']) ? $settings['multiple_to'] : t('latest'), 
-    ));
-  }
-  
-  if (!empty($field['repeat'])) {
-    if (!empty($settings['show_repeat_rule'])) {
-      $summary[] = t('Show repeat rule');
-    }
-    else {
-      $summary[] = t('Do not show repeat rule');
-    }
-  }  
-
-  return implode('<br />', $summary);
-}
-
-/**
- * Settings summary for the interval formatter.
- * @TODO Add settings later.
- */
-function date_interval_formatter_settings_summary($field, $instance, $view_mode) {  
-  $summary = array();
-  return implode('<br />', $summary);
 }
 
 /**
@@ -431,6 +292,103 @@ function date_field_schema($field) {
 }
 
 /**
+ * Implements hook_field_validate().
+ */
+function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  $field_name = $field['field_name'];
+ 
+  // Don't try to validate if there were any errors before this point
+  // since the element won't have been munged back into a date.
+  if (!form_get_errors()) {
+    foreach ($items as $delta => $item) {
+      if (is_array($item)) {
+        $process = date_process_values($field, $instance);
+        foreach ($process as $processed) {
+          if ($processed == 'value' && $field['settings']['todate']
+            && !date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
+            && (date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
+            $errors[$field['field_name']][$langcode][$delta][] = array(
+              'error' => 'valid_nid',
+              'message' => t("A 'From date' date is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['widget']['label']))),
+            );
+          }
+          if ($processed == 'value2'
+            && $field['settings']['todate'] == 'required' && ($field['required']
+            && date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
+            && !date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
+            $errors[$field['field_name']][$langcode][$delta][] = array(
+              'error' => 'valid_nid',
+              'message' => t("A 'To date' is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
+            );
+          }            
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_presave().
+ */
+function date_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
+ * Implements hook_field_insert().
+ */
+function date_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
+ * Implements hook_field_update().
+ */
+function date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  $field_name = $field['field_name'];
+
+  if (empty($items)) {
+    return;
+  }
+  // Add some information needed to interpret token values.
+  $values = $items;
+  foreach ($values as $delta => $item) {
+    $timezone = isset($item['timezone']) ? $item['timezone'] : '';
+    if (is_array($item)) {
+      $items[$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+      $items[$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+      $items[$delta]['date_type'] = $field['type'];
+    }  
+  }  
+  $entity->$field['field_name'][$langcode] = $items;
+
+  foreach ($values as $delta => $item) {
+    if (is_array($item)) {
+      // Special case for ISO dates which may have been given artificial values for
+      // some date parts to make them into valid dates.
+      if (!empty($item['value']) && $field['type'] == DATE_ISO) {
+        $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), $field['type']);
+        if ($field['settings']['todate']) {
+          $items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), $field['type']);
+        }
+      }  
+    }
+  }
+  $entity->$field['field_name'][$langcode] = $items;
+}
+
+/**
+ * Implements hook_widget().
+ *
+ * This code and all the processes it uses are in a separate file,
+ * included only when processing forms.
+ */
+function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+  module_load_include('inc', 'date', 'date_elements');
+  return _date_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
+}
+
+/**
  * Wrapper functions for date administration, included only when
  * processing field settings.
  */
@@ -447,52 +405,4 @@ function date_field_widget_settings_form($field, $instance) {
 function date_field_settings_form($field, $instance, $has_data) {
   module_load_include('inc', 'date', 'date_admin');
   return _date_field_settings_form($field, $instance, $has_data);
-}
-
-function date_formatter_settings($form_state = NULL, $field, $options = array(), $views_form = FALSE) {
-  module_load_include('inc', 'date', 'date_admin');
-  return _date_formatter_settings($form_state, $field, $options, $views_form);
-}
-
-/**
- * Implements hook_field_validate().
- */
-function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items, &$errors) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_validate($entity_type, $entity, $field, $instance, $langcode, $items);
-}
-
-/**
- * Implements hook_field_presave().
- */
-function date_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
-}
-
-/**
- * Implements hook_field_update().
- */
-function date_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
-}
-
-/**
- * Implements hook_field_insert().
- */
-function date_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_update($entity_type, $entity, $field, $instance, $langcode, $items);
-}
-
-/**
- * Implements hook_widget().
- *
- * This code and all the processes it uses are in a separate file,
- * included only when processing forms.
- */
-function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
 }

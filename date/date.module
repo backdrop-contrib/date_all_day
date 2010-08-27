@@ -6,17 +6,16 @@
  * Defines date/time field types for the Content Construction Kit (CCK).
  */
  
-// Load all Field module hooks for Date.
-require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . "/date.field.inc";
 
 /**
  * Implements hook_init().
  */
 function date_init() {
   module_load_include('theme', 'date', 'date');
-  //drupal_flush_all_caches();
-  //dsm(_theme_build_registry());
+  module_load_include('inc', 'date', '/date.field');
+  module_load_include('inc', 'date', '/date_elements');
 }
+
 /**
  * Implements hook_menu().
  */
@@ -278,12 +277,15 @@ function date_element_info() {
  */
 function date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display) {
   $dates = array();
-  $timezone = date_default_timezone();
+  $timezone = date_default_timezone();    
   if (empty($timezone)) {
     return $dates;
   }
+  
+  $granularity = date_granularity($field);
+  $settings = $display['settings'];
   $field_name = $field['field_name'];
-  $format = date_formatter_format($formatter, $field_name);
+  $format = date_formatter_format($formatter, $settings, $granularity, $langcode);
   $timezone = isset($item['timezone']) ? $item['timezone'] : '';
   $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
   $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
@@ -432,20 +434,20 @@ function date_content_generate($node, $field) {
 }
 
 /**
- * Helper function to return the date format used by a specific formatter.
+ * Retrieve a date format string from formatter settings.
  */
-function date_formatter_format($formatter, $field_name) {
-  $field = field_info_field($field_name);
+function date_formatter_format($formatter, $settings, $granularity = NULL, $langcode = NULL) {
   $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
+  $format_type = $settings['format_type'];
   
   switch ($formatter) {
     case 'format_interval':
       return 'format_interval';
-    case 'default':
-      $format = variable_get('date_format_' . $field['default_format'], $default);
-      break;
     default:
-      $format = variable_get('date_format_' . $formatter, $default);
+      $format = system_date_format_locale($langcode, $format_type);
+      if (empty($format)) {
+        $format = variable_get('date_format_'. $format_type, $default);
+      }  
       break;
   }
  
@@ -453,7 +455,6 @@ function date_formatter_format($formatter, $field_name) {
     $format = $default;
   }
   // A selected format might include timezone information.
-  $granularity = date_granularity($field);
   array_push($granularity, 'timezone');
   return date_limit_format($format, $granularity);
 }

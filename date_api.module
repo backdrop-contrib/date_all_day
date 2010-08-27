@@ -2069,3 +2069,14 @@ function date_api_form_system_settings_validate(&$form, &$form_state) {
     form_set_error('date_first_day', t('When using ISO-8601 week numbers, the first day of the week must be set to Monday.'));
   }
 }
+
+function date_format_type_options() {
+  $options = array();
+  $format_types = system_get_date_types();
+  if (!empty($format_types)) {
+    foreach ($format_types as $type => $type_info) {
+      $options[$type] = $type_info['title'];
+    }
+  }
+  return $options;
+}

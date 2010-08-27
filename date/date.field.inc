@@ -14,6 +14,7 @@ function date_field_formatter_info() {
       'label' => t('Default'),
       'field types' => array('date', 'datestamp', 'datetime'),
       'settings' => array(
+        'format_type' => 'long',
         'show_repeat_rule' => 'show',
         'multiple_number' => '',
         'multiple_from' => '',
@@ -24,27 +25,9 @@ function date_field_formatter_info() {
     'format_interval' => array(
       'label' => t('As Time Ago'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'settings' => array(
-      ),
+      'settings' => array(),
     ),
   );
-
-  $format_types = _system_date_format_types_build();
-  if (!empty($format_types)) {
-    foreach ($format_types as $type => $type_info) {
-      $formatters[$type] = array(
-        'label' => $type_info['title'],
-        'field types' => array('date', 'datestamp', 'datetime'),
-        'settings' => array(
-          'show_repeat_rule' => 'show',
-          'multiple_number' => '',
-          'multiple_from' => '',
-          'multiple_to' => '',
-          'fromto' => 'both',
-        ),
-      );
-    }
-  }
 
   return $formatters;
 }
@@ -56,13 +39,38 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
   $formatter = $display['type'];
+  switch ($formatter) {
+    case 'format_interval':
+      return date_interval_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+    default:
+      return date_default_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+  }
+}
+ 
+/**
+ * Settings for the default formatter.
+ */ 
+function date_default_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {  
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $formatter = $display['type'];
   $form = array();
-   $form['fromto'] = array(
+  
+  $form['format_type'] = array(
+    '#title' => t('Format:'),
+    '#type' => 'select',
+    '#options' => date_format_type_options(),
+    '#default_value' => $settings['format_type'],
+    '#weight' => 0,
+  );      
+        
+  $form['fromto'] = array(
+    '#title' => t('Display:'),
     '#type' => 'select',
     '#options' => array(
-      'both' => t('Display both From and To dates'), 
-      'value' => t('Display From date only'), 
-      'value2' => t('Display To date only'),
+      'both' => t('Both From and To dates'), 
+      'value' => t('From date only'), 
+      'value2' => t('To date only'),
       ),
     '#access' => $field['settings']['todate'],
     '#default_value' => $settings['fromto'],
@@ -74,11 +82,12 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
   list($prefix, $suffix) = explode('@count', t('Show @count value(s)'));
   $form['multiple_number'] = array(
     '#type' => 'textfield',
+    '#title' => t('Multiple values:'),
     '#size' => 5,
     '#field_prefix' => theme('advanced_help_topic', 'date_api', 'date-display') . $prefix,
     '#field_suffix' => $suffix,
     '#default_value' => $settings['multiple_number'],
-    '#weight' => 1,
+    '#weight' => 2,
     '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
     '#description' => t('Identify a specific number of values to display, or leave blank to show all values.'),
   );
@@ -90,7 +99,7 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
     '#field_prefix' => $prefix,
     '#field_suffix' => $suffix,
     '#default_value' => $settings['multiple_from'],
-    '#weight' => 2,
+    '#weight' => 3,
     '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
   );
 
@@ -101,20 +110,31 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
     '#field_prefix' => $prefix,
     '#field_suffix' => $suffix,
     '#default_value' => $settings['multiple_to'],
-    '#weight' => 3,
+    '#weight' => 4,
     '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
     '#description' => t('Identify specific start and/or end dates in the format YYYY-MM-DDTHH:MM:SS, or leave blank for all available dates.'),
    );
   
   $form['show_repeat_rule'] = array(
+    '#title' => t('Repeat rule:'),
     '#type' => 'select',
     '#options' => array(
       'show' => t('Display repeat rule'), 
       'hide' => t('Hide repeat rule')),
     '#default_value' => $settings['show_repeat_rule'],
     '#access' => $field['settings']['repeat'],
+    '#weight' => 5,
   );
 
+  return $form;
+}
+
+/**
+ * Settings for the interval formatter.
+ * @TODO Add settings here later.
+ */
+function date_interval_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $form = array();
   return $form;
 }
 
@@ -125,7 +145,26 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
   $formatter = $display['type'];
+  switch ($formatter) {
+    case 'format_interval':
+      return date_interval_formatter_settings_summary($field, $instance, $view_mode);
+    default:
+      return date_default_formatter_settings_summary($field, $instance, $view_mode);
+  }
+}
+
+/**
+ * Settings summary for the default formatter.
+ */
+function date_default_formatter_settings_summary($field, $instance, $view_mode) {  
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $formatter = $display['type'];
+  $format_types = date_format_type_options();
   $summary = array();
+  
+  $summary[] = t('Use the @format format type.', array('@format' => $format_types[$settings['format_type']]));
+  
   $options = array(
     'both' => t('Display both From and To dates'), 
     'value' => t('Display From date only'), 
@@ -140,6 +179,7 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
       '@date2' => !empty($settings['multiple_to']) ? $settings['multiple_to'] : t('latest'), 
     ));
   }
+  
   if (!empty($field['repeat'])) {
     if (!empty($settings['show_repeat_rule'])) {
       $summary[] = t('Show repeat rule');
@@ -152,6 +192,14 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
   return implode('<br />', $summary);
 }
 
+/**
+ * Settings summary for the interval formatter.
+ * @TODO Add settings later.
+ */
+function date_interval_formatter_settings_summary($field, $instance, $view_mode) {  
+  $summary = array();
+  return implode('<br />', $summary);
+}
 
 /**
  * Implements hook_field_formatter_view().

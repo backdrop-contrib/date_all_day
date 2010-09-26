@@ -86,6 +86,12 @@ function date_popup_js_settings_id($id, $func, $settings) {
   static $js_added = FALSE;
   static $id_count = array();
 
+  // Make sure popup date selector grid is in correct year.
+  if (!empty($settings['yearRange'])) {
+    $parts = explode(':', $settings['yearRange']);
+    $settings += array('defaultDate' => (string) $parts[0] . 'y');
+  }
+
   if (!$js_added) {
     drupal_add_js(drupal_get_path('module', 'date_popup') .'/date_popup.js');
     $js_added = TRUE;

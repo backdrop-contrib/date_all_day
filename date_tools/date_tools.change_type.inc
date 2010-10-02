@@ -8,6 +8,7 @@ function date_tools_change_type_form() {
   $form = array();
   // This is broken, still needs to be adjusted
   // for the D6->D7 changes.
+  drupal_set_message(t('This operation does not yet work for the Drupal 7 version.'), 'error');
   return $form;
   $fields = content_fields();
   $date_options = array();

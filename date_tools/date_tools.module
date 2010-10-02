@@ -73,7 +73,7 @@ function date_tools_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/structure/date/change'] = array(
-    'title'    => 'Change',
+    'title'    => 'Change type',
     'access arguments'   => array('administer date tools'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('date_tools_change_type_form'),

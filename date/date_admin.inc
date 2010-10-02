@@ -364,37 +364,6 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   }
 }
 
-function _date_field_schema($field) {
-  $db_columns = array();
-  if ($field['type'] == 'date') {
-    $db_columns['value'] = array('type' => 'varchar', 'length' => 20, 'not null' => FALSE, 'sortable' => TRUE, 'views' => TRUE);
-  }
-  elseif ($field['type'] == 'datestamp') {
-    $db_columns['value'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => TRUE);
-  }
-  elseif ($field['type'] == 'datetime') {
-    $db_columns['value'] = array('type' => 'datetime', 'not null' => FALSE, 'sortable' => TRUE, 'views' => TRUE);
-  }
-  // If a second date is needed for 'To date', just make a copy of the first one.
-  if (!empty($field['settings']['todate'])) {
-    $db_columns['value2'] = $db_columns['value'];
-    
-    // We don't want CCK to create additional columns, just the first.
-    // We modify them our own way in views data.
-    $db_columns['value2']['views'] = FALSE;
-  }
-  // timezone and offset columns are used only if date-specific dates are chosen.
-  if (isset($field['settings']['tz_handling']) && $field['settings']['tz_handling'] == 'date') {
-    $db_columns['timezone'] = array('type' => 'varchar', 'length' => 50, 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
-    $db_columns['offset'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
-    if (!empty($field['settings']['todate'])) $db_columns['offset2'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
-  }
-  if (isset($field['settings']['repeat']) && $field['settings']['repeat'] == 1) {
-    $db_columns['rrule'] = array('type' => 'text', 'not null' => FALSE, 'sortable' => FALSE, 'views' => FALSE);
-  }
-  return array('columns' => $db_columns);  
-}
-
 function _date_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
   

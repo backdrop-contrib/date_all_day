@@ -284,14 +284,6 @@ function date_field_load($entity_type, $entities, $field, $instances, $langcode,
 }
 
 /**
- * Implements hook_field_schema().
- */
-function date_field_schema($field) {
-  module_load_include('inc', 'date', 'date_admin');
-  return _date_field_schema($field);
-}
-
-/**
  * Implements hook_field_validate().
  */
 function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items) {

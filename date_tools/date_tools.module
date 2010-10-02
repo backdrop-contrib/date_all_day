@@ -80,7 +80,6 @@ function date_tools_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
     'file' => 'date_tools.change_type.inc',
-    'path' => drupal_get_path('module', 'date_tools'),
   );
   return $items;
 }
@@ -96,7 +95,7 @@ function date_tools_page() {
   if (module_exists('calendar')) {
     $calendar_options = variable_get('calendar_default_view_options', array());
     $calendars = array();
-    $node_types = node_get_types();
+    $node_types = node_type_get_names();
     foreach ($calendar_options as $key => $option) {
       $bundle = str_replace('calendar_', '', $key);
       if (array_key_exists($bundle, $node_types)) {

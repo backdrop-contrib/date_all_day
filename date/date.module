@@ -6,15 +6,9 @@
  * Defines date/time field types for the Content Construction Kit (CCK).
  */
  
-
-/**
- * Implements hook_init().
- */
-function date_init() {
-  module_load_include('theme', 'date', 'date');
-  module_load_include('inc', 'date', '/date.field');
-  module_load_include('inc', 'date', '/date_elements');
-}
+module_load_include('theme', 'date', 'date');
+module_load_include('inc', 'date', '/date.field');
+module_load_include('inc', 'date', '/date_elements');
 
 /**
  * Implements hook_menu().

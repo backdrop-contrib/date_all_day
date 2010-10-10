@@ -14,6 +14,7 @@ files[] = date_api.install
 files[] = includes/date_api_argument_handler.inc
 files[] = includes/date_api_fields.inc
 files[] = includes/date_api_filter_handler.inc
+files[] = includes/date_api_filter_single_handler.inc
 files[] = includes/date_api.views_default.inc
 files[] = includes/date_api.views.inc
 files[] = includes/date_navigation_plugin_style.inc

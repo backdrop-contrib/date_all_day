@@ -190,11 +190,15 @@ function date_popup_element_process($element, $form_state, $form) {
   
   if (!empty($edit) && is_array($edit) && !empty($edit['date'])) {
     $input = $edit['date'] . (!empty($edit['time']) ? ' ' . $edit['time'] : '');
-    $datetime = date_convert_from_custom($input, $element['#date_format']);
-    $date = date_make_date($datetime, $element['#date_timezone'], DATE_DATETIME, $granularity);
+    $date = new DateObject($input, $element['#date_timezone'], DATE_FORMAT_DATETIME);
+    $date->limitGranularity($granularity);
+    if (!$date=>valid($granularity, $element['#date_flexible'])) {
+      $date = NULL;
+    }    
   }
   elseif (!empty($element['#value'])) {
-    $date = date_make_date($element['#value'], $element['#date_timezone'], DATE_DATETIME, $granularity);
+    $date = new DateObject($element['#value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
+    $date->limitGranularity($granularity);
   }
   
   date_increment_round($date, $element['#date_increment']);
@@ -396,15 +400,22 @@ function date_popup_input_value($element, $auto_complete = FALSE) {
   $date_format = date_limit_format($format, array('year', 'month', 'day'));
   $value = '';
   if (is_array($element['#value']) && !empty($element['#value']['date'])) {
-    $date = date_convert_from_custom(trim(!empty($element['#value']['date']) ? $element['#value']['date'] : ''), $date_format);
-    $time = date_convert_from_custom(trim(!empty($element['#value']['time']) ? $element['#value']['time'] : ''), $time_format);
-    $value = trim(substr($date, 0, 10) .' ' . substr($time, 11, 8));
+    $input = !empty($element['#value']['date']) ? trim($element['#value']['date'] : '';
+    $date = new DateObject($input, NULL, $date_format);    
+    
+    // TODO, will the new DateObject handle a time-only input?
+    $input = !empty($element['#value']['time']) ? trim($element['#value']['time'] : '';
+    $time = new DateObject($input, NULL, $time_format);
+        
+    $value = $date->format(DATE_FORMAT_DATE) .' ' . $time->format('H:i:s'));
   }
-  
-  if (date_is_valid($value, DATE_DATETIME, $granularity)) {
-    $date = date_make_date($value, $element['#date_timezone'], DATE_DATETIME, $granularity);
-    $value = date_convert($date, DATE_OBJECT, DATE_DATETIME);
-    return $value;
+  if (!empty($value) && $value = new DateObject($value)) {
+    if ($value->valid($granularity, $element['#date_flexible'])) {  
+      $date = new DateObject($value, $element['#date_timezone']);
+      $date->limitGranularity($granularity);
+      $value = $date->format(DATE_FORMAT_DATETIME);
+      return $value;
+    }  
   }
   return NULL;
 }

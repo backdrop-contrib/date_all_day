@@ -24,11 +24,11 @@ print 'It was '. $berlin_time .' in Berlin when it
 print 'At that time in Berlin, the timezone offset in seconds was 
   '. date_offset_get($date);
 
-A helper function is available, date_make_date($string, $timezone, $type),
+A helper class is available, new DateObject($string, $timezone, $format),
 where $string is a unixtimestamp, an ISO date, or a string like YYYY-MM-DD HH:MM:SS,
-$timezone is the name of the timezone this date is in, and $type is the type
-of date it is (DATE_UNIX, DATE_ISO, or DATE_DATETIME). It create and return
-a date object set to the right date and timezone.
+$timezone is the name of the timezone this date is in, and $format is the format
+of date it is (DATE_FORMAT_UNIX, DATE_FORMAT_ISO, or DATE_FORMAT_DATETIME). 
+It creates and return a date object set to the right date and timezone.
 
 Simpletest tests for these functions are included in the package.
 

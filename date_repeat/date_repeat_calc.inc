@@ -47,8 +47,8 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone) {
   $rrule = date_ical_parse_rrule('RRULE:', $rrule);
   
   // Create a date object for the start and end dates.
-  $start_date = date_make_date($start, $timezone);
-  $end_date = date_make_date($end, $timezone);
+  $start_date = new DateObject($start, $timezone);
+  $end_date = new DateObject($end, $timezone);
   
   // If the rule has an UNTIL, see if that is earlier than the end date.
   if (!empty($rrule['UNTIL'])) {
@@ -474,7 +474,7 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
     // reliably if we create a new object each time.
     $datetime = date_format($date_in, DATE_FORMAT_DATETIME);
     $datetime = substr_replace($datetime, '01', 8, 2);
-    $date = date_make_date($datetime, $timezone);
+    $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the month.
       date_modify($date, '+1 month');
@@ -520,7 +520,7 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
     // See note above.
     $datetime = date_format($date_in, DATE_FORMAT_DATETIME);
     $datetime = substr_replace($datetime, '01-01', 5, 5);
-    $date = date_make_date($datetime, $timezone);
+    $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the year.
       date_modify($date, '+1 year');

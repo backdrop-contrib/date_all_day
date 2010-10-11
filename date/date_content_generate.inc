@@ -25,7 +25,7 @@ function _date_content_generate($node, $field, $instance) {
   // Pick a random year within the time range,
   // and a random second within that year.
   $year = date_format(date_now(), 'Y') - $back + mt_rand(0, ($forward + $back));
-  $start = date_make_date($year . '-01-01 00:00:00', date_get_timezone_db($field['settings']['tz_handling']));
+  $start = new DateObject($year . '-01-01 00:00:00', date_get_timezone_db($field['settings']['tz_handling']));
   $leap = date_format($start, 'L');
   $max_days = $leap ? 366 : 365;
   $seconds = mt_rand(0, ($max_days * 86400));

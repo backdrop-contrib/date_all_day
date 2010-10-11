@@ -488,7 +488,7 @@ function date_ical_parse_duration(&$subgroup, $field = 'DURATION') {
   if (empty($timezone)) {
     $timezone = 'UTC';
   }
-  $date = date_make_date($start_date, $timezone);
+  $date = new DateObject($start_date, $timezone);
   $date2 = clone($date);
   foreach ($items as $item => $count) {
     if ($count > 0) {
@@ -568,7 +568,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   else {
     $from_tz = $ical_date['tz'];
   }
-  $date = date_make_date($ical_date['datetime'], $from_tz);
+  $date = new DateObject($ical_date['datetime'], $from_tz);
   if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     date_timezone_set($date, timezone_open($to_tz));
   }

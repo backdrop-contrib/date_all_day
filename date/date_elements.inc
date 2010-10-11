@@ -135,7 +135,8 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
         return NULL;
       }
       else {
-        $date = date_make_date($item['value'], $timezone, DATE_DATETIME, $field['settings']['granularity']);
+        $date = new DateObject($item['value'], $timezone, DATE_FORMAT_DATETIME);
+        $date->limitGranularity($field['settings']['granularity']);
       }
     }
     // Special case for 'now' when using dates with no timezone,
@@ -158,7 +159,8 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
       $db_timezone = date_get_timezone_db($field['settings']['tz_handling']);
       $value = date_convert($value, $field['type'], DATE_DATETIME, $db_timezone);
     }
-    $date = date_make_date($value, date_get_timezone_db($field['settings']['tz_handling']), DATE_DATETIME, $field['settings']['granularity']);
+    $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']), DATE_FORMAT_DATETIME);
+    $date->limitGranularity($field['settings']['granularity']);
     if (empty($date)) {
       return NULL;
     }
@@ -422,10 +424,10 @@ function date_combo_validate($element, &$form_state) {
       $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
       $item[$tz_field] = $timezone;
 
-      $from_date = date_make_date($from_date, $timezone);
+      $from_date = new DateObject($from_date, $timezone);
       $item[$offset_field] = date_offset_get($from_date);
       
-      $to_date = date_make_date($to_date, $timezone);
+      $to_date = new DateObject($to_date, $timezone);
       $test_from = date_format($from_date, 'r');
       $test_to = date_format($to_date, 'r');
       

@@ -850,11 +850,11 @@ class date_sql_handler {
     }
     if (!empty($parts[0]['date'])) {
       $value = $this->complete_date($parts[0]['date'], 'min');
-      $min_date = new DateObject($value, date_default_timezone(), DATE_ISO);
+      $min_date = new DateObject($value, date_default_timezone(), DATE_FORMAT_ISO);
       // Build a range from a single date-only argument.
       if (empty($parts[1]) || (empty($parts[1]['date']) && empty($parts[1]['period']))) {
         $value = $this->complete_date($parts[0]['date'], 'max');
-        $max_date = new DateObject($value, date_default_timezone(), DATE_ISO);
+        $max_date = new DateObject($value, date_default_timezone(), DATE_FORMAT_ISO);
         return array($min_date, $max_date);
       }
       // Build a range from start date + period.
@@ -870,7 +870,7 @@ class date_sql_handler {
     // Build a range from start date and end date.
     if (!empty($parts[1]['date'])) {
       $value = $this->complete_date($parts[1]['date'], 'max');
-      $max_date = new DateObject($value, date_default_timezone(), DATE_ISO);
+      $max_date = new DateObject($value, date_default_timezone(), DATE_FORMAT_ISO);
       if (isset($min_date)) {
         return array($min_date, $max_date);
       }

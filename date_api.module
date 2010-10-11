@@ -137,7 +137,8 @@ class DateObject extends DateTime {
       if($el == 'year') {
         return FALSE;
       }
-    } else {
+    } 
+    else {
       // PHP < 5.3 doesn't like the GMT- notation for parsing timezones.
       $time = str_replace("GMT-", "-", $time);
       $time = str_replace("GMT+", "+", $time);
@@ -1314,7 +1315,7 @@ function date_week_range($week, $year) {
 function date_iso_week_range($week, $year) {
   
   // Get to the first ISO week of the year.
-  $min_date = date_make_date($year .'-01-01 00:00:00');
+  $min_date = new DateObject($year .'-01-01 00:00:00');
   date_timezone_set($min_date, date_default_timezone_object());
   
   if (date_format($min_date, 'W') != 1) {

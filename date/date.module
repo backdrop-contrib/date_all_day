@@ -294,7 +294,9 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
       if ($field['type'] == DATE_ISO) {
         $value = str_replace(' ', 'T', date_fuzzy_datetime($value));
       }
-      $date = date_make_date($value, $timezone_db, $field['type'], $field['settings']['granularity']);
+      $date = new DateObject($value, $timezone_db, date_type_format($field['type']));
+      $date->limitGranularity($field['settings']['granularity']);
+      
       $dates[$processed] = array();
       $dates[$processed]['db']['object'] = $date;
       $dates[$processed]['db']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
@@ -652,7 +654,7 @@ function date_entity_metadata_struct_getter($item, array $options, $name, $type)
   $value = trim($item[$name]);
   $item_type = isset($item['date_type']) ? $item['date_type'] : (is_numeric($value) ? DATE_UNIX : DATE_ISO);
   $timezone_db = !empty($item['timezone_db']) ? $item['timezone_db'] : 'UTC';
-  $date = date_make_date($value, $timezone_db, $item_type);
+  $date = new DateObject($value, $timezone_db, date_type_format($item_type));
   if (!empty($date) && $timezone_db != 'UTC') {
     date_timezone_set($date, timezone_open('UTC'));
   }

@@ -59,7 +59,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
   
   $UNTIL = '';
   if (!empty($merged_values['UNTIL']['datetime'])) {
-    $until_date = date_make_date($merged_values['UNTIL']['datetime'], $merged_values['UNTIL']['tz']);
+    $until_date = new DateObject($merged_values['UNTIL']['datetime'], $merged_values['UNTIL']['tz']);
     date_timezone_set($until_date, timezone_open($timezone));
     $UNTIL = date_format($until_date, DATE_FORMAT_DATETIME);
   }

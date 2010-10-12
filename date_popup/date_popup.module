@@ -192,7 +192,7 @@ function date_popup_element_process($element, $form_state, $form) {
     $input = $edit['date'] . (!empty($edit['time']) ? ' ' . $edit['time'] : '');
     $date = new DateObject($input, $element['#date_timezone'], DATE_FORMAT_DATETIME);
     $date->limitGranularity($granularity);
-    if (!$date=>valid($granularity, $element['#date_flexible'])) {
+    if (!$date->valid($granularity, $element['#date_flexible'])) {
       $date = NULL;
     }    
   }
@@ -400,14 +400,14 @@ function date_popup_input_value($element, $auto_complete = FALSE) {
   $date_format = date_limit_format($format, array('year', 'month', 'day'));
   $value = '';
   if (is_array($element['#value']) && !empty($element['#value']['date'])) {
-    $input = !empty($element['#value']['date']) ? trim($element['#value']['date'] : '';
+    $input = !empty($element['#value']['date']) ? trim($element['#value']['date']) : '';
     $date = new DateObject($input, NULL, $date_format);    
     
     // TODO, will the new DateObject handle a time-only input?
-    $input = !empty($element['#value']['time']) ? trim($element['#value']['time'] : '';
+    $input = !empty($element['#value']['time']) ? trim($element['#value']['time']) : '';
     $time = new DateObject($input, NULL, $time_format);
         
-    $value = $date->format(DATE_FORMAT_DATE) .' ' . $time->format('H:i:s'));
+    $value = $date->format(DATE_FORMAT_DATE) .' ' . $time->format('H:i:s');
   }
   if (!empty($value) && $value = new DateObject($value)) {
     if ($value->valid($granularity, $element['#date_flexible'])) {  

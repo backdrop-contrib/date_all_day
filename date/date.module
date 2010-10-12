@@ -291,8 +291,9 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
     else {
       // create a date object with a gmt timezone from the database value
       $value = $item[$processed];
+      // @TODO Figure out how to replace date_fuzzy_datetime() function.
       if ($field['type'] == DATE_ISO) {
-        $value = str_replace(' ', 'T', date_fuzzy_datetime($value));
+        //$value = str_replace(' ', 'T', date_fuzzy_datetime($value));
       }
       $date = new DateObject($value, $timezone_db, date_type_format($field['type']));
       $date->limitGranularity($field['settings']['granularity']);

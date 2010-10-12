@@ -358,10 +358,11 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
     if (is_array($item)) {
       // Special case for ISO dates which may have been given artificial values for
       // some date parts to make them into valid dates.
+      // @TODO Decide how to replace the date_limit_value() function.
       if (!empty($item['value']) && $field['type'] == DATE_ISO) {
-        $items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), $field['type']);
+        //$items[$delta]['value'] = date_limit_value($items[$delta]['value'], date_granularity($field), $field['type']);
         if ($field['settings']['todate']) {
-          $items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), $field['type']);
+          //$items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), $field['type']);
         }
       }  
     }

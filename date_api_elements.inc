@@ -72,17 +72,29 @@ function _date_api_element_info() {
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_element_process'),
     '#theme_wrappers' => array('date_select'),
+    '#value_callback' => 'date_select_element_value_callback',
     ));
   $type['date_text'] = array_merge($date_base, array(
     '#process' => array('date_text_element_process'),
     '#theme_wrappers' => array('date_text'),
+    '#value_callback' => 'date_text_element_value_callback',
     ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#process' => array('date_timezone_element_process'),
     '#theme_wrappers' => array('date_text'),
+    '#value_callback' => 'date_timezone_element_value_callback',
     );  
   return $type;
+}
+
+/**
+ * Element value callback for date_timezone element.
+ */
+function date_timezone_element_value_callback($element, $input = FALSE, &$form_state) {
+  if (!$input) {
+    return array('timezone' => $element['#default_value']);
+  }
 }
 
 /**
@@ -113,6 +125,16 @@ function date_timezone_element_process($element, $form_state, $form) {
   // TODO This sometimes causes problems, do we need it?
   //$element['#attributes'] = array('class' => array('date-timezone clear-block'));
   return $element;
+}
+
+
+/**
+ * Element value callback for date_text element.
+ */
+function date_text_element_value_callback($element, $input = FALSE, &$form_state) {
+  if (!$input) {
+    return array('date' => $element['#default_value']);
+  }
 }
 
 /**
@@ -176,6 +198,43 @@ function date_text_element_process($element, $form_state, $form) {
   }
 
   return $element;
+}
+
+/**
+ * Element value callback for date_select element.
+ */
+function date_select_element_value_callback($element, $input = FALSE, &$form_state) {
+  if (!$input) {
+    $value = array();
+    $granularity = date_format_order($element['#date_format']);
+    $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
+    $date->limitGranularity($granularity);
+    $hours_format  = strpos(strtolower($element['#date_format']), 'a') ? 'g': 'G';
+    $month_function  = strpos($element['#date_format'], 'F') !== FALSE ? 'date_month_names' : 'date_month_names_abbr';
+    foreach ($granularity as $field) {
+      switch ($field) {
+        case 'year':
+          $value[$field] = is_object($date) ? date_format($date, 'Y') : '';
+          break;
+        case 'month':
+          $value[$field] = is_object($date) ? date_format($date, 'n') : '';
+          break;
+        case 'day':
+          $value[$field] = is_object($date) ? date_format($date, 'j') : '';
+          break;
+        case 'hour':
+          $value[$field] = is_object($date) ? date_format($date, $hours_format) : '';
+          break;
+        case 'minute':
+          $value[$field] = is_object($date) ? date_format($date, 'i') : '';
+          break;
+        case 'second':
+          $value[$field] = is_object($date) ? date_format($date, 's') : '';
+          break;
+      }
+    }
+    return $value;
+  }
 }
 
 /**

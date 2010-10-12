@@ -155,13 +155,35 @@ function date_popup_element_info() {
       '#input' => TRUE,
       '#tree' => TRUE,
       '#date_timezone' => date_default_timezone(),
+      '#date_flexible' => 0,
       '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',
       '#process' => array('date_popup_element_process'),
+      '#value_callback' => 'date_popup_element_callback',
       '#theme_wrappers' => array('date_popup'),
       ),
     );
+}
+
+ /**
+ * Element value callback for date_popup element.
+ */
+function date_popup_element_value_callback($element, $input = FALSE, &$form_state) {
+  if (!$input) {
+    $granularity = date_format_order($element['#date_format']);
+    $date_granularity = array_intersect($granularity, array('month', 'day', 'year'));
+    $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
+    $date_format = (date_limit_format($element['#date_format'], $date_granularity));
+    $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
+
+    $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
+    $date->limitGranularity(date_format_order($element['#date_format']));
+    return array(
+      'date' => date_format_date($date, 'custom', $date_format),
+      'time' => date_format($date, $time_format)
+    );
+  }
 }
 
 /**
@@ -184,21 +206,22 @@ function date_popup_element_process($element, $form_state, $form) {
   module_load_include('inc', 'date_api', 'date_api_elements');
 
   $date = NULL;
-  $edit = !empty($form_state['input']) ? $form_state['values'] : array();
+  if (!empty($form_state['input']) && isset($form_state['values']['date'])) {
+    $edit = $form_state['values'];
+  }
+  elseif (isset($element['#value']['date'])) {
+    $edit = $element['#value'];
+  }
   
   $granularity = date_format_order($element['#date_format']);
   
-  if (!empty($edit) && is_array($edit) && !empty($edit['date'])) {
+  if (!empty($edit)) {
     $input = $edit['date'] . (!empty($edit['time']) ? ' ' . $edit['time'] : '');
     $date = new DateObject($input, $element['#date_timezone'], DATE_FORMAT_DATETIME);
     $date->limitGranularity($granularity);
     if (!$date->valid($granularity, $element['#date_flexible'])) {
       $date = NULL;
     }    
-  }
-  elseif (!empty($element['#value'])) {
-    $date = new DateObject($element['#value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
-    $date->limitGranularity($granularity);
   }
   
   date_increment_round($date, $element['#date_increment']);
@@ -268,7 +291,7 @@ function date_popup_process_date(&$element, $edit = NULL, $date = NULL) {
   $id = date_popup_js_settings_id($element['#id'], 'datepicker', $settings);
   $sub_element = array(
     '#type' => 'textfield',
-    '#default_value' => (!empty($element['#value']['date']) || !empty($edit['date'])) && is_object($date) ? date_format_date($date, 'custom', $date_format) : '',
+    '#default_value' => !empty($element['#value']['date']) ? $element['#value']['date'] : '',
     '#id' => $id,    
     '#size' => !empty($element['#size']) ? $element['#size'] : 20,
     '#maxlength' => !empty($element['#maxlength']) ? $element['#maxlength'] : 30,
@@ -306,7 +329,7 @@ function date_popup_process_time(&$element, $edit = NULL, $date = NULL) {
   $id = date_popup_js_settings_id($element['#id'], 'timeEntry', $settings);
   $sub_element = array(
     '#type' => 'textfield',
-    '#default_value' => (!empty($element['#value']['time']) || !empty($edit['time'])) && is_object($date) ? date_format($date, $time_format) : '',
+    '#default_value' => !empty($element['#value']['time']) ? $element['#value']['time'] : '',
     '#id' => $id,
     '#size' => 10,
     '#maxlength' => 10,

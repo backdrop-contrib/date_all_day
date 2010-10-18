@@ -138,14 +138,15 @@ class DateObject extends DateTime {
         return FALSE;
       }
     } 
-    else {
+    elseif (is_string($time)) {
       // PHP < 5.3 doesn't like the GMT- notation for parsing timezones.
       $time = str_replace("GMT-", "-", $time);
       $time = str_replace("GMT+", "+", $time);
       parent::__construct($time, $tz ? $tz : new DateTimeZone("UTC"));
       $this->setGranularityFromTime($time, $tz);
     }
-    if (!preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
+
+    if ($this->getTimezone() && !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
       // This tz was given as just an offset, which causes problems
       $this->setTimezone(new DateTimeZone("UTC"));
     }

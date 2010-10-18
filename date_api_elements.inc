@@ -93,7 +93,7 @@ function _date_api_element_info() {
  */
 function date_timezone_element_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
-    return array('timezone' => $element['#default_value']);
+    return array();
   }
 }
 
@@ -109,7 +109,7 @@ function date_timezone_element_process($element, $form_state, $form) {
   $element['timezone'] = array(
     '#type' => 'select',
     '#title' => theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element)),
-    '#default_value' => $element['#value'],
+    '#default_value' => $element['#default_value'],
     '#options' => date_timezone_names($element['#required']),
     '#weight' => $element['#weight'],
     '#required' => $element['#required'],
@@ -133,7 +133,7 @@ function date_timezone_element_process($element, $form_state, $form) {
  */
 function date_text_element_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
-    return array('date' => $element['#default_value']);
+    return array();
   }
 }
 
@@ -166,9 +166,9 @@ function date_text_element_process($element, $form_state, $form) {
       $date = NULL;
     }
   }
-  elseif (!empty($element['#value'])) {
+  elseif (!empty($element['#default_value'])) {
     // Value retrieved from database, in ISO format.
-    $date = new DateObject($element['#value'], $element['#date_timezone'], DATE_FORMAT_ISO);
+    $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_ISO);
     if (!$date->valid($granularity, $element['#date_flexible'])) {
       $date = NULL;
     }
@@ -205,35 +205,7 @@ function date_text_element_process($element, $form_state, $form) {
  */
 function date_select_element_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
-    $value = array();
-    $granularity = date_format_order($element['#date_format']);
-    $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
-    $date->limitGranularity($granularity);
-    $hours_format  = strpos(strtolower($element['#date_format']), 'a') ? 'g': 'G';
-    $month_function  = strpos($element['#date_format'], 'F') !== FALSE ? 'date_month_names' : 'date_month_names_abbr';
-    foreach ($granularity as $field) {
-      switch ($field) {
-        case 'year':
-          $value[$field] = is_object($date) ? date_format($date, 'Y') : '';
-          break;
-        case 'month':
-          $value[$field] = is_object($date) ? date_format($date, 'n') : '';
-          break;
-        case 'day':
-          $value[$field] = is_object($date) ? date_format($date, 'j') : '';
-          break;
-        case 'hour':
-          $value[$field] = is_object($date) ? date_format($date, $hours_format) : '';
-          break;
-        case 'minute':
-          $value[$field] = is_object($date) ? date_format($date, 'i') : '';
-          break;
-        case 'second':
-          $value[$field] = is_object($date) ? date_format($date, 's') : '';
-          break;
-      }
-    }
-    return $value;
+    return array();
   }
 }
 
@@ -258,11 +230,11 @@ function date_select_element_process($element, $form_state, $form) {
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
   
-  if (is_array($element['#value'])) {
-    $date = new DateObject($element['#value'], $element['#date_timezone']);
+  if (is_array($element['#default_value'])) {
+    $date = new DateObject($element['#default_value'], $element['#date_timezone']);
   }
-  elseif (!empty($element['#value'])) {
-    $date = new DateObject($element['#value'], $element['#date_timezone']);
+  elseif (!empty($element['#default_value'])) {
+    $date = new DateObject($element['#default_value'], $element['#date_timezone']);
   }
 
   $element['#tree'] = TRUE;
@@ -561,9 +533,9 @@ function date_select_validate($element, &$form_state) {
  */
 function date_select_input_value($element) {
   $granularity = date_format_order($element['#date_format']);
-  $value = new DateObject($element['#value']);
+  $value = new DateObject($element['#value'], $element['#date_timezone']);
   $value->limitGranularity($granularity);
-  if ($value->valid($granularity, $element['#date_flexible'])){
+  if ($value->valid($granularity, $element['#date_flexible'])) {
     return $value;
   }
   return NULL;
@@ -604,7 +576,7 @@ function date_text_input_value($element) {
   $granularity = date_format_order($element['#date_format']);
   $input = $form_values['date'];
   if (!$element['#required'] && trim($input) == '') return NULL;
-  $value = new DateObject($input, NULL, $element['#date_format']);
+  $value = new DateObject($input, $element['#date_timezone'], $element['#date_format']);
   $value->limitGranularity($granularity);
 
   if ($value->valid($granularity, $element['#date_flexible'])){

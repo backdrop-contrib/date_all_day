@@ -241,6 +241,7 @@ function date_element_info() {
     '#columns' => array('value', 'value2', 'timezone', 'offset', 'offset2'),
     '#process' => array('date_combo_element_process'),
     '#element_validate' => array('date_combo_validate'),
+    '#value_callback' => 'date_combo_value_callback',
     '#theme_wrappers' => array('date_combo'),
     );
   return $type;

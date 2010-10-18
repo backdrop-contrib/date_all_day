@@ -171,18 +171,7 @@ function date_popup_element_info() {
  */
 function date_popup_element_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
-    $granularity = date_format_order($element['#date_format']);
-    $date_granularity = array_intersect($granularity, array('month', 'day', 'year'));
-    $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
-    $date_format = (date_limit_format($element['#date_format'], $date_granularity));
-    $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
-
-    $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
-    $date->limitGranularity(date_format_order($element['#date_format']));
-    return array(
-      'date' => date_format_date($date, 'custom', $date_format),
-      'time' => date_format($date, $time_format)
-    );
+    return array();
   }
 }
 
@@ -209,8 +198,8 @@ function date_popup_element_process($element, $form_state, $form) {
   if (!empty($form_state['input']) && isset($form_state['values']['date'])) {
     $edit = $form_state['values'];
   }
-  elseif (isset($element['#value']['date'])) {
-    $edit = $element['#value'];
+  elseif (isset($element['#default_value']['date'])) {
+    $edit = $element['#default_value'];
   }
   
   $granularity = date_format_order($element['#date_format']);

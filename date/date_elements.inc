@@ -171,7 +171,7 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
     }
     */
     
-    $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']), date_type_format($field['type']));
+    $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']));
     $date->limitGranularity($field['settings']['granularity']);
     if (empty($date)) {
       return NULL;

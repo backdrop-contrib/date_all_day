@@ -1124,7 +1124,7 @@ function date_format_interval($date, $granularity = 2) {
     return NULL;
   }
 
-  $interval = REQUEST_TIME - date_format($date, 'U');
+  $interval = REQUEST_TIME - $date->format('U');
   if ($interval > 0 ) {
     return t('!time ago', array('!time' => format_interval($interval, $granularity)));
   } 
@@ -1192,24 +1192,24 @@ function date_days_in_month($year, $month) {
   // Pick a day in the middle of the month to avoid timezone shifts.
   $datetime = date_pad($year, 4) . '-' . date_pad($month) . '-15 00:00:00';
   $date = new DateObject($datetime);
-  return date_format($date, 't');
+  return $date->format('t');
 }
 
 /**
  * Identify the number of days in a year for a date.
  *
  * @param mixed $date
- * @param string $type
  * @return integer
  */
-function date_days_in_year($date = NULL, $type = DATE_OBJECT) {
+function date_days_in_year($date = NULL) {
   if (empty($date)) {
     $date = date_now();
-    $type = DATE_OBJECT;
   }
-  $date = date_convert($date, $type, DATE_OBJECT);
+  elseif (!is_object($date)) {
+    $date = new DateObject($date);
+  }
   if (is_object($date)) {
-    if (date_format($date, 'L')) {
+    if ($date->format('L')) {
       return 366;
     }
     else {
@@ -1225,18 +1225,18 @@ function date_days_in_year($date = NULL, $type = DATE_OBJECT) {
  * December 28 is always in the last ISO week of the year.
  *
  * @param mixed $date
- * @param string $type
  * @return integer
  */
-function date_iso_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
+function date_iso_weeks_in_year($date = NULL) {
   if (empty($date)) {
     $date = date_now();
-    $type = DATE_OBJECT;
   }
-  $date = date_convert($date, $type, DATE_OBJECT);
+  elseif (!is_object($date)) {
+    $date = new DateObject($date);
+  }
   if (is_object($date)) {
-    date_date_set($date, date_format($date, 'Y'), 12, 28);
-    return date_format($date, 'W');
+    date_date_set($date, $date->format('Y'), 12, 28);
+    return $date->format('W');
   }
   return NULL;
 }
@@ -1246,19 +1246,18 @@ function date_iso_weeks_in_year($date = NULL, $type = DATE_OBJECT) {
  *
  * @param mixed  $date
  *   a date, default is current local day
- * @param string  $type
- *   The type of date, DATE_ISO, DATE_DATETIME, or DATE_UNIX
  * @return
  *    the number of the day in the week
  */
-function date_day_of_week($date = NULL, $type = DATE_OBJECT) {
+function date_day_of_week($date = NULL) {
   if (empty($date)) {
     $date = date_now();
-    $type = DATE_OBJECT;
   }
-  $date = date_convert($date, $type, DATE_OBJECT);
+  elseif (!is_object($date)) {
+    $date = new DateObject($date);
+  }
   if (is_object($date)) {
-    return date_format($date, 'w');
+    return $date->format('w');
   }
   return NULL;
 }
@@ -1268,15 +1267,16 @@ function date_day_of_week($date = NULL, $type = DATE_OBJECT) {
  *
  * @param mixed  $date
  *   a date, default is current local day
- * @param string  $type
- *   The type of date, DATE_ISO, DATE_DATETIME, or DATE_UNIX
  * @param string $abbr
  *   Whether to return the abbreviated name for that day
  * @return
  *    the name of the day in the week for that date
  */
-function date_day_of_week_name($date = NULL, $abbr = TRUE, $type = DATE_DATETIME) {
-  $dow = date_day_of_week($date, $type);
+function date_day_of_week_name($date = NULL, $abbr = TRUE) {
+  if (!is_object($date)) {
+    $date = new DateObject($date);
+  }
+  $dow = date_day_of_week($date);
   $days = $abbr ? date_week_days_abbr() : date_week_days();
   return $days[$dow];
 }
@@ -1315,20 +1315,20 @@ function date_week_range($week, $year) {
  */
 function date_iso_week_range($week, $year) {
   
-  // Get to the first ISO week of the year.
-  $min_date = new DateObject($year .'-01-01 00:00:00');
+  // Get to the last ISO week of the previous year.
+  $min_date = new DateObject(($year - 1) .'-12-27 00:00:00');
   date_timezone_set($min_date, date_default_timezone_object());
   
-  if (date_format($min_date, 'W') != 1) {
-    date_modify($min_date, '+1 Monday');
-  }
+  // Find the first day of the first ISO week in the year.
+  date_modify($min_date, '+1 Monday');
+  
   // Jump ahead to the desired week for the beginning of the week range.
   if ($week > 1) {
     date_modify($min_date, '+ '. ($week - 1) .' weeks');
   }
   
   // move forwards to the last day of the week
-  $max_date = drupal_clone($min_date);
+  $max_date = clone($min_date);
   date_modify($max_date, '+7 days');
   return array($min_date, $max_date);
 }
@@ -1344,7 +1344,7 @@ function date_iso_week_range($week, $year) {
 function date_weeks_in_year($year) {
   $date = new DateObject(($year + 1) . '-01-01 12:00:00', 'UTC');
   date_modify($date, '-1 day');
-  return date_week(date_format($date, 'Y-m-d'));
+  return date_week($date->format('Y-m-d'));
 }
 
 /**
@@ -1363,13 +1363,13 @@ function date_week($date) {
   
   // If we are using ISO weeks, this is easy.
   if (variable_get('date_api_use_iso8601', FALSE)) {
-    return date_format($date, 'W');
+    return $date->format('W');
   }
 
   $year_date = new DateObject($parts[0] . '-01-01 12:00:00', 'UTC');
-  $week = intval(date_format($date, 'W'));
+  $week = intval($date->format('W'));
   $year_week = intval(date_format($year_date, 'W'));
-  $date_year = intval(date_format($date, 'o'));
+  $date_year = intval($date->format('o'));
 
   // remove the leap week if it's present
   if ($date_year > intval($parts[0])) {
@@ -1386,7 +1386,7 @@ function date_week($date) {
   $iso_first_day = 1 + (variable_get('date_first_day', 1) + 6) % 7;
 
   // if it's before the starting day, it's the previous week
-  if (intval(date_format($date, 'N')) < $iso_first_day) $week--;
+  if (intval($date->format('N')) < $iso_first_day) $week--;
 
   // if the year starts before, it's an extra week at the beginning
   if (intval(date_format($year_date, 'N')) < $iso_first_day) $week++;
@@ -1905,7 +1905,7 @@ function date_range_years($string, $date = NULL) {
     }
   }
   // If there is a current value, stretch the range to include it.
-  $value_year = is_object($date) ? date_format($date, 'Y') : '';
+  $value_year = is_object($date) ? $date->format('Y') : '';
   if (!empty($value_year)) {
     $min_year = min($value_year, $min_year);
     $max_year = max($value_year, $max_year);

@@ -25,3 +25,6 @@ files[] = theme/date-valarm.tpl.php
 files[] = theme/date-vcalendar.tpl.php
 files[] = theme/date-vevent.tpl.php
 files[] = theme/date-views-filter-form.tpl.php
+files[] = tests/date_api.test
+files[] = tests/date.test
+files[] = tests/date_repeat.test

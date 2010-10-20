@@ -4,7 +4,7 @@ class DateTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Date functionality',
+      'name' => 'Field UI',
       'description' => 'Test creation of various date fields and widgets using Field UI.',
       'group' => 'Date',
     );
@@ -21,7 +21,7 @@ class DateTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->privileged_user);
   }
 
-  public function testDate() {
+  public function fieldUI() {
     $edit = array();
     $edit['name'] = 'Story';
     $edit['type'] = 'story';
@@ -31,28 +31,28 @@ class DateTestCase extends DrupalWebTestCase {
     $this->createDateField($type = 'date', $widget = 'date_select');
     $edit = array();
     $this->drupalPost(NULL, $edit, t('Save field settings'));
-    $this->dateCrud($options = 'select');
+    $this->dateForm($options = 'select');
     $this->assertText('Thu, 10/07/2010 - 6:30', 'Found the correct date for a date field using the date_select widget.');
     $this->deleteDateField();
     // Creates text date field stored as a date with default settings.
     $this->createDateField($type = 'date', $widget = 'date_text');
     $edit = array();
     $this->drupalPost(NULL, $edit, t('Save field settings'));
-    $this->dateCrud($options = 'text');
+    $this->dateForm($options = 'text');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a date field using the date_text widget.');
     $this->deleteDateField();
     // Creates select list date field stored as a datestamp with default settings.
     $this->createDateField($type = 'datestamp', $widget = 'date_select');
     $edit = array();
     $this->drupalPost(NULL, $edit, t('Save field settings'));
-    $this->dateCrud($options = 'select');
+    $this->dateForm($options = 'select');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a datestamp field using the date_select widget.');
     $this->deleteDateField();
     // Creates text date field stored as a datestamp with default settings.
     $this->createDateField($type = 'datestamp', $widget = 'date_text');
     $edit = array();
     $this->drupalPost(NULL, $edit, t('Save field settings'));
-    $this->dateCrud($options = 'text');
+    $this->dateForm($options = 'text');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a datestamp field using the date_text widget.');
     $this->deleteDateField();
     // Tests for datetime removed because support removed from core http://drupal.org/node/866340
@@ -68,7 +68,7 @@ class DateTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/structure/types/manage/story/fields', $edit, t('Save'));
   }
 
-  function dateCrud($options) {
+  function dateForm($options) {
     // Tests that date field functions properly.
     $edit = array();
     $edit['title'] = $this->randomName(8);

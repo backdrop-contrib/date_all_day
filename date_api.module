@@ -83,16 +83,35 @@ class DateObject extends DateTime {
    * @param $time
    *   time string, flexible format including timestamp.
    * @param $tz
-   *   PHP DateTimeZone object, NULL allowed
+   *   PHP DateTimeZone object, string or NULL allowed, defaults to site timezone.
    * @param $format
    *   PHP date() type format for parsing. Doesn't support timezones; if you have a timezone, send NULL
    *   and the default constructor method will hopefully parse it.
    *   $format is recommended in order to use negative or large years, which php's parser fails on.
    */
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
+    
+    // Allow string timezones
+    if (!empty($tz) && !is_object($tz)) {
+      $tz = new DateTimeZone($tz);
+    }
+    
+    // Default to the site timezone when not explicitly provided.
+    elseif (empty($tz)) {
+      $tz = date_default_timezone_object();
+    }
+
+    // Special handling for Unix timestamps expressed in the local timezone.
+    // Create a date object in UTC and convert it to the local timezone.
     if (is_numeric($time)) {
       // Assume timestamp.
       $time = "@". $time;
+      if ($tz->getName() != 'UTC') {
+        $date = new DateObject($time, 'UTC');
+        $date->setTimezone($tz);
+        $time = $date->format(DATE_FORMAT_DATETIME);
+        $format = DATE_FORMAT_DATETIME;
+      }  
     }
     
     if (is_array($time)) {
@@ -122,11 +141,6 @@ class DateObject extends DateTime {
       $time = $datetime;
       $format = DATE_FORMAT_ISO;
     }
-    // Allow string timezones
-    if (!empty($tz) && !is_object($tz)) {
-      $tz = new DateTimeZone($tz);
-    }
-    
     if (!empty($format)) {
       $ag = self::$allgranularity;
       $el = array_pop($ag);

@@ -159,7 +159,6 @@ class DateObject extends DateTime {
       parent::__construct($time, $tz ? $tz : new DateTimeZone("UTC"));
       $this->setGranularityFromTime($time, $tz);
     }
-
     if ($this->getTimezone() && !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
       // This tz was given as just an offset, which causes problems
       $this->setTimezone(new DateTimeZone("UTC"));

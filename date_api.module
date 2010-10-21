@@ -90,7 +90,7 @@ class DateObject extends DateTime {
    *   $format is recommended in order to use negative or large years, which php's parser fails on.
    */
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
-    
+      
     // Allow string timezones
     if (!empty($tz) && !is_object($tz)) {
       $tz = new DateTimeZone($tz);

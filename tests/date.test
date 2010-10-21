@@ -12,7 +12,7 @@ class DateTestCase extends DrupalWebTestCase {
 
   public function setUp() {
     // Load the date_api module.
-    parent::setUp('field', 'field_ui', 'date_api', 'date');
+    parent::setUp('field', 'field_ui', 'date_api', 'date', 'date_popup');
 
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
@@ -21,7 +21,7 @@ class DateTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->privileged_user);
   }
 
-  public function fieldUI() {
+  public function testFieldUI() {
     $edit = array();
     $edit['name'] = 'Story';
     $edit['type'] = 'story';
@@ -41,6 +41,13 @@ class DateTestCase extends DrupalWebTestCase {
     $this->dateForm($options = 'text');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a date field using the date_text widget.');
     $this->deleteDateField();
+    // Creates popup date field stored as a date with default settings.
+    $this->createDateField($type = 'date', $widget = 'date_popup');
+    $edit = array();
+    $this->drupalPost(NULL, $edit, t('Save field settings'));
+    $this->dateForm($options = 'text');
+    $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a date field using the date_popup widget.');
+    $this->deleteDateField();
     // Creates select list date field stored as a datestamp with default settings.
     $this->createDateField($type = 'datestamp', $widget = 'date_select');
     $edit = array();
@@ -54,6 +61,13 @@ class DateTestCase extends DrupalWebTestCase {
     $this->drupalPost(NULL, $edit, t('Save field settings'));
     $this->dateForm($options = 'text');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a datestamp field using the date_text widget.');
+    $this->deleteDateField();
+    // Creates popup date field stored as a datestamp with default settings.
+    $this->createDateField($type = 'datestamp', $widget = 'date_popup');
+    $edit = array();
+    $this->drupalPost(NULL, $edit, t('Save field settings'));
+    $this->dateForm($options = 'text');
+    $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a datestamp field using the date_popup widget.');
     $this->deleteDateField();
     // Tests for datetime removed because support removed from core http://drupal.org/node/866340
   }

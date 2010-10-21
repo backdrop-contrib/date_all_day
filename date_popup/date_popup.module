@@ -56,7 +56,7 @@ function date_popup_library() {
  * Implement hook_init().
  */
 function date_popup_init() {
-  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/datepicker.css');
+  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/calendar.css');
 }
 
  /**
@@ -326,7 +326,7 @@ function date_popup_process_time(&$element, $date = NULL) {
     $sub_element['#value'] = $sub_element['#default_value'];
   }
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = t('Format: @date', array('@date' => date($element['#date_time_format'], REQUEST_TIME)));
+  $sub_element['#description'] = t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', $element['#date_time_format'])));
   return ($sub_element);
 }
 
@@ -544,7 +544,6 @@ function theme_date_popup($vars) {
 function date_popup_menu() {
   $items = array();
   // TODO Fix this later.
-  return $items;
   $items['admin/config/date_popup'] = array(
     'title' => 'Date Popup Configuration',
     'description' => 'Allows the user to configure the Date Popup settings.',

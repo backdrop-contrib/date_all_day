@@ -419,8 +419,8 @@ function date_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implements hook_field_widget_error().
  */
-function date_field_widget_error($element, $error) {
-  form_error($element['value'], $error['message']);
+function date_field_widget_error($element, $error, $form, &$form_state) {
+  form_error($element[$error['error']], $error['message']);
 }
 
 /**

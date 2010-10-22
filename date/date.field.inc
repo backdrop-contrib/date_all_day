@@ -286,37 +286,44 @@ function date_field_load($entity_type, $entities, $field, $instances, $langcode,
 /**
  * Implements hook_field_validate().
  */
-function date_field_validate($entity_type, $entity, $field, $instance, $langcode, &$items) {
+function date_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   $field_name = $field['field_name'];
- 
+  $flexible = 0;
+  
   // Don't try to validate if there were any errors before this point
   // since the element won't have been munged back into a date.
   if (!form_get_errors()) {
     foreach ($items as $delta => $item) {
       if (is_array($item)) {
         $process = date_process_values($field, $instance);
+        $date1 = new DateObject($item['value'], $item['timezone'], date_type_format($field['type']));
+        if (empty($item['value2']) && $item['value2'] !== 0) {
+          $date2 = clone($date1);
+        }
+        else {
+          $date2 = new DateObject($item['value2'], $item['timezone'], date_type_format($field['type']));
+        }
+        $valid1 = $date1->valid($field['settings']['granularity'], $flexible);
+        $valid2 = $date2->valid($field['settings']['granularity'], $flexible);
+        
         foreach ($process as $processed) {
-          if ($processed == 'value' && $field['settings']['todate']
-            && !date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
-            && (date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
+          if ($processed == 'value' && $field['settings']['todate'] && !$valid1 && $valid2) {
             $errors[$field['field_name']][$langcode][$delta][] = array(
-              'error' => 'valid_nid',
-              'message' => t("A 'From date' date is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['widget']['label']))),
+              'error' => 'value',
+              'message' => t("A 'From date' date is required for field %field #%delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
             );
           }
-          if ($processed == 'value2'
-            && $field['settings']['todate'] == 'required' && ($field['required']
-            && date_is_valid($item['value'], $field['type'], $field['settings']['granularity'])
-            && !date_is_valid($item['value2'], $field['type'], $field['settings']['granularity']))) {
+          if ($processed == 'value2' && $field['settings']['todate'] == 'required' && ($field['required'] && $valid1 && !$valid2)) {
             $errors[$field['field_name']][$langcode][$delta][] = array(
-              'error' => 'valid_nid',
-              'message' => t("A 'To date' is required for field %field %delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
+              'error' => 'value2',
+              'message' => t("A 'To date' is required for field %field #%delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
             );
           }            
-        }
+        }       
       }
     }
   }
+
 }
 
 /**

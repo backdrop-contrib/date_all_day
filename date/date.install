@@ -17,7 +17,9 @@ function date_field_schema($field) {
       break;
     case 'datetime':
       $db_columns['value'] = array(
-        'type' => 'datetime', 
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone', 
         'not null' => FALSE, 
         'sortable' => TRUE, 
         'views' => TRUE,

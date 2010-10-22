@@ -379,11 +379,13 @@ function date_ical_parse_date($field, $data) {
   // If no format is specified, attempt a loose match
   else {
     preg_match(DATE_REGEX_LOOSE, $data, $regs);
-    $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
-    if (isset($regs[4])) {
-      $has_time = TRUE;
-      $datetime .= ' ' . date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
-    }
+    if (!empty($regs) && count($regs) > 2) {
+      $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
+      if (isset($regs[4])) {
+        $has_time = TRUE;
+        $datetime .= ' ' . date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
+      }
+    }  
   }
 
   // Use timezone if explicitly declared
@@ -568,7 +570,7 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   else {
     $from_tz = $ical_date['tz'];
   }
-  $date = new DateObject($ical_date['datetime'], $from_tz);
+  $date = new DateObject($ical_date['datetime'], new DateTimeZone($from_tz));
   if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     date_timezone_set($date, timezone_open($to_tz));
   }
@@ -639,6 +641,7 @@ function date_api_ical_build_rrule($form_values) {
   if (empty($form_values) || !is_array($form_values)) {
     return $RRULE;
   }
+
   //grab the RRULE data and put them into iCal RRULE format
   $RRULE .= 'RRULE:FREQ=' . (!array_key_exists('FREQ', $form_values) ? 'DAILY' : $form_values['FREQ']);
   $RRULE .= ';INTERVAL=' . (!array_key_exists('INTERVAL', $form_values) ? 1 : $form_values['INTERVAL']);
@@ -681,10 +684,13 @@ function date_api_ical_build_rrule($form_values) {
   if (isset($form_values['EXDATE']) && is_array($form_values['EXDATE'])) {
     $ex_dates = array();
     foreach ($form_values['EXDATE'] as $value) {
-      $ex_date = date_convert($value['datetime'], DATE_DATETIME, DATE_ICAL);
-      if (!empty($ex_date)) {
-        $ex_dates[] = $ex_date;
-      }
+      if (!empty($value['datetime'])) {
+        $date = date_ical_date($value, 'UTC');
+        $ex_date = $date->format(DATE_FORMAT_ICAL);
+        if (!empty($ex_date)) {
+          $ex_dates[] = $ex_date;
+        }
+      }  
     }
     if (!empty($ex_dates)) {
       sort($ex_dates);

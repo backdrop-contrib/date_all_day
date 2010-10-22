@@ -155,7 +155,7 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   else {
     $end = $start;
   }
-  $duration = date_difference($start, $end);
+  $duration = $start->difference($end);
   $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
     
   if (!empty($rrule_values['UNTIL']['datetime'])) {

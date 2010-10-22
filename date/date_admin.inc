@@ -147,7 +147,7 @@ function date_interval_formatter_settings_summary($field, $instance, $view_mode)
 function _date_field_instance_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $instance['settings'];
-  
+  $widget_settings = $instance['widget']['settings'];
   $form['default_value'] = array(
     '#type' => 'select', '#title' => t('Default value'),
     '#default_value' => $settings['default_value'],
@@ -195,17 +195,15 @@ function _date_field_instance_settings_form($field, $instance) {
     '#options' => $format_types,
     '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => base_path() . 'admin/config/regional/date-time/formats')),
     );
-
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['repeat_collapsed'] = array(
       '#type' => 'radios',
-      '#default_value' => $settings['repeat_collapsed'],
+      '#default_value' => $widget_settings['repeat_collapsed'],
       '#options' => array(0 => t('Expanded'), 1 => t('Collapsed')),
       '#title' => t('Repeat display'),
       '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),
       );
   }
-    
   return $form;
 }
 

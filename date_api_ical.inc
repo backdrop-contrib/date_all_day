@@ -661,8 +661,10 @@ function date_api_ical_build_rrule($form_values) {
     $RRULE .= ';BYMONTHDAY=' . $BYMONTHDAY;
   }
   // The UNTIL date is supposed to always be expressed in UTC.
+  // The input date values may already have been converted to a date
+  // object on a previous pass, so check for that.
   if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL']) && !empty($form_values['UNTIL']['datetime'])) {
-    $until = date_ical_date($form_values['UNTIL'], 'UTC');
+    $until = !is_object($form_values['UNTIL']['datetime']) ? date_ical_date($form_values['UNTIL'], 'UTC') : $form_values['UNTIL']['datetime'];
     $RRULE .= ';UNTIL=' . date_format($until, DATE_FORMAT_ICAL) . 'Z';
   }
   // Our form doesn't allow a value for COUNT, but it may be needed by
@@ -681,11 +683,13 @@ function date_api_ical_build_rrule($form_values) {
   }
 
   // Exceptions dates go last, on their own line.
+  // The input date values may already have been converted to a date
+  // object on a previous pass, so check for that.
   if (isset($form_values['EXDATE']) && is_array($form_values['EXDATE'])) {
     $ex_dates = array();
     foreach ($form_values['EXDATE'] as $value) {
       if (!empty($value['datetime'])) {
-        $date = date_ical_date($value, 'UTC');
+        $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
         $ex_date = $date->format(DATE_FORMAT_ICAL);
         if (!empty($ex_date)) {
           $ex_dates[] = $ex_date;

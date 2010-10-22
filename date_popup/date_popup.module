@@ -399,6 +399,12 @@ function date_popup_validate($element, &$form_state) {
 function date_popup_input_value($element, $auto_complete = FALSE) {
   date_popup_add();
   $granularity = date_format_order($element['#date_format']);
+  $date_granularity = array_intersect($granularity, array('month', 'day', 'year'));
+  $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
+  $date_format = (date_limit_format($element['#date_format'], $date_granularity));
+  $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
+  $flexible = !empty($element['#date_flexible']) ? $element['#date_flexible'] : 0;
+    
   $format = $element['#date_format'];
   $format = strtr($format, timepicker_format_replacements());
   $format = date_limit_format($format, $granularity);
@@ -406,11 +412,11 @@ function date_popup_input_value($element, $auto_complete = FALSE) {
   if (is_array($element['#value']) && !empty($element['#value']['date'])) {
     $input = $element['#value']['date'] . (!empty($element['#value']['time']) ? ' ' . $element['#value']['time'] : '');
     if (!empty($input)) {    
-      $format = $element['#date_date_format'];
-      $format .= (!empty($element['#date_time_format']) ? ' ' . $element['#date_time_format'] : '');
+      $format = $date_format;
+      $format .= (!empty($time_format) ? ' ' . $time_format : '');
       $date = new DateObject($input, $element['#date_timezone'], $format);
       $date->limitGranularity($granularity);
-      if (!$date->valid($granularity, $element['#date_flexible'])) {
+      if (!$date->valid($granularity, $flexible)) {
         $date = NULL;
       } 
       else {

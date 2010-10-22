@@ -108,7 +108,6 @@ function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langc
 
 function date_combo_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
-    echo 'callback';
     return array();
   }
 }

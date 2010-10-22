@@ -36,17 +36,18 @@
  */
 function _date_repeat_rrule_process($element, $form_state, $form) {
   module_load_include('inc', 'date_api', 'date_api_ical');
-
+  
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
   }
-  if (is_array($element['#value'])) {
+  if (is_array($element['#default_value'])) {
     $element['#value'] = date_repeat_merge($element['#value'], $element);
     $rrule = date_api_ical_build_rrule($element['#value']);
   }
   else {
-    $rrule = $element['#value'];
+    $rrule = $element['#default_value'];
   }
+  
   // Empty the original string value of the RRULE so we can create
   // an array of values for the form from the RRULE's contents.
   $element['#value'] = '';
@@ -92,7 +93,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
       '#description' => t('Date to stop repeating this item.'),
       '#default_value' => $UNTIL,
       '#date_timezone' => $timezone,
-      '#date_format' => !empty($element['#date_format']) ? $element['#date_format'] : 'Y-m-d',
+      '#date_format' => 'Y-m-d', //!empty($element['#date_format']) ? $element['#date_format'] : 'Y-m-d',
       '#date_text_parts'  => !empty($element['#date_text_parts']) ? $element['#date_text_parts'] : array(),
       '#date_year_range'  => !empty($element['#date_year_range']) ? $element['#date_year_range'] : '-3:+3',
       '#date_label_position' => !empty($element['#date_label_position']) ? $element['#date_label_position'] : 'within',
@@ -172,7 +173,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
         '#type' => $element['#date_repeat_widget'],
         '#default_value' => $EXCEPT,
         '#date_timezone' => !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone(),
-        '#date_format' => !empty($element['#date_format']) ? $element['#date_format'] : 'Y-m-d',
+        '#date_format' => 'Y-m-d', //!empty($element['#date_format']) ? $element['#date_format'] : 'Y-m-d',
         '#date_text_parts'  => !empty($element['#date_text_parts']) ? $element['#date_text_parts'] : array(),
         '#date_year_range'  => !empty($element['#date_year_range']) ? $element['#date_year_range'] : '-3:+3',
         '#date_label_position' => !empty($element['#date_label_position']) ? $element['#date_label_position'] : 'within',
@@ -209,6 +210,7 @@ function date_repeat_merge($form_values, $element) {
     $function = $element['#date_repeat_widget'] . '_input_value';
     $until_element = $element;
     $until_element['#value'] = $form_values['UNTIL']['datetime'];
+    $until_element['#date_format'] = 'Y-m-d';
     $date = $function($until_element);
     $form_values['UNTIL']['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
   }
@@ -218,6 +220,7 @@ function date_repeat_merge($form_values, $element) {
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
         $exdate_element['#value'] = $form_values['EXDATE'][$delta]['datetime'];
+        $exdate_element['#date_format'] = 'Y-m-d';
         $date = $function($exdate_element);
         $form_values['EXDATE'][$delta]['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
       }

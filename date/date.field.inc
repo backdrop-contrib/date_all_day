@@ -149,6 +149,11 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
  * Implements hook_field_is_empty().
  */
 function date_field_is_empty($item, $field) {
+  // Sometimes a $item is a date object.
+  // Coming from repeating dates. Why?? 
+  if (!is_array($item)) {
+    return FALSE;
+  }
   if (empty($item['value'])) {
     return TRUE;
   }

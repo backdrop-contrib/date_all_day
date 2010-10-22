@@ -67,7 +67,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
     $input = $input[$key];
   }
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
-
+ 
   // If no start date was set, clean up the form and return.
   // If no repeats are set, clean up the form and return.
   if (empty($item['value']) || $rrule_values['FREQ'] == 'NONE') {

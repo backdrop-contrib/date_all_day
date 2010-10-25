@@ -89,7 +89,6 @@ function date_popup_js_settings_id($id, $func, $settings) {
   // Make sure popup date selector grid is in correct year.
   if (!empty($settings['yearRange'])) {
     $parts = explode(':', $settings['yearRange']);
-    $settings += array('defaultDate' => (string) $parts[0] . 'y');
   }
 
   if (!$js_added) {

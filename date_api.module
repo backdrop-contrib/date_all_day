@@ -96,6 +96,7 @@ class DateObject extends DateTime {
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
     
     $this->timeOnly = FALSE;
+    $this->dateOnly = FALSE;
       
     // Allow string timezones
     if (!empty($tz) && !is_object($tz)) {
@@ -125,6 +126,10 @@ class DateObject extends DateTime {
       if (empty($time['year']) && empty($time['month']) && empty($time['day'])) {
         $this->timeOnly = TRUE;
       }
+      if (empty($time['hour']) && empty($time['minute']) && empty($time['second'])) {
+        $this->dateOnly = TRUE;
+      }
+
       $time = $this->toISO($time);
       $format = DATE_FORMAT_ISO;
     }
@@ -246,14 +251,14 @@ class DateObject extends DateTime {
       //just want to know if it has something valid
       //means no lower granularities without higher ones
       $last = TRUE;
-      foreach(self::$allgranularity AS $ag) {
-        if($ag == 'timezone') {
+      foreach(self::$allgranularity AS $arg) {
+        if($arg == 'timezone') {
           continue;
         }
-        if(in_array($ag, $this->granularity) && !$last) {
+        if(in_array($arg, $this->granularity) && !$last) {
           return FALSE;
         }
-        $last = in_array($ag, $this->granularity);
+        $last = in_array($arg, $this->granularity);
       }
       return in_array('year', $this->granularity);
     }

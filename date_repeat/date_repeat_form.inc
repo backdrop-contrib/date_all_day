@@ -219,7 +219,7 @@ function date_repeat_merge($form_values, $element) {
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
         $exdate_element['#value'] = $form_values['EXDATE'][$delta]['datetime'];
-        $$exdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
+        $exdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
         $date = $function($exdate_element);
         $form_values['EXDATE'][$delta]['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
       }
@@ -243,11 +243,6 @@ function date_repeat_rrule_validate($element, &$form_state) {
   if (!empty($item['UNTIL']['datetime']) && is_object($item['UNTIL']['datetime'])) {
     $item['UNTIL']['datetime']->setTime(23, 59, 59);
     $item['UNTIL']['datetime']->setTimeZone(new DateTimeZone('UTC'));
-  }
-  foreach($item['EXDATE'] as $key => $date) {
-    if (!empty($date['datetime']) && is_object($date['datetime'])) {
-      $item['EXDATE'][$key]['datetime']->setTime(23, 59, 59);
-    }
   }
   $rrule = date_api_ical_build_rrule($item);
   form_set_value($element, $rrule, $form_state);

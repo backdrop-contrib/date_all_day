@@ -383,7 +383,9 @@ function date_ical_parse_date($field, $data) {
       $datetime = date_pad($regs[1]) . '-' . date_pad($regs[2]) . '-' . date_pad($regs[3]); // Date
       if (isset($regs[4])) {
         $has_time = TRUE;
-        $datetime .= ' ' . date_pad($regs[5]) . ':' . date_pad($regs[6]) . ':' . date_pad($regs[7]); // Time
+        $datetime .= ' ' . (!empty($regs[5]) ? date_pad($regs[5]) : '00') .
+         ':' . (!empty($regs[6]) ? date_pad($regs[6]) : '00') .
+         ':' . (!empty($regs[7]) ? date_pad($regs[7]) : '00'); // Time
       }
     }  
   }

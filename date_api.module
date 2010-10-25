@@ -77,6 +77,10 @@ class DateObject extends DateTime {
     $this->__construct($this->_serialized_time, new DateTimeZone($this->_serialized_timezone));
   }
 
+  public function __toString() {
+    return $this->format(DATE_FORMAT_DATETIME) . ' '. $this->getTimeZone()->getName();
+  }
+  
   /**
    * Overridden constructor.
    *
@@ -90,6 +94,8 @@ class DateObject extends DateTime {
    *   $format is recommended in order to use negative or large years, which php's parser fails on.
    */
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
+    
+    $this->timeOnly = FALSE;
       
     // Allow string timezones
     if (!empty($tz) && !is_object($tz)) {
@@ -115,40 +121,22 @@ class DateObject extends DateTime {
     }
     
     if (is_array($time)) {
-      // Assume we were passed an indexed array
-      // Add empty values to avoid errors
-      $time += array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
-      $datetime = '';
-      if ($time['year'] !== '') {
-        $datetime = date_pad(intval($time['year']), 4);
-        if ($time['month'] !== '') {
-          $datetime .= '-'. date_pad(intval($time['month']));
-          if ($time['day'] !== '') { 
-            $datetime .= '-'. date_pad(intval($time['day']));
-          }
-        }
+      // Assume we were passed an indexed array.
+      if (empty($time['year']) && empty($time['month']) && empty($time['day'])) {
+        $this->timeOnly = TRUE;
       }
-      if ($time['hour'] !== '') {
-        $datetime .= $datetime ? 'T' : '';
-        $datetime .= date_pad(intval($time['hour']));
-        if ($time['minute'] !== '') {
-          $datetime.= ':'. date_pad(intval($time['minute']));
-          if ($time['second'] !== '') {
-            $datetime .= ':'. date_pad(intval($time['second']));
-          }
-        }
-      }
-      $time = $datetime;
+      $time = $this->toISO($time);
       $format = DATE_FORMAT_ISO;
     }
+    
     if (!empty($format)) {
-      $ag = self::$allgranularity;
-      $el = array_pop($ag);
-      while(!$this->parse($time, $tz, $format) && $el != 'year') {
-        $el = array_pop($ag);
-        $format = date_limit_format($format, $ag);
+      $arg = self::$allgranularity;
+      $element = array_pop($arg);
+      while(!$this->parse($time, $tz, $format) && $element != 'year') {
+        $element = array_pop($arg);
+        $format = date_limit_format($format, $arg);
       }
-      if($el == 'year') {
+      if($element == 'year') {
         return FALSE;
       }
     } 
@@ -159,8 +147,9 @@ class DateObject extends DateTime {
       parent::__construct($time, $tz ? $tz : new DateTimeZone("UTC"));
       $this->setGranularityFromTime($time, $tz);
     }
-    if ($this->getTimezone() && !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
-      // This tz was given as just an offset, which causes problems
+    // This tz was given as just an offset, which causes problems,
+    // or the timezone was invalid.
+    if (!$this->getTimezone() || !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
       $this->setTimezone(new DateTimeZone("UTC"));
     }
   }
@@ -223,7 +212,9 @@ class DateObject extends DateTime {
 
   /**
    * Overrides base format function, formats this date according to its available granularity,
-   * unless $force'ed not to limit to granularity
+   * unless $force'ed not to limit to granularity.
+   *
+   * @TODO Incorporate translation into this so translated names will be provided.
    */
   public function format($format, $force = FALSE) {
     return parent::format($force ? $format : date_limit_format($format, $this->granularity));
@@ -284,14 +275,20 @@ class DateObject extends DateTime {
 
   /**
    * Returns whether this object has time set. Used primarily for timezone
-   * conversion and fomratting.
-   *
-   * @todo currently very simplistic, but effective, see usage
+   * conversion and formatting.
    */
   public function hasTime() {
     return $this->hasGranularity('hour');
   }
 
+  /**
+   * Returns whether the input values included a year.
+   * Useful to use pseudo date objects when we only are interested in the time.
+   */
+  public function completeDate() {
+    return $this->completeDate;
+  }
+  
   /**
    * In common usage we should not unset timezone through this.
    */
@@ -312,7 +309,8 @@ class DateObject extends DateTime {
     // Special case for "now"
     if ($time == 'now') {
       $this->granularity = array('year', 'month', 'day', 'hour', 'minute', 'second');
-    } else {
+    } 
+    else {
       // This PHP date_parse() method currently doesn't have resolution down to seconds, so if
       // there is some time, all will be set.
       foreach (self::$allgranularity AS $g) {
@@ -325,7 +323,7 @@ class DateObject extends DateTime {
       $this->addGranularity('timezone');
     }
   }
-
+    
   protected function parse($date, $tz, $format) {
     $array = date_format_patterns();
     foreach ($array as $key => $value) {
@@ -428,13 +426,36 @@ class DateObject extends DateTime {
     elseif (isset($ampm) && $ampm == 'am' && $final_date['hour'] == 12) {
       $final_date['hour'] -= 12;
     }
+    
     // Blank becomes current time, given TZ.
     parent::__construct('', $tz ? $tz : new DateTimeZone("UTC"));
     if ($tz) {
       $this->addGranularity('timezone');
     }
-    $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
-    $this->setTime($final_date['hour'], $final_date['minute'], $final_date['second']);
+    
+    // SetDate expects an integer value for the year, results can 
+    // be unexpected if we feed it something like '0100' or '0000';
+    $final_date['year'] = intval($final_date['year']);
+    
+    // If the input value is '0000-00-00', PHP's date class will later incorrectly convert
+    // it to something like '-0001-11-30' if we do setDate() here. If we don't do
+    // setDate() here, it will default to the current date and we will lose any way to
+    // tell that there was no date in the orignal input values. So set a flag we can use
+    // later to tell that this date object was created using only time and that the date
+    // values are artifical.
+    if (empty($final_date['year']) && empty($final_date['month']) && empty($final_date['day'])) {
+      $this->timeOnly = TRUE;
+    }
+    else {
+      $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
+    }
+    if (empty($final_date['hour']) && empty($final_date['minute']) && empty($final_date['second'])) {
+      $this->dateOnly = TRUE;
+    }
+    else {
+      $this->setTime($final_date['hour'], $final_date['minute'], $final_date['second']);
+    }
+    
     return $this;
   }
 
@@ -443,10 +464,94 @@ class DateObject extends DateTime {
    * Helper to return all standard date parts in an array.
    * Will return '' for parts in which it lacks granularity.
    */
-  protected function toArray($force = FALSE) {
-    return array('year' => $this->format('Y', $force), 'month' => $this->format('m', $force), 'day' => $this->format('d', $force), 'hour' => $this->format('H', $force), 'minute' => $this->format('i', $force), 'second' => $this->format('s', $force), 'timezone' => $this->format('e', $force));
+  public function toArray($force = FALSE) {
+    return array(
+      'year' => $this->format('Y', $force), 
+      'month' => $this->format('m', $force), 
+      'day' => $this->format('d', $force), 
+      'hour' => $this->format('H', $force), 
+      'minute' => $this->format('i', $force), 
+      'second' => $this->format('s', $force), 
+      'timezone' => $this->format('e', $force),
+    );
   }
   
+  /**
+    * Create an ISO date from an array of values.
+    */
+  public function toISO($arr) {
+    // Add empty values to avoid errors
+    $arr += array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
+    $datetime = '';
+    if ($arr['year'] !== '') {
+      $datetime = date_pad(intval($arr['year']), 4);
+      if ($arr['month'] !== '') {
+        $datetime .= '-'. date_pad(intval($arr['month']));
+        if ($arr['day'] !== '') { 
+          $datetime .= '-'. date_pad(intval($arr['day']));
+        }
+      }
+    }
+    if ($arr['hour'] !== '') {
+      $datetime .= $datetime ? 'T' : '';
+      $datetime .= date_pad(intval($arr['hour']));
+      if ($arr['minute'] !== '') {
+        $datetime.= ':'. date_pad(intval($arr['minute']));
+        if ($arr['second'] !== '') {
+          $datetime .= ':'. date_pad(intval($arr['second']));
+        }
+      }
+    }
+    return $datetime;
+  }
+ 
+  /**
+   * Force an incomplete date to be valid, for instance to add
+   * a valid year, month, and day if only the time has been defined.
+   *
+   * @param $date
+   *   An array of date parts or a datetime string with values to be forced into date.
+   * @param $default 
+   *   'current' - default to current day values.
+   *   'first' - default to the first possible valid value.
+   */   
+  public function setFuzzyDate($date, $default = 'first') {
+    $comp = new DateObject($date, $this->getTimeZone()->getName());
+    $arr = $comp->toArray(TRUE);
+    foreach ($arr as $key => $value) {
+      $arr[$key] = $this->forceValid($key, $value, $default);
+    }
+    $this->setDate($arr['year'], $arr['month'], $arr['day']);
+    $this->setTime($arr['hour'], $arr['minute'], $arr['second']);
+  }
+  
+  /**
+   * Convert a date part into something that will produce a valid date.
+   */
+  protected function forceValid($part, $value, $default = 'first') {
+    $now = date_now();
+    switch ($part) {
+      case 'year':
+        $fallback = $now->format('Y');
+        return !is_int($value) || empty($value) || $value <= 0 ? $fallback : $value;
+      case 'month':
+        $fallback = $default == 'first' ? 1 : $now->format('n');
+        return !is_int($value) || empty($value) || $value <= 0 || $value > 12 ? $fallback : $value;
+      case 'day':
+        $fallback = $default == 'first' ? 1 : $now->format('j');
+        return !is_int($value) || empty($value) || $value <= 0 || $value > 31 ? $fallback : $value;
+      case 'hour':
+        $fallback = $default == 'first' ? 0 : $now->format('G');
+        return !is_int($value) || $value < 0 || $value > 23 ? $fallback : $value;  
+      case 'minute':
+        $fallback = $default == 'first' ? 0 : $now->format('i');
+        return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value;  
+      case 'second':
+        $fallback = $default == 'first' ? 0 : $now->format('s');
+        return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value;  
+    }
+  }
+ 
   /**
    * Compute difference between two days using a given measure.
    *
@@ -460,7 +565,7 @@ class DateObject extends DateTime {
    *   the type of dates provided:
    *   DATE_OBJECT, DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
    */
-  function difference($date2_in, $measure = 'seconds') {
+  public function difference($date2_in, $measure = 'seconds') {
     // Create cloned objects or original dates will be impacted by
     // the date_modify() operations done in this code.
     $date1 = clone($this);
@@ -1387,7 +1492,7 @@ function date_week($date) {
 
   return $week;
 }
-
+  
 /**
  * Helper function to left pad date parts with zeros.
  * Provided because this is needed so often with dates.

@@ -189,7 +189,6 @@ function date_popup_element_process($element, $form_state, $form) {
   $date_format = (date_limit_format($element['#date_format'], $date_granularity));
   $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
   
-  
   $input_exists = NULL;
   $edit = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
   if (!$input_exists) {
@@ -240,6 +239,16 @@ function date_popup_process_date(&$element, $date = NULL) {
   $granularity = $element['#granularity'];
   if (empty($element['#date_granularity'])) return array();
   
+  // If we have time but not date, set the date default to blank
+  // but set the date object to the current date so the
+  // popup calendar picker will default to the current year.
+  if (is_object($date) && $date->timeOnly) {
+    $default_value = '';
+  }
+  else {
+    $default_value = is_object($date) ? date_format_date($date, 'custom', $element['#date_date_format']) : '';
+  }
+  
   // The datepicker can't handle zero or negative values like 0:+1
   // even though the Date API can handle them, so rework the value
   // we pass to the datepicker to use defaults it can accept.
@@ -277,9 +286,10 @@ function date_popup_process_date(&$element, $date = NULL) {
   
   // Create a unique id for each set of custom settings.
   $id = date_popup_js_settings_id($element['#id'], 'datepicker', $settings);
+  
   $sub_element = array(
     '#type' => 'textfield',
-    '#default_value' => is_object($date) ? date_format_date($date, 'custom', $element['#date_date_format']) : '',
+    '#default_value' => $default_value,
     '#id' => $id,    
     '#size' => !empty($element['#size']) ? $element['#size'] : 20,
     '#maxlength' => !empty($element['#maxlength']) ? $element['#maxlength'] : 30,
@@ -319,6 +329,7 @@ function date_popup_process_time(&$element, $date = NULL) {
     '#id' => $id,
     '#size' => 10,
     '#maxlength' => 10,
+    '#attributes' => $element['#attributes'],
     );
   // Views exposed filters are treated as submitted even if not,
   // so force the #default value in that case.  

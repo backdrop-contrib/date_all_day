@@ -25,7 +25,9 @@ function date_field_formatter_info() {
     'format_interval' => array(
       'label' => t('As Time Ago'),
       'field types' => array('date', 'datestamp', 'datetime'),
-      'settings' => array(),
+      'settings' => array(
+        'interval' => 2,
+      ),
     ),
   );
 
@@ -123,7 +125,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
           $vars['delta'] = $delta;
           $vars['item'] = $item;
           $vars['dates'] = date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
-          $element[$delta] = array('#markup' => theme('date_format_interval', $vars));
+          $element[$delta] = array('#markup' => theme('date_display_interval', $vars));
         }
       }
       break;

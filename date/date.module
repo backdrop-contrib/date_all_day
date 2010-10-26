@@ -436,7 +436,7 @@ function date_content_generate($node, $field) {
  */
 function date_formatter_format($formatter, $settings, $granularity = NULL, $langcode = NULL) {
   $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
-  $format_type = $settings['format_type'];
+  $format_type = !empty($settings['format_type']) ? $settings['format_type'] : 'format_interval';
   
   switch ($formatter) {
     case 'format_interval':

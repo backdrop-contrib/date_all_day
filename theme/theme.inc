@@ -415,6 +415,7 @@ function theme_date_time_ago($vars) {
   $start_date = $vars['start_date'];
   $end_date = $vars['end_date'];
   $interval = !empty($vars['interval']) ? $vars['interval'] : 2;
+  
   // If no date is sent, then return nothing
   if (empty($start_date) || empty($end_date)) {
     return NULL;

@@ -139,8 +139,7 @@ function theme_date_display_range($vars) {
  *  @return a formatted display
  *
  */
-function theme_date_format_interval($vars) {
-  $formatter   = $vars['formatter'];
+function theme_date_display_interval($vars) {
   $entity_type = $vars['entity_type'];
   $entity      = $vars['entity'];
   $field       = $vars['field'];
@@ -152,6 +151,7 @@ function theme_date_format_interval($vars) {
   $field_name  = $field['field_name'];
   $options     = $display['settings'];
   $dates       = $vars['dates'];
+  $formatter   = $display['type'];
     
   // Get the formatter settings, either the default settings for this node
   // type or the View settings stored in $entity->date_info.
@@ -162,6 +162,7 @@ function theme_date_format_interval($vars) {
   $time_ago_vars = array(
     'start_date' => $dates['value']['local']['object'], 
     'end_date' => $dates['value2']['local']['object'],
+    'interval' => $options['interval'],
   );
   return theme('date_time_ago', $time_ago_vars);
 }

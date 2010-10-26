@@ -147,7 +147,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       return parent::admin_summary();
     }
   }
-
+  
   /**
    * Set the empty argument value to the current date, 
    * formatted appropriately for this argument.
@@ -334,13 +334,11 @@ class date_api_argument_handler extends views_handler_argument_date {
         }
       }
     }
-    
     $range = $this->date_handler->arg_range($this->argument);
     $min_date = $range[0];
     $max_date = $range[1];
     $this->min_date = $min_date;
     $this->max_date = $max_date;
-    
     // See if we're outside the allowed date range for our argument.
     if (date_format($min_date, 'Y') < $this->view->date_info->min_allowed_year || date_format($max_date, 'Y') > $this->view->date_info->max_allowed_year) {
       drupal_not_found();
@@ -378,6 +376,6 @@ class date_api_argument_handler extends views_handler_argument_date {
 
         }
       }
-    }   
+    }
   }
 }

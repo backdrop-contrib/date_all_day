@@ -703,7 +703,7 @@ function date_month_names_untranslated() {
 function date_month_names($required = FALSE) {
   $month_names = array();
   foreach (date_month_names_untranslated() as $key => $day) {
-    $month_names[$key] = date_t($day, 'month_name');
+    $month_names[$key] = t($day, array(), array('context' => 'month_name'));
   }
   $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
@@ -720,7 +720,7 @@ function date_month_names($required = FALSE) {
 function date_month_names_abbr($required = FALSE) {
   $month_names = array();
   foreach (date_month_names_untranslated() as $key => $day) {
-    $month_names[$key] = date_t($day, 'month_abbr');
+    $month_names[$key] = t($day, array(), array('context' => 'month_abbr'));
   }
   $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
@@ -756,7 +756,7 @@ function date_week_days_untranslated($refresh = TRUE) {
 function date_week_days($required = FALSE, $refresh = TRUE) {
   $weekdays = array();
   foreach (date_week_days_untranslated() as $key => $day) {
-    $weekdays[$key] = date_t($day, 'day_name');
+    $weekdays[$key] = t($day, array(), array('context' => 'day_name'));
   }
   $none = array('' => '');
   return !$required ? $none + $weekdays : $weekdays;
@@ -784,7 +784,7 @@ function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
       break; 
   }
   foreach (date_week_days_untranslated() as $key => $day) {
-    $weekdays[$key] = date_t($day, $context);
+    $weekdays[$key] = t($day, array(), array('context' => $context));
   }
   $none = array('' => '');
   return !$required ? $none + $weekdays : $weekdays;
@@ -923,7 +923,7 @@ function date_seconds($format = 's', $required = FALSE, $increment = 1) {
  */
 function date_ampm($required = FALSE) {
   $none = array('' => '');
-  $ampm = array('am' => date_t('am', 'ampm'), 'pm' => date_t('pm', 'ampm'));
+  $ampm = array('am' => t('am', array(), array('context' => 'ampm')), 'pm' => t('pm', array(), array('context' => 'ampm')));
   return !$required ? $none + $ampm : $ampm;
 }
 
@@ -964,12 +964,12 @@ function date_format_patterns($strict = FALSE) {
  */
 function date_granularity_names() {
   return array(
-    'year' => date_t('Year', 'datetime'), 
-    'month' => date_t('Month', 'datetime'), 
-    'day' => date_t('Day', 'datetime'),
-    'hour' => date_t('Hour', 'datetime'), 
-    'minute' => date_t('Minute', 'datetime'), 
-    'second' => date_t('Second', 'datetime'),
+    'year' => t('Year', array(), array('context' => 'datetime')), 
+    'month' => t('Month', array(), array('context' => 'datetime')), 
+    'day' => t('Day', array(), array('context' => 'datetime')),
+    'hour' => t('Hour', array(), array('context' => 'datetime')), 
+    'minute' => t('Minute', array(), array('context' => 'datetime')), 
+    'second' => t('Second', array(), array('context' => 'datetime')),
     );
 }
 
@@ -1044,82 +1044,6 @@ function date_timezone_abbr($refresh = FALSE) {
 }
 
 /**
- * A function to translate ambiguous short date strings.
- * 
- * Example: Pass in 'Monday', 'day_abbr' and get the translated 
- * abbreviation for Monday.
- * 
- * @param string $string
- * @param string $context
- * @param int array('langcode' => $langcode)
- * @return translated value of the string
- */
-function date_t($string, $context, $langcode = NULL) {
-  static $replace = array();
-  
-  if (empty($replace[$langcode])) {
-    // The function to create the date string arrays is kept separate
-    // so those arrays can be directly accessed by other functions.
-    date_t_strings($replace, $langcode);
-  }
-  switch ($context) {
-    case 'day_name':
-    case 'day_abbr':
-    case 'day_abbr1':
-    case 'day_abbr2':  
-      $untranslated = array_flip(date_week_days_untranslated());
-      break;
-    case 'month_name':
-    case 'month_abbr':
-      $untranslated = array_flip(date_month_names_untranslated());
-      break;  
-    case 'ampm':
-      $untranslated = array_flip(array('am', 'pm', 'AM', 'PM'));  
-      break;
-    case 'datetime':
-      $untranslated = array_flip(array('Year', 'Month', 'Day', 'Week', 'Hour', 'Minute', 'Second', 'All Day', 'All day'));  
-      break;
-    case 'datetime_plural':
-      $untranslated = array_flip(array('Years', 'Months', 'Days', 'Weeks', 'Hours', 'Minutes', 'Seconds'));  
-      break;
-    case 'date_order':
-      $untranslated = array_flip(array('Every', 'First', 'Second', 'Third', 'Fourth', 'Fifth'));  
-      break;
-    case 'date_order_reverse':
-      $untranslated = array_flip(array('', 'Last', 'Next to last', 'Third from last', 'Fourth from last', 'Fifth from last'));  
-      break;
-    case 'date_nav':
-      $untranslated = array_flip(array('Prev', 'Next', 'Today'));  
-      break;
-  }
-  $pos = $untranslated[$string];
-  return $replace[$langcode][$context][$pos];
-}
-
-/**
- * Construct translation arrays from pipe-delimited strings.
- * 
- * Combining these strings into a single t() gives them the context needed
- * for better translation.
- */
-function date_t_strings(&$replace, $langcode) {
-  $replace[$langcode]['day_name'] = explode('|', trim(t('!day-name Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday', array('!day-name' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['day_abbr'] = explode('|', trim(t('!day-abbreviation Sun|Mon|Tue|Wed|Thu|Fri|Sat', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['day_abbr1'] = explode('|', trim(t('!day-abbreviation S|M|T|W|T|F|S', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['day_abbr2'] = explode('|', trim(t('!day-abbreviation SU|MO|TU|WE|TH|FR|SA', array('!day-abbreviation' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['ampm'] = explode('|', trim(t('!ampm-abbreviation am|pm|AM|PM', array('!ampm-abbreviation' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['datetime'] = explode('|', trim(t('!datetime Year|Month|Day|Week|Hour|Minute|Second|All Day|All day', array('!datetime' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['datetime_plural'] = explode('|', trim(t('!datetime_plural Years|Months|Days|Weeks|Hours|Minutes|Seconds', array('!datetime_plural' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['date_order'] = explode('|', trim(t('!date_order Every|First|Second|Third|Fourth|Fifth', array('!date_order' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['date_order_reverse'] = explode('|', trim(t('!date_order |Last|Next to last|Third from last|Fourth from last|Fifth from last', array('!date_order' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['date_nav'] = explode('|', trim(t('!date_nav Prev|Next|Today', array('!date_nav' => ''), array('langcode' => $langcode))));
-  
-  // These start with a pipe so the January value will be in position 1 instead of position 0.
-  $replace[$langcode]['month_name'] = explode('|', trim(t('!month-name |January|February|March|April|May|June|July|August|September|October|November|December', array('!month-name' => ''), array('langcode' => $langcode))));
-  $replace[$langcode]['month_abbr'] = explode('|', trim(t('!month-abbreviation |Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec', array('!month-abbreviation' => ''), array('langcode' => $langcode))));
-}
-
-/**
  * Reworked from Drupal's format_date function to handle pre-1970 and
  * post-2038 dates and accept a date object instead of a timestamp as input.
  *
@@ -1164,23 +1088,21 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
   for ($i = 0; $i < $max; $i++) {
     $c = $format[$i];
     switch ($c) {
-      // Use date_t() for ambiguous short strings that need translation.
-      // We send long day and month names to date_t(), along with context.
       case 'l':
-        $datestring .= date_t($date->format('l'), 'day_name', $langcode);
+        $datestring .= t($date->format('l'), array(), array('context' => 'day_name', 'langcode' => $langcode));
         break;
       case 'D':
-        $datestring .= date_t($date->format('l'), 'day_abbr', $langcode);
+        $datestring .= t($date->format('l'), array(), array('context' => 'day_abbr', 'langcode' => $langcode));
         break;
       case 'F':
-        $datestring .= date_t($date->format('F'), 'month_name', $langcode);
+        $datestring .= t($date->format('F'), array(), array('context' => 'month_name', 'langcode' => $langcode));
         break;  
       case 'M':
-        $datestring .= date_t($date->format('F'), 'month_abbr', $langcode);
+        $datestring .= t($date->format('F'), array(), array('context' => 'month_abbr', 'langcode' => $langcode));
         break;  
       case 'A':
       case 'a':
-        $datestring .= date_t($date->format($c), 'ampm', $langcode);
+        $datestring .= t($date->format($c), array(), array('context' => 'ampm', 'langcode' => $langcode));
         break;  
       // The timezone name translations can use t().  
       case 'e':
@@ -1778,16 +1700,16 @@ function date_api_views_fetch_fields($base, $type) {
  */
 function date_order_translated() {
   return array(
-    '+1' => date_t('First', 'date_order'),
-    '+2' => date_t('Second', 'date_order'),
-    '+3' => date_t('Third', 'date_order'),
-    '+4' => date_t('Fourth', 'date_order'),
-    '+5' => date_t('Fifth', 'date_order'),
-    '-1' => date_t('Last', 'date_order_reverse'),
-    '-2' => date_t('Next to last', 'date_order_reverse'),
-    '-3' => date_t('Third from last', 'date_order_reverse'),
-    '-4' => date_t('Fourth from last', 'date_order_reverse'),
-    '-5' => date_t('Fifth from last', 'date_order_reverse')
+    '+1' => t'First', array(), array('context' => 'date_order')),
+    '+2' => t('Second', array(), array('context' => 'date_order')),
+    '+3' => t('Third', array(), array('context' => 'date_order')),
+    '+4' => t('Fourth', array(), array('context' => 'date_order')),
+    '+5' => t('Fifth', array(), array('context' => 'date_order')),
+    '-1' => t('Last', array(), array('context' => 'date_order_reverse')),
+    '-2' => t('Next to last', array(), array('context' => 'date_order_reverse')),
+    '-3' => t('Third from last', array(), array('context' => 'date_order_reverse')),
+    '-4' => t('Fourth from last', array(), array('context' => 'date_order_reverse')),
+    '-5' => t('Fifth from last', array(), array('context' => 'date_order_reverse'))
   );
 }
 

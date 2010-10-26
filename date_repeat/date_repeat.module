@@ -51,17 +51,17 @@ function date_repeat_theme() {
 function FREQ_options() {
   return array(
     'NONE' => t('-- Period'),
-    'DAILY' => date_t('Days', 'datetime_plural'),
-    'WEEKLY' => date_t('Weeks', 'datetime_plural'),
-    'MONTHLY' => date_t('Months', 'datetime_plural'),
-    'YEARLY' => date_t('Years', 'datetime_plural'),
+    'DAILY' => t('Days', array(), array('context' => 'datetime_plural')),
+    'WEEKLY' => t('Weeks', array(), array('context' => 'datetime_plural')),
+    'MONTHLY' => t('Months', array(), array('context' => 'datetime_plural')),
+    'YEARLY' => t('Years', array(), array('context' => 'datetime_plural')),
   );
 }
 
 function INTERVAL_options() {
   $options = array(
     0 => t('-- Frequency'),
-    1 => date_t('Every', 'date_order'),
+    1 => t('Every', array(), array('context' => 'date_order')),
   );
   for ($i = 2; $i < 367; $i++) {
     $options[$i] = t('Every @number', array('@number' => $i));
@@ -78,13 +78,13 @@ function INTERVAL_options() {
  */
 function date_repeat_dow_day_options($translated = TRUE) {
   return array(
-    'SU' => $translated ? date_t('Sunday', 'day_name') : 'Sunday',
-    'MO' => $translated ? date_t('Monday', 'day_name') : 'Monday',
-    'TU' => $translated ? date_t('Tuesday', 'day_name') : 'Tuesday',
-    'WE' => $translated ? date_t('Wednesday', 'day_name') : 'Wednesday',
-    'TH' => $translated ? date_t('Thursday', 'day_name') : 'Thursday',
-    'FR' => $translated ? date_t('Friday', 'day_name') : 'Friday',
-    'SA' => $translated ? date_t('Saturday', 'day_name') : 'Saturday',
+    'SU' => $translated ? t('Sunday', array(), array('context' => 'day_name')) : 'Sunday',
+    'MO' => $translated ? t('Monday', array(), array('context' => 'day_name')) : 'Monday',
+    'TU' => $translated ? t('Tuesday', array(), array('context' => 'day_name')) : 'Tuesday',
+    'WE' => $translated ? t('Wednesday', array(), array('context' => 'day_name')) : 'Wednesday',
+    'TH' => $translated ? t('Thursday', array(), array('context' => 'day_name')) : 'Thursday',
+    'FR' => $translated ? t('Friday', array(), array('context' => 'day_name')) : 'Friday',
+    'SA' => $translated ? t('Saturday', array(), array('context' => 'day_name')) : 'Saturday',
   );
 }
 
@@ -103,7 +103,7 @@ function date_repeat_dow_day_options_ordered($week_start) {
  * Helper function for BYDAY options.
  */
 function date_repeat_dow_count_options() {
-  return array('' => date_t('Every', 'date_order')) + date_order_translated();
+  return array('' => t('Every', array(), array('context' => 'date_order'))) + date_order_translated();
 }
 
 /**

@@ -35,7 +35,7 @@
 <div class="date-nav clear-block">
   <div class="date-prev">
     <?php if (!empty($prev_url)) : ?>
-      <span class="next"> <?php print l('« ' . ($block ? '' : date_t('Prev', 'date_nav')), $prev_url, $prev_options); ?></span>
+      <span class="next"> <?php print l('« ' . ($block ? '' : t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?></span>
     <?php endif; ?>
   &nbsp;</div>
   <div class="date-heading">
@@ -43,7 +43,7 @@
   </div>
   <div class="date-next">&nbsp;
     <?php if (!empty($next_url)) : ?>
-      <span class="next"> <?php print l(($block ? '' : date_t('Next', 'date_nav')) . ' »', $next_url, $next_options); ?></span>
+      <span class="next"> <?php print l(($block ? '' : t('Next', array(), array('context' => 'date_nav'))) . ' »', $next_url, $next_options); ?></span>
     <?php endif; ?>  
   </div>
 </div>

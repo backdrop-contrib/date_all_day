@@ -113,7 +113,6 @@ DATE_REGEX_DATETIME
 DATE_REGEX_LOOSE
 
 date_format_date();
-date_t()
 date_short_formats();
 date_medium_formats();
 date_long_formats();

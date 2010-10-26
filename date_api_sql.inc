@@ -513,8 +513,12 @@ class date_sql_handler {
    */
   function date_parts($limit = NULL) {
     $parts =  array(
-      'year' => date_t('Year', 'datetime'), 'month' => date_t('Month', 'datetime'), 'day' => date_t('Day', 'datetime'),
-      'hour' => date_t('Hour', 'datetime'), 'minute' => date_t('Minute', 'datetime'), 'second' => date_t('Second', 'datetime'),
+      'year' => t('Year', array(), array('context' => 'datetime')), 
+      'month' => t('Month', array(), array('context' => 'datetime')), 
+      'day' => t('Day', array(), array('context' => 'datetime')),
+      'hour' => t('Hour', array(), array('context' => 'datetime')), 
+      'minute' => t('Minute', array(), array('context' => 'datetime')), 
+      'second' => t('Second', array(), array('context' => 'datetime')),
       );
     if (!empty($limit)) {
       $last = FALSE;

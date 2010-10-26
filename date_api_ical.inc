@@ -65,6 +65,18 @@
  *         [tz] => US/Eastern
  *       )
  *     )
+ *     [RDATE] => Array (
+ *       [0] = Array (
+ *         [datetime] => 1997-09-21 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *       [1] = Array (
+ *         [datetime] => 1997-10-05 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *     )
  *   )
  *
  * @param $filename
@@ -245,7 +257,6 @@ function date_ical_parse($icaldatafolded = array()) {
         case 'DTSTART':
         case 'DTEND':
         case 'DTSTAMP':
-        case 'RDATE':
         case 'FREEBUSY':
         case 'DUE':
         case 'COMPLETED':
@@ -253,6 +264,7 @@ function date_ical_parse($icaldatafolded = array()) {
           break;
 
         case 'EXDATE':
+        case 'RDATE':
           $parse_result = date_ical_parse_exceptions($field, $data);
           break;
 
@@ -458,7 +470,7 @@ function date_ical_parse_rrule($field, $data) {
  *   an array of date value arrays.
  */
 function date_ical_parse_exceptions($field, $data) {
-  $data = str_replace('EXDATE:', '', $data);
+  $data = str_replace($field.':', '', $data);
   $items = array('DATA' => $data);
   $ex_dates = explode(',', $data);
   foreach ($ex_dates as $ex_date) {
@@ -636,6 +648,18 @@ function date_ical_escape_text($text) {
  *         [tz] => US/Eastern
  *       )
  *     )
+ *     [RDATE] => Array (
+ *       [0] = Array (
+ *         [datetime] => 1997-09-21 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *       [1] = Array (
+ *         [datetime] => 1997-10-05 09:00:00
+ *         [all_day] => 0
+ *         [tz] => US/Eastern
+ *       )
+ *     )
  *
  */
 function date_api_ical_build_rrule($form_values) {
@@ -692,7 +716,7 @@ function date_api_ical_build_rrule($form_values) {
     foreach ($form_values['EXDATE'] as $value) {
       if (!empty($value['datetime'])) {
         $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
-        $ex_date = $date->format(DATE_FORMAT_ICAL);
+        $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) : '';
         if (!empty($ex_date)) {
           $ex_dates[] = $ex_date;
         }
@@ -706,5 +730,25 @@ function date_api_ical_build_rrule($form_values) {
   elseif (!empty($form_values['EXDATE'])) {
     $RRULE .= chr(13) . chr(10) . 'EXDATE:' . $form_values['EXDATE'];
   }
+
+  // Exceptions dates go last, on their own line.
+  if (isset($form_values['RDATE']) && is_array($form_values['RDATE'])) {
+    $ex_dates = array();
+    foreach ($form_values['RDATE'] as $value) {
+      $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
+      $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) : '';
+      if (!empty($ex_date)) {
+        $ex_dates[] = $ex_date;
+      }
+    }
+    if (!empty($ex_dates)) {
+      sort($ex_dates);
+      $RRULE .= chr(13) . chr(10) .'RDATE:'. implode(',', $ex_dates);
+    }
+  }
+  elseif (!empty($form_values['RDATE'])) {
+    $RRULE .= chr(13) . chr(10) .'RDATE:'. $form_values['RDATE'];
+  }
+
   return $RRULE;
 }

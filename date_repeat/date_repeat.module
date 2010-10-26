@@ -40,6 +40,7 @@ function date_repeat_value_callback($element, $input = FALSE, &$form_state) {
 function date_repeat_theme() {
   return array(
     'date_repeat_current_exceptions' => array('render element' => 'element'),
+    'date_repeat_current_additions' => array('render element' => 'element'),
     'date_repeat_rrule' => array('render element' => 'element'),
   );
 }
@@ -172,9 +173,11 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     '!count' => '',
     '!until' => '', 
     '!except' => '',
+    '!additional' => '',
     '!week_starts_on' => '',
     );
   $parts = date_repeat_split_rrule($rrule);
+  $additions = $parts[2];
   $exceptions = $parts[1];
   $rrule = $parts[0];
   $interval = INTERVAL_options();
@@ -245,7 +248,14 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     $day_names = date_repeat_dow_day_options();
     $description['!week_starts_on'] = trim(t('!repeats_every_interval where the week start on !day_of_week', array('!repeats_every_interval ' => '', '!day_of_week' => $day_names[trim($rrule['WKST'])])));
   }
-  return t('Repeats !interval !bymonth !byday !count !until !except. ', $description);
+  if ($additions) {
+    $values = array();
+    foreach ($additions as $addition) {
+      $values[] = date_format_date(date_ical_date($addition), 'custom', $format);
+    }
+    $description['!additional'] = trim(t('Also includes !additional_dates.', array('!additional_dates' => implode(', ', $values))));
+  }
+  return t('Repeats !interval !bymonth !byday !count !until !except. !additional', $description);
 }
 
 /**
@@ -255,6 +265,8 @@ function date_repeat_split_rrule($rrule) {
   $parts = explode("\n", $rrule);
   $rrule = array();
   $exceptions = array();
+  $additions = array();
+  $additions = array();
   foreach ($parts as $part) {
     if (strstr($part, 'RRULE')) {
       $RRULE = str_replace('RRULE:', '', $part);
@@ -265,16 +277,21 @@ function date_repeat_split_rrule($rrule) {
       $exceptions = (array) date_ical_parse_exceptions('EXDATE:', $EXDATE);
       unset($exceptions['DATA']);
     }
+    elseif (strstr($part, 'RDATE')) {
+      $RDATE = str_replace('RDATE:', '', $part);
+      $additions = (array) date_ical_parse_exceptions('RDATE:', $RDATE);
+      unset($additions['DATA']);
+    }
   }
-  return array($rrule, $exceptions);
+  return array($rrule, $exceptions, $additions);
 }
 
 /**
  * Analyze a RRULE and return dates that match it.
  */
-function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone = NULL) {
+function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone = NULL, $additions = array()) {
   module_load_include('inc', 'date_repeat', 'date_repeat_calc');  
-  return _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone);
+  return _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additions);
 }
 
 /**

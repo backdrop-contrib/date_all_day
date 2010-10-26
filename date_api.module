@@ -1700,7 +1700,7 @@ function date_api_views_fetch_fields($base, $type) {
  */
 function date_order_translated() {
   return array(
-    '+1' => t'First', array(), array('context' => 'date_order')),
+    '+1' => t('First', array(), array('context' => 'date_order')),
     '+2' => t('Second', array(), array('context' => 'date_order')),
     '+3' => t('Third', array(), array('context' => 'date_order')),
     '+4' => t('Fourth', array(), array('context' => 'date_order')),

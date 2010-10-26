@@ -999,20 +999,6 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
         }      
       }
     
-      // If using Event, further filter the list down to only 
-      // zones that exist in the event module.
-      if (module_exists('event') && db_table_exists('event_timezones')) {
-        $result = db_query("SELECT name FROM {event_timezones} ORDER BY name");
-        $names = array();
-        while ($row = db_fetch_array($result)) {
-          $names[] = str_replace(' ', '_', $row['name']);
-        }
-        foreach ($zonenames as $name => $zone) {
-          if (!in_array($name, $names)) {
-            unset($zonenames[$name]);
-          }
-        }
-      }
       if (!empty($zonenames)) {
         cache_set('date_timezone_identifiers_list', $zonenames);
       }

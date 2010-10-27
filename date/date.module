@@ -424,14 +424,6 @@ function date_field_widget_error($element, $error, $form, &$form_state) {
 }
 
 /**
- * Implements Devel module's hook_content_generate().
- */
-function date_content_generate($node, $field) {
-  module_load_include('inc', 'date', 'date_content_generate');
-  return _date_content_generate($node, $field);
-}
-
-/**
  * Retrieve a date format string from formatter settings.
  */
 function date_formatter_format($formatter, $settings, $granularity = NULL, $langcode = NULL) {

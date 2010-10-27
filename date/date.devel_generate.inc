@@ -9,9 +9,7 @@
  *
  * Included only when needed.
  */
-function _date_content_generate($node, $field, $instance) {
-  include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_elements.inc');
-  
+function date_devel_generate($node, $field, $instance, $bundle) {
   $node_field = array();
   if (isset($instance['widget']['settings']['year_range'])) {
     $split = explode(':', $instance['widget']['settings']['year_range']);

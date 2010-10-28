@@ -385,17 +385,6 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
 }
 
 /**
- * Implements hook_widget().
- *
- * This code and all the processes it uses are in a separate file,
- * included only when processing forms.
- */
-function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-  module_load_include('inc', 'date', 'date_elements');
-  return _date_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $base);
-}
-
-/**
  * Wrapper functions for date administration, included only when
  * processing field settings.
  */

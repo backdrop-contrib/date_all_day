@@ -204,11 +204,13 @@ function date_tools_wizard_build($form_values) {
     )
   );
  
-  $date_field = date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $field_settings);
+  $date_fields = date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $field_settings);
+  $date_field = $date_fields[0];
+  $date_instance = $date_fields[1];
   
   $view_name = '';
   if (!empty($calendar)) {
-    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field);
+    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_instance);
     if (!empty($blocks)) {
       date_tools_wizard_create_blocks($bundle);  
     }
@@ -303,7 +305,7 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   return $field;
 }
 
-function date_tools_wizard_create_calendar($name, $bundle, $date_field) {
+function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_instance) {
   
   $date_name = !empty($date_field) ? $date_field['field_name'] : '';
   $path = 'calendar-' . str_replace('field_', '', $date_name);
@@ -315,7 +317,7 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field) {
   }
   $option = array(
     'name' => 'calendar_' . $bundle,
-    'description' => 'An event calendar for ' . $date_field['widget']['label'],
+    'description' => 'An event calendar for ' . $date_instance['label'],
     'path' => $path,
     'types' => array($bundle => $name),
     'date_fields' => array($date_name),

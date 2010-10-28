@@ -45,7 +45,7 @@
  *   the local timezone, are converted back to their UTC values and stored.
  *
  */
-function _date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   $element = $base;
 
   module_load_include('inc', 'date_api', 'date_api_elements');  

@@ -1846,38 +1846,19 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
   if (!$force_view_url && 
   (!empty($view->preview) || !empty($view->date_info->block_identifier))) {
     $url = $view->get_url($args);
-    return url($_GET['q'], array(
-      'query' => date_querystring($view, array(date_block_identifier($view) => $url)), 
-      'absolute' => TRUE));
-  }
-  else {
-    // Normal views may need querystrings appended to them
-    // if they use exposed filters.
-    return url($view->get_url($args), array(
-      'query' => date_querystring($view), 
-      'absolute' => TRUE));
-  }
-}
-
-/**
- * Pick up filter and sort info from url.
- */
-function date_querystring($view, $extra_params = array()) {
-  $query_params = array_merge($_GET, $extra_params);
-  // Allow NULL params to be removed from the query string.
-  foreach ($extra_params AS $key => $value) {
-    if (!isset($value)) {
-      unset($query_params[$key]);
+    $key = date_block_identifier($view);
+    if (!empty($key)) {
+      return url($_GET['q'], array(
+        'query' => drupal_get_query_parameters(NULL, array($key => $url)), 
+        'absolute' => TRUE));
     }
-  }
-  // Filter the special "q" and "view" variables out of the query string.
-  $exclude = array('q');
-  $query = drupal_http_build_query(drupal_get_query_parameters($query_params, $exclude));
-  // To prevent an empty query string from adding a "?" on to the end of a URL,
-  // we return NULL.
-  return !empty($query) ? $query : NULL;
+  }  
+  // Normal views may need querystrings appended to them
+  // if they use exposed filters.
+  return url($view->get_url($args), array(
+    'query' => drupal_get_query_parameters(), 
+    'absolute' => TRUE));
 }
-
 function date_block_identifier($view) {
   if (!empty($view->block_identifier)) {
     return $view->block_identifier;

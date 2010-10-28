@@ -77,12 +77,12 @@ function date_devel_generate($node, $field, $instance, $bundle) {
   $node_field['offset2'] = date_offset_get($start2);          
   
   if (!empty($field['settings']['repeat'])) {
-    include_once(' ./' . drupal_get_path('module', 'date_repeat') . '/date_repeat_calc.inc');
-    include_once(' ./' . drupal_get_path('module', 'date') . '/date_repeat.inc');
-    include_once(' ./' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
+    module_load_include('inc', 'date_repeat', 'date_repeat_calc');
+    module_load_include('inc', 'date', 'date_repeat');
+    module_load_include('inc', 'date_api', 'date_api_ical');
   
     // Create a repeating date.
-    $duration = date_difference($start, $start2);
+    $duration = $start->difference($start2);
     $form_values = array();
     
     // Create the default case more frequently than case 1 or 2.

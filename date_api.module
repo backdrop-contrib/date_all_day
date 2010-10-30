@@ -785,7 +785,7 @@ function date_week_days_abbr($required = FALSE, $refresh = TRUE, $length = 3) {
       break; 
   }
   foreach (date_week_days_untranslated() as $key => $day) {
-    $weekdays[$key] = t($day, array(), array('context' => $context));
+    $weekdays[$key] = t(substr($day, 0, $length), array(), array('context' => $context));
   }
   $none = array('' => '');
   return !$required ? $none + $weekdays : $weekdays;

@@ -120,7 +120,7 @@ class DateObject extends DateTime {
         $format = DATE_FORMAT_DATETIME;
       }  
     }
-    
+
     if (is_array($time)) {
       // Assume we were passed an indexed array.
       if (empty($time['year']) && empty($time['month']) && empty($time['day'])) {
@@ -454,7 +454,8 @@ class DateObject extends DateTime {
     else {
       $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
     }
-    if (empty($final_date['hour']) && empty($final_date['minute']) && empty($final_date['second'])) {
+    
+    if (!isset($final_date['hour']) && !isset($final_date['minute']) && !isset($final_date['second'])) {
       $this->dateOnly = TRUE;
     }
     else {

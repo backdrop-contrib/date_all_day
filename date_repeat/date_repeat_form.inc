@@ -152,17 +152,20 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     '#suffix' => '</div>',
   );
 
+  if (empty($form_state['num_exceptions'])) {
+    $form_state['num_exceptions'] = count($exceptions);
+  }
+  $max = empty($form_state['num_exceptions']) ? 1 : $form_state['num_exceptions'];
   $element['exceptions'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
-    '#collapsed' => empty($exceptions) ? TRUE : FALSE,
+    '#collapsed' => empty($form_state['num_exceptions']) ? TRUE : FALSE,
     '#title' => t('Except'),
     '#description' => t('Dates to omit from the list of repeating dates.'),
-    '#prefix' => '<div class="date-repeat">',
+    '#prefix' => '<div id="date-repeat-exceptions" class="date-repeat">',
     '#suffix' => '</div>',
-    );
-  $max = !empty($exceptions) ? sizeof($exceptions) : 0;
-  for ($i = 0; $i <= $max; $i++) {
+    );  
+  for ($i = 0; $i < $max; $i++) {
     $EXCEPT = '';
     if (!empty($exceptions[$i]['datetime'])) {
       $EXCEPT = $exceptions[$i]['datetime'];
@@ -185,17 +188,20 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
   }
 
   // collect additions in the same way as exceptions - implements RDATE.
+  if (empty($form_state['num_additions'])) {
+    $form_state['num_additions'] = count($additions);
+  }
+  $max = empty($form_state['num_additions']) ? 1 : $form_state['num_additions'];
   $element['additions'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
-    '#collapsed' => empty($additions) ? TRUE : FALSE,
+    '#collapsed' => empty($form_state['num_additions']) ? TRUE : FALSE,
     '#title' => t('Additional'),
     '#description' => t('Dates to add to the list of repeating dates.'),
-    '#prefix' => '<div class="date-repeat">',
+    '#prefix' => '<div id="date-repeat-additions" class="date-repeat">',
     '#suffix' => '</div>',
     );
-  $max = !empty($additions) ? sizeof($additions) : 0;
-  for ($i = 0; $i <= $max; $i++) {
+  for ($i = 0; $i < $max; $i++) {
     $RDATE = '';
     if (!empty($additions[$i]['datetime'])) {
       $RDATE = $additions[$i]['datetime'];
@@ -217,9 +223,52 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
       );
   }
 
+  $element['exceptions']['exceptions_add'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add exception'),
+    '#submit' => array('date_repeat_add_exception'),
+    '#ajax' => array(
+      'callback' => 'date_repeat_add_exception_callback',
+      'wrapper' => 'date-repeat-exceptions',
+    ),
+  ); 
+  $element['additions']['additions_add'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add addition'),
+    '#submit' => array('date_repeat_add_addition'),
+    '#ajax' => array(
+      'callback' => 'date_repeat_add_addition_callback',
+      'wrapper' => 'date-repeat-additions',
+    ),
+  ); 
+  
   $element['#date_repeat_collapsed'] = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
   
   return $element;
+}
+
+function date_repeat_add_exception_callback($form, &$form_state) {
+  $parents = $form_state['triggering_element']['#array_parents'];
+  $button_key = array_pop($parents);
+  $element = drupal_array_get_nested_value($form, $parents);
+  return $element;
+}
+
+function date_repeat_add_addition_callback($form, &$form_state) {
+  $parents = $form_state['triggering_element']['#array_parents'];
+  $button_key = array_pop($parents);
+  $element = drupal_array_get_nested_value($form, $parents);
+  return $element;
+}
+
+function date_repeat_add_exception($form, &$form_state) {
+  $form_state['num_exceptions']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+function date_repeat_add_addition($form, &$form_state) {
+  $form_state['num_additions']++;
+  $form_state['rebuild'] = TRUE;
 }
 
 /**

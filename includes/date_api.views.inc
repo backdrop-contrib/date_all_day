@@ -100,7 +100,7 @@ function date_api_views_data() {
       'argument' => array(
         'handler' => 'date_api_argument_handler',
         'empty field name' => t('Undated'),
-        'skip base' => $base_table,
+        //'skip base' => $base_table,
       ),
     );  
     // The flexible date filter.
@@ -111,7 +111,7 @@ function date_api_views_data() {
       'filter' => array(
         'handler' => 'date_api_filter_handler',
         'empty field name' => t('Undated'),
-        'skip base' => $base_table,
+        //'skip base' => $base_table,
       ),
     ); 
   }

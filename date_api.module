@@ -525,7 +525,9 @@ class DateObject extends DateTime {
     $comp = new DateObject($date, $this->getTimeZone()->getName());
     $arr = $comp->toArray(TRUE);
     foreach ($arr as $key => $value) {
-      $arr[$key] = $this->forceValid($key, $value, $default);
+      // Set to intval here and then test that it is still an integer.
+      // Needed because sometimes valid integers come through as strings.
+      $arr[$key] = $this->forceValid($key, intval($value), $default);
     }
     $this->setDate($arr['year'], $arr['month'], $arr['day']);
     $this->setTime($arr['hour'], $arr['minute'], $arr['second']);
@@ -540,21 +542,27 @@ class DateObject extends DateTime {
       case 'year':
         $fallback = $now->format('Y');
         return !is_int($value) || empty($value) || $value <= 0 ? $fallback : $value;
+        break;
       case 'month':
         $fallback = $default == 'first' ? 1 : $now->format('n');
         return !is_int($value) || empty($value) || $value <= 0 || $value > 12 ? $fallback : $value;
+        break;
       case 'day':
         $fallback = $default == 'first' ? 1 : $now->format('j');
         return !is_int($value) || empty($value) || $value <= 0 || $value > 31 ? $fallback : $value;
+        break;
       case 'hour':
         $fallback = $default == 'first' ? 0 : $now->format('G');
         return !is_int($value) || $value < 0 || $value > 23 ? $fallback : $value;  
+        break;
       case 'minute':
         $fallback = $default == 'first' ? 0 : $now->format('i');
-        return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value;  
+        return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value; 
+        break; 
       case 'second':
         $fallback = $default == 'first' ? 0 : $now->format('s');
         return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value;  
+        break;
     }
   }
  
@@ -1934,7 +1942,7 @@ function date_range_string($years) {
  * Implement hook_date_api_tables().
  */
 function date_api_date_api_tables() {
-  return array('node', 'comments', 'users');
+  return array('node', 'comments', 'users', 'files');
 }
 
 /**

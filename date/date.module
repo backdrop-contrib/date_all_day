@@ -665,11 +665,14 @@ function date_field_views_data_alter(&$result, $field, $module) {
   // TODO, see if we really want to do this.
   return;
   
-  if (in_array($field['type'], array(DATE_ISO, DATE_DATETIME, DATE_UNIX))) {
+  if ($module == 'date') {
     $columns = array('value', 'value2');
     foreach ($result as $table => $data) {
       $key = array_key_exists('entity_id', $data) ? 'entity_id' : 'revision_id';
       $result[$table]['field']['handler'] = 'date_handler_field_date';
+      $result[$table]['filter']['handler'] = 'date_api_argument_handler';
+      $result[$table]['argument']['handler'] = 'date_api_filter_handler';
+      /*
       foreach ($columns as $col) {
         $new_field  = $field['field_name'] .'_'. $col;
         $result[$table][$new_field]['field'] = $data[$key]['field'];
@@ -677,6 +680,7 @@ function date_field_views_data_alter(&$result, $field, $module) {
         $additional = array_merge($field_data['additional fields'], $data[$new_field]['argument']['additional fields']);
         $result[$table][$new_field]['field']['additional fields'] = $additional;
       }
+      */
     }
     //unset($result[$table]['entity_id']);
     //unset($result[$table]['revision_id']);

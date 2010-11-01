@@ -185,7 +185,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
-
+    $identifier = '';
     if (!empty($form_state['exposed'])) {
       $identifier = $this->options['expose']['identifier'];
 
@@ -299,13 +299,17 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#date_format' => date_limit_format($format, $granularity),
       '#date_label_position' => 'within',
       '#date_year_range' => $this->options['year_range'],
+      '#process' => array($type . '_element_process'),
     );
     if ($which == 'all') {
-      $dependency = array(
-        '#process' => array($type . '_element_process', 'views_process_dependency'),
+      $form[$prefix] +=  array(
         '#dependency' => array($source => $operator_values),
-      );
-      $form[$prefix] += $dependency;
+        '#states' => array(
+          'invisible' => array(
+            ':input:id="' . $source . '"' => array('value' => $operator_values),
+          ),
+        ),
+      );  
     }
     
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
@@ -502,8 +506,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $granularity = $this->options['granularity'];
     $date_handler = $query_field['date_handler'];
     $this->format = $date_handler->views_formats($granularity, 'sql');
-    $complete_date = date_fuzzy_datetime($this->value[$prefix]);
-    $date = new DateObject($complete_date);
+    $date = date_now();
+    $date->setFuzzyDate($this->value[$prefix]);
     $value = date_format($date, $this->format);
     
     $range = $this->date_handler->arg_range($value);

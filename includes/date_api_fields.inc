@@ -26,7 +26,6 @@ function _date_api_fields($base = 'node') {
   cache_clear_all($cid, 'cache_views');
   $all_fields = date_api_views_fetch_fields($base, 'field');
   $content_fields = field_views_data();
-  
   // Iterate over all the fields that Views knows about.
   $fields = array();
   foreach ((array) $all_fields as $name => $val) {
@@ -179,6 +178,6 @@ function _date_api_fields($base = 'node') {
     }
   }
 
-  cache_set($cid, $fields, 'cache_views');
+  //cache_set($cid, $fields, 'cache_views');
   return $fields;
 }

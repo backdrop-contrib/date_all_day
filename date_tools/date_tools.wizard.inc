@@ -215,6 +215,11 @@ function date_tools_wizard_build($form_values) {
       date_tools_wizard_create_blocks($bundle);  
     }
   }
+
+  // Update the menu router information.
+  menu_rebuild();
+  field_cache_clear();
+
   return $view_name;
   
 }
@@ -285,11 +290,7 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
   }
 
   node_type_save((object) $values);
-  
-  // Update the menu router information.
-  menu_rebuild();
-  field_cache_clear();
-  
+
 }
 
 
@@ -302,7 +303,7 @@ function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_hand
   $field = field_create_field($result['field']);
   $instance = field_create_instance($result['instance']);
   
-  return $field;
+  return array($field, $instance);
 }
 
 function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_instance) {

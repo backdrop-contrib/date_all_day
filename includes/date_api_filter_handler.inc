@@ -127,6 +127,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['real_field_name'];
     }
+    
+    // If this filter was added as a CCK field filter and no other date field
+    // has been chosen, update the default with the right date.
+    if (empty($this->options['date_fields']) && $this->field != 'date_filter') {
+      $this->options['date_fields'] = array($this->table .'.'. $this->field);
+    }
+    
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),
       '#type' => 'checkboxes',

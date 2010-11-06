@@ -90,6 +90,13 @@ class date_api_argument_handler extends views_handler_argument_date {
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['real_field_name'];
     }
+    
+    // If this argument was added as a CCK field argument and no other date field
+    // has been chosen, update the default with the right date.
+    if (empty($this->options['date_fields']) && $this->field != 'date_argument') {
+      $this->options['date_fields'] = array($this->table .'.'. $this->field);
+    }
+        
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),
       '#type' => 'checkboxes',

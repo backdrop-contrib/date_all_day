@@ -1087,13 +1087,13 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
         $datestring .= t($date->format('l'), array(), array('context' => 'day_name', 'langcode' => $langcode));
         break;
       case 'D':
-        $datestring .= t($date->format('l'), array(), array('context' => 'day_abbr', 'langcode' => $langcode));
+        $datestring .= t($date->format('D'), array(), array('context' => 'day_abbr', 'langcode' => $langcode));
         break;
       case 'F':
         $datestring .= t($date->format('F'), array(), array('context' => 'month_name', 'langcode' => $langcode));
         break;  
       case 'M':
-        $datestring .= t($date->format('F'), array(), array('context' => 'month_abbr', 'langcode' => $langcode));
+        $datestring .= t($date->format('M'), array(), array('context' => 'month_abbr', 'langcode' => $langcode));
         break;  
       case 'A':
       case 'a':

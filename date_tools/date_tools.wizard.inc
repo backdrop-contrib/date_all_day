@@ -211,6 +211,37 @@ function date_tools_wizard_build($form_values) {
     )
   );
   
+  $instance['display'] = array(
+    'default' => array(
+      'label' => 'above',
+      'type' => 'date_default',
+      'settings' => array(
+        'format_type' => 'long',
+        'show_repeat_rule' => 'show',
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_to' => '',
+        'fromto' => 'both',
+      ),
+      'module' => 'date',
+      'weight' => 0 ,
+    ),
+    'teaser' => array(
+      'label' => 'above',
+      'type' => 'date_default',
+      'weight' => 0,
+      'settings' => array(
+        'format_type' => 'long',
+        'show_repeat_rule' => 'show',
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_to' => '',
+        'fromto' => 'both',
+      ),
+      'module' => 'date',
+    ),
+  );
+  
   $field = field_create_field($field);
   $instance = field_create_instance($instance);
   

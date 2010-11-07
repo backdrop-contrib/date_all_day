@@ -131,11 +131,12 @@ function date_tools_wizard_form_submit(&$form, &$form_state) {
   menu_rebuild();
   if (!empty($view_name)) {
     drupal_set_message(t('Change the calendar as needed and save the view.'), 'error');
-    $form['#redirect'] = 'admin/structure/views/edit/' . $view_name;
+    $form_state['redirect'] = 'admin/structure/views/edit/' . $view_name;
   }
   else {
-    $form['#redirect'] = 'admin/structure/types/manage/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
+    $form_state['redirect'] = 'admin/structure/types/manage/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
   }
+  
 }
 
 function date_tools_wizard_build($form_values) {
@@ -154,6 +155,8 @@ function date_tools_wizard_build($form_values) {
   $type_settings = array();
   if (!array_key_exists($bundle, $types)) {
     date_tools_wizard_create_content_type($name, $bundle, $type_description, $type_settings);
+    
+    drupal_set_message(t('Your content type @name has been created.', array('@name' => $name)));
   }
   else {
     $types = node_type_get_types();
@@ -167,50 +170,57 @@ function date_tools_wizard_build($form_values) {
     $name = $type->name;
   }
   
-  $field_settings = array(
-    'field' => array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => $repeat ? FIELD_CARDINALITY_UNLIMITED : 0,
+  $field = array(
+    'field_name' => $field_name,
+    'type' => $field_type,
+    'cardinality' => $repeat ? FIELD_CARDINALITY_UNLIMITED : 1,
+    'settings' => array(
+      'granularity' => $granularity,
+      'tz_handling' => $tz_handling,
+      'timezone_db' => date_get_timezone_db($tz_handling),
+      'repeat' => $repeat,
+      'todate' => 'optional',
+      ),
+  );
+  $instance = array(
+    'entity_type' => 'node',
+    'field_name' => $field_name,
+    'label' => $label,
+    'bundle' => $bundle,
+    // Move the date right below the title.
+    'weight' => -4,
+    'widget' => array(
+      'type' => $widget_type,
+      // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
       'settings' => array(
-        'granularity' => $granularity,
-        'tz_handling' => $tz_handling,
-        'repeat' => $repeat,
-        'todate' => 'optional',
-       ),
-    ),
-    'instance' => array(
-      'entity_type' => 'node',
-      'field_name' => $field_name,
-      'label' => $label,
-      'bundle' => $bundle,
-      // Move the date right below the title.
+        'increment' => 15,
+        // The number of years to go back and forward in drop-down year selectors.
+        'year_range' => '-0:+1',
+          
+        'input_format' => date_default_format($widget_type),
+        'text_parts' => array(),
+        'label_position' => 'above',
+        'repeat_collapsed' => 0,          
+      ),
       'weight' => -4,
-      'widget' => array(
-        'type' => $widget_type,
-        // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
-        'settings' => array(
-          'increment' => 15,
-          // The number of years to go back and forward in drop-down year selectors.
-          'year_range' => '-0:+1',
-        ),
-        'weight' => -4,
-      ),
-      'settings' => array(
-        'default_value' => 'now', 
-        'default_value2' => 'blank', 
-        'default_format' => 'long',
-      ),
+    ),
+    'settings' => array(
+      'default_value' => 'now', 
+      'default_value2' => 'blank', 
+      'default_format' => 'long',
     )
   );
- 
-  $date_fields = date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $field_settings);
-  $date_field = $date_fields[0];
-  $date_instance = $date_fields[1];
+  
+  $field = field_create_field($field);
+  $instance = field_create_instance($instance);
+  
+  //_field_info_collate_fields(TRUE);
+  field_info_cache_clear(TRUE);
+  field_cache_clear(TRUE);  
   
   $view_name = '';
   if (!empty($calendar)) {
-    $view_name = date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_instance);
+    $view_name = date_tools_wizard_create_calendar($name, $bundle, $field, $instance);
     if (!empty($blocks)) {
       date_tools_wizard_create_blocks($bundle);  
     }
@@ -218,7 +228,9 @@ function date_tools_wizard_build($form_values) {
 
   // Update the menu router information.
   menu_rebuild();
-  field_cache_clear();
+  field_cache_clear(TRUE);
+
+  drupal_set_message(t('Your date field @name has been created.', array('@name' => $label)));
 
   return $view_name;
   
@@ -291,19 +303,6 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
 
   node_type_save((object) $values);
 
-}
-
-
-function date_tools_wizard_create_date_field($field_type, $widget_type, $tz_handling, $overrides = array()) {
-  date_tools_wizard_include();
-    
-  // Get field default values for this combination of field and widget type.
-  $result = date_tools_default_values($field_type, $widget_type, $tz_handling, $overrides); 
-  
-  $field = field_create_field($result['field']);
-  $instance = field_create_instance($result['instance']);
-  
-  return array($field, $instance);
 }
 
 function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_instance) {

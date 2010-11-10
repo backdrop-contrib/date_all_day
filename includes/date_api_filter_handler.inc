@@ -125,7 +125,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $fields = date_api_fields($this->view->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $field['real_field_name'];
+      $options[$name] = $field['label'];
     }
     
     // If this filter was added as a CCK field filter and no other date field
@@ -153,6 +153,10 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
   
   function extra_options_validate($form, &$form_state) {
+  
+    // @TODO Add validation back once view is working again.
+    return;
+  
     $check_fields = array_filter($form_state['values']['options']['date_fields']);
     if (empty($check_fields)) {
       form_error($form['date_fields'], t('You must select at least one date field for this filter.'));
@@ -306,6 +310,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#date_year_range' => $this->options['year_range'],
       '#process' => array($type . '_element_process'),
     );
+    /*
     if ($which == 'all') {
       $form[$prefix] +=  array(
         //'#dependency' => array($source => $operator_values),
@@ -316,7 +321,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         ),
       );  
     }
-    
+    */
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
       $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
     }
@@ -361,6 +366,10 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    * transfer the selected value back to the option.
    */
   function value_validate(&$form, &$form_state) {
+  
+    // @TODO Add validation back once view is working again.
+    return;
+
     if (($form_state['values']['options']['operator'] == 'between' || $form_state['values']['options']['operator'] == 'not between') && 
     !empty($form_state['values']['options']['value']['default_date']) && empty($form_state['values']['options']['value']['default_to_date'])) {
       form_error($form['value']['default_to_date'], t('Please set a default value for the To date as well as the From date when using default values with the Between or Not between operators.'));

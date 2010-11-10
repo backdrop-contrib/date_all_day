@@ -661,15 +661,15 @@ function date_entity_metadata_struct_getter($item, array $options, $name, $type)
  * fields that are automatically created.
  */
 function date_field_views_data_alter(&$result, $field, $module) {
-
-  // TODO, see if we really want to do this.
   if ($module == 'date') {
-    $columns = array('value', 'value2');
     foreach ($result as $table => $data) {
       $key = array_key_exists('entity_id', $data) ? 'entity_id' : 'revision_id';
       foreach ($data as $column => $value) {
-        if (array_key_exists('filter', $value)) {
+        if (array_key_exists('argument', $value)) {
           $result[$table][$column]['argument']['handler'] = 'date_api_argument_handler';
+          $additional = $result[$table][$column]['argument']['additional fields'];
+        }
+        if (array_key_exists('filter', $value)) {  
           $result[$table][$column]['filter']['handler'] = 'date_api_filter_handler';
         } 
         // Not sure yet if we still need this in D7 now that custom formatters are available.
@@ -677,18 +677,9 @@ function date_field_views_data_alter(&$result, $field, $module) {
         if (array_key_exists($key, $value)) {
           //$result[$table][$column]['field']['handler'] = 'date_handler_field_date';
         } 
-      }  
-      /*
-      foreach ($columns as $col) {
-        $new_field  = $field['field_name'] .'_'. $col;
-        $result[$table][$new_field]['field'] = $data[$key]['field'];
-        $result[$table][$new_field]['field']['field'] = $new_field;
-        $additional = array_merge($field_data['additional fields'], $data[$new_field]['argument']['additional fields']);
-        $result[$table][$new_field]['field']['additional fields'] = $additional;
-      }
-      */
+      } 
+      // Add additional fields to the field as well as the argument and filter.
+      $result[$table][$key]['field']['additional fields'] = array_merge($result[$table][$key]['field']['additional fields'], $additional);
     }
-    //unset($result[$table]['entity_id']);
-    //unset($result[$table]['revision_id']);
   }
 }

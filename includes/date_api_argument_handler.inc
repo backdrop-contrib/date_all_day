@@ -88,7 +88,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     $fields = date_api_fields($this->view->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
-      $options[$name] = $field['real_field_name'];
+      $options[$name] = $field['label'];
     }
     
     // If this argument was added as a CCK field argument and no other date field
@@ -118,6 +118,9 @@ class date_api_argument_handler extends views_handler_argument_date {
   function options_validate($form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_validate($form, $form_state);
+    
+    // @TODO Add validation back once view is working again.
+    return;
     
     if ($form_state['values']['form_id'] == 'views_ui_config_item_form') {
       $check_fields = array_filter($form_state['values']['options']['date_fields']);
@@ -350,7 +353,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       drupal_not_found();
       exit;
     }
-    
+
     // The second option seems to work better in the block view if 
     // set to something other than the original value. 
     // Need to keep an eye on this to be sure nothing else breaks.

@@ -28,19 +28,32 @@ function _date_api_fields($base = 'node') {
   $content_fields = field_views_data();
   // Iterate over all the fields that Views knows about.
   $fields = array();
-  foreach ((array) $all_fields as $name => $val) {
-    $fromto = array();
+  foreach ((array) $all_fields as $alias => $val) {
+    
+    // Set up some default values.
+    $granularity = array('year', 'month', 'day', 'hour', 'minute');
+    $tz_handling = 'site';
+    $related_fields = array();
+    $timezone_field = '';
+    $offset_field = '';
+    $rrule_field = '';
+    $delta_field = '';
+    $sql_type = DATE_UNIX;
+    $type = '';
+                
+    $name = $alias;
     $tmp = explode('.', $name);
     $field_name = $tmp[1];
     $table_name = $tmp[0];
-        
-    // If we don't have a field handler, we don't care about it.
+    
+    $fromto = array(str_replace('.', '_', $name), str_replace('.', '_', $name));
+      
+    // If we don't have a field handler, we don't need to do anything more.
     if (!$handler = views_get_handler($table_name, $field_name, 'field')) {
       continue; 
     }
     
     $handler_name = $handler->definition['handler'];
-    $type = '';
     
     // For Field module fields, get the date type.
     $custom = array();
@@ -49,20 +62,59 @@ function _date_api_fields($base = 'node') {
       $field_name = $content_fields[$table_name]['entity_id']['field']['field_name'];
       $field = field_info_field($field_name);
       
-      // @TODO This is cheating, we should use the API to figure this out.
-      // Plus we still need to figure out how to add in value2.
-      // Just trying to get things working for now.
+      switch ($field['type']) {
+       case 'date':
+          $type = 'cck_string';
+          $sql_type = DATE_ISO;
+          break;
+        case 'datestamp':
+          $type = 'cck_timestamp';
+          break;
+        case 'datetime':
+          $type = 'cck_datetime';
+          $sql_type = DATE_DATETIME;
+          break;          
+      }      
+      if (empty($type)) {
+        // If this is not a date field, nothing more to do.
+        continue;
+      }
+      
+      $db_info = date_api_database_info($field);      
       $name = $table_name . "." . $field_name . "_value";
-    
-      if ($field['type'] == 'date') {
-        $type = 'cck_string';
+      $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
+          
+      $fromto = array(
+        $table_name . '_' . $db_info['columns'][$table_name]['value'],
+        $table_name . '_' . (!empty($field['settings']['todate']) ? $db_info['columns'][$table_name]['value2'] : $db_info['columns'][$table_name]['value']),
+      );
+      
+      if (isset($field['settings']['tz_handling'])) {
+        $tz_handling = $field['settings']['tz_handling'];
+        $db_info = date_api_database_info($field);
+        if ($tz_handling == 'date') {
+          $offset_field = $table_name . '.' . $db_info['columns'][$table_name]['offset'];
+        }
+        $related_fields = array(
+          $table_name . '.' . $db_info['columns'][$table_name]['value']
+        );
+        if (isset($db_info['columns'][$table_name]['value2'])) {
+          $related_fields = array_merge($related_fields, array($table_name . '.' . $db_info['columns'][$table_name]['value2']));
+        }
+        if (isset($db_info['columns'][$table_name]['timezone'])) {
+          $related_fields = array_merge($related_fields, array($table_name . '.' . $db_info['columns'][$table_name]['timezone']));
+          $timezone_field = $table_name . '.' . $db_info['columns'][$table_name]['timezone'];
+        }
+        if (isset($db_info['columns'][$table_name]['rrule'])) {
+          $related_fields = array_merge($related_fields, array($table_name . '.' . $db_info['columns'][$table_name]['rrule']));
+          $rrule_field = $table_name . '.' . $db_info['columns'][$table_name]['rrule'];
+        }
       }
-      elseif ($field['type'] == 'datestamp') {
-        $type = 'cck_timestamp';
-      }
-      elseif ($field['type'] == 'datetime') {
-        $type = 'cck_datetime';
-      }
+      // Get the delta value into the query.
+      if ($field['cardinality'] != 1) {
+        array_push($related_fields, "$table_name.delta");
+        $delta_field = $table_name . '_delta';
+      }      
     }
     
     // Allow custom modules to provide date fields.
@@ -80,75 +132,8 @@ function _date_api_fields($base = 'node') {
 
     // Don't do anything if this is not a date field we can handle.
     if (!empty($type)) {
-
-      // Handling for simple timestamp fields
-      $alias = str_replace('.', '_', $name);
-      $fromto = array($alias, $alias);
-      $tz_handling = 'site';
-      $related_fields = array();
-      $timezone_field = '';
-      $offset_field = '';
-      $rrule_field = '';
-      $delta_field = '';
-      $granularity = array('year', 'month', 'day', 'hour', 'minute');
-    
-      if (isset($field['tz_handling'])) {
-        $tz_handling = $field['tz_handling'];
-        $db_info = date_api_database_info($field);
-        if ($tz_handling == 'date') {
-          $offset_field = $table_name . ' . ' . $db_info['columns']['offset']['column'];
-        }
-        $related_fields = array(
-          $table_name . ' . ' . $field_name
-          );
-        if (isset($db_info['columns']['value2']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['value2']['column']));
-        }
-        if (isset($db_info['columns']['timezone']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['timezone']['column']));
-          $timezone_field = $table_name . ' . ' . $db_info['columns']['timezone']['column'];
-        }
-        if (isset($db_info['columns']['rrule']['column'])) {
-          $related_fields = array_merge($related_fields, array($table_name . ' . ' . $db_info['columns']['rrule']['column']));
-          $rrule_field = $table_name . ' . ' . $db_info['columns']['rrule']['column'];
-        }
-      }
-      // Get the delta value into the query.
-      if (!empty($handler->content_field['multiple'])) {
-        array_push($related_fields, "$table_name.delta");
-        $delta_field = $table_name . '_delta';
-      }
-
-      // Handling for cck fromto dates
-      if (isset($handler->content_field_name)) {
-        $real_field_name = $this->content_field_name;
-        $field = field_info_field($real_field_name);
-    
-        switch ($field['type']) {
-          case 'date':
-          case 'datetime':
-          case 'datestamp':
-            $db_info = date_api_database_info($field);
-            $fromto = array(
-              $table_name . '_' . $db_info['columns']['value']['column'],
-              $table_name . '_' . (!empty($field['todate']) ? $db_info['columns']['value2']['column'] : $db_info['columns']['value']['column']),
-              );
-            break;
-        }
-        $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
-      }
-      
-      switch ($type) {
-        case 'cck_string':
-          $sql_type = DATE_ISO;
-          break;
-        case 'cck_datetime':
-          $sql_type = DATE_DATETIME;
-          break;
-        default:
-          $sql_type = DATE_UNIX;
-          break;
-      }
+          
+      $alias = str_replace('.', '_', $alias);
       $fields['name'][$name] = array(
         'type' => $type,
         'sql_type' => $sql_type,
@@ -174,10 +159,34 @@ function _date_api_fields($base = 'node') {
         }
       }
       $fields['name'][$name]['real_field_name'] = $field_name == 'entity_id' ? $real_field_name : $field_name;
-      $fields['alias'][$alias] = $fields['name'][$name];
+      
+      // The D7 field handling is funny, there is only a single record
+      // with a field name of 'entity_id'. We need the real names for our queries.      
+      // Fields also need an extra record so we have both from and to values.
+      
+      if (strstr($alias, 'entity_id')) {
+        $field_name .= '_value';
+        $fields['name'][$name]['field_name'] = $field_name;
+        $alias = $table_name .'_'. $field_name;
+        $fields['name'][$name]['query_name'] = $alias;
+        $fields['alias'][$alias] = $fields['name'][$name];
+        
+        if (!empty($field['settings']['todate'])) {
+          $fields['name'][$name]['label'] .= ' value';
+          $name2 = str_replace('value', 'value2', $name);
+          $alias2 = str_replace('value', 'value2', $alias);
+          $fields['name'][$name2] = $fields['name'][$name];
+          $fields['name'][$name2]['field_name'] = str_replace('value', 'value2', $field_name);
+          $fields['name'][$name2]['label'] .= '2';
+          $fields['name'][$name2]['fullname'] .= '2';
+          $fields['alias'][$alias2] = $fields['name'][$name2];
+        }
+      }
+      else {
+        $fields['alias'][$alias] = $fields['name'][$name];
+      }
     }
   }
-
   //cache_set($cid, $fields, 'cache_views');
   return $fields;
 }

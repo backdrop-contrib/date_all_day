@@ -20,6 +20,9 @@ class date_navigation_plugin_style extends views_plugin_style {
    */
   function validate() {
     $errors = parent::validate();
+
+    // @TODO Add validation back once view is working again.
+    return $errors;
     
     $arguments = $this->display->handler->get_option('arguments');
     $count = 0;

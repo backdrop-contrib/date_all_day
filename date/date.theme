@@ -44,7 +44,8 @@ function theme_date_display_combination($vars) {
     
   // Check the formatter settings to see if the repeat rule should be
   // displayed. Show it only with the first multiple value date.
-  if (!in_array($entity->nid, $repeating_ids) && module_exists('date_repeat') 
+  list($id) = entity_extract_ids($entity_type, $entity);
+  if (!in_array($id, $repeating_ids) && module_exists('date_repeat') 
   && !empty($item['rrule']) && $options['show_repeat_rule'] == 'show') {
     module_load_include('inc', 'date', 'date_repeat');
     $repeat_vars = array(
@@ -54,7 +55,7 @@ function theme_date_display_combination($vars) {
       'entity' => $entity,
     );
     $output .= theme('date_repeat_display', $repeat_vars);
-    $repeating_ids[] = $entity->nid;
+    $repeating_ids[] = $id;
   }
    
   switch ($options['fromto']) {

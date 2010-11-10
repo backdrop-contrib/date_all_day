@@ -239,7 +239,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     
     // Add the computed field.
     $this->base_alias = $this->name_alias = $this->query->add_field(NULL, $this->formula, $field['query_name']);
-    $this->query->set_count_field(NULL, $formula, $field['query_name']);   
+    $this->query->set_count_field(NULL, $this->formula, $field['query_name']);   
     return $this->summary_basics(FALSE);
     
   }

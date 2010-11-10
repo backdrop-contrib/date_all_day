@@ -663,6 +663,7 @@ function date_entity_metadata_struct_getter($item, array $options, $name, $type)
 function date_field_views_data_alter(&$result, $field, $module) {
   if ($module == 'date') {
     foreach ($result as $table => $data) {
+      $additional = array();
       $key = array_key_exists('entity_id', $data) ? 'entity_id' : 'revision_id';
       foreach ($data as $column => $value) {
         if (array_key_exists('argument', $value)) {

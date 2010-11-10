@@ -187,6 +187,7 @@ function _date_api_fields($base = 'node') {
       }
     }
   }
+  
   //cache_set($cid, $fields, 'cache_views');
   return $fields;
 }

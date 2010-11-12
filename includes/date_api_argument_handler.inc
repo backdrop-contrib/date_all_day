@@ -368,8 +368,9 @@ class date_api_argument_handler extends views_handler_argument_date {
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
         $date_handler = $query_field['date_handler'];
-        $from_field = str_replace($field['table_name'] . '_', $field['table_name'] . ' . ', $field['fromto'][0]);
-        $to_field = str_replace($field['table_name'] . '_', $field['table_name'] . ' . ', $field['fromto'][1]);
+        $table_alias = !empty($this->related_table_alias) ? $this->related_table_alias : $field['table_name'];
+        $from_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][0]);
+        $to_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][1]);
         if ($this->granularity != 'week') {
           $from = $date_handler->sql_where_format($format, $from_field, '<=', date_format($max_date, $format));
           $to   = $date_handler->sql_where_format($format, $to_field, '>=', date_format($min_date, $format));

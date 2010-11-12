@@ -337,15 +337,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     // This is a date that needs to be constructed from options like 'now' .
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {
-      // For PHP 5.2+, take advantage of any strings that native PHP 
-      // date_create() can handle. For older versions use strtotime().
-      if (version_compare(PHP_VERSION, '5.2', '<')) {
-        $now = strtotime($default_option . ' UTC');
-        $date = date_create("@$now", timezone_open('UTC'));
-      }
-      else {
-        $date = date_create($default_option, date_default_timezone());
-      }
+      $date = date_create($default_option, date_default_timezone_object());
       $default_date = date_format($date, DATE_FORMAT_DATETIME);
     }
     // This a fixed date.
@@ -366,9 +358,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    * transfer the selected value back to the option.
    */
   function value_validate(&$form, &$form_state) {
-  
-    // @TODO Add validation back once view is working again.
-    return;
 
     if (($form_state['values']['options']['operator'] == 'between' || $form_state['values']['options']['operator'] == 'not between') && 
     !empty($form_state['values']['options']['value']['default_date']) && empty($form_state['values']['options']['value']['default_to_date'])) {
@@ -461,6 +450,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (!empty($this->query_fields)) {
       foreach ((array) $this->query_fields as $query_field) {
         $field = $query_field['field'];
+        $table_alias = !empty($this->related_table_alias) ? $this->related_table_alias : $field['table_name'];
+        $query_field['field']['fullname'] = $table_alias .'.'. $query_field['field']['field_name'];
         $sql = '';
         $sql_parts = array();
         switch ($this->operator) {
@@ -490,6 +481,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   
   function date_filter($prefix, $query_field, $operator) {
     $field = $query_field['field'];
+
     // Handle the simple operators first.
     if ($operator == 'empty') {
       $this->add_date_field($field);

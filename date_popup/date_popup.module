@@ -46,7 +46,7 @@ function date_popup_library() {
       $path . '/jquery.timeentry.pack.js' => array(),
     ),
     'css' => array(
-      $path . '/themes/timeentry.css' => array('preprocess' => FALSE),
+      $path . '/themes/jquery.timeentry.css' => array('preprocess' => FALSE),
     ),
   );
   return $libraries;
@@ -56,7 +56,7 @@ function date_popup_library() {
  * Implement hook_init().
  */
 function date_popup_init() {
-  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/calendar.css');
+  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/datepicker.1.7.css');
 }
 
  /**

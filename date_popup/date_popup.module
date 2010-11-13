@@ -194,7 +194,9 @@ function date_popup_element_process($element, $form_state, $form) {
   
   $input_exists = NULL;
   $edit = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
-  if (!$input_exists) {
+  // Views exposed filters are treated as submitted even if not,
+  // so force the #default value in that case.  
+  if (!empty($element['#force_value']) || !$input_exists) {
     $input = $element['#default_value'];
     $format = DATE_FORMAT_DATETIME;
   }
@@ -203,7 +205,6 @@ function date_popup_element_process($element, $form_state, $form) {
     $format = $date_format;
     $format .= (!empty($time_format) ? ' ' . $time_format : '');
   }
-  
   $date = NULL;
   if (!empty($input)) {    
     $date = new DateObject($input, $element['#date_timezone'], $format);
@@ -251,7 +252,7 @@ function date_popup_process_date(&$element, $date = NULL) {
   else {
     $default_value = is_object($date) ? date_format_date($date, 'custom', $element['#date_date_format']) : '';
   }
-  
+
   // The datepicker can't handle zero or negative values like 0:+1
   // even though the Date API can handle them, so rework the value
   // we pass to the datepicker to use defaults it can accept (such as +0:+1)
@@ -296,11 +297,6 @@ function date_popup_process_date(&$element, $date = NULL) {
     '#maxlength' => !empty($element['#maxlength']) ? $element['#maxlength'] : 30,
     '#attributes' => $element['#attributes'],
     );
-  // Views exposed filters are treated as submitted even if not,
-  // so force the #default value in that case.  
-  if (!empty($element['#force_value'])) {
-    $sub_element['#value'] = $sub_element['#default_value'];
-  }
   // TODO, figure out exactly when we want this description. In many places it is not desired.
   $sub_element['#description'] = ' '. t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', $element['#date_date_format'])));
   return $sub_element;
@@ -332,11 +328,6 @@ function date_popup_process_time(&$element, $date = NULL) {
     '#maxlength' => 10,
     '#attributes' => $element['#attributes'],
     );
-  // Views exposed filters are treated as submitted even if not,
-  // so force the #default value in that case.  
-  if (!empty($element['#force_value'])) {
-    $sub_element['#value'] = $sub_element['#default_value'];
-  }
   // TODO, figure out exactly when we want this description. In many places it is not desired.
   $sub_element['#description'] = t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', $element['#date_time_format'])));
   return ($sub_element);

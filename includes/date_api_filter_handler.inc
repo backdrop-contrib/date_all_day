@@ -51,7 +51,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     
     // If no value has been submitted on an exposed filter it is treated as
     // a submitted value. Send a flag to the date widget processors so they 
-    // know to set '#value' instead of '#default_value' in that case.
+    // know to set #default_value instead of 'input' in that case.
     $this->force_value = FALSE;
     if (empty($this->options['exposed']) || (isset($this->options['expose']['identifier']) && !isset($_GET[$this->options['expose']['identifier']]))) {
       $this->force_value = TRUE;
@@ -198,7 +198,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $source = 'edit-' . drupal_html_id($this->options['expose']['operator']);
       }
     }
-
+    
     $handler = $this->date_handler;
        
     if ($which == 'all' || $which == 'value') {
@@ -216,10 +216,9 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $form['value']['max']['#force_value'] = TRUE;
       }
     }
-    
+
     // Add some text to make it clear when additional options are available.
     $extra = t("You can use any values PHP's date_create() can understand, like between '12AM today' and '12AM tomorrow.");
-    //$form['value']['value']['#prefix'] = '<div class="form-item"><label>' . t('Absolute value') . '</label></div>';
     $form['value']['default_date'] = array(
       '#type' => 'textfield',
       '#title' => t('Date default'),
@@ -241,9 +240,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       $form['value']['default_to_date']['#type'] = 'value';
       $form['value']['default_to_date']['#value'] = $form['value']['default_to_date']['#default_value'];
       unset($form['value']['default_date']['#prefix']);
-      unset($form['value']['value']['#prefix']);
     }
-    
+
     //$form['value']['#theme'] = 'date_views_filter_form';  
     
   }
@@ -294,6 +292,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     
     $id = !empty($form_state['exposed']) ? 'edit-date-filter-' . $prefix : 'edit-options-value-' . $prefix;
+
     $form[$prefix] = array(
       '#title' => $name,
       '#type' => $type,

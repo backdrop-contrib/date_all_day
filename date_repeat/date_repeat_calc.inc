@@ -39,7 +39,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   }
   
   // Make sure the 'EXCEPTIONS' string isn't appended to the rule.
-  $parts = split("\n", $rrule);
+  $parts = explode("\n", $rrule);
   if (count($parts)) {
     $rrule = $parts[0];
   }
@@ -107,7 +107,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
     $direction_days = array();
     // Deconstruct the day in case it has a negative modifier.
     foreach ($rrule['BYMONTHDAY'] as $day) {
-      ereg("(-)?([0-9]{1,2})", $day, $regs);
+      preg_match("@(-)?([0-9]{1,2})@", $day, $regs);
       if (!empty($regs[2])) {
         // Convert parameters into full day name, count, and direction.
         $direction_days[$day] = array(
@@ -202,7 +202,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
     $ordered_keys = array_flip($ordered);
 
     foreach ($rrule['BYDAY'] as $day) {
-      ereg("(-)?([1-5])?([SU|MO|TU|WE|TH|FR|SA]{2})", trim($day), $regs);
+      preg_match("@(-)?([1-5])?([SU|MO|TU|WE|TH|FR|SA]{2})@", trim($day), $regs);
       if (!empty($regs[2])) {
         // Convert parameters into full day name, count, and direction.
         $direction_days[] = array(

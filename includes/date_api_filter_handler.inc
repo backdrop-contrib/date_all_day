@@ -310,18 +310,13 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#date_year_range' => $this->options['year_range'],
       '#process' => array($type . '_element_process'),
     );
-    /*
+
     if ($which == 'all') {
       $form[$prefix] +=  array(
-        //'#dependency' => array($source => $operator_values),
-        '#states' => array(
-          'invisible' => array(
-            ':input:id="' . $source . '"' => array('value' => $operator_values),
-          ),
-        ),
+        '#dependency' => array($source => $operator_values),
       );  
     }
-    */
+
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
       $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
     }

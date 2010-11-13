@@ -711,8 +711,8 @@ function date_month_names_untranslated() {
  */
 function date_month_names($required = FALSE) {
   $month_names = array();
-  foreach (date_month_names_untranslated() as $key => $day) {
-    $month_names[$key] = t($day, array(), array('context' => 'month_name'));
+  foreach (date_month_names_untranslated() as $key => $month) {
+    $month_names[$key] = t($month, array(), array('context' => 'month_name'));
   }
   $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
@@ -726,10 +726,10 @@ function date_month_names($required = FALSE) {
  * @return
  *   an array of month abbreviations
  */
-function date_month_names_abbr($required = FALSE) {
+function date_month_names_abbr($required = FALSE, $length = 3) {
   $month_names = array();
-  foreach (date_month_names_untranslated() as $key => $day) {
-    $month_names[$key] = t($day, array(), array('context' => 'month_abbr'));
+  foreach (date_month_names_untranslated() as $key => $month) {
+    $month_names[$key] = t(substr($month, 0, $length), array(), array('context' => 'month_abbr'));
   }
   $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;

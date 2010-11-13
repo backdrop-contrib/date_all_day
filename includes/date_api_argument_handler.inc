@@ -119,9 +119,6 @@ class date_api_argument_handler extends views_handler_argument_date {
     // It is very important to call the parent function here:
     parent::options_validate($form, $form_state);
     
-    // @TODO Add validation back once view is working again.
-    return;
-    
     if ($form_state['values']['form_id'] == 'views_ui_config_item_form') {
       $check_fields = array_filter($form_state['values']['options']['date_fields']);
       if (empty($check_fields)) {

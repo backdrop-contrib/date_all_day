@@ -203,7 +203,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $source = 'edit-' . drupal_html_id($this->options['expose']['operator']);
       }
     }
-    
+
     $handler = $this->date_handler;
        
     if ($which == 'all' || $which == 'value') {
@@ -224,7 +224,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     
     // Add some text to make it clear when additional options are available.
     $extra = t("You can use any values PHP's date_create() can understand, like between '12AM today' and '12AM tomorrow.");
-    $form['value']['value']['#prefix'] = '<div class="form-item"><label>' . t('Absolute value') . '</label></div>';
+    //$form['value']['value']['#prefix'] = '<div class="form-item"><label>' . t('Absolute value') . '</label></div>';
     $form['value']['default_date'] = array(
       '#type' => 'textfield',
       '#title' => t('Date default'),
@@ -297,27 +297,29 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (!empty($form_state['exposed'])) {
       $default_date = $this->default_value($prefix);
     }
+    
+    $id = !empty($form_state['exposed']) ? 'edit-date-filter-' . $prefix : 'edit-options-value-' . $prefix;
     $form[$prefix] = array(
-      '#type' => $type,
       '#title' => $name,
+      '#type' => $type,
       '#size' => 20,
       '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
       '#date_format' => date_limit_format($format, $granularity),
       '#date_label_position' => 'within',
       '#date_year_range' => $this->options['year_range'],
       '#process' => array($type . '_element_process'),
+      '#prefix' => '<div id="' . $id . '-wrapper"><div id="' . $id . '">',
+      '#suffix' => '</div></div>',
     );
-
     if ($which == 'all') {
-      $form[$prefix] +=  array(
-        '#dependency' => array($source => $operator_values),
-      );  
+      //$form[$prefix]['#process'] = array('ctools_dependent_process');
+      $form[$prefix]['#process'] = array('ctools_dependent_process', $type . '_element_process');
+      $form[$prefix]['#dependency'] = array($source => $operator_values);  
     }
 
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
       $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
-    }
-            
+    }        
     return $form;
   }
 

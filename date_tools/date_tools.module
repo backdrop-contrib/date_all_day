@@ -114,11 +114,11 @@ function date_tools_page() {
       }
     }
     if (!empty($calendars)) {
-      $headers = array(t('Content Type'), t('Calendar'), t('Description'), t('Operations'));
-      $content .= theme('table', $headers, $calendars);
+      $header = array(t('Content Type'), t('Calendar'), t('Description'), t('Operations'));
+      $content .= theme('table', array('header' => $header, 'rows' => $calendars));
     }
   }
-  
+
   return $content;
 }
 

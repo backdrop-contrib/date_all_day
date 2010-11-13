@@ -170,11 +170,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     
   /**
    * Add the selectors to the value form using the date handler.
-   *
-   * @TODO Come back and swap date_select, date_popup, or date_text in for '#type' => 'textfield'.
-   * Those types need to be debugged first, they are not totally working right.
-   * In the meantime the form will load without errors, but won't actually work, since
-   * the dates are not the expected values.
    */
   function value_form(&$form, &$form_state) {
     // We use different values than the parent form, so we must
@@ -312,7 +307,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#suffix' => '</div></div>',
     );
     if ($which == 'all') {
-      //$form[$prefix]['#process'] = array('ctools_dependent_process');
       $form[$prefix]['#process'] = array('ctools_dependent_process', $type . '_element_process');
       $form[$prefix]['#dependency'] = array($source => $operator_values);  
     }

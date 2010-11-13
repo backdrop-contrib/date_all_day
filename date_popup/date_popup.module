@@ -382,9 +382,10 @@ function date_popup_validate($element, &$form_state) {
   
   date_popup_add();
   $value = date_popup_input_value($element);
+  
   // If the created date is valid, set it.
   if (!empty($value)) {
-    form_set_value($element, $value, $form_state);
+    form_set_value($element, $value->format(DATE_FORMAT_DATETIME), $form_state);
     return;
   }
   else {
@@ -436,7 +437,6 @@ function date_popup_input_value($element, $auto_complete = FALSE) {
       }
     }      
   }
-  
   return $date;
 }
 

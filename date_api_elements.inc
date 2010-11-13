@@ -521,7 +521,7 @@ function date_select_validate($element, &$form_state) {
   }
   // If there are no errors and the value is valid, set it.
   if (empty($errors) && !empty($value)) {
-    form_set_value($element, $value->format(DATE_FORMAT_ISO), $form_state);
+    form_set_value($element, $value->format(DATE_FORMAT_DATETIME), $form_state);
   }
   else {
     form_set_value($element, NULL, $form_state);
@@ -564,7 +564,7 @@ function date_text_validate($element, &$form_state) {
     form_error($element, t('%title is invalid.', array('%title' => $label))); 
   }
   elseif (!empty($value)) {
-    form_set_value($element, $value->format(DATE_FORMAT_ISO), $form_state);
+    form_set_value($element, $value->format(DATE_FORMAT_DATETIME), $form_state);
   }
 }
 

@@ -6,7 +6,6 @@ core = 7.x
 php = 5.2
 files[] = date_api.module
 files[] = date_api_elements.inc
-files[] = date_api_formats_list.inc
 files[] = date_api_ical.inc
 files[] = date_api_sql.inc
 files[] = date_api.admin.inc

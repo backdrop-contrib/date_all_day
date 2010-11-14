@@ -195,9 +195,9 @@ function date_combo_element_process($element, &$form_state, $form) {
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
   $entity_type = $element['#entity_type'];
-  $field = $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
-   
+  $field = field_widget_field($element, $form_state);
+  $instance = field_widget_instance($element, $form_state);
+
   $columns = $element['#columns'];
   if (isset($columns['rrule'])) {
     unset($columns['rrule']);
@@ -333,10 +333,10 @@ function date_combo_validate($element, &$form_state) {
   // right item values.
   $item = isset($form_values[$field_name][$langcode]['rrule']) ? $form_values[$field_name][$langcode] : $form_values[$field_name][$langcode][$delta];
   $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_state['input'][$field_name][$langcode] : $form_state['input'][$field_name][$langcode][$delta];
-  
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
-    
+
+  $field = field_widget_field($element, $form_state);
+  $instance = field_widget_instance($element, $form_state);
+
   $from_field = 'value';
   $to_field = 'value2';
   $tz_field = 'timezone';
@@ -500,9 +500,7 @@ function date_combo_validate($element, &$form_state) {
  * Handle widget processing.
  */
 function date_widget_validate($element, &$form_state) {
-  $form_values = $form_state['values'];
-  $field_name = $element['#field_name'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
+  $field = field_widget_field($element, $form_state);
   if (module_exists('date_repeat') && $field['settings']['repeat']) {
     module_load_include('inc', 'date', 'date_repeat');
     return _date_repeat_widget_validate($element, $form_state);

@@ -56,9 +56,9 @@ function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
 function _date_repeat_widget_validate($element, &$form_state) {
   module_load_include('inc', 'date_repeat', 'date_repeat_form');
   $field_name = $element['#field_name'];
-  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
-  $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
-  
+  $field = field_widget_field($element, $form_state);
+  $instance = field_widget_instance($element, $form_state);
+
   $form_values = $form_state['values'];
   $item = $form_values;
   $input = $form_state['input'];

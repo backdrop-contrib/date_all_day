@@ -356,7 +356,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     // Need to keep an eye on this to be sure nothing else breaks.
     //$format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
-    $this->get_query_fields();
+    //$this->get_query_fields();
     $this->ensure_my_table();
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 

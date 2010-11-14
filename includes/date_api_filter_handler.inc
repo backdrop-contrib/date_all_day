@@ -432,7 +432,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    * AND and OR methods in the right places.
    */
   function query() {
-    //$this->ensure_my_table();
+    $this->ensure_my_table();
     //$this->get_query_fields();
     if (!empty($this->query_fields)) {
       foreach ((array) $this->query_fields as $query_field) {
@@ -471,12 +471,10 @@ class date_api_filter_handler extends views_handler_filter_numeric {
 
     // Handle the simple operators first.
     if ($operator == 'empty') {
-      $this->add_date_field($field);
       return $field['fullname'] . ' IS NULL';
     }
     elseif ($operator == 'not empty') {
-      $this->add_date_field($field);
-      return $field['fullname'] . ' IS NOT NULL';
+     return $field['fullname'] . ' IS NOT NULL';
     }
 
     // Views treats the default values as though they are submitted
@@ -495,7 +493,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       }
     }
     
-    $this->add_date_field($field);
     $granularity = $this->options['granularity'];
     $date_handler = $query_field['date_handler'];
     $this->format = $date_handler->views_formats($granularity, 'sql');
@@ -557,13 +554,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     return $sql;
   }
-
-  function add_date_field($field) {
-    // Explicitly add this table using add_table so Views does not
-    // remove it if it is a duplicate, since that will break the query.
-    $this->query->add_table($field['table_name'], NULL, NULL, $field['table_name']);
-    return;
-  }
   
   function get_query_fields() {
     $fields = date_api_fields($this->view->base_table);
@@ -574,7 +564,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $date_handler = new date_sql_handler();
         $date_handler->construct($field['sql_type'], date_default_timezone());
         $date_handler->granularity = $this->options['granularity'];
-        date_views_set_timezone($date_handler, $this->view, $field);
         $this->query_fields[] = array('field' => $field, 'date_handler' => $date_handler);
       }
     }

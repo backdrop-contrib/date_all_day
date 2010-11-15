@@ -130,20 +130,20 @@ function date_default_format($type) {
   return $default_format;
 }
 
-function date_input_value($field, $instance, $element) {
+function date_input_date($field, $instance, $element, $input) {
   switch ($instance['widget']['type']) {
     case 'date_text':
     case 'date_text_repeat':
-      $function = 'date_text_input_value';
+      $function = 'date_text_input_date';
       break;
     case 'date_popup':
     case 'date_popup_repeat':
-      $function = 'date_popup_input_value';
+      $function = 'date_popup_input_date';
       break;
     default:
-      $function = 'date_select_input_value';
+      $function = 'date_select_input_date';
   }
-  return $function($element);
+  return $function($element, $input);
 }
 
 /**

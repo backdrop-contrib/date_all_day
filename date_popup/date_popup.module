@@ -169,13 +169,45 @@ function date_popup_element_info() {
     );
 }
 
+function date_popup_date_granularity($element) {
+  $granularity = date_format_order($element['#date_format']);
+  return array_intersect($granularity, array('month', 'day', 'year'));
+}
+
+function date_popup_time_granularity($element) {
+  $granularity = date_format_order($element['#date_format']);
+  return array_intersect($granularity, array('hour', 'minute', 'second'));
+}
+
+function date_popup_date_format($element) {
+  return (date_limit_format($element['#date_format'], date_popup_date_granularity($element)));
+}
+
+function date_popup_time_format($element) {
+  return date_popup_format_to_popup_time(date_limit_format($element['#date_format'], date_popup_time_granularity($element)));
+}
+
+
  /**
  * Element value callback for date_popup element.
  */
 function date_popup_element_value_callback($element, $input = FALSE, &$form_state) {
-  if (!$input) {
-    return array();
+  $granularity = date_format_order($element['#date_format']);
+  $has_time = date_has_time($granularity);
+
+  $date = NULL;
+  $return = $has_time ? array('date' => '', 'time' => '') : array('date' => ''); 
+  if ($input !== FALSE) {
+    $return = $input;
+    $date = date_popup_input_date($element, $input);  
   }
+  elseif (!empty($element['#default_value'])) {
+    $date = date_default_date($element);
+  }
+  $return['date'] = is_object($date) && !$date->timeOnly ? $date->format(date_popup_date_format($element)) : '';
+  $return['time'] = is_object($date) && $has_time ? $date->format(date_popup_time_format($element)) : '';
+  return $return;
+
 }
 
 /**
@@ -185,47 +217,12 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
 function date_popup_element_process($element, $form_state, $form) {
   date_popup_add();
   module_load_include('inc', 'date_api', 'date_api_elements');
-
-  $granularity = date_format_order($element['#date_format']);
-  $date_granularity = array_intersect($granularity, array('month', 'day', 'year'));
-  $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
-  $date_format = (date_limit_format($element['#date_format'], $date_granularity));
-  $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
-  
-  $input_exists = NULL;
-  $edit = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
-  // Views exposed filters are treated as submitted even if not,
-  // so force the #default value in that case.  
-  if (!empty($element['#force_value']) || !$input_exists) {
-    $input = $element['#default_value'];
-    $format = DATE_FORMAT_DATETIME;
-  }
-  elseif (!empty($edit['date'])) {
-    $input = $edit['date'] . (!empty($edit['time']) ? ' ' . $edit['time'] : '');
-    $format = $date_format;
-    $format .= (!empty($time_format) ? ' ' . $time_format : '');
-  }
-  $date = NULL;
-  if (!empty($input)) {    
-    $date = new DateObject($input, $element['#date_timezone'], $format);
-    $date->limitGranularity($granularity);
-    if (!$date->valid($granularity, $element['#date_flexible'])) {
-      $date = NULL;
-    }    
-  }
-  
-  date_increment_round($date, $element['#date_increment']);
   
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_popup');
   
-  $element['#granularity'] = $granularity;
-  $element['#date_granularity'] = $date_granularity;
-  $element['#time_granularity'] = $time_granularity;
-  $element['#date_date_format'] = $date_format;
-  $element['#date_time_format'] = $time_format;
-  $element['date'] = date_popup_process_date($element, $date);
-  $element['time'] = date_popup_process_time($element, $date);
+  $element['date'] = date_popup_process_date($element);
+  $element['time'] = date_popup_process_time($element);
   
   if (isset($element['#element_validate'])) {
     array_push($element['#element_validate'], 'date_popup_validate');
@@ -239,25 +236,17 @@ function date_popup_element_process($element, $form_state, $form) {
 /**
  * Process the date portion of the element.
  */
-function date_popup_process_date(&$element, $date = NULL) {
-  $granularity = $element['#granularity'];
-  if (empty($element['#date_granularity'])) return array();
+function date_popup_process_date(&$element) {
+  $granularity = date_format_order($element['#date_format']);
+  $date_granularity = date_popup_date_granularity($element);
+  if (empty($date_granularity)) return array();
   
-  // If we have time but not date, set the date default to blank
-  // but set the date object to the current date so the
-  // popup calendar picker will default to the current year.
-  if (is_object($date) && $date->timeOnly) {
-    $default_value = '';
-  }
-  else {
-    $default_value = is_object($date) ? date_format_date($date, 'custom', $element['#date_date_format']) : '';
-  }
-
   // The datepicker can't handle zero or negative values like 0:+1
   // even though the Date API can handle them, so rework the value
   // we pass to the datepicker to use defaults it can accept (such as +0:+1)
   // date_range_string() adds the necessary +/- signs to the range string.
   $this_year = date_format(date_now(), 'Y');
+  $date = new DateObject($element['#value']['date'], $element['#date_timezone'], date_popup_date_format($element));
   $range = date_range_years($element['#date_year_range'], $date);
   $year_range = date_range_string($range);
 
@@ -280,7 +269,7 @@ function date_popup_process_date(&$element, $date = NULL) {
     'autoPopUp' => 'focus',
     'closeAtTop' => FALSE,
     'speed' => 'immediate',
-    'dateFormat' => date_popup_format_to_popup($element['#date_date_format'], 'datepicker'),
+    'dateFormat' => date_popup_format_to_popup(date_popup_date_format($element), 'datepicker'),
     'yearRange' => $year_range,
     // Custom setting, will be expanded in Drupal.behaviors.date_popup()
     'fromTo' => isset($fromto),
@@ -291,23 +280,24 @@ function date_popup_process_date(&$element, $date = NULL) {
   
   $sub_element = array(
     '#type' => 'textfield',
-    '#default_value' => $default_value,
+    '#default_value' => $element['#value']['date'],
     '#id' => $id,    
     '#size' => !empty($element['#size']) ? $element['#size'] : 20,
     '#maxlength' => !empty($element['#maxlength']) ? $element['#maxlength'] : 30,
     '#attributes' => $element['#attributes'],
     );
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = ' '. t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', $element['#date_date_format'])));
+  $sub_element['#description'] = ' '. t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', date_popup_date_format($element))));
   return $sub_element;
 }
 
 /**
  * Process the time portion of the element.
  */
-function date_popup_process_time(&$element, $date = NULL) {
-  $granularity = $element['#granularity'];
-  if (empty($element['#time_granularity'])) return array();
+function date_popup_process_time(&$element) {
+  $granularity = date_format_order($element['#date_format']);
+  $has_time = date_has_time($granularity);
+  if (empty($has_time)) return array();
 
   $spinner_text = array(t('Now'), t('Previous field'), t('Next field'), t('Increment'), t('Decrement'));
   $settings = array(
@@ -322,14 +312,14 @@ function date_popup_process_time(&$element, $date = NULL) {
   $id = date_popup_js_settings_id($element['#id'], 'timeEntry', $settings);
   $sub_element = array(
     '#type' => 'textfield',
-    '#default_value' => is_object($date) ? date_format_date($date, 'custom', $element['#date_time_format']) : '',
+    '#default_value' => $element['#value']['time'],
     '#id' => $id,
     '#size' => 10,
     '#maxlength' => 10,
     '#attributes' => $element['#attributes'],
     );
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', $element['#date_time_format'])));
+  $sub_element['#description'] = t('Format: @date', array('@date' => date_format_date(date_now(), 'custom', date_popup_time_format($element))));
   return ($sub_element);
 }
 
@@ -346,37 +336,43 @@ function date_popup_validate($element, &$form_state) {
     return;
   }
 
-  $granularity = $element['#granularity'];
+  module_load_include('inc', 'date_api', 'date_api_elements');
+  date_popup_add();
+  
+  $granularity = date_format_order($element['#date_format']);
+  $date_granularity = date_popup_date_granularity($element);
+  $time_granularity = date_popup_time_granularity($element);
+  $has_time = date_has_time($granularity);
+  
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   $label = t($label);
+
+  $input_exists = NULL;
+  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
+  $date = date_popup_input_date($element, $input);
   
   // If the field is empty and not required, set it to empty and return.
   // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
-  if (empty($element['#value']['date'])) {
+  if (empty($date)) {
     if ($element['#required']) {
       // Set message on both date and time to get them highlighted properly.
       $message = t('Field %field is required.', array('%field' => $label));
-      if (!empty($element['#date_granularity'])) {
+      if (!empty($date_granularity)) {
         form_set_error($error_field .'][date', $message);  
         $message = ' ';
       }
-      if (!empty($element['#time_granularity'])) {
+      if (!empty($time_granularity)) {
         form_set_error($error_field .'][time', $message);  
       }
     }
     form_set_value($element, NULL, $form_state);
     return;
   }
-
-  module_load_include('inc', 'date_api', 'date_api_elements');
-  
-  date_popup_add();
-  $value = date_popup_input_value($element);
   
   // If the created date is valid, set it.
-  if (!empty($value)) {
-    form_set_value($element, $value->format(DATE_FORMAT_DATETIME), $form_state);
+  if (!empty($date)) {
+    form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
     return;
   }
   else {
@@ -400,35 +396,28 @@ function date_popup_validate($element, &$form_state) {
  *   Should we add a time value to complete the date if there is no time?
  *   Useful anytime the time value is optional. 
  */
-function date_popup_input_value($element, $auto_complete = FALSE) {
+function date_popup_input_date($element, $input, $auto_complete = FALSE) {
+  if (empty($input) || !is_array($input) || !array_key_exists('date', $input)) {
+    return NULL;
+  }  
   date_popup_add();
   $granularity = date_format_order($element['#date_format']);
-  $date_granularity = array_intersect($granularity, array('month', 'day', 'year'));
-  $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
-  $date_format = (date_limit_format($element['#date_format'], $date_granularity));
-  $time_format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity));
+  $has_time = date_has_time($granularity);
   $flexible = !empty($element['#date_flexible']) ? $element['#date_flexible'] : 0;
     
-  $format = $element['#date_format'];
-  $format = strtr($format, timepicker_format_replacements());
-  $format = date_limit_format($format, $granularity);
-  $date = NULL;
-  if (is_array($element['#value']) && !empty($element['#value']['date'])) {
-    $input = $element['#value']['date'] . (!empty($element['#value']['time']) ? ' ' . $element['#value']['time'] : '');
-    if (!empty($input)) {    
-      $format = $date_format;
-      $format .= (!empty($time_format) ? ' ' . $time_format : '');
-      $date = new DateObject($input, $element['#date_timezone'], $format);
-      $date->limitGranularity($granularity);
-      if (!$date->valid($granularity, $flexible)) {
-        $date = NULL;
-      } 
-      else {
-        date_increment_round($date, $element['#date_increment']); 
-      }
-    }      
+  $format = date_popup_date_format($element);
+  $format .= $has_time ? ' ' . date_popup_time_format($element) : '';
+  $datetime = $input['date'];
+  $datetime .= $has_time ? ' ' . $input['time'] : '';
+  $date = new DateObject($datetime, $element['#date_timezone'], $format);
+  if (is_object($date)) {
+    $date->limitGranularity($granularity);
+    if ($date->valid($granularity, $flexible)) {
+      date_increment_round($date, $element['#date_increment']); 
+      return $date;
+    }        
   }
-  return $date;
+  return NULL;
 }
 
 /**

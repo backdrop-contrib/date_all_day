@@ -292,33 +292,30 @@ function date_repeat_merge($form_values, $element) {
   if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
       
   if (array_key_exists('UNTIL', $form_values) && is_array($form_values['UNTIL']['datetime'])) {
-    $function = $element['#date_repeat_widget'] . '_input_value';
+    $function = $element['#date_repeat_widget'] . '_input_date';
     $until_element = $element;
-    $until_element['#value'] = $form_values['UNTIL']['datetime'];
     $until_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
-    $date = $function($until_element);
+    $date = $function($until_element, $form_values['UNTIL']['datetime']);
     $form_values['UNTIL']['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
   }
   if (array_key_exists('EXDATE', $form_values) && is_array($form_values['EXDATE'])) {
-    $function = $element['#date_repeat_widget'] . '_input_value';
+    $function = $element['#date_repeat_widget'] . '_input_date';
     $exdate_element = $element;
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
-        $exdate_element['#value'] = $form_values['EXDATE'][$delta]['datetime'];
         $exdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
-        $date = $function($exdate_element);
+        $date = $function($exdate_element, $form_values['EXDATE'][$delta]['datetime']);
         $form_values['EXDATE'][$delta]['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
       }
     }
   }
   if (array_key_exists('RDATE', $form_values) && is_array($form_values['RDATE'])) {
-    $function = $element['#date_repeat_widget'] .'_input_value';
+    $function = $element['#date_repeat_widget'] .'_input_date';
     $rdate_element = $element;
     foreach ($form_values['RDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
-        $rdate_element['#value'] = $form_values['RDATE'][$delta]['datetime'];
         $rdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
-        $form_values['RDATE'][$delta]['datetime'] = $function($rdate_element);
+        $form_values['RDATE'][$delta]['datetime'] = $function($rdate_element, $form_values['RDATE'][$delta]['datetime']);
       }
     }
   }

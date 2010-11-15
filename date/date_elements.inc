@@ -333,7 +333,7 @@ function date_combo_validate($element, &$form_state) {
   // right item values.
   $item = isset($form_values[$field_name][$langcode]['rrule']) ? $form_values[$field_name][$langcode] : $form_values[$field_name][$langcode][$delta];
   $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_state['input'][$field_name][$langcode] : $form_state['input'][$field_name][$langcode][$delta];
-
+  
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
 
@@ -395,7 +395,7 @@ function date_combo_validate($element, &$form_state) {
   // because otherwise we'll show errors on the nested elements
   // more than once.
   elseif (!form_get_errors()) {
-                
+                 
     // Check todate input for blank values and substitute in fromdate
     // values where needed, then re-compute the todate with those values.
     if ($field['settings']['todate']) {
@@ -429,11 +429,11 @@ function date_combo_validate($element, &$form_state) {
     else {
       $item[$to_field] = $item[$from_field];
     }
-    
-    $from_date = date_input_value($field, $instance, $element[$from_field]);
+   
+    $from_date = date_input_date($field, $instance, $element[$from_field], $posted[$from_field]);
     
     if (!empty($field['settings']['todate'])) {
-      $to_date = date_input_value($field, $instance, $element[$to_field]);
+      $to_date = date_input_date($field, $instance, $element[$to_field], $posted[$to_field]);
     }
     else {
       $to_date = $from_date;

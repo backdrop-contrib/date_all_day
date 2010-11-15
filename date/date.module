@@ -463,13 +463,13 @@ function date_views_api() {
  * Helper function to adapt entity date fields to formatter settings.
  */
 function date_prepare_entity($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display) {
-  return $entity;
+
   // If there are options to limit multiple values,
   // alter the entity values to match.
   $field_name = $field['field_name'];
-  
+  $options = $display['settings'];
   $max_count = $options['multiple_number'];
-    
+  
   // If no results should be shown, empty the values and return.
   if (is_numeric($max_count) && $max_count == 0) {
     $entity->{$field_name} = array();
@@ -498,21 +498,22 @@ function date_prepare_entity($formatter, $entity_type, $entity, $field, $instanc
       $end = date_format($range[1], $format);
       // Empty out values we don't want to see.
       $count = 0;
-      foreach ($entity->$field_name as $delta => $value) {
+      foreach ($entity->{$field_name}[$langcode] as $delta => $value) {
         if (!empty($entity->date_repeat_show_all)) {
           break;
         }
         elseif ((!empty($max_count) && is_numeric($max_count) && $count >= $max_count) ||
-        (!empty($value['value'])  && $value['value'] < $start) ||
-        (!empty($value['value2']) && $value['value2'] > $end)) {
-          unset($entity->{$field_name}[$delta]);
+          (!empty($value['value'])  && $value['value'] < $start) ||
+          (!empty($value['value2']) && $value['value2'] > $end)) {
+            unset($entity->{$field_name}[$langcode][$delta]);
         }
         else {
           $count++;
-        }
+        }  
       }
     }
   }
+  
   return $entity;
 }
 

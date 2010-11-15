@@ -40,7 +40,7 @@ function theme_date_display_combination($vars) {
   $formatter   = $display['type'];
   $options     = $display['settings'];
   $dates       = $vars['dates'];
-  $output = '';
+  $output = ''; 
     
   // Check the formatter settings to see if the repeat rule should be
   // displayed. Show it only with the first multiple value date.
@@ -56,6 +56,19 @@ function theme_date_display_combination($vars) {
     );
     $output .= theme('date_repeat_display', $repeat_vars);
     $repeating_ids[] = $id;
+  }
+   
+   
+  // If this is a full node or a pseudo node created by grouping
+  // multiple values, see exactly which values are supposed to be visible.
+  if (isset($entity->$field_name)) {
+    $entity = date_prepare_entity($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
+    // Did the current value get removed by formatter settings?
+    if (empty($entity->{$field_name}[$langcode][$delta])) {
+      return $output;
+    }
+    // Adjust the $element values to match the changes.
+    $element['#entity'] = $entity;
   }
    
   switch ($options['fromto']) {

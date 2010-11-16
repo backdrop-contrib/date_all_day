@@ -110,7 +110,8 @@ class DateObject extends DateTime {
 
     // Special handling for Unix timestamps expressed in the local timezone.
     // Create a date object in UTC and convert it to the local timezone.
-    if (is_numeric($time)) {
+    // Don't try to turn things like '2010' with a format of 'Y' into a timestamp.
+    if (is_numeric($time) && (empty($format) || $format == 'U')) {
       // Assume timestamp.
       $time = "@". $time;
       if ($tz->getName() != 'UTC') {
@@ -141,7 +142,7 @@ class DateObject extends DateTime {
         $element = array_pop($arg);
         $format = date_limit_format($format, $arg);
       }
-      if($element == 'year') {
+      if ($element == 'year') {
         return FALSE;
       }
     } 

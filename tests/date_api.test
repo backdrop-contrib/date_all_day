@@ -316,6 +316,33 @@ class DateAPITestCase extends DrupalWebTestCase {
     $value = $date->getOffset();
     $this->assertEqual($expected, $value, "The current offset should be $expected, found $value.");       
  
+     // Create year-only date.
+    $input = '2009';
+    $timezone = NULL;
+    $format = 'Y';
+    $date = new dateObject($input, $timezone, $format);
+    $value = $date->format('Y');
+    $expected = '2009';
+    $this->assertEqual($expected, $value, "Test new dateObject($input, $timezone, $format): should be $expected, found $value.");
+
+     // Create month and year-only date.
+    $input = '2009-10';
+    $timezone = NULL;
+    $format = 'Y-m';
+    $date = new dateObject($input, $timezone, $format);
+    $value = $date->format('Y-m');
+    $expected = '2009-10';
+    $this->assertEqual($expected, $value, "Test new dateObject($input, $timezone, $format): should be $expected, found $value.");
+
+     // Create time-only date.
+    $input = '0000-00-00T10:30:00';
+    $timezone = NULL;
+    $format = 'Y-m-d\TH:i:s';
+    $date = new dateObject($input, $timezone, $format);
+    $value = $date->format('H:i:s');
+    $expected = '10:30:00';
+    $this->assertEqual($expected, $value, "Test new dateObject($input, $timezone, $format): should be $expected, found $value.");
+
   }
   
   public function tearDown() {

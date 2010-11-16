@@ -343,6 +343,15 @@ class DateAPITestCase extends DrupalWebTestCase {
     $expected = '10:30:00';
     $this->assertEqual($expected, $value, "Test new dateObject($input, $timezone, $format): should be $expected, found $value.");
 
+     // Create time-only date.
+    $input = '10:30:00';
+    $timezone = NULL;
+    $format = 'H:i:s';
+    $date = new dateObject($input, $timezone, $format);
+    $value = $date->format('H:i:s');
+    $expected = '10:30:00';
+    $this->assertEqual($expected, $value, "Test new dateObject($input, $timezone, $format): should be $expected, found $value.");
+
   }
   
   public function tearDown() {

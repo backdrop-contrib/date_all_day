@@ -433,11 +433,12 @@ function date_combo_validate($element, &$form_state) {
     $from_date = date_input_date($field, $instance, $element[$from_field], $posted[$from_field]);
     
     if (!empty($field['settings']['todate'])) {
-      $to_date = date_input_date($field, $instance, $element[$to_field], $posted[$to_field]);
+      $to_date = date_input_date($field, $instance, $element[$to_field], $merged_date);
     }
     else {
       $to_date = $from_date;
     }
+
     
     // Neither the from date nor the to date should be empty at this point
     // unless they held values that couldn't be evaluated.

@@ -11,7 +11,7 @@
 BEGIN:VCALENDAR
 VERSION:2.0
 METHOD:PUBLISH
-X-WR-CALNAME: <?php print $calname ?> 
+X-WR-CALNAME: <?php print $calname ?>
 PRODID:-//Drupal iCal API//EN
 <?php foreach($events as $event): ?>
 <?php print theme('date_vevent', $event); ?>

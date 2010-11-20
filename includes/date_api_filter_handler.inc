@@ -158,9 +158,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     if (empty($check_fields)) {
       form_error($form['date_fields'], t('You must select at least one date field for this filter.'));
     }
-    if (!preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $form_state['values']['options']['year_range']) 
-      && !preg_match('@[0-9]{4}:[0-9]{4}@', $form_state['values']['options']['year_range'])) {
-      form_error($form['year_range'], t('Date year range must be in the format -9:+9 or 2005:2010.'));
+    if (!preg_match('/^(?:\-[0-9]{1,4}|[0-9]{4}):(?:[\+|\-][0-9]{1,4}|[0-9]{4})$/', $form_state['values']['options']['year_range'])) {
+      form_error($form['year_range'], t('Date year range must be in the format -9:+9, 2005:2010, -9:2010, or 2005:+9'));
     }
   }
   

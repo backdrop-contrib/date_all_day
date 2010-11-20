@@ -1907,6 +1907,13 @@ function date_range_years($string, $date = NULL) {
       $max_year = $this_year;
     }
   }
+  // We expect the $min year to be less than the $max year.
+  // Some custom values for -99:+99 might not obey that.
+  if ($min_year > $max_year) {
+    $temp = $max_year;
+    $max_year = $min_year;
+    $min_year = $temp;
+  }
   // If there is a current value, stretch the range to include it.
   $value_year = is_object($date) ? $date->format('Y') : '';
   if (!empty($value_year)) {

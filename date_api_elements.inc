@@ -260,7 +260,8 @@ function date_text_validate($element, &$form_state) {
     form_error($element, t('%title is invalid.', array('%title' => $label))); 
   }
   elseif (!empty($date)) {
-    form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
+    $value = $date->format(DATE_FORMAT_DATETIME);
+    form_set_value($element, $value, $form_state);
   }
 }
 

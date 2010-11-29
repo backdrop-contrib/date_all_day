@@ -2010,48 +2010,60 @@ function date_format_type_options() {
  * @param object $date2, a string date in datetime format for the 'to' date.
  * @return TRUE or FALSE.
  */
-function date_is_all_day($date1, $date2, $granularity = 'second', $increment = 1) {
-  if (empty($date1) || empty($date2)) {
+function date_is_all_day($string1, $string2, $granularity = 'second', $increment = 1) {
+  if (empty($string1) || empty($string2)) {
     return FALSE;
   }
   elseif (!in_array($granularity, array('hour', 'minute', 'second'))) {
     return FALSE;
   }
   
-  $tmp = date_seconds('s', TRUE, $increment);
-  $max_seconds = array_pop($tmp);
-  $tmp = date_minutes('i', TRUE, $increment);
-  $max_minutes = array_pop($tmp);
+  preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2}) (([0-9]{2}):([0-9]{2}):([0-9]{2}))/', $string1, $matches);
+  $count = count($matches);
+  $date1 = $count > 1 ? $matches[1] : '';
+  $time1 = $count > 2 ? $matches[2] : '';
+  $hour1 = $count > 3 ? intval($matches[3]) : 0;
+  $min1 = $count > 4 ? intval($matches[4]) : 0;
+  $sec1 = $count > 5 ? intval($matches[5]) : 0;
+  preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2}) (([0-9]{2}):([0-9]{2}):([0-9]{2}))/', $string2, $matches);
+  $count = count($matches);
+  $date2 = $count > 1 ? $matches[1] : '';
+  $time2 = $count > 2 ? $matches[2] : '';
+  $hour2 = $count > 3 ? intval($matches[3]) : 0;
+  $min2 = $count > 4 ? intval($matches[4]) : 0;
+  $sec2 = $count > 5 ? intval($matches[5]) : 0;
   
-  preg_match('/([0-9]{2}:?[0-9]{2}?:?[0-9]{2}?)/', $date1, $matches);
-  $time1 = $matches[1];
-  preg_match('/([0-9]{2}:?[0-9]{2}?:?[0-9]{2}?)/', $date2, $matches);
-  $time2 = $matches[1];
-  
+  if (empty($date1) || empty($date2) || $date1 != $date2) {
+    return FALSE;
+  }
   if (empty($time1) || empty($time2)) {
     return FALSE;
   }
+    
+  $tmp = date_seconds('s', TRUE, $increment);
+  $max_seconds = intval(array_pop($tmp));
+  $tmp = date_minutes('i', TRUE, $increment);
+  $max_minutes = intval(array_pop($tmp));
   
   switch ($granularity) {
     case 'second':
-      $min_comp = $time1 == '00:00:00';
-      $max_comp = $time2 == '00:00:00' || $time2 == '23:'. $max_minutes .':'. $max_seconds;
+      $min_match = $time1 == '00:00:00' || ($hour1 == 0 && $min1 == 0 && $sec1 == 0);
+      $max_match = $time2 == '00:00:00' || ($hour2 == 23 && $min2 == $max_minutes && $sec2 == $max_seconds) || ($hour1 == 0 && $hour2 == 0 && $min1 == 0 && $min2 == 0 && $sec1 == 0 && $sec2 == 0);
       break;
     case 'minute':
-      $min_comp = $time1 == '00:00';
-      $max_comp = $time2 == '00:00' || $time2 == '23:'. $max_minutes;
+      $min_match = $time1 == '00:00:00' || ($hour1 == 0 && $min1 == 0);
+      $max_match = $time2 == '00:00:00' || ($hour2 == 23 && $min2 == $max_minutes) || ($hour1 == 0 && $hour2 == 0 && $min1 == 0 && $min2 == 0);
       break;
     case 'hour':
-      $min_comp = $time1 == '00';
-      $max_comp = $time2 == '00' || $time2 == '23';
+      $min_match = $time1 == '00:00:00' || ($hour1 == 0);
+      $max_match = $time2 == '00:00:00' || ($hour2 == 23) || ($hour1 == 0 && $hour2 == 0);
       break;
     default:
-      $min_comp = TRUE;
-      $max_comp = FALSE;
+      $min_match = TRUE;
+      $max_match = FALSE;
   }
   
-  // Time runs from midnight to the maximum time -- call it 'All day'.
-  if ($min_comp && $max_comp) {
+  if ($min_match && $max_match) {
     return TRUE;
   }
     

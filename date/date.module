@@ -690,12 +690,11 @@ function date_field_views_data_alter(&$result, $field, $module) {
  * Determine if a from/to date combination qualify as 'All day'.
  *
  * @param array $field, the field definition for this date field.
- * @param string $which, which value to return, 'date1' or 'date2'.
  * @param object $date1, a date/time object for the 'from' date.
  * @param object $date2, a date/time object for the 'to' date.
  * @return TRUE or FALSE.
  */
-function date_all_day($field, $instance, $date1, $date2 = NULL) {
+function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
   if (empty($date1) || !is_object($date1)) {
     return FALSE;
   }
@@ -707,36 +706,8 @@ function date_all_day($field, $instance, $date1, $date2 = NULL) {
   }
   
   $granularity = $field['settings']['granularity'];
-  $max_granularity = array_pop($granularity);
-
+  $granularity = array_pop($granularity);
   $increment = isset($instance['widget']['increment']) ? $instance['widget']['increment'] : 1;
-  $tmp = date_seconds('s', TRUE, $increment);
-  $max_seconds = array_pop($tmp);
-  $tmp = date_minutes('i', TRUE, $increment);
-  $max_minutes = array_pop($tmp);
-  
-  switch ($max_granularity) {
-    case 'second':
-      $min_comp = date_format($date1, 'H:i:s') == '00:00:00';
-      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i:s') == '23:'. $max_minutes .':'. $max_seconds;
-      break;
-    case 'minute':
-      $min_comp = date_format($date1, 'H:i') == '00:00';
-      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H:i') == '23:'. $max_minutes;
-      break;
-    case 'hour':
-      $min_comp = date_format($date1, 'H') == '00';
-      $max_comp = date_format($date2, 'H:i:s') == '00:00:00' || date_format($date2, 'H') == '23';
-      break;
-    default:
-      $min_comp = TRUE;
-      $max_comp = FALSE;
-  }
-  
-  // Time runs from midnight to the maximum time -- call it 'All day'.
-  if ($min_comp && $max_comp) {
-    return TRUE;
-  }
-    
-  return FALSE;
+  return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date1, DATE_FORMAT_DATETIME), $granularity, $increment);
+
 }

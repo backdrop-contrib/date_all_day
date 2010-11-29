@@ -2004,6 +2004,61 @@ function date_format_type_options() {
 }
 
 /**
+ * Determine if a from/to date combination qualify as 'All day'.
+ *
+ * @param object $date1, a string date in datetime format for the 'from' date.
+ * @param object $date2, a string date in datetime format for the 'to' date.
+ * @return TRUE or FALSE.
+ */
+function date_is_all_day($date1, $date2, $granularity = 'second', $increment = 1) {
+  if (empty($date1) || empty($date2)) {
+    return FALSE;
+  }
+  elseif (!in_array($granularity, array('hour', 'minute', 'second'))) {
+    return FALSE;
+  }
+  
+  $tmp = date_seconds('s', TRUE, $increment);
+  $max_seconds = array_pop($tmp);
+  $tmp = date_minutes('i', TRUE, $increment);
+  $max_minutes = array_pop($tmp);
+  
+  preg_match('/([0-9]{2}:?[0-9]{2}?:?[0-9]{2}?)/', $date1, $matches);
+  $time1 = $matches[1];
+  preg_match('/([0-9]{2}:?[0-9]{2}?:?[0-9]{2}?)/', $date2, $matches);
+  $time2 = $matches[1];
+  
+  if (empty($time1) || empty($time2)) {
+    return FALSE;
+  }
+  
+  switch ($granularity) {
+    case 'second':
+      $min_comp = $time1 == '00:00:00';
+      $max_comp = $time2 == '00:00:00' || $time2 == '23:'. $max_minutes .':'. $max_seconds;
+      break;
+    case 'minute':
+      $min_comp = $time1 == '00:00';
+      $max_comp = $time2 == '00:00' || $time2 == '23:'. $max_minutes;
+      break;
+    case 'hour':
+      $min_comp = $time1 == '00';
+      $max_comp = $time2 == '00' || $time2 == '23';
+      break;
+    default:
+      $min_comp = TRUE;
+      $max_comp = FALSE;
+  }
+  
+  // Time runs from midnight to the maximum time -- call it 'All day'.
+  if ($min_comp && $max_comp) {
+    return TRUE;
+  }
+    
+  return FALSE;
+}
+
+/**
  * Return the nested form elements for a field by name.
  * This can be used either to retrieve the entire sub-element
  * for a field by name, no matter how deeply nested it is within

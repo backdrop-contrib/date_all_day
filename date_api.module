@@ -518,11 +518,13 @@ class DateObject extends DateTime {
    *
    * @param $date
    *   An array of date parts or a datetime string with values to be forced into date.
+   * @param $granularity
+   *   The granularity of the date.
    * @param $default 
    *   'current' - default to current day values.
    *   'first' - default to the first possible valid value.
    */   
-  public function setFuzzyDate($date, $default = 'first') {
+  public function setFuzzyDate($date, $granularity, $default = 'first') {
     $comp = new DateObject($date, $this->getTimeZone()->getName());
     $arr = $comp->toArray(TRUE);
     foreach ($arr as $key => $value) {
@@ -981,6 +983,36 @@ function date_granularity_names() {
     'minute' => t('Minute', array(), array('context' => 'datetime')), 
     'second' => t('Second', array(), array('context' => 'datetime')),
     );
+}
+
+/**
+ * Give a granularity $precision, return an array of 
+ * all the possible granularity elements.
+ */
+function date_granularity_array_from_precision($precision) {
+  $granularity_array = array('year', 'month', 'day', 'hour', 'minute', 'second');
+  switch(($precision)) {
+    case 'year':
+      return array_slice($granularity_array, -6);
+    case 'month':
+      return array_slice($granularity_array, -5);
+    case 'day':
+      return array_slice($granularity_array, -4);
+    case 'hour':
+      return array_slice($granularity_array, -3);
+    case 'minute':
+      return array_slice($granularity_array, -2);
+    default:
+      return $granularity_array;
+  }
+}
+
+/**
+ * Give a granularity array, return the highest precision.
+ */
+function date_granularity_precision($granularity_array) {
+  $input = clone($granularity_array);
+  return array_pop($input);
 }
 
 /**

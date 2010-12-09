@@ -518,14 +518,14 @@ class DateObject extends DateTime {
    *
    * @param $date
    *   An array of date parts or a datetime string with values to be forced into date.
-   * @param $granularity
-   *   The granularity of the date.
+   * @param $format
+   *   The format of the date.
    * @param $default 
    *   'current' - default to current day values.
    *   'first' - default to the first possible valid value.
    */   
-  public function setFuzzyDate($date, $granularity, $default = 'first') {
-    $comp = new DateObject($date, $this->getTimeZone()->getName());
+  public function setFuzzyDate($date, $format, $default = 'first') {
+    $comp = new DateObject($date, $this->getTimeZone()->getName(), $format);
     $arr = $comp->toArray(TRUE);
     foreach ($arr as $key => $value) {
       // Set to intval here and then test that it is still an integer.
@@ -1013,6 +1013,30 @@ function date_granularity_array_from_precision($precision) {
 function date_granularity_precision($granularity_array) {
   $input = clone($granularity_array);
   return array_pop($input);
+}
+
+/**
+ * Construct an appropriate DATETIME format string for the granularity of an item.
+ */
+function date_granularity_format($granularity) {
+  if (is_array($granularity)) {
+    $granularity = date_granularity_precision($granularity);
+  }
+  $format = 'Y-m-d H:i:s';
+  switch ($granularity) {
+    case 'year':
+      return substr($format, 0, 1);
+    case 'month':
+      return substr($format, 0, 3);
+    case 'day':
+      return substr($format, 0, 5);
+    case 'hour';
+      return substr($format, 0, 7);
+    case 'minute':
+      return substr($format, 0, 9);
+    default:
+      return $format;
+  } 
 }
 
 /**

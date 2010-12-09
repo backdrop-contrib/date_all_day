@@ -496,7 +496,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $date_handler = $query_field['date_handler'];
     $this->format = $date_handler->views_formats($granularity, 'sql');
     $date = date_now();
-    $date->setFuzzyDate($this->value[$prefix], $granularity);
+    $date->setFuzzyDate($this->value[$prefix], date_granularity_format($granularity));
     $value = date_format($date, $this->format);
     
     $range = $this->date_handler->arg_range($value);

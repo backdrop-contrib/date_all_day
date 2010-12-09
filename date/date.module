@@ -601,7 +601,7 @@ function date_handler_fields($view) {
  * @see date_field_info()
  */
 function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, $instance, $field_type) {
-  $name = str_replace('_', '-', $field['field_name']);
+  $name = $field['field_name'];
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
   if ($field['type'] != 'datestamp' || $field['settings']['timezone_db'] != 'UTC') {
     // Add a getter callback to convert the date into the right format.
@@ -623,7 +623,13 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
         'type' => 'date',
         'label' => t('To date'),
         'getter callback' => 'date_entity_metadata_struct_getter',
-     ),
+      ),
+      'duration' => array(
+        'type' => 'duration',
+        'label' => t('Duration'),
+        'desription' => t('The duration of the time period given by the dates.'),
+        'getter callback' => 'date_entity_metadata_duration_getter',
+      ),
     );
     unset($property['query callback']);
     unset($property['setter callback']);
@@ -647,13 +653,20 @@ function date_entity_metadata_field_getter($object, array $options, $name, $obj_
  */
 function date_entity_metadata_struct_getter($item, array $options, $name, $type) {
   $value = trim($item[$name]);
-  $item_type = isset($item['date_type']) ? $item['date_type'] : (is_numeric($value) ? DATE_UNIX : DATE_ISO);
   $timezone_db = !empty($item['timezone_db']) ? $item['timezone_db'] : 'UTC';
-  $date = new DateObject($value, $timezone_db, date_type_format($item_type));
-  if (!empty($date) && $timezone_db != 'UTC') {
-    date_timezone_set($date, timezone_open('UTC'));
-  }
+  $date = new DateObject($value, $timezone_db);
   return !empty($date) ? date_format_date($date, 'custom', 'U') : NULL;
+}
+
+/**
+ * Getter callback to return the duration of the time period given by the dates.
+ */
+function date_entity_metadata_duration_getter($item, array $options, $name, $type) {
+  $value = date_entity_metadata_struct_getter($item, $options, 'value', 'struct');
+  $value2 = date_entity_metadata_struct_getter($item, $options, 'value2', 'struct');
+  if ($value && $value2) {
+    return $value2 - $value;
+  }
 }
 
 /**

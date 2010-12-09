@@ -524,7 +524,7 @@ class DateObject extends DateTime {
    *   'current' - default to current day values.
    *   'first' - default to the first possible valid value.
    */   
-  public function setFuzzyDate($date, $format, $default = 'first') {
+  public function setFuzzyDate($date, $format = NULL, $default = 'first') {
     $comp = new DateObject($date, $this->getTimeZone()->getName(), $format);
     $arr = $comp->toArray(TRUE);
     foreach ($arr as $key => $value) {

@@ -132,7 +132,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
             $period_finished = TRUE;
           }
           // Back up to first of month and jump.
-          $current_day = date_repeat_set_month_day($current_day, NULL, 1, $timezone);
+          $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone);
           date_modify($current_day, '+'. $jump);
         }
         // If it's yearly, break out of the loop at the
@@ -143,14 +143,14 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
           }
           else {
             // Back up to first of month and jump.
-            $current_day = date_repeat_set_month_day($current_day, NULL, 1, $timezone);
+            $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone);
             date_modify($current_day, '+1 month');
           }
         }
       }
       if ($rrule['FREQ'] == 'YEARLY') {
         // Back up to first of year and jump.
-        $current_day = date_repeat_set_year_day($current_day, NULL, 1, $timezone);
+        $current_day = date_repeat_set_year_day($current_day, NULL, 1, '+', $timezone);
         date_modify($current_day, '+'. $jump);
       }
       $finished = date_repeat_is_finished($current_day, $days, $count, $end_date);
@@ -215,7 +215,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
       }
     }
     ksort($week_days);
-
+    
     // BYDAYs with parameters like -1SU (last Sun) or 2TH (second Thur)
     // need to be processed one month or year at a time.
     if (!empty($direction_days) && in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
@@ -423,16 +423,18 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
   }
   if (!empty($rrule['BYMONTHDAY'])) {
     // Test month days, but only if there are no negative numbers.
+    $test = TRUE;
     $BYMONTHDAYS = array();
     foreach ($rrule['BYMONTHDAY'] as $day) {
       if ($day > 0) {
         $BYMONTHDAYS[] = $day;
       }
       else {
+        $test = FALSE;
         break;
       }
     }
-    if (!empty($BYMONTHDAYS) && !in_array(date_format($current_day, 'j'), $BYMONTHDAYS)) {
+    if ($test && !empty($BYMONTHDAYS) && !in_array(date_format($current_day, 'j'), $BYMONTHDAYS)) {
       return FALSE;
     }
   }

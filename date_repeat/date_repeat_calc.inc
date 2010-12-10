@@ -90,9 +90,8 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
      $jump = $interval . ' years';
      break;
   }
-
   $rrule = date_repeat_adjust_rrule($rrule, $start_date);
-
+  
   // The start date always goes into the results, whether or not it meets
   // the rules. RFC 2445 includes examples where the start date DOES NOT
   // meet the rules, but the expected results always include the start date.
@@ -175,7 +174,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   }
 
   else {
-
+    
     // More complex searches for day names and criteria like '-1SU' or '2TU,2TH',
     // require that we interate through the whole time period checking each BYDAY.
 
@@ -202,7 +201,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
     $ordered_keys = array_flip($ordered);
 
     foreach ($rrule['BYDAY'] as $day) {
-      preg_match("@(-)?([1-5])?([SU|MO|TU|WE|TH|FR|SA]{2})@", trim($day), $regs);
+      preg_match("@(-)?([0-9]+)?([SU|MO|TU|WE|TH|FR|SA]{2})@", trim($day), $regs);
       if (!empty($regs[2])) {
         // Convert parameters into full day name, count, and direction.
         $direction_days[] = array(
@@ -219,7 +218,6 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
 
     // BYDAYs with parameters like -1SU (last Sun) or 2TH (second Thur)
     // need to be processed one month or year at a time.
-
     if (!empty($direction_days) && in_array($rrule['FREQ'], array('MONTHLY', 'YEARLY'))) {
       $finished = FALSE;
       $current_day = clone($start_date);
@@ -498,7 +496,8 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
-      date_modify($date, $order[$direction . $count] . ' ' . $day);
+      $step = $count <= 5 ? $order[$direction . $count] : $count;
+      date_modify($date, $step . ' ' . $day);
     }
     
     // If that takes us outside the current month, don't go there.
@@ -536,7 +535,6 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
       // current year, so we can catch the first of the year.
       date_modify($date, '-1 day');
     }
-    
     if (empty($day)) {
       date_modify($date, $direction . $count . ' days');
     }
@@ -544,7 +542,8 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
-      date_modify($date, $order[$direction . $count] . ' ' . $day);
+      $step = $count <= 5 ? $order[$direction . $count] : $count;
+      date_modify($date, $step . ' ' . $day);
     }
     
     // If that takes us outside the current year, don't go there.

@@ -1773,10 +1773,10 @@ function date_order() {
     '+4' => 'Fourth',
     '+5' => 'Fifth',
     '-1' => 'Last',
-    '-2' => 'Next to last',
-    '-3' => 'Third from last',
-    '-4' => 'Fourth from last',
-    '-5' => 'Fifth from last'
+    '-2' => '-2',
+    '-3' => '-3',
+    '-4' => '-4',
+    '-5' => '-5'
   );
 }
 

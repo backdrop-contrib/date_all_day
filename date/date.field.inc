@@ -320,7 +320,7 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
               'message' => t("A 'From date' date is required for field %field #%delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
             );
           }
-          if ($processed == 'value2' && $field['settings']['todate'] == 'required' && ($field['required'] && $valid1 && !$valid2)) {
+          if ($processed == 'value2' && $field['settings']['todate'] == 'required' && ($instance['required'] && $valid1 && !$valid2)) {
             $errors[$field['field_name']][$langcode][$delta][] = array(
               'error' => 'value2',
               'message' => t("A 'To date' is required for field %field #%delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),

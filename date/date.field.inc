@@ -366,7 +366,7 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
       $items[$delta]['date_type'] = $field['type'];
     }  
   }  
-  $entity->$field['field_name'][$langcode] = $items;
+  $entity->{$field['field_name']}[$langcode] = $items;
 
   foreach ($values as $delta => $item) {
     if (is_array($item)) {
@@ -381,7 +381,7 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
       }  
     }
   }
-  $entity->$field['field_name'][$langcode] = $items;
+  $entity->{$field['field_name']}[$langcode] = $items;
 }
 
 /**

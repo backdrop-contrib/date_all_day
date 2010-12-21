@@ -23,7 +23,7 @@ class date_api_argument_handler extends views_handler_argument_date {
    * Get granularity and use it to create the formula and a format
    * for the results.
    */
-  function init(&$view, $options) {
+  function init(&$view, &$options) {
     parent::init($view, $options);
 
     // Identify the type of display we're using.
@@ -115,7 +115,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     
   }
     
-  function options_validate($form, &$form_state) {
+  function options_validate(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_validate($form, $form_state);
     
@@ -130,7 +130,7 @@ class date_api_argument_handler extends views_handler_argument_date {
     }
   }
   
-  function options_submit($form, &$form_state) {
+  function options_submit(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_submit($form, $form_state);
     

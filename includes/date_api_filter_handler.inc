@@ -29,7 +29,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $this->date_handler->granularity = $this->options['granularity'];
   }
 
-  function init(&$view, $options) {
+  function init(&$view, &$options) {
     parent::init($view, $options);
     $handler = $this->date_handler;
     $handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';

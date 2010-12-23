@@ -118,9 +118,9 @@ function _date_api_fields($base = 'node') {
     }
     
     // Allow custom modules to provide date fields.
-    // The is_a() function makes this work for any handler
+    // The instanceof function makes this work for any handler
     // that was derived from 'views_handler_field_date' .
-    elseif (is_a($handler, 'views_handler_field_date')) {
+    elseif ($handler instanceof views_handler_field_date) {
       foreach (module_implements('date_api_fields') as $module) {
         $function = $module . '_date_api_fields';
         if ($custom = $function("$table_name.$field_name")) {

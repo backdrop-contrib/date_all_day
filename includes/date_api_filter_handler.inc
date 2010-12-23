@@ -27,6 +27,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();
     $this->date_handler->granularity = $this->options['granularity'];
+    $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+
   }
 
   function init(&$view, &$options) {
@@ -324,7 +326,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {
       $date = date_create($default_option, date_default_timezone_object());
-      $default_date = date_format($date, DATE_FORMAT_DATETIME);
+      $default_date = date_format($date, $this->format);
     }
     // This a fixed date.
     else {
@@ -480,6 +482,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     // so we when it is really not submitted we have to adjust the
     // query to match what should have been the default.
     $value_parts = !is_array($this->value[$prefix]) ? array($this->value[$prefix]) : $this->value[$prefix];
+    
     foreach ($value_parts as $part) {
       $default = $this->default_value($prefix);
       if (!empty($this->force_value) && !empty($default)) {
@@ -494,11 +497,10 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     
     $granularity = $this->options['granularity'];
     $date_handler = $query_field['date_handler'];
-    $this->format = $date_handler->views_formats($granularity, 'sql');
     $date = date_now();
     $date->setFuzzyDate($this->value[$prefix], $this->format);
     $value = date_format($date, $this->format);
-    
+
     $range = $this->date_handler->arg_range($value);
     $year_range = date_range_years($this->options['year_range']);
     if ($this->operator != 'not between') {

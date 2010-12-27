@@ -441,7 +441,6 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     // If we don't add a dummy where clause and there is no other filter defined for this view, 
     // Views will dump in an invalid WHERE () in addition to our custom filters, so give it a valid value.
     // @TODO This is probably the wrong way to solve this problem.
-    dsm($this->query->where[0]);
     if (empty($this->query->where[0]['conditions'])) {
       $this->query->add_where(NULL, '1=1', array(), 'formula');
     }

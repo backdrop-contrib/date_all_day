@@ -326,7 +326,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {
       $date = date_create($default_option, date_default_timezone_object());
-      $default_date = date_format($date, $this->format);
+      $default_date = !empty($date) ? $date->format($this->format) : '';
     }
     // This a fixed date.
     else {
@@ -417,8 +417,8 @@ class date_api_filter_handler extends views_handler_filter_numeric {
    */
   function set_relationship() {
     parent::set_relationship();
+    $this->get_query_fields();
     if (!empty($this->relationship)) {
-      $this->get_query_fields();
       if (!empty($this->query_fields)) {
         foreach ($this->query_fields as $query_field) {
           $field = $query_field['field'];
@@ -437,6 +437,15 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   function query() {
     $this->ensure_my_table();
     //$this->get_query_fields();
+    
+    // If we don't add a dummy where clause and there is no other filter defined for this view, 
+    // Views will dump in an invalid WHERE () in addition to our custom filters, so give it a valid value.
+    // @TODO This is probably the wrong way to solve this problem.
+    dsm($this->query->where[0]);
+    if (empty($this->query->where[0]['conditions'])) {
+      $this->query->add_where(NULL, '1=1', array(), 'formula');
+    }
+
     if (!empty($this->query_fields)) {
       foreach ((array) $this->query_fields as $query_field) {
         $field = $query_field['field'];

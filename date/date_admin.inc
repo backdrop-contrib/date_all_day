@@ -370,7 +370,7 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   if (is_array($widget['settings']['advanced']['text_parts'])) {
     form_set_value($form['text_parts'], array_keys(array_filter($widget['settings']['advanced']['text_parts'])), $form_state);
   }
-  if ($widget['type'] == 'date_select' && !preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $widget['settings']['year_range'])) {
+  if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat')) && !date_range_valid($widget['settings']['year_range'])) {
     form_set_error('instance][widget][settings][year_range', t('Years back and forward must be in the format -9:+9.'));
   }
 }

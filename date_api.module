@@ -1932,6 +1932,14 @@ function date_block_identifier($view) {
   return isset($view->date_info->block_identifier) ? $view->date_info->block_identifier : NULL;
 }
 
+/*
+ * Test validity of a date range string.
+ */
+function date_range_valid($string) {
+  $matches = preg_match('@\-[0-9]*:[\+|\-][0-9]*@', $string);
+  return $matches < 1 ? FALSE : TRUE;
+}
+
 /**
  * Split a string like -3:+3 or 2001:2010 into 
  * an array of min and max years.

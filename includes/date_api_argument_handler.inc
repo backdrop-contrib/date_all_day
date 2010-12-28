@@ -284,12 +284,14 @@ class date_api_argument_handler extends views_handler_argument_date {
   function set_relationship() {
     parent::set_relationship();
     $this->get_query_fields();
-    if (!empty($this->query_fields)) {
-      foreach ($this->query_fields as $query_field) {
-        $field = $query_field['field'];
-        if ($field['table_name'] != $this->table) {
-          $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
-        }  
+    if (!empty($this->relationship)) {
+      if (!empty($this->query_fields)) {
+        foreach ($this->query_fields as $query_field) {
+          $field = $query_field['field'];
+          if ($field['table_name'] != $this->table) {
+            $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+          }
+        }
       }
     }
   }  

@@ -199,7 +199,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
         $source = 'edit-' . drupal_html_id($this->options['expose']['operator']);
       }
     }
-    
+
     $handler = $this->date_handler;
        
     if ($which == 'all' || $which == 'value') {

@@ -1441,7 +1441,7 @@ function date_week($date) {
   
   // If we are using ISO weeks, this is easy.
   if (variable_get('date_api_use_iso8601', FALSE)) {
-    return $date->format('W');
+    return intval($date->format('W'));
   }
 
   $year_date = new DateObject($parts[0] . '-01-01 12:00:00', 'UTC');

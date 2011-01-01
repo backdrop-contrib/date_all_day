@@ -1394,7 +1394,7 @@ function date_week_range($week, $year) {
 function date_iso_week_range($week, $year) {
   
   // Get to the last ISO week of the previous year.
-  $min_date = new DateObject(($year - 1) .'-12-27 00:00:00');
+  $min_date = new DateObject(($year - 1) .'-12-28 00:00:00');
   date_timezone_set($min_date, date_default_timezone_object());
   
   // Find the first day of the first ISO week in the year.

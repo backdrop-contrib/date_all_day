@@ -53,6 +53,7 @@ define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})
  */
 class DateObject extends DateTime {
   public $granularity = array();
+  public $errors = array();
   protected static $allgranularity = array('year', 'month', 'day', 'hour', 'minute', 'second', 'timezone');
   private $_serialized_time;
   private $_serialized_timezone;
@@ -130,11 +131,13 @@ class DateObject extends DateTime {
       if (empty($time['hour']) && empty($time['minute']) && empty($time['second'])) {
         $this->dateOnly = TRUE;
       }
-
+      $this->errors = $this->arrayErrors($time);
       $time = $this->toISO($time);
-      $format = DATE_FORMAT_ISO;
+      // We checked for errors already, skip the step of parsing the input values.
+      $format = NULL;
     }
     
+    // The parse function will also set errors on the date parts.
     if (!empty($format)) {
       $arg = self::$allgranularity;
       $element = array_pop($arg);
@@ -275,7 +278,7 @@ class DateObject extends DateTime {
   }
   
   // whether a date is valid for a given $granularity array, depending on if it's allowed to be flexible.
-  public function valid($granularity = NULL, $flexible = FALSE) {
+  public function validGranularity($granularity = NULL, $flexible = FALSE) {
     return $this->hasGranularity() && (!$granularity || $flexible || $this->hasGranularity($granularity));
   }
 
@@ -443,6 +446,8 @@ class DateObject extends DateTime {
     // be unexpected if we feed it something like '0100' or '0000';
     $final_date['year'] = intval($final_date['year']);
     
+    $this->errors += $this->arrayErrors($final_date);
+
     // If the input value is '0000-00-00', PHP's date class will later incorrectly convert
     // it to something like '-0001-11-30' if we do setDate() here. If we don't do
     // setDate() here, it will default to the current date and we will lose any way to
@@ -452,14 +457,14 @@ class DateObject extends DateTime {
     if (empty($final_date['year']) && empty($final_date['month']) && empty($final_date['day'])) {
       $this->timeOnly = TRUE;
     }
-    else {
+    elseif (empty($this->errors)) {
       $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
     }
     
     if (!isset($final_date['hour']) && !isset($final_date['minute']) && !isset($final_date['second'])) {
       $this->dateOnly = TRUE;
     }
-    else {
+    elseif (empty($this->errors)) {
       $this->setTime($final_date['hour'], $final_date['minute'], $final_date['second']);
     }
     
@@ -474,11 +479,11 @@ class DateObject extends DateTime {
   public function toArray($force = FALSE) {
     return array(
       'year' => $this->format('Y', $force), 
-      'month' => $this->format('m', $force), 
-      'day' => $this->format('d', $force), 
-      'hour' => $this->format('H', $force), 
-      'minute' => $this->format('i', $force), 
-      'second' => $this->format('s', $force), 
+      'month' => $this->format('n', $force), 
+      'day' => $this->format('j', $force), 
+      'hour' => intval($this->format('H', $force)), 
+      'minute' => intval($this->format('i', $force)), 
+      'second' => intval($this->format('s', $force)), 
       'timezone' => $this->format('e', $force),
     );
   }
@@ -530,7 +535,7 @@ class DateObject extends DateTime {
     foreach ($arr as $key => $value) {
       // Set to intval here and then test that it is still an integer.
       // Needed because sometimes valid integers come through as strings.
-      $arr[$key] = $this->forceValid($key, intval($value), $default);
+      $arr[$key] = $this->forceValid($key, intval($value), $default, $arr['month'], $arr['year']);
     }
     $this->setDate($arr['year'], $arr['month'], $arr['day']);
     $this->setTime($arr['hour'], $arr['minute'], $arr['second']);
@@ -539,12 +544,12 @@ class DateObject extends DateTime {
   /**
    * Convert a date part into something that will produce a valid date.
    */
-  protected function forceValid($part, $value, $default = 'first') {
+  protected function forceValid($part, $value, $default = 'first', $month = NULL, $year = NULL) {
     $now = date_now();
     switch ($part) {
       case 'year':
         $fallback = $now->format('Y');
-        return !is_int($value) || empty($value) || $value <= 0 ? $fallback : $value;
+        return !is_int($value) || empty($value) || $value < variable_get('date_min_year', 1) || $value > variable_get('date_max_year', 4000) ? $fallback : $value;
         break;
       case 'month':
         $fallback = $default == 'first' ? 1 : $now->format('n');
@@ -552,7 +557,8 @@ class DateObject extends DateTime {
         break;
       case 'day':
         $fallback = $default == 'first' ? 1 : $now->format('j');
-        return !is_int($value) || empty($value) || $value <= 0 || $value > 31 ? $fallback : $value;
+        $max_day = isset($year) && isset($month) ? date_days_in_month($year, $month) : 31;
+        return !is_int($value) || empty($value) || $value <= 0 || $value > $max_day ? $fallback : $value;
         break;
       case 'hour':
         $fallback = $default == 'first' ? 0 : $now->format('G');
@@ -567,6 +573,42 @@ class DateObject extends DateTime {
         return !is_int($value) || $value < 0 || $value > 59 ? $fallback : $value;  
         break;
     }
+  }
+  
+  // Find possible errors in an array of date part values.
+  // The forceValid() function will change an invalid value to a valid one,
+  // so we just need to see if the value got altered.
+  public function arrayErrors($arr) {
+    $errors = array();
+    $now = date_now();
+    foreach ($arr as $part => $value) {
+      // Avoid false errors when a numeric value is input as a string by forcing it numeric.
+      $value = intval($value);
+      if (!empty($value) && $this->forceValid($part, $value, 'now', $now->format('n'), $now->format('Y')) != $value) {
+        // Use a switchcase to make translation easier by providing a different message for each part.
+        switch($part) {
+          case 'year':
+            $errors['year'] = t('The year is invalid.');
+            break;
+          case 'month':
+            $errors['month'] = t('The month is invalid.');
+            break;
+          case 'day':
+            $errors['day'] = t('The day is invalid.');
+            break;
+          case 'hour':
+            $errors['hour'] = t('The hour is invalid.');
+            break;
+          case 'minute':
+            $errors['minute'] = t('The minute is invalid.');
+            break;
+          case 'second':
+            $errors['second'] = t('The second is invalid.');
+            break;
+        }
+      }
+    }
+    return $errors;
   }
  
   /**

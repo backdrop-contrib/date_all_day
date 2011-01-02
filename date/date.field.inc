@@ -310,8 +310,8 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
         else {
           $date2 = new DateObject($item['value2'], $item['timezone'], date_type_format($field['type']));
         }
-        $valid1 = $date1->valid($field['settings']['granularity'], $flexible);
-        $valid2 = $date2->valid($field['settings']['granularity'], $flexible);
+        $valid1 = $date1->validGranularity($field['settings']['granularity'], $flexible);
+        $valid2 = $date2->validGranularity($field['settings']['granularity'], $flexible);
         
         foreach ($process as $processed) {
           if ($processed == 'value' && $field['settings']['todate'] && !$valid1 && $valid2) {

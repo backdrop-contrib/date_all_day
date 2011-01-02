@@ -827,7 +827,7 @@ class date_sql_handler {
   function arg_range($arg) {
     // Parse the argument to get its parts
     $parts = $this->arg_parts($arg);
-    
+   
     // Build a range from a period-only argument (assumes the min date is now.)
     if (empty($parts[0]['date']) && !empty($parts[0]['period']) && (empty($parts[1]))) {
       $min_date = date_now();

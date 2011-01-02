@@ -127,7 +127,7 @@ function date_default_date($element) {
   $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
   if (is_object($date)) {
     $date->limitGranularity($granularity);
-    if ($date->valid($granularity, $element['#date_flexible'])) {
+    if ($date->validGranularity($granularity, $element['#date_flexible'])) {
       date_increment_round($date, $element['#date_increment']); 
       return $date;
     }
@@ -196,7 +196,9 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
   elseif (!empty($element['#default_value'])) {
     $date = date_default_date($element);
   }
-  $return['date'] = is_object($date) ? $date->format($element['#date_format']) : '';
+  if (is_object($date) && empty($date->errors)) {
+    $return['date'] = $date->format($element['#date_format']);
+  }
   return $return;
 }
 
@@ -259,6 +261,9 @@ function date_text_validate($element, &$form_state) {
   elseif (empty($date) && !empty($element['#value']['date'])) {
     form_error($element, t('%title is invalid.', array('%title' => $label))); 
   }
+  elseif (!empty($date->errors)) {
+    form_error($element, implode('<br />', $date->errors));
+  }
   elseif (!empty($date)) {
     $value = $date->format(DATE_FORMAT_DATETIME);
     form_set_value($element, $value, $form_state);
@@ -276,7 +281,7 @@ function date_text_input_date($element, $input) {
   $date = new DateObject($input['date'], $element['#date_timezone'], $element['#date_format']);
   if (is_object($date)) {
     $date->limitGranularity($granularity);
-    if ($date->valid($granularity, $element['#date_flexible'])){
+    if ($date->validGranularity($granularity, $element['#date_flexible'])){
       date_increment_round($date, $element['#date_increment']); 
       return $date;
     }  
@@ -521,78 +526,27 @@ function date_select_validate($element, &$form_state) {
     }
   }
  
-  $error_field = implode('][', $element['#parents']);
-  $errors = array();
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   
-  if (in_array('year', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['year']))) {
-    if ($element['#value']['year'] < variable_get('date_min_year', 1) || $element['#value']['year'] > variable_get('date_max_year', 4000)) {
-      $errors[] = t('The year must be a number between %min and %max.', array(
-        '%min' => variable_get('date_min_year', 1), '%max' => variable_get('date_max_year', 4000)));  
-    }
-    else {
-      $year = $element['#value']['year'];
-    }
-  }
-  if (in_array('month', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['month']))) {
-    if ($element['#value']['month'] < 1 || $element['#value']['month'] > 12) {
-      $errors[] = t('The month must be a number between 1 and 12.');
-    }
-    else {
-      $month = $element['#value']['month'];
-    }
-  }
-  if (in_array('day', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['day']))) {
-    $min = 1;
-    $max = isset($year) && isset($month) ? date_days_in_month($year, $month) : 31;
-    if ($element['#value']['day'] < $min || $element['#value']['day'] > $max) {
-      $errors[] = t('The day must be a number between !min and !max.', array('!min' => $min, '!max' => $max));
-    }
-  }
-  if (in_array('hour', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['hour']))) {
-    $min = isset($element['#value']['ampm']) ? 1 : 0;
-    $max = isset($element['#value']['ampm']) ? 12 : 23;
-    if ($element['#value']['hour'] < $min || $element['#value']['hour'] > $max) {
-      $errors[] = t('The hour must be a number between !min and !max.', array('!min' => $min, '!max' => $max));
-    }
-  }
-  if (in_array('minute', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['minute']))) {
-    $min = 0;
-    $max = 59;
-    if ($element['#value']['minute'] < $min || $element['#value']['minute'] > $max) {
-      $errors[] = t('The minute must be a number between !min and !max.', array('!min' => $min, '!max' => $max));
-    }
-  }
-  if (in_array('second', $element['#granularity']) && ($element['#required'] || !empty($element['#value']['second']))) {
-    $min = 0;
-    $max = 59;
-    if ($element['#value']['second'] < $min || $element['#value']['second'] > $max) {
-      $errors[] = t('The second must be a number between !min and !max.', array('!min' => $min, '!max' => $max));
-    }
-  }
   if (isset($element['#value']['ampm'])) {
-    if ($element['#value']['ampm'] == 'pm' && $element['#value']['hour'] < 12) {
+    if ($input['ampm'] == 'pm' && $input['hour'] < 12) {
       $input['hour'] += 12;
     }
-    elseif ($element['#value']['ampm'] == 'am' && $element['#value']['hour'] == 12) {
+    elseif ($input['ampm'] == 'am' && $input['hour'] == 12) {
       $input['hour'] -= 12;
     }
   }
-  
+  unset($input['ampm']);
   $date = date_select_input_date($element, $input);
-  if (empty($date) && empty($errors) && $element['#required']) {
-    $errors[] = t('A valid value is required.');
+  
+  if (empty($date) && $element['#required']) {
+    form_error($element, t('A valid value is required.'));
   }
-  if (!empty($errors)) {
-    array_unshift($errors, t('Field %field has errors.', array('%field' => $label)));
-    form_set_error($error_field, implode(' ', $errors));
+  elseif (!empty($date->errors)) {
+    form_error($element, implode('<br />', $date->errors));
   }
-  // If there are no errors and the value is valid, set it.
-  if (empty($errors) && !empty($date)) {
+  elseif (!empty($date)) {
     form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
-  }
-  else {
-    form_set_value($element, NULL, $form_state);
   }
 }
 
@@ -607,7 +561,7 @@ function date_select_input_date($element, $input) {
   $date = new DateObject($input, $element['#date_timezone']);
   if (is_object($date)) {
     $date->limitGranularity($granularity);
-    if ($date->valid($granularity, $element['#date_flexible'])) {
+    if ($date->validGranularity($granularity, $element['#date_flexible'])) {
       date_increment_round($date, $element['#date_increment']); 
       return $date;
     }  

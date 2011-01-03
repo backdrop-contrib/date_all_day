@@ -348,8 +348,9 @@ class date_api_argument_handler extends views_handler_argument_date {
     $this->max_date = $max_date;
     // See if we're outside the allowed date range for our argument.
     if (date_format($min_date, 'Y') < $this->view->date_info->min_allowed_year || date_format($max_date, 'Y') > $this->view->date_info->max_allowed_year) {
-      drupal_not_found();
-      exit;
+      $this->forbid = TRUE;
+      $this->query->add_where('date', "0=1", array(), 'formula');
+      return;
     }
 
     // The second option seems to work better in the block view if 

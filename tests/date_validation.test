@@ -62,6 +62,45 @@ class DateValidationTestCase extends DrupalWebTestCase {
     $this->assertNoText('Test node has been created');
     $this->assertText('The month is invalid.');
     $this->assertText('The day is invalid.');
+    
+    // Test two-digit entry for year where 4-digit is expected
+    if ($options == 'select') {
+      $edit['field_test[und][0][value][year]'] = '11';
+      $edit['field_test[und][0][value][month]'] = '12';
+      $edit['field_test[und][0][value][day]'] = '10';
+      $edit['field_test[und][0][value][hour]'] = '10';
+      $edit['field_test[und][0][value][minute]'] = '30';
+    }
+    elseif ($options == 'text') {
+      $edit['field_test[und][0][value][date]'] = '12/10/11 - 10:30';
+    }
+    elseif ($options == 'popup') {
+      $edit['field_test[und][0][value][date]'] = '12/10/11';
+      $edit['field_test[und][0][value][time]'] = '10:30';
+    }
+    $this->drupalPost('node/add/story', $edit, t('Save'));
+    $this->assertNoText('Test node has been created');
+    $this->assertText('The year is invalid. Please check that entry includes four digits.');
+    
+    // Test invalid hour/minute entry for time
+    if ($options == 'select') {
+      $edit['field_test[und][0][value][year]'] = '2011';
+      $edit['field_test[und][0][value][month]'] = '12';
+      $edit['field_test[und][0][value][day]'] = '10';
+      $edit['field_test[und][0][value][hour]'] = '29';
+      $edit['field_test[und][0][value][minute]'] = '95';
+    }
+    elseif ($options == 'text') {
+      $edit['field_test[und][0][value][date]'] = '12/10/2011 - 29:95';
+    }
+    elseif ($options == 'popup') {
+      $edit['field_test[und][0][value][date]'] = '12/10/2011';
+      $edit['field_test[und][0][value][time]'] = '29:95';
+    }
+    $this->drupalPost('node/add/story', $edit, t('Save'));
+    $this->assertNoText('Test node has been created');
+    $this->assertText('The hour is invalid.');
+    $this->assertText('The minute is invalid.');
   }
 
   function createDateField($type, $widget) {

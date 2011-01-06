@@ -30,7 +30,12 @@ function date_field_formatter_info() {
       ),
     ),
   );
-
+  $formats = _system_date_format_types_build();
+  foreach ($formats as $format => $value) {
+    $formatters['date_' . $format] = $formatters['date_default'];
+    $formatters['date_' . $format]['format_type'] = $format;
+    $formatters['date_' . $format]['label'] = $value['title'];
+  }
   return $formatters;
 }
 
@@ -401,4 +406,138 @@ function date_field_widget_settings_form($field, $instance) {
 function date_field_settings_form($field, $instance, $has_data) {
   module_load_include('inc', 'date', 'date_admin');
   return _date_field_settings_form($field, $instance, $has_data);
+}
+
+/**
+ * Implements hook_content_migrate_field_alter().
+ * 
+ * Use this to tweak the conversion of field settings
+ * from the D6 style to the D7 style for specific
+ * situations not handled by basic conversion,
+ * as when field types or settings are changed.
+ * 
+ * $field_value['widget_type'] is available to
+ * see what widget type was originally used.
+ */
+function date_content_migrate_field_alter(&$field_value) {
+  
+  switch ($field_value['module']) {
+    case 'date':
+
+      // So far, no changes to field except those we have to make
+      // later in the instance, to move some values from the
+      // field to the widget.
+      break; 
+  }
+}
+
+/**
+ * Implements hook_content_migrate_instance_alter().
+ * 
+ * Use this to tweak the conversion of instance or widget settings
+ * from the D6 style to the D7 style for specific
+ * situations not handled by basic conversion, as when
+ * formatter or widget names or settings are changed.
+ */
+function date_content_migrate_instance_alter(&$instance_value) {
+  switch ($instance_value['module']) {
+    case 'date':
+      
+      $field_value = content_migrate_get_field_values($instance_value['field_name']);
+      
+      // Some settings have been moved from field to instance.
+      $default_format = $field_value['settings']['default_format'];
+      unset($field_value['settings']['default_format']);
+      $instance_value['settings']['repeat_collapsed'] = $field_value['settings']['repeat_collapsed'];
+      unset($field_value['settings']['repeat_collapsed']);
+
+      // Some settings have been moved from widget settings to instance settings.
+      $instance_value['settings']['default_value'] = $instance_value['default_value'];
+      unset($instance_value['default_value']);
+      $instance_value['settings']['default_value_code'] = $instance_value['widget']['settings']['default_value_code'];
+      unset($instance_value['widget']['settings']['default_value_code']);
+      $instance_value['settings']['default_value2'] = $instance_value['widget']['settings']['default_value2'];
+      unset($instance_value['widget']['settings']['default_value2']);
+      $instance_value['settings']['default_value_code2'] = $instance_value['widget']['settings']['default_value_code2'];
+      unset($instance_value['widget']['settings']['default_value_code2']);
+      break;
+  
+      // We need to retrieve formatter settings from the variables and store them in the instance.
+      // Some formatter names changed, and system date type names changed.
+      $new_type = array(
+        'format_interval' => 'format_interval',
+        'default' => 'date_default',
+        'small' => 'date_short',
+        'large' => 'date_long',
+        'medium' => 'date_medium',
+      );
+      $new_settings = array(
+        'date_default' => array(
+          'format_type' => $default_format,
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to' => '',
+          'fromto' => 'both',
+        ),                         
+        'format_interval' => array(
+          'interval' => 2,
+        ),
+        'date_short' => array(
+          'format_type' => 'short',
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to' => '',
+          'fromto' => 'both',
+        ),                         
+        'date_long' => array(
+          'format_type' => 'long',
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to' => '',
+          'fromto' => 'both',
+        ),                         
+        'date_medium' => array(
+          'format_type' => 'medium',
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to' => '',
+          'fromto' => 'both',
+        ),                         
+      );
+      // Add the custom date format options to the list.
+      $formats = array_keys(system_get_date_formats());
+      foreach ($formats as $format) {
+        if ($format != 'short' && $format != 'long' && $format != 'medium') {
+          $new_type['date_' . $format] = $new_format;
+          $new_settings['date_' . $format] = $new_settings['date_default'];
+          $new_settings['date_' . $format]['format_type'] = $format;
+        }
+      }
+      foreach ($instance_value['display'] as $context => $settings) {        
+        $instance_value['display'][$context]['type'] = $new_type[$settings['type']];
+        $old_settings = date_old_formatter_get_settings($instance['field_name'], $instance['bundle'], $context);
+        foreach ($new_settings as $key => $value) {
+          $instance_value['display'][$context]['settings'][$key] = !empty($old_settings[$key]) ? $old_settings[$key] : $value;
+        }
+      }
+
+      // We changed some of the field values, save them.
+      field_info_update($field_values);
+      break;
+  }
+}
+
+function date_old_formatter_get_settings($field_name, $type_name, $context) {
+  $options = array();
+  $value = 'date:'. $type_name .':'. $context .':'. $field_name;
+  $options['show_repeat_rule'] = variable_get($value .'_show_repeat_rule', 'show');
+  $options['multiple_number'] = variable_get($value .'_multiple_number', '');
+  $options['multiple_from'] = variable_get($value .'_multiple_from', '');
+  $options['multiple_to'] = variable_get($value .'_multiple_to', '');
+  $options['fromto'] = variable_get($value .'_fromto', 'both');  
+  return $options;
 }

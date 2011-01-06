@@ -407,6 +407,17 @@ function date_help($path, $arg) {
  */
 function date_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'field_ui_field_edit_form') {
+    dsm($form['#field'], 'new field');
+    dsm($form['#instance'], 'new instance');
+
+    $bundle = 'date';
+    $field_name = 'field_date';
+    
+    $new = content_migrate_get_field_values($field_name);
+    dsm($new, 'old field');
+    $new = content_migrate_get_instance_values($bundle, $field_name);
+    dsm($new, 'old instance');
+
     $field = $form['field'];
     $instance = $form['instance'];
     // If adding a repeat, override the Content module's handling of the multiple values option.
@@ -433,17 +444,22 @@ function date_formatter_format($formatter, $settings, $granularity = NULL, $lang
   switch ($formatter) {
     case 'format_interval':
       return 'format_interval';
-    default:
+      break;
+    case 'date_default':
       $format = system_date_format_locale($langcode, $format_type);
       if (empty($format)) {
         $format = variable_get('date_format_'. $format_type, $default);
-      }  
+      }      
+      break; 
+    default:
+      $type = str_replace('date_', '', $formatter);
+      $format = system_date_format_locale($langcode, $type);
+      if (empty($format)) {
+        $format = variable_get('date_format_'. $type, $default);
+      }
       break;
   }
  
-  if (empty($format)) {
-    $format = $default;
-  }
   // A selected format might include timezone information.
   array_push($granularity, 'timezone');
   return date_limit_format($format, $granularity);

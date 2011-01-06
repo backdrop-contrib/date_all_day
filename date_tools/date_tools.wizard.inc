@@ -367,6 +367,7 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_in
   cache_clear_all();  
   
   // Remove this view from cache so we can edit it properly.
+  module_load_include('inc', 'ctools', 'includes/object-cache');
   ctools_object_cache_clear('view', 'calendar_' . $bundle);  
 
   // Force Views to empty its cache and find the new view.

@@ -45,7 +45,6 @@ function date_tools_menu() {
     'description' => 'Tools to import and auto-create dates and calendars. ',
     'access arguments'   => array('administer date tools'),
     'page callback' => 'date_tools_page',
-    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/structure/date/about'] = array(
     'title' => 'About',

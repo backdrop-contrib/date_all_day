@@ -132,7 +132,9 @@ class DateObject extends DateTime {
         $this->dateOnly = TRUE;
       }
       $this->errors = $this->arrayErrors($time);
-      $time = $this->toISO($time);
+      // Make this into an ISO date, 
+      // forcing a full ISO date even if some values are missing.
+      $time = $this->toISO($time, TRUE);
       // We checked for errors already, skip the step of parsing the input values.
       $format = NULL;
     }
@@ -491,15 +493,15 @@ class DateObject extends DateTime {
   /**
     * Create an ISO date from an array of values.
     */
-  public function toISO($arr) {
+  public function toISO($arr, $full = FALSE) {
     // Add empty values to avoid errors
     $arr += array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
     $datetime = '';
     if ($arr['year'] !== '') {
       $datetime = date_pad(intval($arr['year']), 4);
-      if ($arr['month'] !== '') {
+      if ($full || $arr['month'] !== '') {
         $datetime .= '-'. date_pad(intval($arr['month']));
-        if ($arr['day'] !== '') { 
+        if ($full || $arr['day'] !== '') { 
           $datetime .= '-'. date_pad(intval($arr['day']));
         }
       }
@@ -507,9 +509,9 @@ class DateObject extends DateTime {
     if ($arr['hour'] !== '') {
       $datetime .= $datetime ? 'T' : '';
       $datetime .= date_pad(intval($arr['hour']));
-      if ($arr['minute'] !== '') {
+      if ($full || $arr['minute'] !== '') {
         $datetime.= ':'. date_pad(intval($arr['minute']));
-        if ($arr['second'] !== '') {
+        if ($full || $arr['second'] !== '') {
           $datetime .= ':'. date_pad(intval($arr['second']));
         }
       }

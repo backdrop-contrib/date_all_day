@@ -161,6 +161,7 @@ function _date_field_instance_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $instance['settings'];
   $widget_settings = $instance['widget']['settings'];
+
   $form['default_value'] = array(
     '#type' => 'select', '#title' => t('Default value'),
     '#default_value' => $settings['default_value'],
@@ -369,13 +370,16 @@ function _date_field_widget_settings_form($field, $instance) {
 }
 
 function date_field_widget_settings_form_validate(&$form, &$form_state) {
+  // The widget settings are in the wrong place in the form because of #tree on the top level.
+  $settings = $form_state['values']['instance']['widget']['settings'];
+  $settings = array_merge($settings, $settings['format'], $settings['advanced']);
+  unset($settings['format'], $settings['advanced']);
+  form_set_value(array('#parents' => array('instance', 'widget', 'settings')), $settings, $form_state);
+  
   $widget = $form_state['values']['instance']['widget'];
-  if (isset($widget['settings']['advanced']['label_position'])) {
-    form_set_value($form['label_position'], $widget['settings']['advanced']['label_position'], $form_state);
-  }
   // Munge the table display for text parts back into an array of text parts.
-  if (is_array($widget['settings']['advanced']['text_parts'])) {
-    form_set_value($form['text_parts'], array_keys(array_filter($widget['settings']['advanced']['text_parts'])), $form_state);
+  if (is_array($widget['settings']['text_parts'])) {
+    form_set_value($form['text_parts'], array_keys(array_filter($widget['settings']['text_parts'])), $form_state);
   }
   if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat')) && !date_range_valid($widget['settings']['year_range'])) {
     form_set_error('instance][widget][settings][year_range', t('Years back and forward must be in the format -9:+9.'));

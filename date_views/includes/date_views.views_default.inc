@@ -9,7 +9,7 @@
 /**
  * Implementation of hook_views_default_views().
  */
-function date_api_views_default_views() {
+function date_views_views_default_views() {
  
 $view = new view;
 $view->name = 'date_browser';

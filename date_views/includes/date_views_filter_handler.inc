@@ -16,7 +16,7 @@
  * An adjustment field is provided that will adjust the selected filter
  * value by something like '+90 days' or '-1 month';
  */
-class date_api_filter_handler extends views_handler_filter_numeric {
+class date_views_filter_handler extends views_handler_filter_numeric {
   var $date_handler = NULL;
 
   // Add a date handler to the filter.
@@ -124,7 +124,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
       '#default_value' => $this->options['year_range'],
       '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
@@ -366,7 +366,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
     }
     $handler = $this->date_handler;
     
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     if (!empty($this->options['date_fields'])) {
       $output = array();
       foreach ($this->options['date_fields'] as $field) {
@@ -567,7 +567,7 @@ class date_api_filter_handler extends views_handler_filter_numeric {
   }
   
   function get_query_fields() {
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     $fields = $fields['name'];
     $this->query_fields = array();
     foreach ((array) $this->options['date_fields'] as $delta => $name) {

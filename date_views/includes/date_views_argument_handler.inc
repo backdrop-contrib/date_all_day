@@ -9,7 +9,7 @@
 /**
  * Date API argument handler.
  */
-class date_api_argument_handler extends views_handler_argument_date {
+class date_views_argument_handler extends views_handler_argument_date {
   function construct() {
     parent::construct();
     module_load_include('inc', 'date_api', 'date_api_sql');
@@ -85,7 +85,7 @@ class date_api_argument_handler extends views_handler_argument_date {
       '#default_value' => $this->options['year_range'],
       '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
@@ -141,7 +141,7 @@ class date_api_argument_handler extends views_handler_argument_date {
   
   // Update the summary values to show selected granularity.
   function admin_summary() {
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     if (!empty($this->options['date_fields'])) {
       $output = array();
       foreach ($this->options['date_fields'] as $field) {
@@ -241,7 +241,7 @@ class date_api_argument_handler extends views_handler_argument_date {
   }
 
   function get_query_fields() {
-    $fields = date_api_fields($this->view->base_table);
+    $fields = date_views_fields($this->view->base_table);
     $fields = $fields['name'];
     $min_date = isset($this->min_date) ? $this->min_date : NULL;
     $min_utc = isset($this->min_utc) ? $this->min_utc : NULL;

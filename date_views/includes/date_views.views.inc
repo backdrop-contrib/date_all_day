@@ -38,7 +38,7 @@ function date_views_views_plugins() {
   module_load_include('inc', 'date_views', 'theme/theme');
   
   return array(
-    'module' => 'date_api', // This just tells our themes are elsewhere.
+    'module' => 'date_views', // This just tells our themes are elsewhere.
     'display' => array(
       // Display plugin for date navigation.
       'date_nav' => array(
@@ -98,7 +98,7 @@ function date_views_views_data() {
       'title' => t('Date (!base_table)', array('!base_table' => $base_table)),
       'help' => t('Filter any Views !base_table date field by a date argument, using any common ISO date/period format (i.e. YYYY, YYYY-MM, YYYY-MM-DD, YYYY-W99, YYYY-MM-DD--P3M, P90D, etc). ', array('!base_table' => $base_table)),
       'argument' => array(
-        'handler' => 'date_api_argument_handler',
+        'handler' => 'date_views_argument_handler',
         'empty field name' => t('Undated'),
         //'skip base' => $base_table,
       ),
@@ -109,7 +109,7 @@ function date_views_views_data() {
       'title' => t('Date (!base_table)', array('!base_table' => $base_table)),
       'help' => t('Filter any Views !base_table date field.', array('!base_table' => $base_table)),
       'filter' => array(
-        'handler' => 'date_api_filter_handler',
+        'handler' => 'date_views_filter_handler',
         'empty field name' => t('Undated'),
         //'skip base' => $base_table,
       ),
@@ -133,7 +133,7 @@ function date_views_fields($base = 'node', $reset = FALSE) {
       $fields[$base] = $cached->data;
     }
     else {
-      $fields[$base] = _date_api_fields($base);
+      $fields[$base] = _date_views_fields($base);
     }
   }
   // Make sure that empty values will be arrays in he expected format.

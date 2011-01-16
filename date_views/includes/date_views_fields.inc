@@ -15,7 +15,7 @@
  *    date_views_date_views_fields() which implements 
  *    the hook_date_api_fields() for the core date fields.
  */
-function _date_api_fields($base = 'node') {
+function _date_views_fields($base = 'node') {
   
   // Make sure $base is never empty.
   if (empty($base)) {
@@ -121,8 +121,8 @@ function _date_api_fields($base = 'node') {
     // The instanceof function makes this work for any handler
     // that was derived from 'views_handler_field_date' .
     elseif ($handler instanceof views_handler_field_date) {
-      foreach (module_implements('date_api_fields') as $module) {
-        $function = $module . '_date_api_fields';
+      foreach (module_implements('date_views_fields') as $module) {
+        $function = $module . '_date_views_fields';
         if ($custom = $function("$table_name.$field_name")) {
           $type = 'custom';
           break;

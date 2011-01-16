@@ -217,11 +217,18 @@ function _date_field_instance_settings_form($field, $instance) {
       '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),
       );
   }
+  $form['#element_validate'] = array('date_field_instance_settings_form_validate');
   return $form;
 }
 
 function date_field_instance_settings_form_validate(&$form, &$form_state) {
+
+  // The instance settings are in the wrong place in the form because of #tree on the top level.
   $settings = $form_state['values']['instance']['settings'];
+  $settings = array_merge($settings, $settings['default']);
+  unset($settings['default']);
+  form_set_value(array('#parents' => array('instance', 'settings')), $settings, $form_state);
+  
   if ($settings['default_value'] == 'strtotime') {
     $is_strtotime = @strtotime($settings['default_value_code']);
     if (!$is_strtotime) {

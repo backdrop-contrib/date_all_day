@@ -17,5 +17,5 @@ files[] = date.theme
 files[] = date.views.inc
 files[] = tests/date_api.test
 files[] = tests/date.test
-files[] = tests/date_repeat.test
+files[] = tests/date_field.test
 files[] = tests/date_validation.test

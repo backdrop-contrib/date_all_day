@@ -63,6 +63,13 @@ function date_tools_wizard_form() {
     '#collapsed' => TRUE,
     '#title' => t('Advanced options'),
     );
+  $form['field']['advanced']['todate'] = array(
+    '#type' => 'select',
+    '#default_value' => 'optional',
+    '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
+    '#title' => t('To Date'),
+    '#description' => t("Display a matching second date field as a 'To date'."),
+    );  
   $form['field']['advanced']['field_type'] = array(
     '#type' => 'select',
     '#options' => date_tools_wizard_field_types(),
@@ -77,6 +84,12 @@ function date_tools_wizard_form() {
     '#title' => t('Granularity'),
     '#multiple' => TRUE,
     );  
+  $form['field']['advanced']['year_range'] = array(
+    '#type' => 'textfield',
+    '#default_value' => '-1:+1',
+    '#title' => t('Year range'),
+    '#description' => t("Range of allowed years, oldest to newest. '-1:+1 means oldest date is one year back, newest is one year forward from current year."),
+    );
   $form['field']['advanced']['tz_handling'] = array(
     '#type' => 'select',
     '#options' => date_tools_wizard_tz_handling(),
@@ -179,7 +192,7 @@ function date_tools_wizard_build($form_values) {
       'tz_handling' => $tz_handling,
       'timezone_db' => date_get_timezone_db($tz_handling),
       'repeat' => $repeat,
-      'todate' => 'optional',
+      'todate' => !empty($todate) ? $todate : 'optional',
       ),
   );
   $instance = array(
@@ -195,7 +208,7 @@ function date_tools_wizard_build($form_values) {
       'settings' => array(
         'increment' => 15,
         // The number of years to go back and forward in drop-down year selectors.
-        'year_range' => '-0:+1',
+        'year_range' => !empty($year_range) ? $year_range : '-0:+1',
           
         'input_format' => date_default_format($widget_type),
         'text_parts' => array(),
@@ -250,7 +263,7 @@ function date_tools_wizard_build($form_values) {
   field_cache_clear(TRUE);  
   
   $view_name = '';
-  if (!empty($calendar)) {
+  if (!empty($calendar) && module_exists('calendar')) {
     $view_name = date_tools_wizard_create_calendar($name, $bundle, $field, $instance);
     if (!empty($blocks)) {
       date_tools_wizard_create_blocks($bundle);  
@@ -259,7 +272,6 @@ function date_tools_wizard_build($form_values) {
 
   // Update the menu router information.
   menu_rebuild();
-  field_cache_clear(TRUE);
 
   drupal_set_message(t('Your date field @name has been created.', array('@name' => $label)));
 
@@ -333,6 +345,39 @@ function date_tools_wizard_create_content_type($name, $bundle, $description, $ty
   }
 
   node_type_save((object) $values);
+
+  // Add the body field.
+  $trim_length = variable_get('teaser_length', 600);
+  
+  $field = field_info_field('body');
+  $instance = array(
+    'field_name' => 'body',
+    'entity_type' => 'node',
+    'bundle' => $bundle,
+    'label' => t('Description'),
+    'widget' => array(
+      'type' => 'text_textarea_with_summary',
+      'settings' => array(
+        'rows' => 20,
+        'summary_rows' => 5,
+      ),
+      'weight' => -4,
+      'module' => 'text',
+    ),
+    'settings' => array('display_summary' => TRUE),
+     'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'type' => 'text_default',
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'type' => 'text_summary_or_trimmed',
+        'trim_length' => $trim_length,
+      ),
+    ),
+  );
+  field_create_instance($instance);
 
 }
 

@@ -395,7 +395,7 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_in
     'name' => 'calendar_' . $bundle,
     'description' => 'An event calendar for ' . $date_instance['label'],
     'path' => $path,
-    'types' => array($bundle => $name),
+    'types' => array($bundle => $bundle),
     'date_fields' => array($date_name),
     'display_fields' => array('title' => array(), $date_name => array()),
   );

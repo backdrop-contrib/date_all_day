@@ -13,11 +13,11 @@ class DateUITestCase extends DrupalWebTestCase {
 
   public function setUp() {
     // Load the date_api module.
-    parent::setUp('field', 'field_ui', 'date_api', 'date', 'date_popup');
+    parent::setUp('field', 'field_ui', 'date_api', 'date', 'date_popup', 'date_tools');
 
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
-      'administer content types', 'administer nodes', 'bypass node access'
+      'administer content types', 'administer nodes', 'bypass node access', 'administer date tools'
     ));
     $this->drupalLogin($this->privileged_user);
     
@@ -30,6 +30,7 @@ class DateUITestCase extends DrupalWebTestCase {
     $edit['type'] = 'story';
     $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
     $this->assertText('The content type Story has been added.', 'Content type added.');
+
     // Creates select list date field stored as a date with default settings.
     $this->createDateField($type = 'date', $widget = 'date_select');
     $edit = array();
@@ -93,7 +94,6 @@ class DateUITestCase extends DrupalWebTestCase {
     $this->dateForm($options = 'popup');
     $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a datetime field using the date_popup widget.');
     $this->deleteDateField();
-
   }
 
   function dateForm($options) {
@@ -134,6 +134,5 @@ class DateUITestCase extends DrupalWebTestCase {
     $this->clickLink('delete');
     $this->drupalPost(NULL, NULL, t('Delete'));
     $this->assertText('The field Test has been deleted from the Story content type.', 'Removed date field.');
-  }
-  
+  }  
 }

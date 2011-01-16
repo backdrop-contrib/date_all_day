@@ -32,10 +32,10 @@
 /**
  * Implementation of hook_views_plugins
  */
-function date_api_views_plugins() {
-  $path = drupal_get_path('module', 'date_api');
+function date_views_views_plugins() {
+  $path = drupal_get_path('module', 'date_views');
   $views_path = drupal_get_path('module', 'views');
-  module_load_include('inc', 'date_api', 'theme/theme');
+  module_load_include('inc', 'date_views', 'theme/theme');
   
   return array(
     'module' => 'date_api', // This just tells our themes are elsewhere.
@@ -86,10 +86,10 @@ function date_api_views_plugins() {
 /**
  * Implementation of hook_views_data()
  */
-function date_api_views_data() {
+function date_views_views_data() {
   $data = array();
   
-  $tables = module_invoke_all('date_api_tables');
+  $tables = module_invoke_all('date_views_tables');
   
   foreach ($tables as $base_table) {
     // The flexible date argument.
@@ -122,13 +122,13 @@ function date_api_views_data() {
 /**
  *  Identify all potential date/timestamp fields and cache the data.
  */
-function date_api_fields($base = 'node', $reset = FALSE) {
+function date_views_fields($base = 'node', $reset = FALSE) {
   static $fields = array();
   $empty = array('name' => array(), 'alias' => array());
-  module_load_include('inc', 'date_api', 'includes/date_api_fields');
+  module_load_include('inc', 'date_views', 'includes/date_views_fields');
   
   if (empty($fields[$base]) || $reset) {
-    $cid = 'date_api_fields_' . $base;
+    $cid = 'date_views_fields_' . $base;
     if (!$reset && $cached = cache_get($cid, 'cache_views')) {
       $fields[$base] = $cached->data;
     }

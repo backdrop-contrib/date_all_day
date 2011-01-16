@@ -12,7 +12,7 @@
  *  @return
  *    array with fieldname, type, and table.
  *  @see 
- *    date_api_date_api_fields() which implements 
+ *    date_views_date_views_fields() which implements 
  *    the hook_date_api_fields() for the core date fields.
  */
 function _date_api_fields($base = 'node') {
@@ -24,7 +24,7 @@ function _date_api_fields($base = 'node') {
   
   $cid = 'date_api_fields_' . $base;
   cache_clear_all($cid, 'cache_views');
-  $all_fields = date_api_views_fetch_fields($base, 'field');
+  $all_fields = date_views_views_fetch_fields($base, 'field');
   $content_fields = field_views_data();
   // Iterate over all the fields that Views knows about.
   $fields = array();

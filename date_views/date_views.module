@@ -4,8 +4,8 @@
  *
  * This one is used as the base to reduce errors when updating.
  */
-function date_api_theme() {
-  $path = drupal_get_path('module', 'date_api');
+function date_views_theme() {
+  $path = drupal_get_path('module', 'date_view');
   $base = array(
     'file' => 'theme.inc',
     'path' => "$path/theme",

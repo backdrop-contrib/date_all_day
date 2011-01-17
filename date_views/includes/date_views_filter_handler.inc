@@ -322,6 +322,13 @@ class date_views_filter_handler extends views_handler_filter_numeric {
     if (empty($options)) {
       $options = $this->options;
     }
+
+    // If this is a remembered value, use the value from the SESSION.
+    if (!empty($this->options['expose']['remember'])) {
+      $display_id = ($this->view->display_handler->is_defaulted('filters')) ? 'default' : $this->view->current_display;
+      return $_SESSION['views'][$this->view->name][$display_id]['date_filter'][$prefix];
+    }
+
     // This is a date that needs to be constructed from options like 'now' .
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {

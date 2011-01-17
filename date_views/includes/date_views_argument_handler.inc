@@ -277,31 +277,12 @@ class date_views_argument_handler extends views_handler_argument_date {
   }
   
   /**
-   * Called just prior to query(), this lets us set up table aliases for
-   * relationships. This can't be done in pre_query(), because the relationship
-   * isn't defined yet.
-   */
-  function set_relationship() {
-    parent::set_relationship();
-    $this->get_query_fields();
-    if (!empty($this->relationship)) {
-      if (!empty($this->query_fields)) {
-        foreach ($this->query_fields as $query_field) {
-          $field = $query_field['field'];
-          if ($field['table_name'] != $this->table) {
-            $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
-          }
-        }
-      }
-    }
-  }  
-  
-  /**
    * Set up the query for this argument.
    *
    * The argument sent may be found at $this->argument.
    */
   function query() {
+    $this->get_query_fields();
     $block_identifier = date_block_identifier($this->view);
     if (!empty($this->view->block_identifier) || isset($_GET[$block_identifier])) {
       // Retrieve the block arguments in a way that will work for
@@ -365,6 +346,9 @@ class date_views_argument_handler extends views_handler_argument_date {
       foreach ($this->query_fields as $query_field) {
         $field = $query_field['field'];
         $date_handler = $query_field['date_handler'];
+        if ($field['table_name'] != $this->table || !empty($this->relationship)) {
+          $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+        }
         $table_alias = !empty($this->related_table_alias) ? $this->related_table_alias : $field['table_name'];
         $from_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][0]);
         $to_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][1]);
@@ -378,8 +362,6 @@ class date_views_argument_handler extends views_handler_argument_date {
           $to   = $date_handler->sql_where_date('DATE', $to_field, '>=', date_format($min_date, $format));          
         }
         $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
-        $this->table = $field['table_name'];
-        $this->ensure_my_table();
         if ($sql) {
           $this->query->add_where('date', $sql, array(), 'formula');
 

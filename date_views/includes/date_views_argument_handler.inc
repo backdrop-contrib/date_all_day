@@ -159,8 +159,16 @@ class date_views_argument_handler extends views_handler_argument_date {
    * formatted appropriately for this argument.
    */
   function get_default_argument($raw = FALSE) {
+    $granularity = $this->options['granularity'];
     if (!$raw && $this->options['default_argument_type'] == 'date') {
-      return date($this->format(), REQUEST_TIME);
+      if ($granularity == 'week') {
+        $now = date_now();
+        $week = date_week($now);
+        return date_format($now, 'Y') .'-W'. $week;
+      } 
+      else {
+        return date($this->format(), REQUEST_TIME);
+      }
     }
     else {
       return parent::get_default_argument($raw);

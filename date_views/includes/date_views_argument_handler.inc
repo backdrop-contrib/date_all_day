@@ -358,8 +358,6 @@ class date_views_argument_handler extends views_handler_argument_date {
     // Need to keep an eye on this to be sure nothing else breaks.
     //$format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
-    //$this->get_query_fields();
-    $this->ensure_my_table();
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
@@ -380,6 +378,8 @@ class date_views_argument_handler extends views_handler_argument_date {
           $to   = $date_handler->sql_where_date('DATE', $to_field, '>=', date_format($min_date, $format));          
         }
         $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
+        $this->table = $field['table_name'];
+        $this->ensure_my_table();
         if ($sql) {
           $this->query->add_where('date', $sql, array(), 'formula');
 

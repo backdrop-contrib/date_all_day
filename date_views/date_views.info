@@ -5,6 +5,7 @@ package = Date/Time
 core = 7.x
 php = 5.2
 files[] = date_views.module
+files[] = includes/date_handler_field_multiple.inc
 files[] = includes/date_views_argument_handler.inc
 files[] = includes/date_views_fields.inc
 files[] = includes/date_views_filter_handler.inc

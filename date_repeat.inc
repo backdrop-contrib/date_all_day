@@ -168,14 +168,14 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   $parsed_exceptions = (array) $parts[1];
   $exceptions = array();
   foreach ($parsed_exceptions as $exception) {
-    $date = date_ical_date($exception);
+    $date = date_ical_date($exception, $timezone);
     $exceptions[] = date_format($date, 'Y-m-d');
   }
 
   $parsed_rdates = (array) $parts[2];
   $additions = array();
   foreach ($parsed_rdates as $rdate) {
-    $additions[] = date_ical_date($rdate);
+    $additions[] = date_ical_date($rdate, $timezone);
   }
   
   $dates = date_repeat_calc($rrule, $start_datetime, $end_datetime, $exceptions, $timezone, $additions);

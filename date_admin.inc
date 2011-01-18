@@ -236,7 +236,7 @@ function date_field_instance_settings_form_validate(&$form, &$form_state) {
       form_set_error('instance][settings][default_value_code', t('The Strtotime default value is invalid.'));
     }
   }
-  if ($settings['default_value2'] == 'strtotime') {
+  if (isset($settings['default_value2']) && $settings['default_value2'] == 'strtotime') {
     $is_strtotime = @strtotime($settings['default_value_code2']);
     if (!$is_strtotime) {
       form_set_error('instance][settings][default_value_code2', t('The Strtotime default value for the To Date is invalid.'));

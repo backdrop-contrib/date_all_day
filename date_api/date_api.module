@@ -1913,7 +1913,7 @@ function date_api_database_info($field) {
  *
  * Add a form element to configure whether or not week numbers are ISO-8601 (default: FALSE == US/UK/AUS norm).
  */
-function date_api_form_system_date_time_settings_alter(&$form, $form_state, $form_id = 'system_date_time_settings') {
+function date_api_form_system_regional_settings_alter(&$form, $form_state, $form_id = 'system_date_time_settings') {
   $form['locale']['date_api_use_iso8601'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Use ISO-8601 week numbers'),

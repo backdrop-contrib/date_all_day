@@ -173,4 +173,3 @@ msgstr "El %style requiere que el argumento Fecha:Date tenga la fecha actual com
 #: includes/date_navigation_plugin_style.inc:34
 msgid "The %style requires the Date: Date argument."
 msgstr "El %style requiere un argumento Fecha:Date."
-

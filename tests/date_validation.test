@@ -20,7 +20,7 @@ class DateValidationTestCase extends DrupalWebTestCase {
       'administer content types', 'administer nodes', 'bypass node access'
     ));
     $this->drupalLogin($this->privileged_user);
-    
+
     variable_set('date_format_long', 'D, m/d/Y - H:i');
   }
 
@@ -38,7 +38,7 @@ class DateValidationTestCase extends DrupalWebTestCase {
     $this->malFormedDate($options = 'text');
     $this->deleteDateField();
   }
-  
+
   function malFormedDate($options, $date_format = 'mm/dd/yyyy') {
     // Tests that date field filters improper dates.
     $edit = array();
@@ -62,7 +62,7 @@ class DateValidationTestCase extends DrupalWebTestCase {
     $this->assertNoText('Test node has been created');
     $this->assertText('The month is invalid.');
     $this->assertText('The day is invalid.');
-    
+
     // Test two-digit entry for year where 4-digit is expected
     if ($options == 'select') {
       $edit['field_test[und][0][value][year]'] = '11';
@@ -81,7 +81,7 @@ class DateValidationTestCase extends DrupalWebTestCase {
     $this->drupalPost('node/add/story', $edit, t('Save'));
     $this->assertNoText('Test node has been created');
     $this->assertText('The year is invalid. Please check that entry includes four digits.');
-    
+
     // Test invalid hour/minute entry for time
     if ($options == 'select') {
       $edit['field_test[und][0][value][year]'] = '2011';
@@ -119,6 +119,5 @@ class DateValidationTestCase extends DrupalWebTestCase {
     $this->drupalPost(NULL, NULL, t('Delete'));
     $this->assertText('The field Test has been deleted from the Story content type.', 'Removed date field.');
   }
-
 
 }

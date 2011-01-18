@@ -53,7 +53,7 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
       return date_default_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
   }
 }
- 
+
 /**
  * Implements hook_field_formatter_settings_summary().
  */
@@ -107,7 +107,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
     'display' => $display,
     'dates' => array(),
   );
-  
+
   // See if we are only supposed to display a selected
   // item from multiple value date fields.
   $selected_deltas = array();
@@ -119,7 +119,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
       }
     }
   }
-  
+
   switch ($display['type']) {
     case 'format_interval':
       foreach ($items as $delta => $item) {
@@ -234,7 +234,7 @@ function date_field_widget_info() {
       'default value' => FIELD_BEHAVIOR_CUSTOM,
     ),
   );
-  
+
   // Repeating dates have custom handling
   // for multiple values.
   $repeat_settings = $settings;
@@ -301,7 +301,7 @@ function date_field_load($entity_type, $entities, $field, $instances, $langcode,
 function date_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   $field_name = $field['field_name'];
   $flexible = 0;
-  
+
   // Don't try to validate if there were any errors before this point
   // since the element won't have been munged back into a date.
   if (!form_get_errors()) {
@@ -317,7 +317,7 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
         }
         $valid1 = $date1->validGranularity($field['settings']['granularity'], $flexible);
         $valid2 = $date2->validGranularity($field['settings']['granularity'], $flexible);
-        
+
         foreach ($process as $processed) {
           if ($processed == 'value' && $field['settings']['todate'] && !$valid1 && $valid2) {
             $errors[$field['field_name']][$langcode][$delta][] = array(
@@ -420,7 +420,7 @@ function date_field_settings_form($field, $instance, $has_data) {
  * see what widget type was originally used.
  */
 function date_content_migrate_field_alter(&$field_value) {
-  
+
   switch ($field_value['module']) {
     case 'date':
 
@@ -442,9 +442,9 @@ function date_content_migrate_field_alter(&$field_value) {
 function date_content_migrate_instance_alter(&$instance_value) {
   switch ($instance_value['module']) {
     case 'date':
-      
+
       $field_value = content_migrate_get_field_values($instance_value['field_name']);
-      
+
       // Some settings have been moved from field to instance.
       $default_format = $field_value['settings']['default_format'];
       unset($field_value['settings']['default_format']);
@@ -461,7 +461,7 @@ function date_content_migrate_instance_alter(&$instance_value) {
       $instance_value['settings']['default_value_code2'] = $instance_value['widget']['settings']['default_value_code2'];
       unset($instance_value['widget']['settings']['default_value_code2']);
       break;
-  
+
       // We need to retrieve formatter settings from the variables and store them in the instance.
       // Some formatter names changed, and system date type names changed.
       $new_type = array(

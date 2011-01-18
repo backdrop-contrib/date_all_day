@@ -50,7 +50,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
 
   module_load_include('inc', 'date_api', 'date_api_elements');  
   $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
-  
+
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling
   // with this a while, I can find no way to get it displayed in the form
@@ -59,7 +59,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   if (is_array($timezone)) {
     $timezone = $timezone['timezone'];
   }
-  
+
   // Convert UTC dates to their local values in DATETIME format,
   // and adjust the default values as specified in the field settings.
 
@@ -77,7 +77,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     $date = date_local_date($form, $form_state, $delta, $items[$delta], $timezone, $field, $instance, $processed);
     $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
-  
+
   $element += array(
     '#type' => 'date_combo',
     '#theme_wrappers' => array('date_combo'),
@@ -95,14 +95,14 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       '#weight' => $instance['widget']['weight'] + .2,
       );  
   }
-  
+
   // Add a date repeat form element, if needed.
   if (module_exists('date_repeat') && $field['settings']['repeat'] == 1) {
     module_load_include('inc', 'date', 'date_repeat');    
     _date_repeat_widget($element, $field, $instance, $items, $delta);
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
   }
-  
+
   return $element;
 }
 
@@ -156,7 +156,7 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
   }
   else {
     $value = $item[$part];
-    
+
     // @TODO Figure out how to replace date_fuzzy_datetime() function.
     // Special case for ISO dates to create a valid date object for formatting.
     // Is this still needed?
@@ -169,7 +169,7 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
       $value = date_convert($value, $field['type'], DATE_DATETIME, $db_timezone);
     }
     */
-    
+
     $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']));
     $date->limitGranularity($field['settings']['granularity']);
     if (empty($date)) {
@@ -190,7 +190,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   if (isset($element['#access']) && empty($element['#access'])) {
     return;
   }
-  
+
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
@@ -229,9 +229,9 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_year_range'  => $instance['widget']['settings']['year_range'],
     '#date_label_position' => $instance['widget']['settings']['label_position'],
     );
-    
+
   $description =  !empty($instance['description']) ? t($instance['description']) : ''; 
-  
+
   // Give this element the right type, using a Date API
   // or a Date Popup element type.
 
@@ -256,7 +256,7 @@ function date_combo_element_process($element, &$form_state, $form) {
       $element[$from_field]['#theme_wrappers'] = array('date_text');
       break;
   }
-  
+
   // If this field uses the 'To', add matching element
   // for the 'To' date, and adapt titles to make it clear which
   // is the 'From' and which is the 'To' .
@@ -277,7 +277,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   else {
     $element[$from_field]['#description'] = $description;
   }
-  
+
   // Create label for error messages that make sense in multiple values
   // and when the title field is left blank.
   if (!empty($field['cardinality']) && empty($field['settings']['repeat'])) {
@@ -293,7 +293,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   else {
     $element[$from_field]['#date_title'] = $instance['label'];
   }
-  
+
   // Make sure field info will be available to the validator which
   // does not get the values in $form.
   $form_state['#field_info'][$field['field_name']] = $field;
@@ -318,22 +318,22 @@ function date_element_empty($element, &$form_state) {
  * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element, &$form_state) {
-  
+
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $langcode = $element['#language'];
-  
+
   // If the whole field is empty and that's OK, stop now.
   if (empty($form_state['input'][$field_name]) && !$element['#required']) {
     return;
   }
-  
+
   // Repeating dates have a different form structure, so get the
   // right item values.
   $item = isset($form_values[$field_name][$langcode]['rrule']) ? $form_values[$field_name][$langcode] : $form_values[$field_name][$langcode][$delta];
   $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_state['input'][$field_name][$langcode] : $form_state['input'][$field_name][$langcode][$delta];
-  
+
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
 
@@ -342,7 +342,7 @@ function date_combo_validate($element, &$form_state) {
   $tz_field = 'timezone';
   $offset_field = 'offset';
   $offset_field2 = 'offset2';
-  
+
   // Unfortunately, due to the fact that much of the processing is already
   // done by the time we get here, it is not possible highlight the field
   // with an error, we just try to explain which element is creating the
@@ -367,7 +367,7 @@ function date_combo_validate($element, &$form_state) {
       }
     }
   }
-  
+
   // A 'To' date without a 'From' date is a validation error.
   if ($empty && !empty($item[$to_field])) {
     if (!is_array($item[$to_field])) {
@@ -384,7 +384,7 @@ function date_combo_validate($element, &$form_state) {
       }
     }
   }
-  
+
   if ($empty) {
     $item = date_element_empty($element, $form_state);
     if (!$element['#required']) {
@@ -395,7 +395,7 @@ function date_combo_validate($element, &$form_state) {
   // because otherwise we'll show errors on the nested elements
   // more than once.
   elseif (!form_get_errors()) {
-                 
+
     // Check todate input for blank values and substitute in fromdate
     // values where needed, then re-compute the todate with those values.
     if ($field['settings']['todate']) {
@@ -411,7 +411,7 @@ function date_combo_validate($element, &$form_state) {
           $merged_date['hour'] -= 12;
         }
       }
-              
+
       // If all date values were empty and a date is required, throw 
       // an error on the first element. We don't want to create 
       // duplicate messages on every date part, so the error will 
@@ -421,7 +421,7 @@ function date_combo_validate($element, &$form_state) {
       }
 
       $element[$to_field]['#value'] = $merged_date;
-      
+
       // Call the right function to turn this altered user input into
       // a new value for the todate.
       $item[$to_field] = $merged_date;
@@ -429,9 +429,9 @@ function date_combo_validate($element, &$form_state) {
     else {
       $item[$to_field] = $item[$from_field];
     }
-   
+
     $from_date = date_input_date($field, $instance, $element[$from_field], $posted[$from_field]);
-    
+
     if (!empty($field['settings']['todate'])) {
       $to_date = date_input_date($field, $instance, $element[$to_field], $merged_date);
     }
@@ -439,7 +439,6 @@ function date_combo_validate($element, &$form_state) {
       $to_date = $from_date;
     }
 
-    
     // Neither the from date nor the to date should be empty at this point
     // unless they held values that couldn't be evaluated.
     if (!$instance['required'] && (empty($from_date) || empty($to_date))) {
@@ -458,10 +457,10 @@ function date_combo_validate($element, &$form_state) {
       $item[$tz_field] = $timezone;
 
       $item[$offset_field] = date_offset_get($from_date);
-      
+
       $test_from = date_format($from_date, 'r');
       $test_to = date_format($to_date, 'r');
-      
+
       $item[$offset_field2] = date_offset_get($to_date);
       date_timezone_set($from_date, timezone_open($timezone_db));
       date_timezone_set($to_date, timezone_open($timezone_db));
@@ -470,7 +469,7 @@ function date_combo_validate($element, &$form_state) {
       if (isset($form_values[$field_name]['rrule'])) {
         $item['rrule'] = $form_values[$field['field_name']]['rrule'];
       }
-      
+
       // Test a roundtrip back to the original timezone to catch
       // invalid dates, like 2AM on the day that spring daylight savings
       // time begins in the US.

@@ -13,7 +13,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
   $settings = $display['settings'];
   $formatter = $display['type'];
   $form = array();
-  
+
   $form['format_type'] = array(
     '#title' => t('Format:'),
     '#type' => 'select',
@@ -21,7 +21,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#default_value' => $settings['format_type'],
     '#weight' => 0,
   );      
-        
+
   $form['fromto'] = array(
     '#title' => t('Display:'),
     '#type' => 'select',
@@ -49,7 +49,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
     '#description' => t('Identify a specific number of values to display, or leave blank to show all values.'),
   );
-  
+
   list($prefix, $suffix) = explode('@isodate', t('starting from @isodate'));
   $form['multiple_from'] = array(
     '#type' => 'textfield',
@@ -72,7 +72,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#access' => $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED ? 1 : $field['cardinality'],
     '#description' => t('Identify specific start and/or end dates in the format YYYY-MM-DDTHH:MM:SS, or leave blank for all available dates.'),
    );
-  
+
   $form['show_repeat_rule'] = array(
     '#title' => t('Repeat rule:'),
     '#type' => 'select',
@@ -104,7 +104,7 @@ function date_interval_formatter_settings_form($field, $instance, $view_mode, $f
   );
   return $form;
 } 
- 
+
 /**
  * Settings summary for the default formatter.
  */
@@ -114,16 +114,16 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
   $formatter = $display['type'];
   $format_types = date_format_type_options();
   $summary = array();
-  
+
   $summary[] = t('Use the @format format type.', array('@format' => $format_types[$settings['format_type']]));
-  
+
   $options = array(
     'both' => t('Display both From and To dates'), 
     'value' => t('Display From date only'), 
     'value2' => t('Display To date only'),
   );
   $summary[] = $options[$settings['fromto']];
-  
+
   if (!empty($field['cardinality'])) {
     $summary[] = t('Show @count value(s) starting with @date1, ending with @date2', array(
       '@count' => !empty($settings['multiple_number']) ? $settings['multiple_number'] : t('all'), 
@@ -131,7 +131,7 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
       '@date2' => !empty($settings['multiple_to']) ? $settings['multiple_to'] : t('latest'), 
     ));
   }
-  
+
   if (!empty($field['repeat'])) {
     if (!empty($settings['show_repeat_rule'])) {
       $summary[] = t('Show repeat rule');
@@ -156,7 +156,7 @@ function date_interval_formatter_settings_summary($field, $instance, $view_mode)
   return t('Display time ago, showing @interval units.', array('@interval' => $settings['interval']));
 
 }
- 
+
 function _date_field_instance_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $instance['settings'];
@@ -196,12 +196,12 @@ function _date_field_instance_settings_form($field, $instance) {
       '#default_value' => $settings['default_value_code2'],
       );
   }
-  
+
   $format_types = array();  
   foreach (_system_date_format_types_build() as $name => $info) {
     $format_types[$name] = $info['title'];
   }
-  
+
   $form['default_format'] = array(
     '#type' => 'select', 
     '#title' => t('Default Display'),
@@ -229,7 +229,7 @@ function date_field_instance_settings_form_validate(&$form, &$form_state) {
   $settings = array_merge($settings, $settings['default']);
   unset($settings['default']);
   form_set_value(array('#parents' => array('instance', 'settings')), $settings, $form_state);
-  
+
   if ($settings['default_value'] == 'strtotime') {
     $is_strtotime = @strtotime($settings['default_value_code']);
     if (!$is_strtotime) {
@@ -247,7 +247,7 @@ function date_field_instance_settings_form_validate(&$form, &$form_state) {
 function _date_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
-  
+
   $form = array(
     '#element_validate' => array('date_field_widget_settings_form_validate'),
     );
@@ -271,9 +271,9 @@ function _date_field_widget_settings_form($field, $instance) {
     '#options' => $options,
     '#description' => t('Set the order and format for the date parts in the input form. The format will be adapted to remove values not in the granularity for this field.'),
     '#weight' => 4,
-    
+
   );
-  
+
   // Only a limited set of formats is available for the Date Popup module
   if ($widget['type'] != 'date_popup') {
     $form['format'] = array(
@@ -375,7 +375,7 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   $settings = array_merge($settings, $settings['format'], $settings['advanced']);
   unset($settings['format'], $settings['advanced']);
   form_set_value(array('#parents' => array('instance', 'widget', 'settings')), $settings, $form_state);
-  
+
   $widget = $form_state['values']['instance']['widget'];
   // Munge the table display for text parts back into an array of text parts.
   if (is_array($widget['settings']['text_parts'])) {
@@ -388,7 +388,7 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
 
 function _date_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
-  
+
   $form = array(
     '#element_validate' => array('date_field_settings_validate'),
   );
@@ -397,7 +397,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     $granularity = array_filter($settings['granularity']);  
   }
   $tz_handling = $settings['tz_handling'];
-  
+
   // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['repeat'] = array('#type' => 'hidden', '#value' => 1);
@@ -440,7 +440,6 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#type' => 'hidden',
     '#value' => date_get_timezone_db($tz_handling),
     );
-  
 
   return $form;
 }
@@ -496,4 +495,3 @@ function date_example_date() {
   }
   return $now;
 }
-

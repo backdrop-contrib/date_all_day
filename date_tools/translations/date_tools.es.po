@@ -460,4 +460,3 @@ msgstr "Importación de eventos"
 #: date_tools/date_tools.module:84
 msgid "CSV import"
 msgstr "Importación CSV"
-

@@ -28,4 +28,3 @@ msgstr "Woche von @date"
 #: theme/theme.inc:327
 msgid "Timezone"
 msgstr "Zeitzone"
-

@@ -13,7 +13,7 @@ class date_views_argument_handler extends views_handler_argument_date {
   function construct() {
     parent::construct();
     module_load_include('inc', 'date_api', 'date_api_sql');
-    
+
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();     
 
@@ -28,15 +28,15 @@ class date_views_argument_handler extends views_handler_argument_date {
 
     // Identify the type of display we're using.
     $this->display_handler = $view->display_handler->definition['handler'];
-    
+
     // Add a date handler to the display.
     $date_handler = $this->date_handler;
     $date_handler->granularity = $this->options['granularity'];
     $this->format = $date_handler->views_formats($date_handler->granularity, 'display');
     $this->sql_format = $date_handler->views_formats($date_handler->granularity, 'sql');
-    
+
     if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
-    
+
     // Set the view range, do this only if not already set in case there are multiple date arguments.
     if (empty($this->view->date_info->min_allowed_year)) {
       $range = date_range_years($this->options['year_range']);
@@ -90,13 +90,13 @@ class date_views_argument_handler extends views_handler_argument_date {
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
     }
-    
+
     // If this argument was added as a CCK field argument and no other date field
     // has been chosen, update the default with the right date.
     if (empty($this->options['date_fields']) && $this->field != 'date_argument') {
       $this->options['date_fields'] = array($this->table .'.'. $this->field);
     }
-        
+
     $form['date_fields'] = array(
       '#title' => t('Date field(s)'),
       '#type' => 'checkboxes',
@@ -112,13 +112,13 @@ class date_views_argument_handler extends views_handler_argument_date {
       '#default_value' => $this->options['date_method'],
       '#description' => t('Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2). '),
       );
-    
+
   }
-    
+
   function options_validate(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_validate($form, $form_state);
-    
+
     if ($form_state['values']['form_id'] == 'views_ui_config_item_form') {
       $check_fields = array_filter($form_state['values']['options']['date_fields']);
       if (empty($check_fields)) {
@@ -129,16 +129,16 @@ class date_views_argument_handler extends views_handler_argument_date {
       }
     }
   }
-  
+
   function options_submit(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_submit($form, $form_state);
-    
+
     if ($form_state['values']['form_id'] == 'views_ui_config_item_form') {
       $form_state['values']['options']['date_fields'] = array_filter($form_state['values']['options']['date_fields']);
     }
   }
-  
+
   // Update the summary values to show selected granularity.
   function admin_summary() {
     $fields = date_views_fields($this->view->base_table);
@@ -153,7 +153,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       return parent::admin_summary();
     }
   }
-  
+
   /**
    * Set the empty argument value to the current date, 
    * formatted appropriately for this argument.
@@ -174,7 +174,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       return parent::get_default_argument($raw);
     }
   }
-    
+
   function format() {
     if (!empty($this->options['granularity'])) {
       $date_handler = new date_sql_handler();
@@ -184,7 +184,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       return !empty($this->options[$this->option_name]) ? $this->options[$this->option_name] : 'Y-m';
     }
   }
-    
+
   /**
    * Provide a link to the next level of the view from the summary.
    */
@@ -209,7 +209,7 @@ class date_views_argument_handler extends views_handler_argument_date {
     $range = $this->date_handler->arg_range($value);
     return date_format_date($range[0], 'custom', $format);
   }
-  
+
   /**
    * Provide a link to the next level of the view from the argument.
    */
@@ -227,25 +227,25 @@ class date_views_argument_handler extends views_handler_argument_date {
    */
   function summary_query() {
     $this->get_query_fields();
-    
+
     // No way to do summaries on more than one field at a time.
     if (count($this->query_fields) > 1) {
       return;
     }
-    
+
     $field = $this->query_fields[0]['field'];
     $date_handler = $this->query_fields[0]['date_handler'];
-      
+
     // Get the SQL format for this granularity, like Y-m,
     // and use that as the grouping value.
     $format = $date_handler->views_formats($this->options['granularity'], 'sql');
     $this->formula = $date_handler->sql_format($format, $date_handler->sql_field($field['fullname']));
-    
+
     // Add the computed field.
     $this->base_alias = $this->name_alias = $this->query->add_field(NULL, $this->formula, $field['query_name']);
     $this->query->set_count_field(NULL, $this->formula, $field['query_name']);   
     return $this->summary_basics(FALSE);
-    
+
   }
 
   function get_query_fields() {
@@ -266,7 +266,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       }
     }
   }
- 
+
   /**
    * Make sure the date field is added to the query.
    * 
@@ -283,7 +283,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       }
     }
   }
-  
+
   /**
    * Set up the query for this argument.
    *
@@ -317,7 +317,7 @@ class date_views_argument_handler extends views_handler_argument_date {
       }
     }
     $parts = $this->date_handler->arg_parts($this->argument);
-    
+
     foreach ($parts as $type) {
       foreach ($type as $part) {
         foreach ($part as $key => $value) {

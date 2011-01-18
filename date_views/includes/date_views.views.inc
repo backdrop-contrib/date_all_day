@@ -36,7 +36,7 @@ function date_views_views_plugins() {
   $path = drupal_get_path('module', 'date_views');
   $views_path = drupal_get_path('module', 'views');
   module_load_include('inc', 'date_views', 'theme/theme');
-  
+
   return array(
     'module' => 'date_views', // This just tells our themes are elsewhere.
     'display' => array(
@@ -88,9 +88,9 @@ function date_views_views_plugins() {
  */
 function date_views_views_data() {
   $data = array();
-  
+
   $tables = module_invoke_all('date_views_tables');
-  
+
   foreach ($tables as $base_table) {
     // The flexible date argument.
     $data[$base_table]['date_argument'] = array(
@@ -115,7 +115,7 @@ function date_views_views_data() {
       ),
     ); 
   }
-  
+
   return $data;
 }
 
@@ -126,7 +126,7 @@ function date_views_fields($base = 'node', $reset = FALSE) {
   static $fields = array();
   $empty = array('name' => array(), 'alias' => array());
   module_load_include('inc', 'date_views', 'includes/date_views_fields');
-  
+
   if (empty($fields[$base]) || $reset) {
     $cid = 'date_views_fields_' . $base;
     if (!$reset && $cached = cache_get($cid, 'cache_views')) {

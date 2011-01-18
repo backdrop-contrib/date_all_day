@@ -20,7 +20,7 @@ class DateToolsTestCase extends DrupalWebTestCase {
       'administer content types', 'administer nodes', 'bypass node access', 'administer date tools'
     ));
     $this->drupalLogin($this->privileged_user);
-    
+
     variable_set('date_format_long', 'D, m/d/Y - H:i');
   }
 
@@ -82,5 +82,5 @@ class DateToolsTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/structure/date/date_wizard', $edit, t('Save'));
     $this->assertText('Your date field Test has been created.', 'Create a date field using the Date Wizard.');
   }
-  
+
 }

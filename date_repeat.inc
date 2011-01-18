@@ -67,7 +67,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
     $input = $input[$key];
   }
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
-  
+
   // If no start date was set, clean up the form and return.
   // If no repeats are set, clean up the form and return.
   if (empty($item['value']) || $rrule_values['FREQ'] == 'NONE') {
@@ -129,14 +129,14 @@ function _date_repeat_widget_validate($element, &$form_state) {
 function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $item) {
   include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $field_name = $field['field_name'];
-  
+
   if (empty($rrule)) {
     $rrule = date_api_ical_build_rrule($rrule_values);
   }
   elseif (empty($rrule_values)) {
     $rrule_values = date_ical_parse($rrule);
   }
-    
+
   // By the time we get here, the start and end dates have been 
   // adjusted back to UTC, but we want localtime dates to do
   // things like '+1 Tuesday', so adjust back to localtime.
@@ -157,7 +157,7 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   }
   $duration = $start->difference($end);
   $start_datetime = date_format($start, DATE_FORMAT_DATETIME);
-    
+
   if (!empty($rrule_values['UNTIL']['datetime'])) {
     $end = date_ical_date($rrule_values['UNTIL'], $timezone);
   }
@@ -177,10 +177,9 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   foreach ($parsed_rdates as $rdate) {
     $additions[] = date_ical_date($rdate, $timezone);
   }
-  
+
   $dates = date_repeat_calc($rrule, $start_datetime, $end_datetime, $exceptions, $timezone, $additions);
 
-  
   $value = array();
   foreach ($dates as $delta => $date) {
     // date_repeat_calc always returns DATE_DATETIME dates, which is

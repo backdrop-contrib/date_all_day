@@ -20,7 +20,7 @@ class DateFieldTestCase extends DrupalWebTestCase {
       'administer content types', 'administer nodes', 'bypass node access', 'administer date tools'
     ));
     $this->drupalLogin($this->privileged_user);
-    
+
     variable_set('date_format_long', 'D, m/d/Y - H:i');
 
     module_load_include('inc', 'node', 'content_types');
@@ -36,11 +36,11 @@ class DateFieldTestCase extends DrupalWebTestCase {
     $edit['type'] = 'story';
     $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
     $this->assertText('The content type Story has been added.', 'Content type added.');
-    
+
     // Create a date field with simple values.
     $values = array('label' => 'Test', 'widget_type' => 'date_select');
     $this->createDateField($values);
-    
+
     // Create a node with this field.
     $edit = array();
     $this->dateForm('select');
@@ -85,7 +85,6 @@ class DateFieldTestCase extends DrupalWebTestCase {
     $shouldbe = $todate ? 'Thu, 10/07/2010 - 10:30 - 11:30' : 'Thu, 10/07/2010 - 10:30';
     $this->assertText($shouldbe, "Found the correct date for a datetime field using the $options widget.");
   }
-
 
   /**
    * Create a date field from an array of settings values.
@@ -138,7 +137,7 @@ class DateFieldTestCase extends DrupalWebTestCase {
           'increment' => $increment,
           // The number of years to go back and forward in drop-down year selectors.
           'year_range' => $year_range,
-          
+
           'input_format' => $input_format,
           'text_parts' => $text_parts,
           'label_position' => 'above',
@@ -152,7 +151,7 @@ class DateFieldTestCase extends DrupalWebTestCase {
         'default_format' => $default_format,
       )
     );
-  
+
     $instance['display'] = array(
       'default' => array(
         'label' => 'above',
@@ -183,10 +182,10 @@ class DateFieldTestCase extends DrupalWebTestCase {
         'module' => 'date',
       ),
     );
-  
+
     $field = field_create_field($field);
     $instance = field_create_instance($instance);
-  
+
     //_field_info_collate_fields(TRUE);
     field_info_cache_clear(TRUE);
     field_cache_clear(TRUE); 

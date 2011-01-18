@@ -174,5 +174,3 @@ msgstr "הסגנון %style דורש את התאריך: יש לקבוע את א�
 #: includes/date_navigation_plugin_style.inc:34
 msgid "The %style requires the Date: Date argument."
 msgstr "הסגנון %style דורש את התאריך: ארגומנט תאריך."
-
-

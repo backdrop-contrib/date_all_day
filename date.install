@@ -39,7 +39,7 @@ function date_field_schema($field) {
   // If a second date is needed for 'To date', just make a copy of the first one.
   if (!empty($field['settings']['todate'])) {
     $db_columns['value2'] = $db_columns['value'];
-    
+
     // We don't want CCK to create additional columns, just the first.
     // We modify them our own way in views data.
     $db_columns['value2']['views'] = FALSE;
@@ -71,8 +71,7 @@ function date_field_schema($field) {
   }
   return array('columns' => $db_columns);  
 }
- 
- 
+
 function date_update_last_removed() {
   return 6005;
 }

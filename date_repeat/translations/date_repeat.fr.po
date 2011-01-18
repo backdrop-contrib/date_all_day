@@ -193,4 +193,3 @@ msgstr "Date Repeat API"
 #: date_repeat/date_repeat.info:0
 msgid "A Date Repeat API to calculate repeating dates and times from iCal rules."
 msgstr "Une API de Répétition de Date pour calculer les dates et heures se répétant à partir de règles iCal"
-

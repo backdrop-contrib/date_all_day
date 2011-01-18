@@ -489,4 +489,3 @@ msgstr "Import d'Evénement"
 #: date_tools/date_tools.module:84
 msgid "CSV import"
 msgstr "Import CSV"
-

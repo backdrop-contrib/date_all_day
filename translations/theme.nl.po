@@ -39,4 +39,3 @@ msgstr "am/pm"
 #: theme/theme.inc:323
 msgid "Timezone"
 msgstr "Tijdzone"
-

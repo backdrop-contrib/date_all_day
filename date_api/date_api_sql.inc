@@ -9,7 +9,7 @@
  * Add experimental support for sqllite (http://www.sqlite.org/lang_datefunc.html) and
  * Oracle (http://psoug.org/reference/date_func.html and http://psoug.org/reference/datatypes.html) date/time functions.
  */
-  
+
 /**
  *  A helper function to do cross-database concatation of date parts
  *
@@ -69,7 +69,7 @@ class date_sql_handler {
   var $db_timezone_field = NULL; // Use if the db timezone is stored in a field.
   var $local_timezone_field = NULL; // Use if the local timezone is stored in a field.
   var $offset_field = NULL; // Use if the offset is stored in a field.
-  
+
   function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
     $this->db_type = $this->get_db_type();
     $this->date_type = $date_type;
@@ -86,7 +86,7 @@ class date_sql_handler {
   function get_db_type() {
     return $GLOBALS['databases']['default']['default']['driver'];
   }
-  
+
   /**
    * See if the db has timezone name support.
    */
@@ -114,7 +114,7 @@ class date_sql_handler {
     }
     return $has_support;
   }
-  
+
   /**
    * Set the database timzone offset.
    * 
@@ -144,7 +144,7 @@ class date_sql_handler {
       $already_set = TRUE;
     }
   }
-  
+
   /**
    * Return timezone offset for the date being processed.
    */
@@ -158,7 +158,7 @@ class date_sql_handler {
     }
     return 0;
   }
-  
+
   /**
    * Helper function to create cross-database SQL dates.
    *
@@ -223,7 +223,7 @@ class date_sql_handler {
     }
     return $field;
   }
-  
+
   /**
    * Adjust a field value by time interval.
    * 
@@ -248,7 +248,7 @@ class date_sql_handler {
           case 'SUB':
             return "DATE_SUB($field, INTERVAL $count $granularity)";
           }
-      
+
       case 'pgsql':
         $granularity .= 'S';
         switch ($direction) {
@@ -260,7 +260,7 @@ class date_sql_handler {
      }
      return $field;
   }  
-  
+
   /**
    * Select a date value from the database, adjusting the value
    * for the timezone.
@@ -279,7 +279,7 @@ class date_sql_handler {
     // if they are field names they do not.
     $db_zone   = $this->db_timezone_field ? $this->db_timezone_field : "'{$this->db_timezone}'";
     $localzone = $this->local_timezone_field ? $this->local_timezone_field : "'{$this->local_timezone}'"; 
-     
+
     // If a fixed offset is required, use it.
     if ($offset !== NULL) {
       return $this->sql_offset($field, $offset);
@@ -311,7 +311,7 @@ class date_sql_handler {
       }
     }
   }
-  
+
   /**
    * Helper function to create cross-database SQL date formatting.
    *
@@ -410,7 +410,7 @@ class date_sql_handler {
       }
     }
   }
-  
+
   /**
    * Create a where clause to compare a complete date field to a complete date value.
    *
@@ -457,7 +457,7 @@ class date_sql_handler {
     }
     return "$field $operator $value";
   }
-  
+
   /**
    * Create a where clause to compare an extracted part of a field to an integer value.
    *
@@ -481,7 +481,7 @@ class date_sql_handler {
     }
     return $this->sql_extract($part, $field) . " $operator $value";
   }
-  
+
   /**
    * Create a where clause to compare a formated field to a formated value.
    *
@@ -606,7 +606,7 @@ class date_sql_handler {
           return;
       }
     }
-    
+
     $compare = array_merge($this->part_info('empty_' . $type), $selected);
     // If this is a max date, make sure the last day of 
     // the month is the right one for this date.
@@ -658,7 +658,7 @@ class date_sql_handler {
     }
     return TRUE;
   }
-  
+
   function views_formats($granularity, $type = 'sql') {
     $formats = array('display', 'sql');
     // Start with the site long date format and add seconds to it
@@ -695,7 +695,7 @@ class date_sql_handler {
     }
     return $formats[$type];
   }
-  
+
   function granularity_form($granularity) {
     $form = array(
       '#title' => t('Granularity'),
@@ -780,7 +780,7 @@ class date_sql_handler {
     $direction = $results[1];
     $count = $results[2];
     $item = $results[3];
-      
+
     $replace = array(
       'now' => '@',
       '+' => 'P',
@@ -805,7 +805,7 @@ class date_sql_handler {
     $prefix = in_array($item, array('hours', 'hour', 'minutes', 'minute', 'seconds', 'second')) ? 'T' : '';  
     return $prefix . strtr($direction, $replace) . $count . strtr($item, $replace);  
   }
-  
+
   /**
    * Use the parsed values from the ISO argument to determine the
    * granularity of this period.
@@ -827,7 +827,7 @@ class date_sql_handler {
   function arg_range($arg) {
     // Parse the argument to get its parts
     $parts = $this->arg_parts($arg);
-   
+
     // Build a range from a period-only argument (assumes the min date is now.)
     if (empty($parts[0]['date']) && !empty($parts[0]['period']) && (empty($parts[1]))) {
       $min_date = date_now();

@@ -25,5 +25,3 @@ msgstr "שבוע מתאריך @date"
 #: theme/theme.inc:327
 msgid "Timezone"
 msgstr "אזור זמן"
-
-

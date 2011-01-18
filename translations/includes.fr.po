@@ -213,4 +213,3 @@ msgstr "Le %style requiert que Date : Argument de date soit défini par défaut 
 #: includes/date_navigation_plugin_style.inc:34
 msgid "The %style requires the Date: Date argument."
 msgstr "Le %style requiert le Date : Argument de date."
-

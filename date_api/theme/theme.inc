@@ -171,7 +171,7 @@ function theme_date_time_ago($vars) {
   $start_date = $vars['start_date'];
   $end_date = $vars['end_date'];
   $interval = !empty($vars['interval']) ? $vars['interval'] : 2;
-  
+
   // If no date is sent, then return nothing
   if (empty($start_date) || empty($end_date)) {
     return NULL;
@@ -181,7 +181,7 @@ function theme_date_time_ago($vars) {
   $now = date_format(date_now(), DATE_FORMAT_DATETIME);
   $start = date_format($start_date, DATE_FORMAT_DATETIME);
   $end = date_format($end_date, DATE_FORMAT_DATETIME);
-  
+
   // 1) The date is entirely in the future
   if ($now < $start) {
     return t('!time from now', array('!time' => date_format_interval($start_date, $interval)));

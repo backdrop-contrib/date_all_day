@@ -128,13 +128,12 @@ function date_ical_import($filename) {
  */
 function date_ical_parse($icaldatafolded = array()) {
   $items = array();
-    
+
   // Verify this is iCal data
   if (trim($icaldatafolded[0]) != 'BEGIN:VCALENDAR') {
     watchdog('date ical', 'Invalid calendar file.');
     return FALSE;
   }
-
 
   // "unfold" wrapped lines
   $icaldata = array();
@@ -277,7 +276,7 @@ function date_ical_parse($icaldatafolded = array()) {
             $parse_result = array('DATA' => $data);
           }
           break;
-          
+
         case 'DURATION':
           // Can't be sure whether DTSTART is before or after DURATION in
           // the VEVENT, so store the data and parse it at the end.

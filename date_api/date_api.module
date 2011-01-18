@@ -81,7 +81,7 @@ class DateObject extends DateTime {
   public function __toString() {
     return $this->format(DATE_FORMAT_DATETIME) . ' '. $this->getTimeZone()->getName();
   }
-  
+
   /**
    * Overridden constructor.
    *
@@ -95,15 +95,15 @@ class DateObject extends DateTime {
    *   $format is recommended in order to use negative or large years, which php's parser fails on.
    */
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
-    
+
     $this->timeOnly = FALSE;
     $this->dateOnly = FALSE;
-      
+
     // Allow string timezones
     if (!empty($tz) && !is_object($tz)) {
       $tz = new DateTimeZone($tz);
     }
-    
+
     // Default to the site timezone when not explicitly provided.
     elseif (empty($tz)) {
       $tz = date_default_timezone_object();
@@ -138,7 +138,7 @@ class DateObject extends DateTime {
       // We checked for errors already, skip the step of parsing the input values.
       $format = NULL;
     }
-    
+
     // The parse function will also set errors on the date parts.
     if (!empty($format)) {
       $arg = self::$allgranularity;
@@ -278,7 +278,7 @@ class DateObject extends DateTime {
     }
     return in_array($g, $this->granularity);
   }
-  
+
   // whether a date is valid for a given $granularity array, depending on if it's allowed to be flexible.
   public function validGranularity($granularity = NULL, $flexible = FALSE) {
     return $this->hasGranularity() && (!$granularity || $flexible || $this->hasGranularity($granularity));
@@ -299,7 +299,7 @@ class DateObject extends DateTime {
   public function completeDate() {
     return $this->completeDate;
   }
-  
+
   /**
    * In common usage we should not unset timezone through this.
    */
@@ -334,7 +334,7 @@ class DateObject extends DateTime {
       $this->addGranularity('timezone');
     }
   }
-    
+
   protected function parse($date, $tz, $format) {
     $array = date_format_patterns();
     foreach ($array as $key => $value) {
@@ -437,17 +437,17 @@ class DateObject extends DateTime {
     elseif (isset($ampm) && $ampm == 'am' && $final_date['hour'] == 12) {
       $final_date['hour'] -= 12;
     }
-    
+
     // Blank becomes current time, given TZ.
     parent::__construct('', $tz ? $tz : new DateTimeZone("UTC"));
     if ($tz) {
       $this->addGranularity('timezone');
     }
-    
+
     // SetDate expects an integer value for the year, results can 
     // be unexpected if we feed it something like '0100' or '0000';
     $final_date['year'] = intval($final_date['year']);
-    
+
     $this->errors += $this->arrayErrors($final_date);
 
     // If the input value is '0000-00-00', PHP's date class will later incorrectly convert
@@ -462,17 +462,16 @@ class DateObject extends DateTime {
     elseif (empty($this->errors)) {
       $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
     }
-    
+
     if (!isset($final_date['hour']) && !isset($final_date['minute']) && !isset($final_date['second'])) {
       $this->dateOnly = TRUE;
     }
     elseif (empty($this->errors)) {
       $this->setTime($final_date['hour'], $final_date['minute'], $final_date['second']);
     }
-    
+
     return $this;
   }
-
 
   /**
    * Helper to return all standard date parts in an array.
@@ -489,7 +488,7 @@ class DateObject extends DateTime {
       'timezone' => $this->format('e', $force),
     );
   }
-  
+
   /**
     * Create an ISO date from an array of values.
     */
@@ -518,7 +517,7 @@ class DateObject extends DateTime {
     }
     return $datetime;
   }
- 
+
   /**
    * Force an incomplete date to be valid, for instance to add
    * a valid year, month, and day if only the time has been defined.
@@ -542,7 +541,7 @@ class DateObject extends DateTime {
     $this->setDate($arr['year'], $arr['month'], $arr['day']);
     $this->setTime($arr['hour'], $arr['minute'], $arr['second']);
   }
-  
+
   /**
    * Convert a date part into something that will produce a valid date.
    */
@@ -576,7 +575,7 @@ class DateObject extends DateTime {
         break;
     }
   }
-  
+
   // Find possible errors in an array of date part values.
   // The forceValid() function will change an invalid value to a valid one,
   // so we just need to see if the value got altered.
@@ -612,7 +611,7 @@ class DateObject extends DateTime {
     }
     return $errors;
   }
- 
+
   /**
    * Compute difference between two days using a given measure.
    *
@@ -1115,7 +1114,7 @@ function date_timezone_names($required = FALSE, $refresh = FALSE) {
           $zonenames[$zone] = $zone;
         }      
       }
-    
+
       if (!empty($zonenames)) {
         cache_set('date_timezone_identifiers_list', $zonenames);
       }
@@ -1443,19 +1442,19 @@ function date_week_range($week, $year) {
  * Start and end dates for an ISO week.
  */
 function date_iso_week_range($week, $year) {
-  
+
   // Get to the last ISO week of the previous year.
   $min_date = new DateObject(($year - 1) .'-12-28 00:00:00');
   date_timezone_set($min_date, date_default_timezone_object());
-  
+
   // Find the first day of the first ISO week in the year.
   date_modify($min_date, '+1 Monday');
-  
+
   // Jump ahead to the desired week for the beginning of the week range.
   if ($week > 1) {
     date_modify($min_date, '+ '. ($week - 1) .' weeks');
   }
-  
+
   // move forwards to the last day of the week
   $max_date = clone($min_date);
   date_modify($max_date, '+7 days');
@@ -1489,7 +1488,7 @@ function date_week($date) {
   $parts = explode('-', $date);
 
   $date = new DateObject($date . ' 12:00:00', 'UTC');
-  
+
   // If we are using ISO weeks, this is easy.
   if (variable_get('date_api_use_iso8601', FALSE)) {
     return intval($date->format('W'));
@@ -1522,7 +1521,7 @@ function date_week($date) {
 
   return $week;
 }
-  
+
 /**
  * Helper function to left pad date parts with zeros.
  * Provided because this is needed so often with dates.
@@ -1581,14 +1580,14 @@ function date_limit_format($format, $granularity) {
     '\,' => ',',
     );
   $format = strtr($format, $replace); 
-  
+
   // Get the 'T' out of ISO date formats that don't have
   // both date and time.
   if (!date_has_time($granularity) || !date_has_date($granularity)) {
     $format = str_replace('\T', ' ', $format);
     $format = str_replace('T', ' ', $format);
   }
-  
+
   $regex = array();
   if (!date_has_time($granularity)) {
     $regex[] = '((?<!\\\\)[a|A])';
@@ -1618,7 +1617,7 @@ function date_limit_format($format, $granularity) {
       case 'timezone':
         $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[TOZPe])';
         break;
-    
+
     }
   }
   // Remove empty parentheses, brackets, pipes.
@@ -1633,10 +1632,10 @@ function date_limit_format($format, $granularity) {
   // Remove orphaned punctuation at the end of the string.
   $format = preg_replace('([\-/\.,:\']$)', '', $format);
   $format = preg_replace('(\\$)', '', $format);
-    
+
   // Trim any whitespace from the result.
   $format = trim($format);
-  
+
   // After removing the non-desired parts of the format, test if the only 
   // things left are escaped, non-date, characters. If so, return nothing.
   if (!$test = trim(preg_replace('(\\\\\w{1})', '', $format))) {
@@ -1838,7 +1837,7 @@ function date_range_valid($string) {
 function date_range_years($string, $date = NULL) {
   $this_year = date_format(date_now(), 'Y');
   list($min_year, $max_year) = explode(':', $string);
-  
+
   // Valid patterns would be -5:+5, 0:+1, 2008:2010.
   $plus_pattern = '@[\+|\-][0-9]{1,4}@';
   $year_pattern = '@[0-9]{4}@';
@@ -1960,7 +1959,7 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
   elseif (!in_array($granularity, array('hour', 'minute', 'second'))) {
     return FALSE;
   }
-  
+
   preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2}) (([0-9]{2}):([0-9]{2}):([0-9]{2}))/', $string1, $matches);
   $count = count($matches);
   $date1 = $count > 1 ? $matches[1] : '';
@@ -1975,19 +1974,19 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
   $hour2 = $count > 3 ? intval($matches[3]) : 0;
   $min2 = $count > 4 ? intval($matches[4]) : 0;
   $sec2 = $count > 5 ? intval($matches[5]) : 0;
-  
+
   if (empty($date1) || empty($date2) || $date1 != $date2) {
     return FALSE;
   }
   if (empty($time1) || empty($time2)) {
     return FALSE;
   }
-    
+
   $tmp = date_seconds('s', TRUE, $increment);
   $max_seconds = intval(array_pop($tmp));
   $tmp = date_minutes('i', TRUE, $increment);
   $max_minutes = intval(array_pop($tmp));
-  
+
   switch ($granularity) {
     case 'second':
       $min_match = $time1 == '00:00:00' || ($hour1 == 0 && $min1 == 0 && $sec1 == 0);
@@ -2005,11 +2004,11 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
       $min_match = TRUE;
       $max_match = FALSE;
   }
-  
+
   if ($min_match && $max_match) {
     return TRUE;
   }
-    
+
   return FALSE;
 }
 

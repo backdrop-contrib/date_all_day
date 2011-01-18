@@ -51,7 +51,7 @@ function date_popup_library() {
   );
   return $libraries;
 }
-  
+
 /**
  * Implement hook_init().
  */
@@ -187,7 +187,6 @@ function date_popup_time_format($element) {
   return date_popup_format_to_popup_time(date_limit_format($element['#date_format'], date_popup_time_granularity($element)));
 }
 
-
  /**
  * Element value callback for date_popup element.
  */
@@ -217,13 +216,13 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
 function date_popup_element_process($element, $form_state, $form) {
   date_popup_add();
   module_load_include('inc', 'date_api', 'date_api_elements');
-  
+
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_popup');
-  
+
   $element['date'] = date_popup_process_date($element);
   $element['time'] = date_popup_process_time($element);
-  
+
   if (isset($element['#element_validate'])) {
     array_push($element['#element_validate'], 'date_popup_validate');
   }
@@ -240,7 +239,7 @@ function date_popup_process_date(&$element) {
   $granularity = date_format_order($element['#date_format']);
   $date_granularity = date_popup_date_granularity($element);
   if (empty($date_granularity)) return array();
-  
+
   // The datepicker can't handle zero or negative values like 0:+1
   // even though the Date API can handle them, so rework the value
   // we pass to the datepicker to use defaults it can accept (such as +0:+1)
@@ -274,10 +273,10 @@ function date_popup_process_date(&$element) {
     // Custom setting, will be expanded in Drupal.behaviors.date_popup()
     'fromTo' => isset($fromto),
     );    
-  
+
   // Create a unique id for each set of custom settings.
   $id = date_popup_js_settings_id($element['#id'], 'datepicker', $settings);
-  
+
   $sub_element = array(
     '#type' => 'textfield',
     '#default_value' => $element['#value']['date'],
@@ -338,19 +337,19 @@ function date_popup_validate($element, &$form_state) {
 
   module_load_include('inc', 'date_api', 'date_api_elements');
   date_popup_add();
-  
+
   $granularity = date_format_order($element['#date_format']);
   $date_granularity = date_popup_date_granularity($element);
   $time_granularity = date_popup_time_granularity($element);
   $has_time = date_has_time($granularity);
-  
+
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   $label = t($label);
 
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
   $date = date_popup_input_date($element, $input);
-  
+
   // If the field is empty and not required, set it to empty and return.
   // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
@@ -369,7 +368,7 @@ function date_popup_validate($element, &$form_state) {
     }
     form_set_value($element, NULL, $form_state);
   }
-  
+
   // If the created date is valid, set it.
   if (!empty($date)) {
     if (!empty($date->errors)) {
@@ -408,7 +407,7 @@ function date_popup_input_date($element, $input, $auto_complete = FALSE) {
   $granularity = date_format_order($element['#date_format']);
   $has_time = date_has_time($granularity);
   $flexible = !empty($element['#date_flexible']) ? $element['#date_flexible'] : 0;
-    
+
   $format = date_popup_date_format($element);
   $format .= $has_time ? ' ' . date_popup_time_format($element) : '';
   $datetime = $input['date'];
@@ -561,7 +560,7 @@ function date_popup_menu() {
  */
 function date_popup_settings() {
   $form['#prefix'] = t('<p>The Date Popup module uses a jQuery timepicker module. There is no "official" jQuery UI timepicker, and not everyone likes the one that is included here. If you do not want to use the timepicker, you can turn it off below and users will get a regular textfield instead.</p>');
-  
+
   $form['date_popup_timepicker'] = array(
     '#type' => 'select',
     '#options' => array('default' => t('Use default jQuery timepicker'), 'none' => t('Manual time entry, no jQuery timepicker')),
@@ -569,7 +568,7 @@ function date_popup_settings() {
     '#default_value' => variable_get('date_popup_timepicker', 'default'),
     '#description' => t("Choose the jQuery timepicker to user."),
   );
-  
+
   $css = <<<EOM
 /* ___________ IE6 IFRAME FIX ________ */
 .ui-datepicker-cover {

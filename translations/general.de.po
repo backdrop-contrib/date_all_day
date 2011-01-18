@@ -80,4 +80,3 @@ msgstr "Speichern"
 #: includes/date_api_filter_handler.inc:77
 msgid "Text"
 msgstr "Text"
-

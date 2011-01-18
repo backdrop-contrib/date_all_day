@@ -66,4 +66,3 @@ msgstr "Datumspopup"
 #: date_popup/date_popup.info:0
 msgid "Enables jquery popup calendars and time entry widgets for selecting dates and times."
 msgstr "Aktiviert jQuery-Popup-Kalender und Zeit-Steuerelemente für die Auswahl von Terminen und Zeiten."
-

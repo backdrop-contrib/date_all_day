@@ -325,4 +325,3 @@ msgstr "Une API de date pouvant être utilisée par d'autres modules"
 #: date_tools/date_tools.info:0
 msgid "Date/Time"
 msgstr "Date/Heure"
-

@@ -254,4 +254,3 @@ msgstr "Ein Terminserien-API zur Berechnung von sich wiederholenden Terminen und
 #~ msgstr "jede @count-Tage"
 #~ msgid "Date/Time"
 #~ msgstr "Datum/Zeit"
-

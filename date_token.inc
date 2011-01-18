@@ -27,7 +27,7 @@ function date_token_list($type = 'all') {
     $tokens['date']['d']              = t("Date day (one or two digit)");
     $tokens['date']['dS']             = t("Date day (one or two digit) with ordinal suffix (st, nd, rd or th)");
     $tokens['date']['time']           = t("Time H:i");
-    
+
     $tokens['date']['to-????']        = t("If the field has a to-date defined, the same tokens exist in the form: [to-????], where ???? is the normal token.");
 
     return $tokens;
@@ -45,7 +45,7 @@ function date_token_values($type, $object = NULL) {
     if (!empty($date) && $timezone_db != $timezone) {
       date_timezone_set($date, timezone_open($timezone));
     }
-        
+
     $tokens['value']          = $item['value'];
     $tokens['view']           = $item['view'];
     $tokens['timestamp']      = !empty($date) ? date_format_date($date, 'custom', 'U') : '';

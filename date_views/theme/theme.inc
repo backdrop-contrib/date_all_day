@@ -16,7 +16,7 @@ function template_preprocess_date_navigation(&$vars) {
   $pos = $view->date_info->date_arg_pos;
   $min_date = is_object($view->date_info->min_date) ? $view->date_info->min_date : date_now();
   $max_date = is_object($view->date_info->max_date) ? $view->date_info->max_date : date_now();
-  
+
   if (empty($view->date_info->hide_nav)) {
     $prev_date = clone($min_date);
     date_modify($prev_date, '-1 ' . $view->date_info->granularity);
@@ -49,7 +49,7 @@ function template_preprocess_date_navigation(&$vars) {
     $vars['prev_url'] = '';
     $vars['next_options'] = $vars['prev_options'] = array();
   }
-    
+
   // Check whether navigation links would point to 
   // a date outside the allowed range.
   if (!empty($next_date) && !empty($vars['next_url']) && date_format($next_date, 'Y') > $view->date_info->max_allowed_year) {
@@ -85,11 +85,11 @@ function template_preprocess_date_navigation(&$vars) {
   }
   $vars['prev_options']['attributes'] += array('title' => $prev_title);
   $vars['next_options']['attributes'] += array('title' => $next_title);
-  
+
   // Add nofollow for next/prev links.
   $vars['prev_options']['attributes'] += array('rel' => 'nofollow');
   $vars['next_options']['attributes'] += array('rel' => 'nofollow');
-  
+
   $link = FALSE;
   // Month navigation titles are used as links in the block view.
   if (!empty($view->date_info->block) && $view->date_info->granularity == 'month') {
@@ -181,12 +181,12 @@ function theme_date_nav_title($params) {
  * 
  */
 function template_preprocess_date_vcalendar(&$vars) {
-    
+
   $vars['current_date'] = date_format(date_now(), DATE_FORMAT_ICAL);
   $vars['current_date_utc'] = date_format(date_now('UTC'), DATE_FORMAT_ICAL);
   $vars['site_timezone'] = date_default_timezone();
   $vars['calname'] = date_ical_escape_text(!empty($vars['calname']) ? $vars['calname'] : variable_get('site_name', ''));
-  
+
   // Format the event results as iCal expects.
   $events_in = $vars['events'];
   $events = array();
@@ -216,7 +216,7 @@ function template_preprocess_date_vcalendar(&$vars) {
           $event[trim($key)] = trim($value);
         }
       }
-      
+
       // Escape text values.
       foreach ($event as $key => $value) {
         if ($key == 'alarm') {
@@ -232,7 +232,7 @@ function template_preprocess_date_vcalendar(&$vars) {
       }
     }
   }
-  
+
   $vars['events'] = $events;  
 }
 

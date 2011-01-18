@@ -454,4 +454,3 @@ msgstr "Ereignisimport"
 #: date_tools/date_tools.module:84
 msgid "CSV import"
 msgstr "CVS-Import"
-

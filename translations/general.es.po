@@ -64,4 +64,3 @@ msgstr "Guardar"
 #: date_tools/date_tools.module:419 includes/date_api_filter_handler.inc:77
 msgid "Text"
 msgstr "Texto"
-

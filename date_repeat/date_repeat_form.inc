@@ -36,7 +36,7 @@
  */
 function _date_repeat_rrule_process($element, $form_state, $form) {
   module_load_include('inc', 'date_api', 'date_api_ical');
-  
+
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
   }
@@ -47,7 +47,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
   else {
     $rrule = $element['#default_value'];
   }
-  
+
   // Empty the original string value of the RRULE so we can create
   // an array of values for the form from the RRULE's contents.
   $element['#value'] = '';
@@ -58,14 +58,14 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
   $additions = $parts[2];
   $timezone = !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone();
   $merged_values = date_repeat_merge($rrule, $element);
-  
+
   $UNTIL = '';
   if (!empty($merged_values['UNTIL']['datetime'])) {
     $until_date = new DateObject($merged_values['UNTIL']['datetime'], $merged_values['UNTIL']['tz']);
     date_timezone_set($until_date, timezone_open($timezone));
     $UNTIL = date_format($until_date, DATE_FORMAT_DATETIME);
   }
-  
+
   $element['INTERVAL'] = array(
     '#type' => 'select',
     //'#title' => t('Interval'),
@@ -74,7 +74,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     '#prefix' => '<div class="date-repeat-input">',
     '#suffix' => '</div>',
   );
-  
+
   $element['FREQ'] = array(
     '#type' => 'select',
     //'#title' => t('Frequency'),
@@ -102,7 +102,7 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
     'all_day' => array('#type' => 'hidden', '#value' => 1),
     'granularity' => array('#type' => 'hidden', '#value' => serialize(array('year', 'month', 'day'))),
     );
-  
+
   $collapsed = TRUE;
   if (!empty($merged_values['BYDAY']) || !empty($merged_values['BYMONTH'])) {
     $collapsed = FALSE;
@@ -241,9 +241,9 @@ function _date_repeat_rrule_process($element, $form_state, $form) {
       'wrapper' => 'date-repeat-additions',
     ),
   ); 
-  
+
   $element['#date_repeat_collapsed'] = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
-  
+
   return $element;
 }
 
@@ -290,7 +290,7 @@ function date_repeat_merge($form_values, $element) {
   if (array_key_exists('BYDAY', $form_values)) unset($form_values['BYDAY']['']);
   if (array_key_exists('BYMONTH', $form_values)) unset($form_values['BYMONTH']['']);
   if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
-      
+
   if (array_key_exists('UNTIL', $form_values) && is_array($form_values['UNTIL']['datetime'])) {
     $function = $element['#date_repeat_widget'] . '_input_date';
     $until_element = $element;

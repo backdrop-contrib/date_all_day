@@ -9,7 +9,7 @@
  * field and formatter handling can extend this class.
  */
 class date_handler_field_multiple extends views_handler_field_field {
-  
+
   function option_definition() {
     $options = parent::option_definition();
     $options['repeat'] = array(
@@ -30,7 +30,7 @@ class date_handler_field_multiple extends views_handler_field_field {
 
     return $options;  
   }
-  
+
   /**
    * Provide 'group multiple values' option,
    * adapted to the needs of the Date module.
@@ -38,7 +38,7 @@ class date_handler_field_multiple extends views_handler_field_field {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     unset($form['multiple']);
-    
+
     $field_name = $this->content_field_name;
     $field = field_info_field($field_name);
     $options = $this->options;
@@ -52,15 +52,15 @@ class date_handler_field_multiple extends views_handler_field_field {
       '#description' => t('If unchecked, each item in the field will create a new row, which may appear to cause duplicates. This setting is not compatible with click-sorting in table displays.'),
     );
   }
-    
+
   function pre_render($values) {
-    
+
     // If there are no values to render (displaying a summary, or query returned no results),
     // or if this is not a grouped field, do nothing specific.
     if (isset($this->view->build_info['summary']) || empty($values) || !$this->defer_query) {
       return parent::pre_render($values);
     }
-        
+
     $field_name = $this->content_field_name;
     $field = field_info_field($field_name);
     $db_info = date_api_database_info($field);
@@ -114,16 +114,16 @@ class date_handler_field_multiple extends views_handler_field_field {
   }
 
   function render($values) {
-    
+
     // By this time $values is a pseudo node that will be passed
     // to the theme. Add view information to it.
     $values->date_info = !empty($this->view->date_info) ? $this->view->date_info : new stdClass();
     $values->date_info->date_handler_fields = date_handler_fields($this->view);
-    
+
     // Add the formatter settings to the pseudo node.
     $values->date_info->formatter_settings = $this->options;
     $values->date_info->aliases = $this->aliases;
-    
+
     // If this is not a grouped field, use content_handler_field::render().
     if (!$this->defer_query) {
       return parent::render($values);
@@ -143,7 +143,7 @@ class date_handler_field_multiple extends views_handler_field_field {
       $node->vid = $values->{$this->aliases['vid']};
       $items = $this->field_values[$vid];
       $node->$field_name = $items;
-      
+
       // Some formatters need to behave differently depending on the build_mode
       // (for instance: preview), so we provide one.
       // TODO This has changed in D7.
@@ -153,7 +153,7 @@ class date_handler_field_multiple extends views_handler_field_field {
       $formatter_name = $options['format'];
       if ($items && ($formatter = _content_get_formatter($formatter_name, $field['type']))) {
         $rendered = array();
-        
+
         // Multiple values formatter.
         $output = content_format($field, $items, $formatter_name, $values);
         if (!empty($output)) {
@@ -171,7 +171,7 @@ class date_handler_field_multiple extends views_handler_field_field {
     }
 
     return '';    
-    
+
   }
 
 }

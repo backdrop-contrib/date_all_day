@@ -212,7 +212,7 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
  * 
  */
 function date_text_element_process($element, $form_state, $form) {
-  
+
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_text');
   $element['date']['#value'] = $element['#value']['date'];
@@ -220,7 +220,7 @@ function date_text_element_process($element, $form_state, $form) {
   $element['date']['#weight'] = !empty($element['date']['#weight']) ? $element['date']['#weight'] : $element['#weight'];
   $element['date']['#attributes'] = array('class' => isset($element['#attributes']['class']) ? $element['#attributes']['class'] += array('date-date') : array('date-date'));
   $element['date']['#description'] = ' ' . t('Format: @date', array('@date' => date_now()->format($element['#date_format'])));
-  
+
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
   //$element['date']['#required'] = $element['#required'];
@@ -329,7 +329,7 @@ function date_select_element_process($element, $form_state, $form) {
 
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
-  
+
   if (is_array($element['#default_value'])) {
     $date = date_select_input_date($element, $element['#default_value']);
   }
@@ -339,9 +339,9 @@ function date_select_element_process($element, $form_state, $form) {
 
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_select');
-  
+
   $element += (array) date_parts_element($element, $date, $element['#date_format']);
-  
+
   // Store a hidden value for all date parts not in the current display.
   $granularity = date_format_order($element['#date_format']);
   $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
@@ -403,7 +403,7 @@ function date_parts_element($element, $date, $format) {
         $range = date_range_years($element['#date_year_range'], $date);
         $min_year = $range[0];
         $max_year = $range[1];
-        
+
         $sub_element[$field]['#default_value'] = is_object($date) ? $date->format('Y') : '';
         if ($part_type == 'select') {
           $sub_element[$field]['#options'] = drupal_map_assoc(date_years($min_year, $max_year, $part_required));
@@ -443,7 +443,7 @@ function date_parts_element($element, $date, $format) {
         $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
         break;
     }
-    
+
     // Add handling for the date part label.
     $label = theme('date_part_label_' . $field, array('part_type' => $part_type, 'element' => $element));
     if (in_array($field, $element['#date_text_parts'])) {
@@ -475,7 +475,7 @@ function date_parts_element($element, $date, $format) {
       }
     }
   }
- 
+
   // Views exposed filters are treated as submitted even if not,
   // so force the #default value in that case. Make sure we set
   // a default that is in the option list.
@@ -484,7 +484,7 @@ function date_parts_element($element, $date, $format) {
     $default = !empty($sub_element[$field]['#default_value']) ? $sub_element[$field]['#default_value'] : array_shift($options);
     $sub_element[$field]['#value'] = $default;
   }
-  
+
   if (($hours_format == 'g' || $hours_format == 'h') && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
       '#type' => 'select',
@@ -515,19 +515,19 @@ function date_select_validate($element, &$form_state) {
   if (is_string($element['#value'])) {
     return;
   }
-  
+
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
-  
+
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $field_value) {
     if (substr($field_value, 0, 1) == '-') {
       $input[$field] = '';
     }
   }
- 
+
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
-  
+
   if (isset($element['#value']['ampm'])) {
     if ($input['ampm'] == 'pm' && $input['hour'] < 12) {
       $input['hour'] += 12;
@@ -538,7 +538,7 @@ function date_select_validate($element, &$form_state) {
   }
   unset($input['ampm']);
   $date = date_select_input_date($element, $input);
-  
+
   if (empty($date) && $element['#required']) {
     form_error($element, t('A valid value is required.'));
   }
@@ -568,4 +568,3 @@ function date_select_input_date($element, $input) {
   }
   return NULL;
 }
-

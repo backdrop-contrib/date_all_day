@@ -61,4 +61,3 @@ msgstr "Semaine du @date"
 #: theme/theme.inc:327
 msgid "Timezone"
 msgstr "Fuseau Horaire"
-

@@ -428,7 +428,7 @@ class date_views_filter_handler extends views_handler_filter_numeric {
     // Views will dump in an invalid WHERE () in addition to our custom filters, so give it a valid value.
     // @TODO This is probably the wrong way to solve this problem.
     if (empty($this->query->where[0]['conditions'])) {
-      $this->query->add_where(NULL, '1=1', array(), 'formula');
+      $this->query->add_where_expression(NULL, '1=1', array());
     }
 
     if (!empty($this->query_fields)) {
@@ -460,7 +460,7 @@ class date_views_filter_handler extends views_handler_filter_numeric {
           // Use set_where_group() with the selected date_method 
           // of 'AND' or 'OR' to combine the field WHERE clauses.
           $this->query->set_where_group($this->options['date_method'], 'date');
-          $this->query->add_where('date', $sql, array(), 'formula');
+          $this->query->add_where_expression('date', $sql, array());
         }
       }
     }

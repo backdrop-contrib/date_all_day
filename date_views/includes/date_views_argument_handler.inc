@@ -338,7 +338,7 @@ class date_views_argument_handler extends views_handler_argument_date {
     // See if we're outside the allowed date range for our argument.
     if (date_format($min_date, 'Y') < $this->view->date_info->min_allowed_year || date_format($max_date, 'Y') > $this->view->date_info->max_allowed_year) {
       $this->forbid = TRUE;
-      $this->query->add_where('date', "0=1", array(), 'formula');
+      $this->query->add_where_expression('date', "0=1", array());
       return;
     }
 
@@ -371,7 +371,7 @@ class date_views_argument_handler extends views_handler_argument_date {
         }
         $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
         if ($sql) {
-          $this->query->add_where('date', $sql, array(), 'formula');
+          $this->query->add_where_expression('date', $sql, array());
 
         }
       }

@@ -46,7 +46,7 @@ function date_views_date_views_tables() {
 }
 
 /**
- * Implement hook_date_api_fields().
+ * Implement hook_date_views_fields().
  * on behalf of core fields.
  * 
  * All modules that create custom fields that use the 

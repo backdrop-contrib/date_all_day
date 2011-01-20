@@ -30,10 +30,9 @@ class date_views_argument_handler extends views_handler_argument_date {
     $this->display_handler = $view->display_handler->definition['handler'];
 
     // Add a date handler to the display.
-    $date_handler = $this->date_handler;
-    $date_handler->granularity = $this->options['granularity'];
-    $this->format = $date_handler->views_formats($date_handler->granularity, 'display');
-    $this->sql_format = $date_handler->views_formats($date_handler->granularity, 'sql');
+    $this->date_handler->granularity = $this->options['granularity'];
+    $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
+    $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
 
     if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
 

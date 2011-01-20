@@ -25,16 +25,14 @@ class date_views_filter_handler extends views_handler_filter_numeric {
 
     $this->date_handler = new date_sql_handler();
     $this->date_handler->construct();
-    $this->date_handler->granularity = $this->options['granularity'];
-    $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
-
-  }
+   }
 
   function init(&$view, &$options) {
     parent::init($view, $options);
-    $handler = $this->date_handler;
-    $handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
-    $handler->adjustment_field = isset($options['adjustment_field']) ? $options['adjustment_field'] : 0;
+
+    $this->date_handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
+    $this->date_hander->adjustment_field = isset($options['adjustment_field']) ? $options['adjustment_field'] : 0;
+    $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
 
     if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
 

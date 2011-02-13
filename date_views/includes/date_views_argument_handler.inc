@@ -232,6 +232,10 @@ class date_views_argument_handler extends views_handler_argument_date {
       return;
     }
 
+    // Cause query->ensure_table to perform the correct join.
+    $this->table = $this->query_fields[0]['field']['table_name'];
+    $this->ensure_my_table();
+
     $field = $this->query_fields[0]['field'];
     $date_handler = $this->query_fields[0]['date_handler'];
 

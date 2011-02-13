@@ -1,14 +1,6 @@
 //$Id$
-Date Module 6.x
+Date Module 7.x
 =================
-Version 7.2-dev
-=================
-  may break things that lacked a deliminator between year and month
-Added flexible granularity and redid date_make_date workflow using objects
-Removed all but the 'date' type, 'datestamp' and 'datetime' gone.
-
-TODO
-Made Y allow negative and larger or smaller than 4 digit years (ie BC, etc) (NOT WORKING YET)
 
 =================
 Version 7.1-dev

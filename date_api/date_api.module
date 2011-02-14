@@ -155,7 +155,15 @@ class DateObject extends DateTime {
       // PHP < 5.3 doesn't like the GMT- notation for parsing timezones.
       $time = str_replace("GMT-", "-", $time);
       $time = str_replace("GMT+", "+", $time);
-      parent::__construct($time, $tz ? $tz : new DateTimeZone("UTC"));
+      // We are going to let the parent dateObject do a best effort attempt to turn this
+      // string into a valid date. It might fail and we want to control the error messages.
+      try {
+        @parent::__construct($time, $tz);
+      }
+      catch (Exception $e) {
+        $this->errors['date'] = $e;
+        return;
+      }
       $this->setGranularityFromTime($time, $tz);
     }
     // This tz was given as just an offset, which causes problems,

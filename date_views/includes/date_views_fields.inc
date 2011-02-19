@@ -26,6 +26,7 @@ function _date_views_fields($base = 'node') {
   cache_clear_all($cid, 'cache_views');
   $all_fields = date_views_views_fetch_fields($base, 'field');
   $content_fields = field_views_data();
+
   // Iterate over all the fields that Views knows about.
   $fields = array();
   foreach ((array) $all_fields as $alias => $val) {
@@ -52,14 +53,14 @@ function _date_views_fields($base = 'node') {
     if (!$handler = views_get_handler($table_name, $field_name, 'field')) {
       continue; 
     }
-
+    $handler = views_get_handler($table_name, $field_name, 'field');
     $handler_name = $handler->definition['handler'];
 
     // For Field module fields, get the date type.
     $custom = array();
-    if ($field_name == 'entity_id') {
+    if ($handler->definition['group'] == 'Fields') {
 
-      $field_name = $content_fields[$table_name]['entity_id']['field']['field_name'];
+      //$field_name = $content_fields[$table_name]['entity_id']['field']['field_name'];
       $field = field_info_field($field_name);
 
       switch ($field['type']) {
@@ -79,7 +80,7 @@ function _date_views_fields($base = 'node') {
         // If this is not a date field, nothing more to do.
         continue;
       }
-
+      
       $db_info = date_api_database_info($field);      
       $name = $table_name . "." . $field_name . "_value";
       $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
@@ -163,7 +164,6 @@ function _date_views_fields($base = 'node') {
       // The D7 field handling is funny, there is only a single record
       // with a field name of 'entity_id'. We need the real names for our queries.      
       // Fields also need an extra record so we have both from and to values.
-
       if (strstr($alias, 'entity_id')) {
         $field_name .= '_value';
         $fields['name'][$name]['field_name'] = $field_name;

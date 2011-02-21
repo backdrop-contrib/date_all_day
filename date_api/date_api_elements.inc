@@ -268,6 +268,9 @@ function date_text_validate($element, &$form_state) {
     $value = $date->format(DATE_FORMAT_DATETIME);
     form_set_value($element, $value, $form_state);
   }
+  else {
+    form_set_value($element, NULL, $form_state);
+  }
 }
 
 /**
@@ -518,7 +521,6 @@ function date_select_validate($element, &$form_state) {
 
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
-
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $field_value) {
     if (substr($field_value, 0, 1) == '-') {
@@ -547,6 +549,9 @@ function date_select_validate($element, &$form_state) {
   }
   elseif (!empty($date)) {
     form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
+  }
+  else {
+    form_set_value($element, NULL, $form_state);
   }
 }
 

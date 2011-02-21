@@ -75,18 +75,13 @@ class date_sql_handler {
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
     $this->local_timezone = isset($local_timezone) ? $local_timezone : date_default_timezone();
-    if (isset($this->definition['content_field_name'])) {
-      $field_name = $this->content_field_name;
-      $field = field_info_field($field_name);
-      $this->date_handler->date_type = $field['type'];
-    }
     date_api_set_db_timezone();
   }
 
   function get_db_type() {
     return $GLOBALS['databases']['default']['default']['driver'];
   }
-
+  
   /**
    * See if the db has timezone name support.
    */

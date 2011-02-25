@@ -1,5 +1,4 @@
 <?php
-// $Id$ */
 /**
  * @file
  * Parse iCal data.

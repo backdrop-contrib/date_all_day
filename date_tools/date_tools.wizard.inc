@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 function date_tools_wizard_form() {
 

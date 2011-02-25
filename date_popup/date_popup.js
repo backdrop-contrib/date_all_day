@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Attaches the calendar behavior to all required fields

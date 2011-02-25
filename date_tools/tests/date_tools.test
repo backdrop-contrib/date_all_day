@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class DateToolsTestCase extends DrupalWebTestCase {
   protected $privileged_user;
 

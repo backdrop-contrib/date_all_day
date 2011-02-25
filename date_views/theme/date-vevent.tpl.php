@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * $event
  *   An array with the following information about each event:

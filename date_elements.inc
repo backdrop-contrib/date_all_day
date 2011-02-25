@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Date forms and form themes and validation.

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * This module will make the date API available to other modules.

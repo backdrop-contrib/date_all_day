@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * A module to enable jquery calendar and time entry popups.

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Implementation of Date Repeat API calculations for the CCK Date field.

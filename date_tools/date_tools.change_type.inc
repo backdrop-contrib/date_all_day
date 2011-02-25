@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * A form to change the type of date used in date fields.

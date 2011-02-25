@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Code to add a date repeat selection form to a date field and create

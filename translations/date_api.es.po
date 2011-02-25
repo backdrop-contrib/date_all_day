@@ -1,5 +1,4 @@
 # translation of date_api.po to
-# $Id$
 # LANGUAGE translation of Drupal (root)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:

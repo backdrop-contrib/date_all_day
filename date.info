@@ -1,4 +1,3 @@
-; $Id$
 name = Date
 description = Defines CCK date/time fields and widgets.
 dependencies[] = date_api

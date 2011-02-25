@@ -1,5 +1,4 @@
 # translation of includes.po to
-# $Id$
 # LANGUAGE translation of Drupal (includes)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:

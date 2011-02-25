@@ -1,4 +1,3 @@
-# $Id$
 #
 # LANGUAGE translation of Drupal (date_repeat)
 # Copyright YEAR NAME <EMAIL@ADDRESS>

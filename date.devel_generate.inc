@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Date Devel Generate code.

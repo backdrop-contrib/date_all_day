@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Code to compute the dates that match an iCal RRULE.

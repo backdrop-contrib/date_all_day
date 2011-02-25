@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * $alarm
  *   An array with the following information about each alarm:

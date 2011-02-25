@@ -1,4 +1,3 @@
-; $Id$
 name = Date Repeat API
 description = A Date Repeat API to calculate repeating dates and times from iCal rules.
 dependencies[] = date_api

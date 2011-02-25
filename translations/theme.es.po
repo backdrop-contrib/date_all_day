@@ -1,5 +1,4 @@
 # translation of theme.po to
-# $Id$
 # LANGUAGE translation of Drupal (theme)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from file: theme.inc,v 1.1.4.33 2009/02/17 17:04:31 karens

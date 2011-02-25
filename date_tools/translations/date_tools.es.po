@@ -1,5 +1,4 @@
 # translation of date_tools.es.po to
-# $Id$
 # LANGUAGE translation of Drupal (date_tools)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:

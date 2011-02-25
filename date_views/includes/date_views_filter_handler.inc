@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * A flexible, configurable date filter.

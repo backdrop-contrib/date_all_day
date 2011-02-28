@@ -7,15 +7,7 @@
 /**
  * Date API argument handler.
  */
-class date_views_argument_handler extends views_handler_argument_date {
-  function construct() {
-    parent::construct();
-    module_load_include('inc', 'date_api', 'date_api_sql');
-
-    $this->date_handler = new date_sql_handler();
-    $this->date_handler->construct();     
-
-  }
+class date_views_argument_handler extends date_views_argument_handler_simple {
 
   /**
    * Get granularity and use it to create the formula and a format
@@ -23,23 +15,6 @@ class date_views_argument_handler extends views_handler_argument_date {
    */
   function init(&$view, &$options) {
     parent::init($view, $options);
-
-    // Identify the type of display we're using.
-    $this->display_handler = $view->display_handler->definition['handler'];
-
-    // Add a date handler to the display.
-    $this->date_handler->granularity = $this->options['granularity'];
-    $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
-    $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
-
-    if (empty($this->view->date_info)) $this->view->date_info = new stdClass();
-
-    // Set the view range, do this only if not already set in case there are multiple date arguments.
-    if (empty($this->view->date_info->min_allowed_year)) {
-      $range = date_range_years($this->options['year_range']);
-      $this->view->date_info->min_allowed_year = !empty($range) && is_array($range) ? $range[0] : variable_get('min_allowed_year', 100);
-      $this->view->date_info->max_allowed_year = !empty($range) && is_array($range) ? $range[1] : variable_get('max_allowed_year', 4000);
-    }
     if (empty($this->view->date_info->date_fields)) {
       $this->view->date_info->date_fields = array();
     }
@@ -52,10 +27,7 @@ class date_views_argument_handler extends views_handler_argument_date {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
-    $options['year_range'] = array('default' => '-3:+3');
     $options['date_method'] = array('default' => 'OR');
-    $options['granularity'] = array('default' => 'month');
-
     return $options;
   }
 
@@ -64,24 +36,6 @@ class date_views_argument_handler extends views_handler_argument_date {
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    $options = $this->date_handler->date_parts();
-    unset($options['second'], $options['minute']);
-    $options += array('week' => t('Week', array(), array('context' => 'datetime')));
-    $form['granularity'] = array(
-      '#title' => t('Granularity'),
-      '#type' => 'radios',
-      '#options' => $options,
-      '#default_value' => $this->options['granularity'],
-      '#multiple' => TRUE,
-      '#description' => t("Select the type of date value to be used in defaults, summaries, and navigation. For example, a granularity of 'month' will set the default date to the current month, summarize by month in summary views, and link to the next and previous month when using date navigation."),
-    );
-
-    $form['year_range'] = array(
-      '#title' => t('Date year range'),
-      '#type' => 'textfield',
-      '#default_value' => $this->options['year_range'],
-      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
-    );
     $fields = date_views_fields($this->view->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
@@ -121,16 +75,12 @@ class date_views_argument_handler extends views_handler_argument_date {
       if (empty($check_fields)) {
         form_error($form['date_fields'], t('You must select at least one date field for this argument.'));
       }
-      if (!preg_match('/^(?:\-[0-9]{1,4}|[0-9]{4}):(?:[\+|\-][0-9]{1,4}|[0-9]{4})$/', $form_state['values']['options']['year_range'])) {
-        form_error($form['year_range'], t('Date year range must be in the format -9:+9, 2005:2010, -9:2010, or 2005:+9'));
-      }
     }
   }
 
   function options_submit(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_submit($form, $form_state);
-
     if ($form_state['values']['form_id'] == 'views_ui_config_item_form') {
       $form_state['values']['options']['date_fields'] = array_filter($form_state['values']['options']['date_fields']);
     }
@@ -264,23 +214,6 @@ class date_views_argument_handler extends views_handler_argument_date {
         $date_handler->granularity = $this->options['granularity'];
         date_views_set_timezone($date_handler, $this, $field);
         $this->query_fields[] = array('field' => $field, 'date_handler' => $date_handler);
-      }
-    }
-  }
-
-  /**
-   * Make sure the date field is added to the query.
-   * 
-   * Do this in pre_query() so it will get done even if the argument 
-   * is the wildcard, since query() is skipped when the wildcard is used.
-   */
-  function pre_query() { 
-    // Unset invalid date values before the query runs.
-    if (!empty($this->view->args) && count($this->view->args) > $this->position) {
-      $argument = $this->view->args[$this->position];
-      $parts = $this->date_handler->arg_parts($argument);
-      if (empty($parts[0]['date']) && empty($parts[0]['period'])) {
-        unset($this->view->args[$this->position]); 
       }
     }
   }

@@ -215,11 +215,9 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
     foreach ($result as $table => $data) {
       $additional = array();
       $field_name = $field['field_name'];
-      $key = array_key_exists('entity_id', $data) ? $field_name : $field_name . '-revision_id';
-      $field_name_data = $data[$key]['field'];
       foreach ($data as $column => $value) {
         if (array_key_exists('argument', $value)) {
-          $result[$table][$column]['argument']['handler'] = 'date_views_argument_handler';
+          $result[$table][$column]['argument']['handler'] = 'date_views_argument_handler_simple';
         }
         if (array_key_exists('filter', $value)) {  
           $result[$table][$column]['filter']['handler'] = 'date_views_filter_handler_simple';

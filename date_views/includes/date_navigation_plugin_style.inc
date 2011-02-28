@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Views navigation style plugin for Date API.

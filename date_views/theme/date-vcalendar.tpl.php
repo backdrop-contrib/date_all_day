@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /**
  * $calname
  *   The name of the calendar.

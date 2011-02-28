@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Defines date-related Views data and plugins:

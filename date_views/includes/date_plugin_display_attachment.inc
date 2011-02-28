@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Views display plugin for Date API.

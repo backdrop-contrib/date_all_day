@@ -7,6 +7,30 @@ Version 7.x-2.x-dev
 
 This is a new branch that will contain a complete re-work of the Views handling.
 
+This branch will totally re-work and simplify the Views filters. These changes may/will 
+break some views and will require that you check views that use the date filter or 
+argument to be sure they are still configured correctly.
+
+There is a new date_filter_handler_simple for an individual date field that simplifies 
+the Views handling by using most of the core Views field handling but adds in the 
+possibility to set a default date using options like 'now', along with a choice of a 
+month/day/year drop-down selector or popup calendar selector.
+
+The date_filter_handler is an extension of the simple handler that allows you to combine 
+multiple dates into a single filter so that you can control all of them with the same 
+filter widget, allowing you to either 'OR' or 'AND' them together.
+
+The arguments will be rewritten in the same way, with a simple argument handler for 
+individual dates and another handler that extends that to control multiple dates with 
+a single argument.
+
+The Calendar module will need an update when this is finished to use the new handlers 
+correctly.
+
+This code is NOT yet ready to use.
+
+- #1075890 Initial pass at breaking out the code into the simple filter and a complex filter that combines date fields.
+
 
 ===================
 Version 7.x-1.x-dev

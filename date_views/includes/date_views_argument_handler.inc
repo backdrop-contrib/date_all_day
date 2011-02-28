@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Date API views argument handler.

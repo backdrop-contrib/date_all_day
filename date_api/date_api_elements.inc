@@ -276,7 +276,7 @@ function date_text_validate($element, &$form_state) {
  * Helper function for creating a date object out of user input.
  */
 function date_text_input_date($element, $input) {
-  if (empty($input) || !is_array($input) || !array_key_exists('date', $input)) {
+  if (empty($input) || !is_array($input) || !array_key_exists('date', $input) || empty($input['date'])) {
     return NULL;
   }  
   $granularity = date_format_order($element['#date_format']);
@@ -558,7 +558,7 @@ function date_select_validate($element, &$form_state) {
  * Helper function for creating a date object out of user input.
  */
 function date_select_input_date($element, $input) {
-  if (empty($input) || !is_array($input) || !array_key_exists('year', $input)) {
+  if (empty($input) || !is_array($input) || !array_key_exists('year', $input) || empty($input['year'])) {
     return NULL;
   }  
   $granularity = date_format_order($element['#date_format']);

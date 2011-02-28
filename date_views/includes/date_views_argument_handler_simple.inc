@@ -32,9 +32,12 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->date_handler->granularity = $this->options['granularity'];
 
     // Set up the formula for this field.
-    $this->arg_format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
+    $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
+    $this->arg_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     $this->formula = $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
+
+    $this->definition['empty field name'] = t('Undated');
   }
 
   /**
@@ -79,4 +82,22 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       form_error($form['year_range'], t('Date year range must be in the format -9:+9, 2005:2010, -9:2010, or 2005:+9'));
     }
   }
+
+  /**
+   * Provide a link to the next level of the view from the summary.
+   */
+  function summary_name($data) {
+    $value = $data->{$this->name_alias};
+    if (empty($value) && !empty($this->definition['empty field name'])) {
+      return $this->definition['empty field name'];
+    }
+    $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
+    $range = $this->date_handler->arg_range($value);
+    return date_format_date($range[0], 'custom', $format);
+  }
+
+
+
+
+
 }

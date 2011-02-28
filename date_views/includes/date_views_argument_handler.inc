@@ -133,16 +133,6 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   }
 
   /**
-   * Provide a link to the next level of the view from the summary.
-   */
-  function summary_name($data) {
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
-    $value = $data->{$this->name_alias};
-    $range = $this->date_handler->arg_range($value);
-    return date_format_date($range[0], 'custom', $format);
-  }
-
-  /**
    * Provide the argument to use to link from the summary to the next level;
    * this will be called once per row of a summary, and used as part of
    * $view->get_url().

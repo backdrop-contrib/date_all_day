@@ -218,9 +218,11 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
       foreach ($data as $column => $value) {
         if (array_key_exists('argument', $value)) {
           $result[$table][$column]['argument']['handler'] = 'date_views_argument_handler_simple';
+          $result[$table][$column]['argument']['empty field name'] = t('Undated');
         }
         if (array_key_exists('filter', $value)) {  
           $result[$table][$column]['filter']['handler'] = 'date_views_filter_handler_simple';
+          $result[$table][$column]['argument']['empty field name'] = t('Undated');
         } 
         // The old 'entity_id' and 'revision_id' values got rewritten in Views.
         // The old values are still there with a 'moved to' key, so ignore them.

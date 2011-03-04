@@ -31,13 +31,55 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     }
     $this->date_handler->granularity = $this->options['granularity'];
 
-    // Set up the formula for this field.
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
-    $this->arg_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
-    $this->formula = $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
 
-    $this->definition['empty field name'] = t('Undated');
+    // $this->arg_format is the format the parent date handler will use to create a default argument.
+    $this->arg_format = $this->format();
+  }
+
+  /**
+   * Add a callback for the formula to wrap the field in the right SQL.
+   */
+  function formula() {
+    $formula =  $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
+    return $formula;
+  }
+
+  /**
+   * Override the parent get_formula() to use the date_handler formula.
+   */
+  function get_formula() {
+    return str_replace('***table***', $this->table_alias, $this->formula());
+  }
+
+  function format() {
+    if (!empty($this->options['granularity'])) {
+      return $this->date_handler->views_formats($this->options['granularity']);
+    }
+    else {
+      return !empty($this->options[$this->option_name]) ? $this->options[$this->option_name] : 'Y-m';
+    }
+  }
+
+  /**
+   * Set the empty argument value to the current date,
+   * formatted appropriately for this argument.
+   */
+  function get_default_argument($raw = FALSE) {
+    if (!$raw && $this->options['default_argument_type'] == 'date') {
+      $granularity = $this->options['granularity'];
+      if ($granularity == 'week') {
+        $now = date_now();
+        $week = date_week($now);
+        return date_format($now, 'Y') .'-W'. $week;
+      } 
+      else {
+        return date($this->arg_format, REQUEST_TIME);
+      }
+    }
+    // Let the parent argument handle options like node created date.
+    return parent::get_default_argument($raw);
   }
 
   /**
@@ -91,13 +133,81 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if (empty($value) && !empty($this->definition['empty field name'])) {
       return $this->definition['empty field name'];
     }
+    elseif (empty($value)) {
+      return $this->options['wildcard_substitution'];
+    }
     $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
     $range = $this->date_handler->arg_range($value);
     return date_format_date($range[0], 'custom', $format);
   }
 
+  /**
+   * Provide the argument to use to link from the summary to the next level;
+   * this will be called once per row of a summary, and used as part of
+   * $view->get_url().
+   *
+   * @param $data
+   *   The query results for the row.
+   */
+  function summary_argument($data) {
+    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+    $value = $data->{$this->name_alias};
+    if (empty($value)) {
+      return $this->options['wildcard'];
+    }
+    $range = $this->date_handler->arg_range($value);
+    return date_format_date($range[0], 'custom', $format);
+  }
 
+  /**
+   * Inject a test for valid date range before the summary query.
+   */
+  function summary_query() {
+    if ($this->date_forbid()) {
+      return;
+    }
+    $this->formula = $this->formula($this->real_field);
+    parent::summary_query();
+  }
 
+  /**
+   * Inject a test for valid date range before the regular query.
+   */
+  function query() {
+    if ($this->date_forbid()) {
+      return;
+    }
+    $this->formula = $this->formula($this->real_field);
+    $this->granularity = $this->date_handler->arg_granularity($this->argument);
+    if ($this->granularity != 'week') {
+      parent::query();
+    }
+    else {
+      $format = DATE_FORMAT_DATETIME;
+      $from_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][0]);
+      $to_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][1]);
+      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->range[1], $format));
+      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->range[0], $format));          
+      $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
+      if ($sql) {
+        $this->query->add_where_expression($this->options['group'], $sql, array());
+      }
+    }
 
+  }
 
+  /**
+   * Add a callback to determine if we have moved outside the valid date range for this argument.
+   */
+  function date_forbid() {
+    $this->range = $this->date_handler->arg_range($this->argument);
+    $limit = date_range_years($this->options['year_range']); 
+    // See if we're outside the allowed date range for our argument.
+    if (date_format($this->range[0], 'Y') < $limit[0] || date_format($this->range[1], 'Y') > $limit[1]) {
+      $this->forbid = TRUE;
+      $this->query->add_where_expression('date', "0=1", array());
+      return TRUE;
+    }
+    return FALSE;
+  }
 }

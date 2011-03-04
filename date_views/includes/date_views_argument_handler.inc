@@ -2,6 +2,8 @@
 /**
  * @file
  * Date API views argument handler.
+ * This argument combines multiple date arguments into a single argument 
+ * where all fields are controlled by the same date and can be combined with either AND or OR.
  */
 
 /**
@@ -28,6 +30,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
     $options['date_method'] = array('default' => 'OR');
+    $options['group'] = array('default' => '0');
     return $options;
   }
 
@@ -40,12 +43,6 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     $options = array();
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
-    }
-
-    // If this argument was added as a field argument and no other date field
-    // has been chosen, update the default with the right date.
-    if (empty($this->options['date_fields']) && $this->field != 'date_argument') {
-      $this->options['date_fields'] = array($this->table .'.'. $this->field);
     }
 
     $form['date_fields'] = array(
@@ -102,100 +99,30 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   }
 
   /**
-   * Set the empty argument value to the current date, 
-   * formatted appropriately for this argument.
+   * Provide a list of default behaviors for this argument if the argument
+   * is not present.
+   *
+   * Override this method to provide additional (or fewer) default behaviors.
    */
-  function get_default_argument($raw = FALSE) {
-    $granularity = $this->options['granularity'];
-    if (!$raw && $this->options['default_argument_type'] == 'date') {
-      if ($granularity == 'week') {
-        $now = date_now();
-        $week = date_week($now);
-        return date_format($now, 'Y') .'-W'. $week;
-      } 
-      else {
-        return date($this->format(), REQUEST_TIME);
+  function default_actions($which = NULL) {
+    $defaults = parent::default_actions();
+  
+    // There is no easy way to do summary queries on multiple fields, so remove that option.
+    unset($defaults['summary asc'], $defaults['summary desc'], $defaults['summary asc by count'], $defaults['summary desc by count']);
+
+    if ($which) {
+      if (!empty($defaults[$which])) {
+        return $defaults[$which];
       }
     }
     else {
-      return parent::get_default_argument($raw);
+      return $defaults;
     }
-  }
-
-  function format() {
-    if (!empty($this->options['granularity'])) {
-      $date_handler = new date_sql_handler();
-      return $date_handler->views_formats($this->options['granularity']);
-    }
-    else {
-      return !empty($this->options[$this->option_name]) ? $this->options[$this->option_name] : 'Y-m';
-    }
-  }
-
-  /**
-   * Provide the argument to use to link from the summary to the next level;
-   * this will be called once per row of a summary, and used as part of
-   * $view->get_url().
-   *
-   * @param $data
-   *   The query results for the row.
-   */
-  function summary_argument($data) {
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
-    $value = $data->{$this->name_alias};
-    $range = $this->date_handler->arg_range($value);
-    return date_format_date($range[0], 'custom', $format);
-  }
-
-  /**
-   * Provide a link to the next level of the view from the argument.
-   */
-  function title() {
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
-    $range = $this->date_handler->arg_range($this->argument);
-    return date_format_date($range[0], 'custom', $format);
-  }
-
-  /**
-   * Create a summary query that matches the granularity.
-   *
-   * Needed or Views will do a groupby on the complete date instead
-   * of only the part of the date actually used in the argument.
-   */
-  function summary_query() {
-    $this->get_query_fields();
-
-    // No way to do summaries on more than one field at a time.
-    if (count($this->query_fields) > 1) {
-      return;
-    }
-
-    // Cause query->ensure_table to perform the correct join.
-    $this->table = $this->query_fields[0]['field']['table_name'];
-    $this->ensure_my_table();
-
-    $field = $this->query_fields[0]['field'];
-    $date_handler = $this->query_fields[0]['date_handler'];
-
-    // Get the SQL format for this granularity, like Y-m,
-    // and use that as the grouping value.
-    $format = $date_handler->views_formats($this->options['granularity'], 'sql');
-    $this->formula = $date_handler->sql_format($format, $date_handler->sql_field($field['fullname']));
-
-    // Add the computed field.
-    $this->base_alias = $this->name_alias = $this->query->add_field(NULL, $this->formula, $field['query_name']);
-    $this->query->set_count_field(NULL, $this->formula, $field['query_name']);   
-    return $this->summary_basics(FALSE);
-
   }
 
   function get_query_fields() {
     $fields = date_views_fields($this->view->base_table);
     $fields = $fields['name'];
-    $min_date = isset($this->min_date) ? $this->min_date : NULL;
-    $min_utc = isset($this->min_utc) ? $this->min_utc : NULL;
-    $max_date = isset($this->max_date) ? $this->max_date : NULL;
-    $max_utc = isset($this->max_utc) ? $this->max_utc : NULL;
     $this->query_fields = array();
     foreach ($this->options['date_fields'] as $delta => $name) {
       if (array_key_exists($name, $fields) && $field = $fields[$name]) {
@@ -214,6 +141,10 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
    * The argument sent may be found at $this->argument.
    */
   function query() {
+    if ($this->date_forbid()) {
+      return;
+    }
+
     $this->get_query_fields();
     $block_identifier = date_block_identifier($this->view);
     if (!empty($this->view->block_identifier) || isset($_GET[$block_identifier])) {
@@ -240,64 +171,27 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
         $i++;
       }
     }
-    $parts = $this->date_handler->arg_parts($this->argument);
-
-    foreach ($parts as $type) {
-      foreach ($type as $part) {
-        foreach ($part as $key => $value) {
-          if (!empty($value)) {
-            // The last part evaluated is the one that will 'stick'
-            // as the date type.
-            $this->granularity = $key;
-            $this->$key = $value;
-          }
-        }
-      }
-    }
-    $range = $this->date_handler->arg_range($this->argument);
-    $min_date = $range[0];
-    $max_date = $range[1];
-    $this->min_date = $min_date;
-    $this->max_date = $max_date;
-    // See if we're outside the allowed date range for our argument.
-    if (date_format($min_date, 'Y') < $this->view->date_info->min_allowed_year || date_format($max_date, 'Y') > $this->view->date_info->max_allowed_year) {
-      $this->forbid = TRUE;
-      $this->query->add_where_expression('date', "0=1", array());
-      return;
-    }
-
-    // The second option seems to work better in the block view if 
-    // set to something other than the original value. 
-    // Need to keep an eye on this to be sure nothing else breaks.
-    //$format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+    $this->granularity = $this->date_handler->arg_granularity($this->argument);
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
-      $this->query->set_where_group($this->options['date_method'], 'date');
-      foreach ($this->query_fields as $query_field) {
+      $this->query->set_where_group($this->options['date_method'], $this->options['group']);
+      foreach ($this->query_fields as $count => $query_field) {
         $field = $query_field['field'];
-        $date_handler = $query_field['date_handler'];
+        $this->date_handler = $query_field['date_handler'];
+        $this->real_field = $field['field_name'];
+        $this->table = $field['table_name'];
         if ($field['table_name'] != $this->table || !empty($this->relationship)) {
-          $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
+          $this->table = $this->query->queue_table($field['table_name'], $this->relationship);
         }
-        $table_alias = !empty($this->related_table_alias) ? $this->related_table_alias : $field['table_name'];
-        $from_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][0]);
-        $to_field = str_replace($field['table_name'] .'_', $table_alias .'.', $field['fromto'][1]);
-        if ($this->granularity != 'week') {
-          $from = $date_handler->sql_where_format($format, $from_field, '<=', date_format($max_date, $format));
-          $to   = $date_handler->sql_where_format($format, $to_field, '>=', date_format($min_date, $format));
+        // $this->table_alias gets set when the first field is processed if otherwise empty.
+        // For subsequent fields, we need to be sure it is emptied again.
+        elseif (empty($this->relationship)) {
+          $this->table_alias = NULL;
         }
-        else {
-          $format = DATE_FORMAT_DATETIME;
-          $from = $date_handler->sql_where_date('DATE', $from_field, '<=', date_format($max_date, $format));
-          $to   = $date_handler->sql_where_date('DATE', $to_field, '>=', date_format($min_date, $format));          
-        }
-        $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
-        if ($sql) {
-          $this->query->add_where_expression('date', $sql, array());
-
-        }
+        $this->formula = $this->formula();
+        parent::query();
       }
     }
   }

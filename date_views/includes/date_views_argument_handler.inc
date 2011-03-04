@@ -42,7 +42,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
       $options[$name] = $field['label'];
     }
 
-    // If this argument was added as a CCK field argument and no other date field
+    // If this argument was added as a field argument and no other date field
     // has been chosen, update the default with the right date.
     if (empty($this->options['date_fields']) && $this->field != 'date_argument') {
       $this->options['date_fields'] = array($this->table .'.'. $this->field);
@@ -54,7 +54,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
       '#options' => $options,
       '#default_value' => $this->options['date_fields'],
       '#multiple' => TRUE,
-      '#description' => t("Select one or more date fields to filter with this argument. Do not select both the 'From date' and 'To date' for CCK date fields, only one of them is needed."),
+      '#description' => t("Select one or more date fields to filter with this argument. Do not select both the 'From date' and 'To date' for date fields, only one of them is needed."),
     );
     $form['date_method'] = array(
       '#title' => t('Method'),

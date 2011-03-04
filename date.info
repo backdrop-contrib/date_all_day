@@ -1,5 +1,5 @@
 name = Date
-description = Defines CCK date/time fields and widgets.
+description = Defines date/time fields and widgets.
 dependencies[] = date_api
 package = Date/Time
 core = 7.x

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Implementation of Date Repeat API calculations for the CCK Date field.
+ * Implementation of Date Repeat API calculations for the Date field.
  *
  * Consolidated here so the code isn't parsed if repeats aren't being used
  * or processed, and to make it easier to maintain.

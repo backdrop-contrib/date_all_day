@@ -14,8 +14,8 @@ function template_preprocess_date_navigation(&$vars) {
   $next_args = $view->args;
   $prev_args = $view->args;
   $pos = $view->date_info->date_arg_pos;
-  $min_date = $view->date_info->date_range[0];
-  $max_date = $view->date_info->date_range[1];
+  $min_date = $view->date_info->min_date;
+  $max_date = $view->date_info->max_date;
 
   if (empty($view->date_info->hide_nav)) {
     $prev_date = clone($min_date);
@@ -120,7 +120,7 @@ function theme_date_nav_title($params) {
       break;
     case 'month':
       $format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'F Y' : 'F');
-      $title = date_format_date($view->date_info->date_range[0], 'custom', $format);
+      $title = date_format_date($view->date_info->min_date, 'custom', $format);
       $date_arg = $view->date_info->year .'-'. date_pad($view->date_info->month);
       break;
     case 'day':

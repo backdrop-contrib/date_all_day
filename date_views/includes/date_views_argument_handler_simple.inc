@@ -36,7 +36,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
 
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
-  }
+ }
 
   /**
    * Add a callback for the formula to wrap the field in the right SQL.
@@ -209,8 +209,8 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       $format = DATE_FORMAT_DATETIME;
       $from_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][0]);
       $to_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][1]);
-      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->date_range[1], $format));
-      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->date_range[0], $format));          
+      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->max_date, $format));
+      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->min_date, $format));          
       $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
       if ($sql) {
         $this->query->add_where_expression($group, $sql, array());
@@ -224,9 +224,12 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function date_forbid() {
     $this->date_range = $this->date_handler->arg_range($this->argument);
+    $this->min_date = $this->date_range[0];
+    $this->max_date = $this->date_range[1];
     $this->limit = date_range_years($this->options['year_range']); 
+
     // See if we're outside the allowed date range for our argument.
-    if (date_format($this->date_range[0], 'Y') < $this->limit[0] || date_format($this->date_range[1], 'Y') > $this->limit[1]) {
+    if (date_format($this->min_date, 'Y') < $this->limit[0] || date_format($this->max_date, 'Y') > $this->limit[1]) {
       $this->forbid = TRUE;
       $this->query->add_where_expression('date', "0=1", array());
       return TRUE;

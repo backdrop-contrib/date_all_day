@@ -41,7 +41,6 @@ class date_navigation_plugin_style extends views_plugin_style {
   }
 
   function query() {
-    
     //$this->view->query->clear_fields();
 
     // Bring the argument information into the view so our theme can access it.
@@ -53,11 +52,13 @@ class date_navigation_plugin_style extends views_plugin_style {
         $this->view->date_info->granularity = $argument->granularity;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;
-        $this->view->date_info->year = date_format($argument->date_range[0], 'Y');
-        $this->view->date_info->month = date_format($argument->date_range[0], 'n');;
-        $this->view->date_info->day = date_format($argument->date_range[0], 'j');
-        $this->view->date_info->week = date_week(date_format($argument->date_range[0], DATE_FORMAT_DATE));
+        $this->view->date_info->year = date_format($argument->min_date, 'Y');
+        $this->view->date_info->month = date_format($argument->min_date, 'n');;
+        $this->view->date_info->day = date_format($argument->min_date, 'j');
+        $this->view->date_info->week = date_week(date_format($argument->min_date, DATE_FORMAT_DATE));
         $this->view->date_info->date_range = $argument->date_range;
+        $this->view->date_info->min_date = $argument->min_date;
+        $this->view->date_info->max_date = $argument->max_date;
         $this->view->date_info->limit = $argument->limit;
         $this->view->date_info->url = $this->view->get_url();
       }

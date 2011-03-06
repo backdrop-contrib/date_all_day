@@ -14,8 +14,8 @@ function template_preprocess_date_navigation(&$vars) {
   $next_args = $view->args;
   $prev_args = $view->args;
   $pos = $view->date_info->date_arg_pos;
-  $min_date = is_object($view->date_info->min_date) ? $view->date_info->min_date : date_now();
-  $max_date = is_object($view->date_info->max_date) ? $view->date_info->max_date : date_now();
+  $min_date = $view->date_info->date_range[0];
+  $max_date = $view->date_info->date_range[1];
 
   if (empty($view->date_info->hide_nav)) {
     $prev_date = clone($min_date);
@@ -52,10 +52,10 @@ function template_preprocess_date_navigation(&$vars) {
 
   // Check whether navigation links would point to 
   // a date outside the allowed range.
-  if (!empty($next_date) && !empty($vars['next_url']) && date_format($next_date, 'Y') > $view->date_info->max_allowed_year) {
+  if (!empty($next_date) && !empty($vars['next_url']) && date_format($next_date, 'Y') > $view->date_info->limit[1]) {
     $vars['next_url'] = '';    
   }
-  if (!empty($prev_date) && !empty($vars['prev_url']) && date_format($prev_date, 'Y') < $view->date_info->min_allowed_year) {
+  if (!empty($prev_date) && !empty($vars['prev_url']) && date_format($prev_date, 'Y') < $view->date_info->limit[0]) {
     $vars['prev_url'] = '';    
   }
 
@@ -120,7 +120,7 @@ function theme_date_nav_title($params) {
       break;
     case 'month':
       $format = !empty($format) ? $format : (empty($view->date_info->mini) ? 'F Y' : 'F');
-      $title = date_format_date($view->date_info->min_date, 'custom', $format);
+      $title = date_format_date($view->date_info->date_range[0], 'custom', $format);
       $date_arg = $view->date_info->year .'-'. date_pad($view->date_info->month);
       break;
     case 'day':

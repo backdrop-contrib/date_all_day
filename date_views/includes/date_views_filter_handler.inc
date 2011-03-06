@@ -71,7 +71,7 @@ class date_views_filter_handler extends date_views_filter_handler_simple {
       '#options' => $options,
       '#default_value' => $this->options['date_fields'],
       '#multiple' => FALSE,
-      '#description' => t('Select date field(s) to filter with this argument.'),
+      '#description' => t('Select date field(s) to filter.'),
       '#required' => TRUE,
     );
     $form['date_method'] = array(

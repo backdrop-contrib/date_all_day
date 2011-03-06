@@ -87,8 +87,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['year_range'] = array('default' => '-3:+3');
-    $options['granularity'] = array('default' => 'month');
+    $options['year_range'] = array('default' => array('-3:+3'));
+    $options['granularity'] = array('default' => array('month'));
+    $options['default_argument_type'] = array('default' => array('date'));
     return $options;
   }
 
@@ -172,25 +173,33 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
 
   /**
    * Inject a test for valid date range before the regular query.
+   * Override the parent query to be able to control the $group.
    */
-  function query() {
+  function query($group = 0) {
     if ($this->date_forbid()) {
       return;
     }
     $this->formula = $this->formula($this->real_field);
     $this->granularity = $this->date_handler->arg_granularity($this->argument);
+    $this->ensure_my_table();
+    // Now that our table is secure, get our formula.
     if ($this->granularity != 'week') {
-      parent::query();
+      $placeholder = $this->placeholder();
+      $formula = $this->get_formula() .' = ' . $placeholder;
+      $placeholders = array(
+        $placeholder => $this->argument,
+      );
+      $this->query->add_where($group, $formula, $placeholders, 'formula');
     }
     else {
       $format = DATE_FORMAT_DATETIME;
       $from_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][0]);
       $to_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][1]);
-      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->range[1], $format));
-      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->range[0], $format));          
+      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->date_range[1], $format));
+      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->date_range[0], $format));          
       $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
       if ($sql) {
-        $this->query->add_where_expression($this->options['group'], $sql, array());
+        $this->query->add_where_expression($group, $sql, array());
       }
     }
 
@@ -200,10 +209,10 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Add a callback to determine if we have moved outside the valid date range for this argument.
    */
   function date_forbid() {
-    $this->range = $this->date_handler->arg_range($this->argument);
-    $limit = date_range_years($this->options['year_range']); 
+    $this->date_range = $this->date_handler->arg_range($this->argument);
+    $this->limit = date_range_years($this->options['year_range']); 
     // See if we're outside the allowed date range for our argument.
-    if (date_format($this->range[0], 'Y') < $limit[0] || date_format($this->range[1], 'Y') > $limit[1]) {
+    if (date_format($this->date_range[0], 'Y') < $this->limit[0] || date_format($this->date_range[1], 'Y') > $this->limit[1]) {
       $this->forbid = TRUE;
       $this->query->add_where_expression('date', "0=1", array());
       return TRUE;

@@ -29,8 +29,8 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
-    $options['date_method'] = array('default' => 'OR');
-    $options['group'] = array('default' => '0');
+    $options['date_method'] = array('default' => array('OR'));
+    $options['date_group'] = array('default' => array('date'));
     return $options;
   }
 
@@ -176,7 +176,6 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method 
       // of 'AND' or 'OR' to create the where clause.
-      $this->query->set_where_group($this->options['date_method'], $this->options['group']);
       foreach ($this->query_fields as $count => $query_field) {
         $field = $query_field['field'];
         $this->date_handler = $query_field['date_handler'];
@@ -191,7 +190,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
           $this->table_alias = NULL;
         }
         $this->formula = $this->formula();
-        parent::query();
+        parent::query($this->options['date_group']);
       }
     }
   }

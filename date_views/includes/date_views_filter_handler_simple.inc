@@ -32,12 +32,26 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   // Set default values for the date filter.
   function option_definition() {
     $options = parent::option_definition();
-    $options['granularity'] = array('default' => array('day'));
-    $options['form_type'] = array('default' => array('date_select'));
-    $options['default_date'] = array('default' => array(''));
-    $options['default_to_date'] = array('default' => array(''));
-    $options['year_range'] = array('default' => array('-3:+3'));  
+    $options['granularity'] = array('default' => 'day');
+    $options['form_type'] = array('default' => 'date_select');
+    $options['default_date'] = array('default' => '');
+    $options['default_to_date'] = array('default' => '');
+    $options['year_range'] = array('default' => '-3:+3');  
     return $options;
+  }
+
+  /**
+   * Make sure our custom options get exported.
+   * Handle the options we know about, pass the rest to the parent plugin.
+   */
+  function export_plugin($indent, $prefix, $storage, $option, $definition, $parents) {
+    $output = '';
+    if (in_array($option, array('granularity', 'form_type', 'default_date', 'default_to_date', 'year_range'))) {
+      $name = $this->options[$option];
+      $output .= $indent . $prefix . "['$option'] = '$name';\n";
+      return $output;
+    }
+    return parent::export_plugin($indent, $prefix, $storage, $option, $definition, $parents);
   }
 
   /**

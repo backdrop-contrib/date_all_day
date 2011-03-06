@@ -29,6 +29,7 @@ correctly.
 
 This code is NOT yet ready to use.
 
+- #1082658: Saving the options as arrays breaks other things. Add a custom export plugin instead.
 - #1082658, Views options need to be declared as arrays or they are not saved in the export in Views 3.
 - #1075896 Initial pass at breaking out the code into the simple argument and a complex argument that combines date fields.
 - #1075890 Initial pass at breaking out the code into the simple filter and a complex filter that combines date fields.

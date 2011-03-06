@@ -32,11 +32,11 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   // Set default values for the date filter.
   function option_definition() {
     $options = parent::option_definition();
-    $options['granularity'] = array('default' => 'day');
-    $options['form_type'] = array('default' => 'date_select');
-    $options['default_date'] = array('default' => '');
-    $options['default_to_date'] = array('default' => '');
-    $options['year_range'] = array('default' => '-3:+3');  
+    $options['granularity'] = array('default' => 'day', 'export' => 'export_plugin');
+    $options['form_type'] = array('default' => 'date_select', 'export' => 'export_plugin');
+    $options['default_date'] = array('default' => '', 'export' => 'export_plugin');
+    $options['default_to_date'] = array('default' => '', 'export' => 'export_plugin');
+    $options['year_range'] = array('default' => '-3:+3', 'export' => 'export_plugin');  
     return $options;
   }
 

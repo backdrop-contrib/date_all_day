@@ -87,9 +87,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['year_range'] = array('default' => '-3:+3');
-    $options['granularity'] = array('default' => 'month');
-    $options['default_argument_type'] = array('default' => 'date');
+    $options['year_range'] = array('default' => '-3:+3', 'export' => 'export_plugin');
+    $options['granularity'] = array('default' => 'month', 'export' => 'export_plugin');
+    $options['default_argument_type'] = array('default' => 'date', 'export' => 'export_plugin');
     return $options;
   }
 

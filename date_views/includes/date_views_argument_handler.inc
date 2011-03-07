@@ -29,9 +29,23 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
-    $options['date_method'] = array('default' => array('OR'));
-    $options['date_group'] = array('default' => array('date'));
+    $options['date_method'] = array('default' => 'OR', 'export' => 'export_plugin');
+    $options['date_group'] = array('default' => 'date', 'export' => 'export_plugin');
     return $options;
+  }
+
+  /**
+   * Make sure our custom options get exported.
+   * Handle the options we know about, pass the rest to the parent plugin.
+   */
+  function export_plugin($indent, $prefix, $storage, $option, $definition, $parents) {
+    $output = '';
+    if (in_array($option, array('date_method', 'date_group'))) {
+      $name = $this->options[$option];
+      $output .= $indent . $prefix . "['$option'] = '$name';\n";
+      return $output;
+    }
+    return parent::export_plugin($indent, $prefix, $storage, $option, $definition, $parents);
   }
 
   /**
@@ -60,6 +74,10 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
       '#default_value' => $this->options['date_method'],
       '#description' => t('Method of handling multiple date fields in the same query. Return items that have any matching date field (date = field_1 OR field_2), or only those with matches in all selected date fields (date = field_1 AND field_2). '),
       );
+    $form['date_group'] = array(
+      '#type' => 'hidden',
+      '#value' => $this->options['date_group'],
+    );
 
   }
 

@@ -20,8 +20,22 @@ class date_views_filter_handler extends date_views_filter_handler_simple {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
-    $options['date_method'] = array('default' => 'OR');
+    $options['date_method'] = array('default' => 'OR', 'export' => 'export_plugin');
     return $options;
+  }
+
+  /**
+   * Make sure our custom options get exported.
+   * Handle the options we know about, pass the rest to the parent plugin.
+   */
+  function export_plugin($indent, $prefix, $storage, $option, $definition, $parents) {
+    $output = '';
+    if (in_array($option, array('date_method'))) {
+      $name = $this->options[$option];
+      $output .= $indent . $prefix . "['$option'] = '$name';\n";
+      return $output;
+    }
+    return parent::export_plugin($indent, $prefix, $storage, $option, $definition, $parents);
   }
 
   function op_between($field) {

@@ -27,12 +27,14 @@ a single argument.
 The Calendar module will need an update when this is finished to use the new handlers 
 correctly.
 
-This code is NOT yet ready to use.
+======================
+Version 7.x-2.0-alpha1
+======================
 
 - #1082658: Saving the options as arrays breaks other things. Add a custom export plugin instead.
 - #1082658, Views options need to be declared as arrays or they are not saved in the export in Views 3.
-- #1075896 Initial pass at breaking out the code into the simple argument and a complex argument that combines date fields.
-- #1075890 Initial pass at breaking out the code into the simple filter and a complex filter that combines date fields.
+- #1075896 Break out the code into the simple argument and a complex argument that combines date fields.
+- #1075890 Break out the code into the simple filter and a complex filter that combines date fields.
 
 
 ===================

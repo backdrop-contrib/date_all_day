@@ -28,6 +28,12 @@ The Calendar module will need an update when this is finished to use the new han
 correctly.
 
 ======================
+Version 7.x-2.x
+======================
+
+- #1013662 by developer-x: Remove check for start and end date - this prevented multiday-all day events from showing 'All Day'
+
+======================
 Version 7.x-2.0-alpha1
 ======================
 

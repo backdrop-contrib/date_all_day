@@ -1985,7 +1985,7 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
   $min2 = $count > 4 ? intval($matches[4]) : 0;
   $sec2 = $count > 5 ? intval($matches[5]) : 0;
 
-  if (empty($date1) || empty($date2) || $date1 != $date2) {
+  if (empty($date1) || empty($date2)) {
     return FALSE;
   }
   if (empty($time1) || empty($time2)) {

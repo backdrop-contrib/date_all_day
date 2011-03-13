@@ -27,6 +27,8 @@ a single argument.
 The Calendar module will need an update when this is finished to use the new handlers 
 correctly.
 
+- #1076992 The timezone element never got completely updated to D7.
+
 ======================
 Version 7.x-2.0-alpha1
 ======================

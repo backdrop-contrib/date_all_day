@@ -317,7 +317,6 @@ function date_element_empty($element, &$form_state) {
  * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element, &$form_state) {
-
   $form_values = $form_state['values'];
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
@@ -429,9 +428,13 @@ function date_combo_validate($element, &$form_state) {
       $item[$to_field] = $item[$from_field];
     }
 
+    $timezone = !empty($item[$tz_field]) ? $item[$tz_field] : $element['#date_timezone'];
+    $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
+    $element[$from_field]['#date_timezone'] = $timezone;
     $from_date = date_input_date($field, $instance, $element[$from_field], $posted[$from_field]);
 
     if (!empty($field['settings']['todate'])) {
+      $element[$to_field]['#date_timezone'] = $timezone;
       $to_date = date_input_date($field, $instance, $element[$to_field], $merged_date);
     }
     else {
@@ -451,8 +454,6 @@ function date_combo_validate($element, &$form_state) {
     else {
       // Convert input dates back to their UTC values and re-format to ISO
       // or UNIX instead of the DATETIME format used in element processing.
-      $timezone = !empty($item[$tz_field]) ? $item[$tz_field] : $element['#date_timezone'];
-      $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
       $item[$tz_field] = $timezone;
 
       $item[$offset_field] = date_offset_get($from_date);

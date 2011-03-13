@@ -1792,7 +1792,15 @@ function date_get_timezone($handling, $timezone = '') {
  *  Function to figure out which db timezone applies to a date and select it
  */
 function date_get_timezone_db($handling, $timezone = '') {
-  return 'UTC';
+  switch ($handling) {
+    case ('none'):
+      $timezone = date_default_timezone();
+      break;
+    default:
+      $timezone = 'UTC';
+      break;
+  }
+  return $timezone > '' ? $timezone : 'UTC';
 }
 /**
  * Helper function for BYDAY options in Date Repeat

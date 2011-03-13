@@ -138,9 +138,14 @@ function date_default_date($element) {
  * Element value callback for date_timezone element.
  */
 function date_timezone_element_value_callback($element, $input = FALSE, &$form_state) {
-  //if (!$input) {
-    return array();
-  //}
+  $return = ''; 
+  if ($input !== FALSE) {
+    $return = $input;
+  }
+  elseif (!empty($element['#default_value'])) {
+    $return = $element['#default_value'];
+  }
+  return $return;
 }
 
 /**
@@ -155,8 +160,8 @@ function date_timezone_element_process($element, $form_state, $form) {
   $element['timezone'] = array(
     '#type' => 'select',
     '#title' => theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element)),
-    '#default_value' => $element['#default_value'],
     '#options' => date_timezone_names($element['#required']),
+    '#value' => $element['#value']['timezone'],
     '#weight' => $element['#weight'],
     '#required' => $element['#required'],
     '#theme' => 'date_select_element',

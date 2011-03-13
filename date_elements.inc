@@ -432,7 +432,6 @@ function date_combo_validate($element, &$form_state) {
     $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
     $element[$from_field]['#date_timezone'] = $timezone;
     $from_date = date_input_date($field, $instance, $element[$from_field], $posted[$from_field]);
-
     if (!empty($field['settings']['todate'])) {
       $element[$to_field]['#date_timezone'] = $timezone;
       $to_date = date_input_date($field, $instance, $element[$to_field], $merged_date);

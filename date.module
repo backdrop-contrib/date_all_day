@@ -343,6 +343,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
   if ($format != 'format_interval') {
     $all_day1 = theme('date_all_day', array(
       'field' => $field,
+      'instance' => $instance,
       'which' => 'date1',
       'date1' => $date1,
       'date2' => $date2,
@@ -351,6 +352,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
       'entity' => $entity));
     $all_day2 = theme('date_all_day', array(
       'field' => $field,
+      'instance' => $instance,
       'which' => 'date2',
       'date1' => $date1,
       'date2' => $date2,
@@ -639,7 +641,7 @@ function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
     return FALSE;
   }
   elseif (!date_has_time($field['settings']['granularity'])) {
-    return FALSE;
+    return TRUE;
   }
   if (empty($date2)) {
     $date2 = $date1;
@@ -647,7 +649,7 @@ function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
 
   $granularity = $field['settings']['granularity'];
   $granularity = array_pop($granularity);
-  $increment = isset($instance['widget']['increment']) ? $instance['widget']['increment'] : 1;
-  return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date1, DATE_FORMAT_DATETIME), $granularity, $increment);
+  $increment = isset($instance['widget']['settings']['increment']) ? $instance['widget']['settings']['increment'] : 1;
+  return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date2, DATE_FORMAT_DATETIME), $granularity, $increment);
 
 }

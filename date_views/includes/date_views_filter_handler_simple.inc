@@ -128,7 +128,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   }
 
   function op_simple($field) {
-    $value = $this->get_value('value', $this->value['value']);
+    $value = $this->get_filter_value('value', $this->value['value']);
     $field = $this->date_handler->sql_field($field);
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder = $this->placeholder();
@@ -312,7 +312,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#suffix' => '</div></div>',
     );
     if ($which == 'all') {
-      $form[$prefix]['#process'] = array('ctools_dependent_process', $type . '_element_process');
+      //$form[$prefix]['#process'] = array('ctools_dependent_process', $type . '_element_process');
       $form[$prefix]['#dependency'] = array($source => $operator_values);  
     }
 

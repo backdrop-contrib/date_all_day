@@ -158,7 +158,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
    *
    * The argument sent may be found at $this->argument.
    */
-  function query() {
+  function query($group = 0) {
     if ($this->date_forbid()) {
       return;
     }

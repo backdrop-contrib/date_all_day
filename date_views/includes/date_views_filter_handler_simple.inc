@@ -7,9 +7,8 @@
 class date_views_filter_handler_simple extends views_handler_filter_date {
   var $date_handler = NULL;
 
-  // Add a date handler to the filter.
-  function construct() {
-    parent::construct();
+  function init(&$view, &$options) {
+    parent::init($view, $options);
     module_load_include('inc', 'date_api', 'date_api_sql');
     $this->date_handler = new date_sql_handler();
     $this->date_handler->date_type = DATE_UNIX;
@@ -20,10 +19,6 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       }
     }
     $this->form_submitted = FALSE;
-  }
-
-  function init(&$view, &$options) {
-    parent::init($view, $options);
     $this->date_handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
     $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $this->real_field = date_views_old_name($this->real_field);
@@ -89,7 +84,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
    * see if anything actually was submitted. If nothing has really been submitted, we need
    * to swap in our default value logic.
    */
-  function get_value($prefix, $input) {
+  function get_filter_value($prefix, $input) {
     if (empty($input)) {
       if (empty($this->options['exposed'])) {
         return $this->date_default_value($prefix);
@@ -105,9 +100,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       
     $element_input = $input[$this->options['expose']['identifier']];
 
-    $element_input['value'] = $this->get_value('value', $element_input['value']);
-    $element_input['min'] = $this->get_value('min', $element_input['min']);
-    $element_input['max'] = $this->get_value('max', $element_input['max']);
+    $element_input['value'] = $this->get_filter_value('value', $element_input['value']);
+    $element_input['min'] = $this->get_filter_value('min', $element_input['min']);
+    $element_input['max'] = $this->get_filter_value('max', $element_input['max']);
     unset($element_input['default_date']);
     unset($element_input['default_to_date']);
 

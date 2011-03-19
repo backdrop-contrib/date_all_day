@@ -27,15 +27,14 @@ a single argument.
 The Calendar module will need an update when this is finished to use the new handlers 
 correctly.
 
-- #1041428, by tim.plunkett: Fix logic errors in 'All Day' computations.
-- #1054458: Move date_increment_round() function into Date API module so it is always available.
-- #745074, by rsevero:  Don't test for valid timezone-adjusted date for dates that don't use time.
-- #1076992: The timezone element never got completely updated to D7.
-
 ======================
 Version 7.x-2.x
 ======================
 
+- #1041428, by tim.plunkett: Fix logic errors in 'All Day' computations.
+- #1054458: Move date_increment_round() function into Date API module so it is always available.
+- #745074, by rsevero:  Don't test for valid timezone-adjusted date for dates that don't use time.
+- #1076992: The timezone element never got completely updated to D7.
 - #1013662 by developer-x: Remove check for start and end date - this prevented multiday-all day events from showing 'All Day'
 
 ======================

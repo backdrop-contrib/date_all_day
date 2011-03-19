@@ -475,7 +475,7 @@ function date_combo_validate($element, &$form_state) {
       // invalid dates, like 2AM on the day that spring daylight savings
       // time begins in the US.  
       $granularity = date_format_order($element[$from_field]['#date_format']);
-      if ($timezone != $db_timezone && date_has_time($granularity)) {
+      if ($timezone != $timezone_db && date_has_time($granularity)) {
         date_timezone_set($from_date, timezone_open($timezone));
         date_timezone_set($to_date, timezone_open($timezone));
 

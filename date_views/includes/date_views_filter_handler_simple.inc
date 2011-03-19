@@ -100,9 +100,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       
     $element_input = $input[$this->options['expose']['identifier']];
 
-    $element_input['value'] = $this->get_filter_value('value', $element_input['value']);
-    $element_input['min'] = $this->get_filter_value('min', $element_input['min']);
-    $element_input['max'] = $this->get_filter_value('max', $element_input['max']);
+    $element_input['value'] = $this->get_filter_value('value', !empty($element_input['value']) ? $element_input['value'] : '');
+    $element_input['min'] = $this->get_filter_value('min', !empty($element_input['min']) ? $element_input['min'] : '');
+    $element_input['max'] = $this->get_filter_value('max', !empty($element_input['max']) ? $element_input['max'] : '');
     unset($element_input['default_date']);
     unset($element_input['default_to_date']);
 
@@ -203,6 +203,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
     // Below section copied from views_handler_filter_numeric.inc.
     $which = 'all';
+    $source = '';
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
@@ -356,14 +357,11 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   // Update the summary values to provide
   // meaningful information for each option.
   function admin_summary() {
-    $field = $this->value;
-
-    $output = "$field " . check_plain($this->operator) . ' ';
     $parts = $this->date_handler->date_parts();
     $widget_options = $this->widget_options();
     // If the filter is exposed, display the granularity.
     if ($this->options['exposed']) {
-      return t('(@field) <strong>Exposed</strong> @widget @format', array('@field' => $field, '@format' => $parts[$this->date_handler->granularity], '@widget' => $widget_options[$this->options['form_type']]));
+      return t('<strong>Exposed</strong> @widget @format', array('@format' => $parts[$this->date_handler->granularity], '@widget' => $widget_options[$this->options['form_type']]));
     }
     // If not exposed, display the value.
     if (in_array($this->operator, $this->operator_values(2))) {

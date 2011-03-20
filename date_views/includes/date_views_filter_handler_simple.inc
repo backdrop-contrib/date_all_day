@@ -117,12 +117,13 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder_min = $this->placeholder();
     $placeholder_max = $this->placeholder();
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
     if ($this->operator == 'between') {
-      $this->query->add_where_expression($this->options['group'], "$field >= $placeholder_min", array($placeholder_min => $min_value));
-      $this->query->add_where_expression($this->options['group'], "$field <= $placeholder_max", array($placeholder_max => $max_value));
+      $this->query->add_where_expression($group, "$field >= $placeholder_min", array($placeholder_min => $min_value));
+      $this->query->add_where_expression($group, "$field <= $placeholder_max", array($placeholder_max => $max_value));
     }
     else {
-      $this->query->add_where_expression($this->options['group'], "$field <= $placeholder_min OR $field >= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));
+      $this->query->add_where_expression($group, "$field <= $placeholder_min OR $field >= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));
     }
   }
 
@@ -131,7 +132,8 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $field = $this->date_handler->sql_field($field);
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder = $this->placeholder();
-    $this->query->add_where_expression($this->options['group'], "$field $this->operator $placeholder", array($placeholder => $value));
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
+    $this->query->add_where_expression($group, "$field $this->operator $placeholder", array($placeholder => $value));
   }
 
   /**

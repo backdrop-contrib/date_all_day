@@ -363,6 +363,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       return t('<strong>Exposed</strong> @widget @format', array('@format' => $parts[$this->date_handler->granularity], '@widget' => $widget_options[$this->options['form_type']]));
     }
     // If not exposed, display the value.
+    $output = '';
     if (in_array($this->operator, $this->operator_values(2))) {
       $min = check_plain(!empty($this->options['default_date']) ? $this->options['default_date'] : $this->options['value']['min']);
       $max = check_plain(!empty($this->options['default_to_date']) ? $this->options['default_to_date'] : $this->options['value']['max']);

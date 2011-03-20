@@ -111,8 +111,8 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   }
 
   function op_between($field) {
-    $min_value = $this->get_value('min', $this->value['min']);
-    $max_value = $this->get_value('max', $this->value['max']);
+    $min_value = $this->get_filter_value('min', $this->value['min']);
+    $max_value = $this->get_filter_value('max', $this->value['max']);
     $field = $this->date_handler->sql_field($field);
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder_min = $this->placeholder();

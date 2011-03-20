@@ -189,13 +189,15 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Inject a test for valid date range before the regular query.
    * Override the parent query to be able to control the $group.
    */
-  function query($group = 0) {
+  function query($group_by = FALSE) {
     if ($this->date_forbid()) {
       return;
     }
     $this->formula = $this->formula($this->real_field);
     $this->granularity = $this->date_handler->arg_granularity($this->argument);
     $this->ensure_my_table();
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
+
     // Now that our table is secure, get our formula.
     if ($this->granularity != 'week') {
       $placeholder = $this->placeholder();
@@ -227,11 +229,12 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->min_date = $this->date_range[0];
     $this->max_date = $this->date_range[1];
     $this->limit = date_range_years($this->options['year_range']); 
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
 
     // See if we're outside the allowed date range for our argument.
     if (date_format($this->min_date, 'Y') < $this->limit[0] || date_format($this->max_date, 'Y') > $this->limit[1]) {
       $this->forbid = TRUE;
-      $this->query->add_where_expression('date', "0=1", array());
+      $this->query->add_where_expression($group, "0=1", array());
       return TRUE;
     }
     return FALSE;

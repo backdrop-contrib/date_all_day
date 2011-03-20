@@ -162,7 +162,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
    *
    * The argument sent may be found at $this->argument.
    */
-  function query($group = 0) {
+  function query($group_by = FALSE) {
     if ($this->date_forbid()) {
       return;
     }
@@ -193,6 +193,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
         $i++;
       }
     }
+    $this->query->set_where_group($this->options['date_method'], $this->options['date_group']);
     $this->granularity = $this->date_handler->arg_granularity($this->argument);
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
     if (!empty($this->query_fields)) {

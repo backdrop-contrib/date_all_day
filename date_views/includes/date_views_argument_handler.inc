@@ -17,6 +17,10 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
    */
   function init(&$view, &$options) {
     parent::init($view, $options);
+
+    if (empty($this->view->date_info)) {
+      $this->view->date_info = new stdClass();
+    }
     if (empty($this->view->date_info->date_fields)) {
       $this->view->date_info->date_fields = array();
     }

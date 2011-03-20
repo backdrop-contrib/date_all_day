@@ -21,7 +21,6 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $this->form_submitted = FALSE;
     $this->date_handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
     $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
-    $this->real_field = date_views_old_name($this->real_field);
   }
 
   // Set default values for the date filter.

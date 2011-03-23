@@ -501,7 +501,14 @@ class DateObject extends DateTime {
     */
   public function toISO($arr, $full = FALSE) {
     // Add empty values to avoid errors
-    $arr += array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
+    // The empty values must create a valid date or we will get date slippage,
+    // i.e. a value of 2011-00-00 will get interpreted as November of 2010 by PHP.
+    if ($full) {
+      $arr += array('year' => 0, 'month' => 1, 'day' => 1, 'hour' => 0, 'minute' => 0, 'second' => 0);
+    }
+    else {
+      $arr += array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
+    }
     $datetime = '';
     if ($arr['year'] !== '') {
       $datetime = date_pad(intval($arr['year']), 4);

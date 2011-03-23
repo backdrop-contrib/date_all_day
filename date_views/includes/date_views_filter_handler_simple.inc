@@ -96,7 +96,6 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   }
 
   function accept_exposed_input($input) {
-      
     $element_input = $input[$this->options['expose']['identifier']];
 
     $element_input['value'] = $this->get_filter_value('value', !empty($element_input['value']) ? $element_input['value'] : '');

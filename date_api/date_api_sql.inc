@@ -729,7 +729,8 @@ class date_sql_handler {
     foreach ($fromto as $arg) {
       $parts = array();
       if ($arg == '@') {
-        $parts['date'] = date_array(date_now());
+        $date = date_now();
+        $parts['date'] = $date->toArray();
       }
       elseif (preg_match('/(\d{4})?-?(W)?(\d{1,2})?-?(\d{1,2})?[T\s]?(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?/', $arg, $matches)) {
         $date = array();

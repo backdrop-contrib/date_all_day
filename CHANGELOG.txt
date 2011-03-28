@@ -31,6 +31,7 @@ correctly.
 Version 7.x-2.x
 ======================
 
+- #1094408 by Boobaa: Date field not showing up in views arguments in localized site
 - #1041428, by tim.plunkett: Fix logic errors in 'All Day' computations.
 - #1054458: Move date_increment_round() function into Date API module so it is always available.
 - #745074, by rsevero:  Don't test for valid timezone-adjusted date for dates that don't use time.

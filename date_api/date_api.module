@@ -107,19 +107,18 @@ class DateObject extends DateTime {
     elseif (empty($tz)) {
       $tz = date_default_timezone_object();
     }
-
     // Special handling for Unix timestamps expressed in the local timezone.
     // Create a date object in UTC and convert it to the local timezone.
     // Don't try to turn things like '2010' with a format of 'Y' into a timestamp.
     if (is_numeric($time) && (empty($format) || $format == 'U')) {
       // Assume timestamp.
       $time = "@". $time;
+      $date = new DateObject($time, 'UTC');
       if ($tz->getName() != 'UTC') {
-        $date = new DateObject($time, 'UTC');
         $date->setTimezone($tz);
-        $time = $date->format(DATE_FORMAT_DATETIME);
-        $format = DATE_FORMAT_DATETIME;
-      }  
+      }
+      $time = $date->format(DATE_FORMAT_DATETIME);
+      $format = DATE_FORMAT_DATETIME; 
     }
 
     if (is_array($time)) {
@@ -170,6 +169,7 @@ class DateObject extends DateTime {
     if (!$this->getTimezone() || !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
       $this->setTimezone(new DateTimeZone("UTC"));
     }
+
   }
 
   /**
@@ -476,7 +476,6 @@ class DateObject extends DateTime {
     elseif (empty($this->errors)) {
       $this->setTime($final_date['hour'], $final_date['minute'], $final_date['second']);
     }
-
     return $this;
   }
 
@@ -545,7 +544,8 @@ class DateObject extends DateTime {
    *   'first' - default to the first possible valid value.
    */   
   public function setFuzzyDate($date, $format = NULL, $default = 'first') {
-    $comp = new DateObject($date, $this->getTimeZone()->getName(), $format);
+    $timezone = $this->getTimeZone() ? $this->getTimeZone()->getName() : NULL;
+    $comp = new DateObject($date, $timezone, $format);
     $arr = $comp->toArray(TRUE);
     foreach ($arr as $key => $value) {
       // Set to intval here and then test that it is still an integer.

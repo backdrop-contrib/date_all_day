@@ -213,7 +213,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
           $this->table_alias = NULL;
         }
         $this->formula = $this->formula();
-        parent::query($this->options['date_group']);
+        parent::query($group_by);
       }
     }
   }

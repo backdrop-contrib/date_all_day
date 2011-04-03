@@ -229,7 +229,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->min_date = $this->date_range[0];
     $this->max_date = $this->date_range[1];
     $this->limit = date_range_years($this->options['year_range']); 
-    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
     // See if we're outside the allowed date range for our argument.
     if (date_format($this->min_date, 'Y') < $this->limit[0] || date_format($this->max_date, 'Y') > $this->limit[1]) {

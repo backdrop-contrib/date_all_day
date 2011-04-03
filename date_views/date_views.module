@@ -236,3 +236,18 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
     }
   }
 }
+
+/**
+ * The instanceof function makes this work for any handler that was derived 
+ * from 'views_handler_filter_date' or 'views_handler_argument_date', 
+ * which includes core date fields like the node updated field.
+*/
+function date_views_handler_is_date($handler, $type = 'argument') {
+  switch ($type) {
+    case 'filter':
+      return $handler instanceof views_handler_filter_date;
+    case 'argument':
+      return $handler instanceof views_handler_argument_date;
+  }
+  return FALSE;
+}

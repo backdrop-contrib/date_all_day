@@ -467,6 +467,16 @@ class DateObject extends DateTime {
       $this->timeOnly = TRUE;
     }
     elseif (empty($this->errors)) {
+      // setDate() expects a valid year, month, and day.
+      // Set some defaults for dates that don't use this to
+      // keep PHP from interpreting it as the last day of
+      // the previous month or last month of the previous year.
+      if (empty($this->granularity['month'])) {
+        $final_date['month'] = 1;
+      }
+      if (empty($this->granularity['day'])) {
+        $final_date['day'] = 1;
+      }
       $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);
     }
 

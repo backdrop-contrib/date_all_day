@@ -456,6 +456,7 @@ class DateObject extends DateTime {
     $final_date['year'] = intval($final_date['year']);
 
     $this->errors += $this->arrayErrors($final_date);
+    $granularity = drupal_map_assoc($this->granularity);
 
     // If the input value is '0000-00-00', PHP's date class will later incorrectly convert
     // it to something like '-0001-11-30' if we do setDate() here. If we don't do
@@ -471,10 +472,10 @@ class DateObject extends DateTime {
       // Set some defaults for dates that don't use this to
       // keep PHP from interpreting it as the last day of
       // the previous month or last month of the previous year.
-      if (empty($this->granularity['month'])) {
+      if (empty($granularity['month'])) {
         $final_date['month'] = 1;
       }
-      if (empty($this->granularity['day'])) {
+      if (empty($granularity['day'])) {
         $final_date['day'] = 1;
       }
       $this->setDate($final_date['year'], $final_date['month'], $final_date['day']);

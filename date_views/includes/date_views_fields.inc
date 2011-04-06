@@ -116,7 +116,7 @@ function _date_views_fields($base = 'node') {
     }
 
     // Allow custom modules to provide date fields.
-    elseif (date_views_handler_is_date($handler, 'filter') {
+    elseif (date_views_handler_is_date($handler, 'filter')) {
       foreach (module_implements('date_views_fields') as $module) {
         $function = $module . '_date_views_fields';
         if ($custom = $function("$table_name.$field_name")) {

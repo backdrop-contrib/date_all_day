@@ -61,7 +61,7 @@ function _date_views_fields($base = 'node') {
 
     // For Field module fields, get the date type.
     $custom = array();
-    if ($handler->definition['group'] == t('Fields')) {
+    if ($handler->definition['group'] == t('Content')) {
       $field = field_info_field($handler->definition['field_name']);
       switch ($field['type']) {
        case 'date':

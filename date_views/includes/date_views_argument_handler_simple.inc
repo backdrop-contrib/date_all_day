@@ -225,6 +225,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Add a callback to determine if we have moved outside the valid date range for this argument.
    */
   function date_forbid() {
+    if (empty($this->argument)) {
+      return;
+    }
     $this->date_range = $this->date_handler->arg_range($this->argument);
     $this->min_date = $this->date_range[0];
     $this->max_date = $this->date_range[1];

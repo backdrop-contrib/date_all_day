@@ -196,7 +196,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->formula = $this->formula($this->real_field);
     $this->granularity = $this->date_handler->arg_granularity($this->argument);
     $this->ensure_my_table();
-    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
     // Now that our table is secure, get our formula.
     if ($this->granularity != 'week') {

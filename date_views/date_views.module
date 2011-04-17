@@ -117,7 +117,7 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
       if ($argument->position == $pos) {
         break;
       }
-      $args[] = $argument->options['wildcard'];
+      $args[] = $argument->options['exception']['value'];
     }
   }
 

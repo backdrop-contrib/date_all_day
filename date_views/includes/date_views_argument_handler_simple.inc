@@ -168,7 +168,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $value = $data->{$this->name_alias};
     if (empty($value)) {
-      return $this->options['wildcard'];
+      return $this->options['exception']['value'];
     }
     $range = $this->date_handler->arg_range($value);
     return date_format_date($range[0], 'custom', $format);

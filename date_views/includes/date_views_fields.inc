@@ -82,7 +82,7 @@ function _date_views_fields($base = 'node') {
       }
       
       $db_info = date_api_database_info($field);      
-      $name = $table_name . "." . $field_name . "_value";
+      $name = $table_name . "." . $field_name;
       $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
 
       $fromto = array(

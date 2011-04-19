@@ -208,15 +208,14 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       $this->query->add_where($group, $formula, $placeholders, 'formula');
     }
     else {
-      $format = DATE_FORMAT_DATETIME;
-      $from_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][0]);
-      $to_field = str_replace($field['table_name'] .'_', $this->table .'.', $field['fromto'][1]);
-      $from = $this->date_handler->sql_where_date('DATE', $from_field, '<=', date_format($this->max_date, $format));
-      $to   = $this->date_handler->sql_where_date('DATE', $to_field, '>=', date_format($this->min_date, $format));          
-      $sql = str_replace('***table***', $field['table_name'], "($from AND $to)");
-      if ($sql) {
-        $this->query->add_where_expression($group, $sql, array());
-      }
+      $min_value = date_format($this->min_date, DATE_FORMAT_DATETIME);
+      $max_value = date_format($this->max_date, DATE_FORMAT_DATETIME);
+      $field = $this->date_handler->sql_field($this->table . '.' . $this->real_field);
+      $field = $this->date_handler->sql_format(DATE_FORMAT_DATETIME, $field);
+      $placeholder_min = $this->placeholder();
+      $placeholder_max = $this->placeholder();
+      $this->query->add_where_expression($group, "$field >= $placeholder_min", array($placeholder_min => $min_value));
+      $this->query->add_where_expression($group, "$field <= $placeholder_max", array($placeholder_max => $max_value));
     }
 
   }

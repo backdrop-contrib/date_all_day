@@ -33,7 +33,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
 
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
-
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
  }
@@ -194,12 +193,15 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       return;
     }
     $this->formula = $this->formula($this->real_field);
-    $this->granularity = $this->date_handler->arg_granularity($this->argument);
+    $this->date_handler->granularity = $this->date_handler->arg_granularity($this->argument);
+    $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
+    $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
+
     $this->ensure_my_table();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
     // Now that our table is secure, get our formula.
-    if ($this->granularity != 'week') {
+    if ($this->date_handler->granularity != 'week') {
       $placeholder = $this->placeholder();
       $formula = $this->get_formula() .' = ' . $placeholder;
       $placeholders = array(

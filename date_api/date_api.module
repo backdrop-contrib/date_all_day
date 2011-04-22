@@ -400,6 +400,7 @@ class DateObject extends DateTime {
         case 'Y':
           $final_date['year'] = $value;
           $this->addGranularity('year');
+          if (strlen($value) < 4) $this->errors['year'] = t('The year is invalid. Please check that entry includes four digits.');
           break;
         case 'y':
           $year = $value;
@@ -450,7 +451,7 @@ class DateObject extends DateTime {
     if ($tz) {
       $this->addGranularity('timezone');
     }
-
+    
     // SetDate expects an integer value for the year, results can 
     // be unexpected if we feed it something like '0100' or '0000';
     $final_date['year'] = intval($final_date['year']);

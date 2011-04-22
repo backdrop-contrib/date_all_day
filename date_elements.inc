@@ -293,10 +293,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$from_field]['#date_title'] = $instance['label'];
   }
 
-  // Make sure field info will be available to the validator which
-  // does not get the values in $form.
-  $form_state['#field_info'][$field['field_name']] = $field;
-
   return $element;
 }
 
@@ -317,20 +313,21 @@ function date_element_empty($element, &$form_state) {
  * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element, &$form_state) {
-  $form_values = $form_state['values'];
+  $form_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
+  $form_input = drupal_array_get_nested_value($form_state['input'], $element['#field_parents']);
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $langcode = $element['#language'];
 
   // If the whole field is empty and that's OK, stop now.
-  if (empty($form_state['input'][$field_name]) && !$element['#required']) {
+  if (empty($form_input[$field_name]) && !$element['#required']) {
     return;
   }
 
   // Repeating dates have a different form structure, so get the
   // right item values.
   $item = isset($form_values[$field_name][$langcode]['rrule']) ? $form_values[$field_name][$langcode] : $form_values[$field_name][$langcode][$delta];
-  $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_state['input'][$field_name][$langcode] : $form_state['input'][$field_name][$langcode][$delta];
+  $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_input[$field_name][$langcode] : $form_input[$field_name][$langcode][$delta];
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);

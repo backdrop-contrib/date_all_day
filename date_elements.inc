@@ -215,11 +215,11 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   $element[$from_field] = array(
     '#field'         => $field,
+    '#instance'      => $instance,
     '#title'         => t($instance['label']),
     '#weight'        => $instance['widget']['weight'],
     '#required'      => ($instance['required'] && $delta == 0) ? 1 : 0,
     '#default_value' => isset($element['#default_value'][$from_field]) ? $element['#default_value'][$from_field] : '',
-    '#field'         => $field,
     '#delta'         => $delta,
     '#date_timezone' => $element['#date_timezone'],
     '#date_format'      => date_limit_format(date_input_format($element, $field, $instance), $field['settings']['granularity']),

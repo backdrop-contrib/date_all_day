@@ -271,9 +271,8 @@ class date_sql_handler {
   function sql_tz($field, $offset = NULL) {
     // If the timezones are values they need to be quoted, but
     // if they are field names they do not.
-    $db_zone   = $this->db_timezone_field ? $this->db_timezone_field : "'{$this->db_timezone}'";
-    $localzone = $this->local_timezone_field ? $this->local_timezone_field : "'{$this->local_timezone}'"; 
-
+    $db_zone   = !empty($this->db_timezone_field) ? $this->db_timezone_field : "'{$this->db_timezone}'";
+    $localzone = !empty($this->local_timezone_field) ? $this->local_timezone_field : "'{$this->local_timezone}'"; 
     // If a fixed offset is required, use it.
     if ($offset !== NULL) {
       return $this->sql_offset($field, $offset);
@@ -284,7 +283,7 @@ class date_sql_handler {
     }
     // If the db has no timezone support, adjust by the offset,
     // could be either a field name or a value.
-    elseif (!$this->db_tz_support()) {
+    elseif (!$this->db_tz_support() || empty($localzone)) {
       if (!empty($this->offset_field)) {
         return $this->sql_offset($field, $this->offset_field);
       }

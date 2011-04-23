@@ -28,6 +28,7 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Issue #1131308 Don't try to do timzone conversion when there is no localzone for a field.
 - Issue #1093222 Fix broken function to remove calendar views.
 - Issue #820670 Add update to move D6 date format data to D7 data.
 - Issue 1074344 Fix problem with date select widget that keeps resetting pm back to am.

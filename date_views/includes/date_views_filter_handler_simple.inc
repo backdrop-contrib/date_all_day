@@ -66,8 +66,12 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     // This is a date that needs to be constructed from options like 'now' .
     $default_option = $prefix == 'max' ? $options['default_to_date'] : $options['default_date'];
     if (!empty($default_option)) {
+      str_replace('now', 'today', $default_option);
       $date = date_create($default_option, date_default_timezone_object());
       $default_date = !empty($date) ? $date->format($this->format) : '';
+
+      // The format for our filter is in ISO format, but the widget will need it in datetime format.
+      $default_date = str_replace('T', ' ', $default_date);
     }
     // This a fixed date.
     else {

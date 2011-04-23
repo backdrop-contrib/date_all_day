@@ -214,12 +214,12 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     if (!empty($form_state['exposed'])) {
       $identifier = $this->options['expose']['identifier'];
 
-      if (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator'])) {
+      if (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator_id'])) {
         // exposed and locked.
         $which = in_array($this->operator, $this->operator_values(2)) ? 'minmax' : 'value';
       }
       else {
-        $source = 'edit-' . drupal_html_id($this->options['expose']['operator']);
+        $source = 'edit-' . drupal_html_id($this->options['expose']['operator_id']);
       }
     }
 
@@ -316,10 +316,8 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#suffix' => '</div></div>',
     );
     if ($which == 'all') {
-      //$form[$prefix]['#process'] = array('ctools_dependent_process', $type . '_element_process');
-      $form[$prefix]['#dependency'] = array($source => $operator_values);  
+      $form[$prefix]['#dependency'] = array($source => $operator_values);
     }
-
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
       $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
     } 

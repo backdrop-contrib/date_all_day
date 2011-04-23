@@ -92,7 +92,10 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
         return $this->date_default_value($prefix);
       }
     }
-    return $input;
+    // All our date widgets provide datetime values but we use ISO in our SQL
+    // for consistency between the way filters and arguments work (arguments
+    // cannot contain spaces).
+    return str_replace(' ', 'T', $input);
   }
 
   function accept_exposed_input($input) {

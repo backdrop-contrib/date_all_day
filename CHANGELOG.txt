@@ -28,6 +28,7 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Issue #1115770, Make sure filters values are switched back to ISO format so time comparisons work correctly.
 - Issue #1132916 by znerol, Fix a couple more usages of date_default_timezone_name().
 - Issue #1131308 Don't try to do timzone conversion when there is no localzone for a field.
 - Issue #1093222 Fix broken function to remove calendar views.

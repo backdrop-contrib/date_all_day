@@ -28,6 +28,7 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Issue #1059078 Add preliminary support for SQLite dates.
 - Issue #1103290 by kevintheday, Use db_driver() to determine database engine.
 - The 'now' values got broken again somewhere along the line. Now we need to switch the ISO format used by our SQL queries back to the datetime format the widgets use.
 - Looks like Views changed ['expose']['operator'] to ['expose']['operator_id'].

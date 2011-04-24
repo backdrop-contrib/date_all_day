@@ -192,6 +192,17 @@ class date_sql_handler {
           case DATE_DATETIME:
             break;
         }
+      case 'sqlite':
+        switch ($this->date_type) {
+          case DATE_UNIX:
+            $field = "datetime($field, 'unixepoch')";
+            break;
+          case DATE_ISO:
+          case DATE_DATETIME:
+            $field = "datetime($field)";
+            break;
+        }
+        break;
       break;
     }
     // Adjust the resulting value to the right timezone/offset.
@@ -209,6 +220,8 @@ class date_sql_handler {
           return "ADDTIME($field, SEC_TO_TIME($offset))";
         case 'pgsql':
           return "($field + INTERVAL '$offset SECONDS')";;
+        case 'sqlite':
+          return "datetime($field, '$offset seconds')";;
       }
     }
     return $field;
@@ -246,6 +259,14 @@ class date_sql_handler {
             return "($field + INTERVAL '$count $granularity')";
           case 'SUB':
             return "($field - INTERVAL '$count $granularity')";
+        }
+      case 'sqlite':
+        $granularity .= 'S';
+        switch ($direction) {
+          case 'ADD':
+            return "datetime($field, '+$count $granularity')";
+          case 'SUB':
+            return "datetime($field, '-$count $granularity')";
         }
      }
      return $field;
@@ -359,6 +380,28 @@ class date_sql_handler {
           );
         $format = strtr($format, $replace);
         return "TO_CHAR($field, '$format')";
+      case 'sqlite':
+        $replace = array(
+          'Y' => '%Y', // 4 digit year number
+          'y' => '%Y', // no format for 2 digit year number
+          'M' => '%m', // no format for 3 letter month name
+          'm' => '%m', // month number with leading zeros
+          'n' => '%m', // no format for month number without leading zeros
+          'F' => '%m', // no format for full month name
+          'D' => '%d', // no format for 3 letter day name
+          'd' => '%d', // day of month number with leading zeros
+          'l' => '%d', // no format for full day name
+          'j' => '%d', // no format for day of month number without leading zeros
+          'W' => '%W', // ISO week number
+          'H' => '%H', // 24 hour hour with leading zeros
+          'h' => '%H', // no format for 12 hour hour with leading zeros
+          'i' => '%M', // minutes with leading zeros
+          's' => '%S', // seconds with leading zeros
+          'A' => '', // no format for  AM/PM
+          '\WW' => '', // Week number
+          );
+        $format = strtr($format, $replace);
+        return "strftime('$format', $field)";
     }
   }
 

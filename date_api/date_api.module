@@ -729,10 +729,6 @@ class DateObject extends DateTime {
   }
 }
 
-function date_db_type() {
-  return $GLOBALS['databases']['default']['default']['driver'];
-}
-
 /**
  * Helper function for getting the format string for a date type.
  */

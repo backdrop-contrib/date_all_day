@@ -28,6 +28,9 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Issue #1103290 by kevintheday, Use db_driver() to determine database engine.
+- The 'now' values got broken again somewhere along the line. Now we need to switch the ISO format used by our SQL queries back to the datetime format the widgets use.
+- Looks like Views changed ['expose']['operator'] to ['expose']['operator_id'].
 - Issue #1115770, Make sure filters values are switched back to ISO format so time comparisons work correctly.
 - Issue #1132916 by znerol, Fix a couple more usages of date_default_timezone_name().
 - Issue #1131308 Don't try to do timzone conversion when there is no localzone for a field.

@@ -16,7 +16,7 @@
  *  @return - correct sql string for database type
  */
 function date_sql_concat($array) {
-  switch (date_db_type()) {
+  switch ( db_driver()) {
     case ('mysql'):
     case ('mysqli'):
       return "CONCAT(" . implode(",", $array) . ")";
@@ -32,7 +32,7 @@ function date_sql_concat($array) {
  * @return SQL statement to return the first non-NULL value in the list.
  */
 function date_sql_coalesce($array) {
-  switch (date_db_type()) {
+  switch ( db_driver()) {
     case ('mysql'):
     case ('mysqli'):
     case ('pgsql'):
@@ -61,7 +61,7 @@ function date_sql_pad($str, $size = 2, $pad = '0', $side = 'l') {
  * A class to manipulate date SQL.
  */
 class date_sql_handler {
-  var $db_type = 'mysql';
+  var $db_type = NULL;
   var $date_type = DATE_DATETIME;
   var $db_timezone = 'UTC'; // A string timezone name.
   var $local_timezone = NULL; // A string timezone name.
@@ -70,15 +70,11 @@ class date_sql_handler {
   var $offset_field = NULL; // Use if the offset is stored in a field.
 
   function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
-    $this->db_type = $this->get_db_type();
+    $this->db_type =  db_driver();
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
     $this->local_timezone = isset($local_timezone) ? $local_timezone : date_default_timezone();
     date_api_set_db_timezone();
-  }
-
-  function get_db_type() {
-    return $GLOBALS['databases']['default']['default']['driver'];
   }
   
   /**
@@ -127,7 +123,7 @@ class date_sql_handler {
    */
   function set_db_timezone($offset = '+00:00') {
     static $already_set = FALSE;
-    $type = $this->get_db_type();
+    $type =  db_driver();
     if (!$already_set) {
       if (($type == 'mysqli' || $type == 'mysql')) {
         db_query("SET @@session.time_zone = '$offset'");

@@ -19,6 +19,7 @@ function date_field_schema($field) {
         'type' => 'datetime',
         'mysql_type' => 'DATETIME',
         'pgsql_type' => 'timestamp without time zone', 
+        'sqlite_type' => 'TEXT', 
         'not null' => FALSE, 
         'sortable' => TRUE, 
         'views' => TRUE,

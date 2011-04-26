@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1138700, missed a couple references to the construct() function.
 
 ======================
 Version 7.x-2.0-alpha2

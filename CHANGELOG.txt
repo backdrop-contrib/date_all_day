@@ -28,6 +28,8 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Issue #1138622, preliminary pass at adding support for SQL Server.
+- Issue #1136618 by ksenzee, Fix broken hide/show capability for date filter values.
 - Issue #1059078 Add preliminary support for SQLite dates.
 - Issue #1103290 by kevintheday, Use db_driver() to determine database engine.
 - The 'now' values got broken again somewhere along the line. Now we need to switch the ISO format used by our SQL queries back to the datetime format the widgets use.

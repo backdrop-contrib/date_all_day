@@ -70,7 +70,7 @@ class date_sql_handler {
   var $offset_field = NULL; // Use if the offset is stored in a field.
 
   function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
-    $this->db_type =  db_driver();
+    $this->db_type = db_driver();
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
     $this->local_timezone = isset($local_timezone) ? $local_timezone : date_default_timezone();
@@ -125,11 +125,17 @@ class date_sql_handler {
     static $already_set = FALSE;
     $type =  db_driver();
     if (!$already_set) {
-      if (($type == 'mysqli' || $type == 'mysql')) {
-        db_query("SET @@session.time_zone = '$offset'");
-      }
-      elseif ($type == 'pgsql') {
-        db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
+      switch ($type) {
+        case 'mysql':
+        case 'mysqli':
+          db_query("SET @@session.time_zone = '$offset'");
+          break;
+        case 'pgsql':
+          db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
+          break;
+        case 'sqlsvr':
+          db_query('TimeZone.setDefault(TimeZone.getTimeZone("GMT"))');
+          break;
       }
       $already_set = TRUE;
     }
@@ -203,6 +209,17 @@ class date_sql_handler {
             break;
         }
         break;
+      case 'sqlsrv':
+        switch ($this->date_type) {
+          case DATE_UNIX:
+            $field = "DATEDIFF(s, '19700101 00:00:00:000', $field)";
+            break;
+          case DATE_ISO:
+          case DATE_DATETIME:
+            $field = "CAST($field as smalldatetime)";
+            break;
+        }
+        break;
       break;
     }
     // Adjust the resulting value to the right timezone/offset.
@@ -221,7 +238,9 @@ class date_sql_handler {
         case 'pgsql':
           return "($field + INTERVAL '$offset SECONDS')";;
         case 'sqlite':
-          return "datetime($field, '$offset seconds')";;
+          return "datetime($field, '$offset seconds')";
+        case 'sqlsrv':
+          return "DATEADD(second, $offset, $field)";
       }
     }
     return $field;
@@ -402,6 +421,28 @@ class date_sql_handler {
           );
         $format = strtr($format, $replace);
         return "strftime('$format', $field)";
+      case 'sqlsvr':
+        $replace = array(
+          'Y' => 'yyyy', // 4 digit year number
+          'y' => 'yy', // 2 digit year number
+          'M' => 'm', // no format for 3 letter month name
+          'm' => 'mm', // month number with leading zeros
+          'n' => 'm', // month number without leading zeros
+          'F' => 'm', // no format for full month name
+          'D' => 'd', // no format for 3 letter day name
+          'd' => 'dd', // day of month number with leading zeros
+          'l' => 'd', // no format for full day name
+          'j' => 'd', // day of month number without leading zeros
+          'W' => 'wk', // ISO week number
+          'H' => 'hh', // 24 hour hour with leading zeros
+          'h' => 'hh', // no format for 12 hour hour with leading zeros
+          'i' => 'mi', // minutes with leading zeros
+          's' => 'ss', // seconds with leading zeros
+          'A' => '', // no format for  AM/PM
+          '\WW' => '', // Week number
+          );
+        $format = strtr($format, $replace);
+        return "DATEPART($format, $field)";
     }
   }
 

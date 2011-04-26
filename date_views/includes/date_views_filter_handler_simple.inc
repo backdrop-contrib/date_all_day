@@ -320,6 +320,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#suffix' => '</div></div>',
     );
     if ($which == 'all') {
+      $form[$prefix]['#pre_render'][] = 'ctools_dependent_pre_render';
       $form[$prefix]['#dependency'] = array($source => $operator_values);
     }
     if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {

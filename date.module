@@ -526,8 +526,7 @@ function date_prepare_entity($formatter, $entity_type, $entity, $field, $instanc
    $db_info = date_api_database_info($field);
 
    // Create a DateAPI SQL handler class for this field type.
-   $handler = new date_sql_handler();
-   $handler->construct($field['type']);
+   $handler = new date_sql_handler($field['type']);
 
    // If this date field stores a timezone in the DB, tell the handler about it.
    if ($field['settings']['tz_handling'] == 'date') {

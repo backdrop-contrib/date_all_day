@@ -10,8 +10,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   function init(&$view, &$options) {
     parent::init($view, $options);
     module_load_include('inc', 'date_api', 'date_api_sql');
-    $this->date_handler = new date_sql_handler();
-    $this->date_handler->date_type = DATE_UNIX;
+    $this->date_handler = new date_sql_handler(DATE_UNIX);
     if (!empty($this->definition['field_name'])) {
       $field = field_info_field($this->definition['field_name']);
       if (!empty($field) && !empty($field['type'])) {
@@ -104,7 +103,6 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
   function accept_exposed_input($input) {
     $element_input = $input[$this->options['expose']['identifier']];
-
     $element_input['value'] = $this->get_filter_value('value', !empty($element_input['value']) ? $element_input['value'] : '');
     $element_input['min'] = $this->get_filter_value('min', !empty($element_input['min']) ? $element_input['min'] : '');
     $element_input['max'] = $this->get_filter_value('max', !empty($element_input['max']) ? $element_input['max'] : '');

@@ -28,6 +28,7 @@ a single argument.
 Version 7.x-2.x
 ======================
 
+- Follow up to Issue #1103290, constructor was not set up correctly and did not get triggered, so none of the date handlers had a db_type.
 - Issue #1138622, preliminary pass at adding support for SQL Server.
 - Issue #1136618 by ksenzee, Fix broken hide/show capability for date filter values.
 - Issue #1059078 Add preliminary support for SQLite dates.

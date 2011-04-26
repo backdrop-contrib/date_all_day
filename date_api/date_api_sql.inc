@@ -69,12 +69,12 @@ class date_sql_handler {
   var $local_timezone_field = NULL; // Use if the local timezone is stored in a field.
   var $offset_field = NULL; // Use if the offset is stored in a field.
 
-  function construct($date_type = DATE_DATETIME, $local_timezone = NULL) {
+  function __construct($date_type = DATE_DATETIME, $local_timezone = NULL, $offset = '+00:00') {
     $this->db_type = db_driver();
     $this->date_type = $date_type;
     $this->db_timezone = 'UTC';
     $this->local_timezone = isset($local_timezone) ? $local_timezone : date_default_timezone();
-    date_api_set_db_timezone();
+    $this->set_db_timezone($offset);
   }
   
   /**
@@ -83,7 +83,6 @@ class date_sql_handler {
   function db_tz_support($reset = FALSE) {
     $has_support = variable_get('date_db_tz_support', -1);
     if ($has_support == -1 || $reset) {
-      date_api_set_db_timezone();
       $has_support = FALSE;
       switch ($this->db_type) {
         case 'mysql':

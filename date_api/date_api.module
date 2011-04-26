@@ -1780,15 +1780,6 @@ function date_api_theme() {
 }
 
 /**
- * Wrapper around date handler setting for timezone.
- */
-function date_api_set_db_timezone($offset = '+00:00') {
-  module_load_include('inc', 'date_api', 'date_api_sql');
-  $handler = new date_sql_handler();
-  return $handler->set_db_timezone($offset);
-}
-
-/**
  *  Function to figure out which local timezone applies to a date and select it
  */
 function date_get_timezone($handling, $timezone = '') {

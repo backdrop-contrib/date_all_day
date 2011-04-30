@@ -191,6 +191,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if ($this->date_forbid()) {
       return;
     }
+    
     $this->formula = $this->formula($this->real_field);
     $this->date_handler->granularity = $this->date_handler->arg_granularity($this->argument);
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');

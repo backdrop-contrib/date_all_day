@@ -41,8 +41,9 @@ class date_navigation_plugin_style extends views_plugin_style {
   }
 
   function query() {
-    //$this->view->query->clear_fields();
-
+    // We don't actually want to retrieve any fields in the query for the navigation bar.
+    $this->view->query->clear_fields();
+    
     // Bring the argument information into the view so our theme can access it.
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {

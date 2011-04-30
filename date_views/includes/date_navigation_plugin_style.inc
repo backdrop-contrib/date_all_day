@@ -23,7 +23,7 @@ class date_navigation_plugin_style extends views_plugin_style {
     $count = 0;
     $found = FALSE;
     foreach ($arguments as $id => $argument) {
-      if ($argument['field'] == 'date_argument') {
+      if (!date_views_handler_is_date($argument, 'argument')) {
         if ($count > 0) {
           $errors[] = t('The %style cannot use more than one Date: Date argument.', array('%style' => $this->definition['title']));          
         }
@@ -46,9 +46,7 @@ class date_navigation_plugin_style extends views_plugin_style {
     // Bring the argument information into the view so our theme can access it.
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {
-      // The instanceof function makes this work for any handler that was derived 
-      // from date_views_argument_handler_simple, including date_views_argument_handler.
-      if ($argument instanceof date_views_argument_handler_simple) {
+      if (date_views_handler_is_date($argument, 'argument')) {
         $this->view->date_info->granularity = $argument->granularity;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;

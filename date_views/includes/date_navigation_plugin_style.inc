@@ -43,12 +43,14 @@ class date_navigation_plugin_style extends views_plugin_style {
   function query() {
     // We don't actually want to retrieve any fields in the query for the navigation bar.
     $this->view->query->clear_fields();
-    
+    // But we have to have *something* as a field or Views will throw database exception errors.
+    $this->view->query->add_field(NULL, "0", 'EMPTY');
+
     // Bring the argument information into the view so our theme can access it.
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {
       if (date_views_handler_is_date($argument, 'argument')) {
-        $this->view->date_info->granularity = $argument->granularity;
+        $this->view->date_info->granularity = $argument->date_handler->granularity;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;
         $this->view->date_info->year = date_format($argument->min_date, 'Y');

@@ -219,6 +219,13 @@ function date_popup_element_process($element, $form_state, $form) {
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_popup');
 
+  if (isset($element['#ajax'])) {
+    $element['#ajax'] += array(
+      'trigger_as' => array('name' =>$element['#name']),
+      'event' => 'change',
+    );
+  }
+
   $element['date'] = date_popup_process_date($element);
   $element['time'] = date_popup_process_time($element);
 
@@ -288,7 +295,8 @@ function date_popup_process_date(&$element) {
     '#maxlength' => !empty($element['#maxlength']) ? $element['#maxlength'] : 30,
     '#attributes' => $element['#attributes'],
     '#parents' => $parents,
-    '#name' => array_shift($parents) . '['. implode('][', $parents) .']'
+    '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
+  	'#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
   );
   $sub_element['#value'] = $sub_element['#default_value'];
   // TODO, figure out exactly when we want this description. In many places it is not desired.
@@ -334,7 +342,8 @@ function date_popup_process_time(&$element) {
     '#maxlength' => 10,
     '#attributes' => $element['#attributes'],
     '#parents' => $parents,
-    '#name' => array_shift($parents) . '['. implode('][', $parents) .']'
+    '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
+  	'#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
   );
   $sub_element['#value'] = $sub_element['#default_value'];
 

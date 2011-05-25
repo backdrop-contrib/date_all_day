@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #408770 by vkareh, Make sure dates with #access = FALSE get passed through date_combo_element_process().
 - Issue #1037174 by das-peter, add ajax support to date popup.
 - Issue #1160614 by joelstein, Make sure date repeat rule gets split correctly no matter which line endings were used.
 - Issue #1110708 by mr.baileys, Fix problem combining date filter with other exposed filters.

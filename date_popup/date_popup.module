@@ -36,6 +36,10 @@ function date_popup_add() {
 
 function date_popup_library() {
   $libraries = array();
+  if (variable_get('date_popup_timepicker', 'default') != 'default') {
+    return $libraries;
+  }
+
   $path = drupal_get_path('module', 'date_popup');
   $libraries['timeentry'] = array(
     'title' => 'Time Entry',

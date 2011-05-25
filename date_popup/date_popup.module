@@ -296,7 +296,7 @@ function date_popup_process_date(&$element) {
     '#attributes' => $element['#attributes'],
     '#parents' => $parents,
     '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
-  	'#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
+    '#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
   );
   $sub_element['#value'] = $sub_element['#default_value'];
   // TODO, figure out exactly when we want this description. In many places it is not desired.
@@ -343,7 +343,7 @@ function date_popup_process_time(&$element) {
     '#attributes' => $element['#attributes'],
     '#parents' => $parents,
     '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
-  	'#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
+    '#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
   );
   $sub_element['#value'] = $sub_element['#default_value'];
 

@@ -75,43 +75,132 @@ function date_api_update_last_removed() {
 }
 
 /**
- * Move old date format data to new date format tables.
+ * Move old date format data to new date format tables, and delete the old tables.
+ * Insert only values that don't already exist in the new tables, 
+ * in case new version of those custom values have already been created.
  */
 function date_api_update_7000() {
+
+  // Move format data from the old 'date_format_types' table
+  // to the new 'date_format_type' table.
+
   if (db_table_exists('date_format_types')) {
-    $query = db_select('date_format_types', 'old');
-    $query->addField('old', 'type');
-    $query->addField('old', 'title');
-    $query->addField('old', 'locked');
-    $query->condition('locked', 0); 
-    db_insert('date_format_type')
-      ->from($query)
-      ->execute();
+
+    // Find all the custom entries in the D6 table.
+    $result = db_select('date_format_types', 'old')
+      ->fields('old', array('type', 'title', 'locked'))
+      ->condition('locked', 0)
+      ->execute()->fetchAll(PDO::FETCH_ASSOC);
+
+    // Iterate over all the old values.
+    foreach ($result as $row) {
+
+      // See if this value already exists in the new table
+      // (it might have been added manually before this update got run).
+      $count = db_select('date_format_type', 'new')
+        ->condition('type', $row['type'])
+        ->countQuery()
+        ->execute()->fetchField();
+
+      // If the value is missing, insert it.
+      // Do nothing if it already exists, assume the value in the 
+      // new table trumps the old values.
+      if (empty($count)) {
+        db_insert('date_format_type')
+          ->fields(array(
+            'type' => $row['type'],
+            'title' => $row['title'],
+            'locked' => $row['locked'],
+          ))
+          ->execute();
+      }
+    }
+
+    // Drop the old table.
     db_drop_table('date_format_types');
+ 
   }
 
+  // Move format data from the old 'date_formats' table
+  // (which was renamed to 'd6_date_formats') 
+  // to the new 'date_formats' table.
+
   if (db_table_exists('d6_date_formats')) {
-    $query = db_select('d6_date_formats', 'old');
-    $query->addField('old', 'format');
-    $query->addField('old', 'type');
-    $query->addField('old', 'locked');
-    $query->condition('type', 'custom'); 
-    db_insert('date_formats')
-      ->from($query)
-      ->execute();
+
+    // Find all the custom entries in the D6 table.
+    $result = db_select('d6_date_formats', 'old')
+      ->fields('old', array('format', 'type', 'locked'))
+      ->condition('type', 'custom')
+      ->execute()->fetchAll(PDO::FETCH_ASSOC);
+
+    // Iterate over all the old values.
+    foreach ($result as $row) {
+
+      // See if this value already exists in the new table
+      // (it might have been added manually before this update got run).
+      $count = db_select('date_formats', 'new')
+        ->condition('format', $row['format'])
+        ->condition('type', $row['type'])
+        ->countQuery()
+        ->execute()->fetchField();
+
+      // If the value is missing, insert it.
+      // Do nothing if it already exists, assume the value in the 
+      // new table trumps the old values.
+      if (empty($count)) {
+        db_insert('date_formats')
+          ->fields(array(
+            'format' => $row['format'],
+            'type' => $row['type'],
+            'locked' => $row['locked'],
+          ))
+          ->execute();
+      }
+    }
+
+    // Drop the old table.
     db_drop_table('d6_date_formats');
   }
 
+  // Move format data from the old 'date_format_locale' table
+  // (which was renamed to 'd6_date_format_locale') 
+  // to the new 'date_format_locale' table.
+
   if (db_table_exists('d6_date_format_locale')) {
-    $query = db_select('d6_date_format_locale', 'old');
-    $query->addField('old', 'format');
-    $query->addField('old', 'type');
-    $query->addField('old', 'language');
-    $query->condition('type', 'custom'); 
-    db_insert('date_format_locale')
-      ->from($query)
-      ->execute();
+
+    // Find all the custom entries in the D6 table.
+    $result = db_select('d6_date_format_locale', 'old')
+      ->fields('old', array('format', 'type', 'language'))
+      ->condition('type', 'custom')
+      ->execute()->fetchAll(PDO::FETCH_ASSOC);
+
+    // Iterate over all the old values.
+    foreach ($result as $row) {
+
+      // See if this value already exists in the new table
+      // (it might have been added manually before this update got run).
+      $count = db_select('date_format_locale', 'new')
+        ->condition('format', $row['format'])
+        ->condition('type', $row['type'])
+        ->condition('language', $row['language'])
+        ->countQuery()
+        ->execute()->fetchField();
+
+      // If the value is missing, insert it.
+      // Do nothing if it already exists, assume the value in the 
+      // new table trumps the old values.
+      if (empty($count)) {
+        db_insert('date_format_locale')
+          ->fields(array(
+            'format' => $row['format'],
+            'type' => $row['type'],
+            'language' => $row['language'],
+          ))
+          ->execute();
+      }
+    }
+
+    // Drop the old table.
     db_drop_table('d6_date_format_locale');
   }
-
 }

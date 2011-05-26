@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1136734, When migrating date format data from D6 to D7, don't try to overwrite existing custom values.
 - Issue #1161042 by Ollie222, Date filters using time were inconsistently formatted.
 - Issue #1130884, Bad logic in 'between' filter SQL, should always join with AND.
 - Issue #1139418 by ankur, Bad logic in week argument SQL, should always join with AND.

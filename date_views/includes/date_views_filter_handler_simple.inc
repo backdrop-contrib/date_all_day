@@ -125,8 +125,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $placeholder_max = $this->placeholder();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
     if ($this->operator == 'between') {
-      $this->query->add_where_expression($group, "$field >= $placeholder_min", array($placeholder_min => $min_value));
-      $this->query->add_where_expression($group, "$field <= $placeholder_max", array($placeholder_max => $max_value));
+      $this->query->add_where_expression($group, "$field >= $placeholder_min AND $field <= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));
     }
     else {
       $this->query->add_where_expression($group, "$field <= $placeholder_min OR $field >= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));

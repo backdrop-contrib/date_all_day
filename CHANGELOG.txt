@@ -5,7 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
-- Issue #1139418, Bad logic in week argument SQL, should always join with AND.
+- Issue #1130884, Bad logic in 'between' filter SQL, should always join with AND.
+- Issue #1139418 by ankur, Bad logic in week argument SQL, should always join with AND.
 - Issue #1118356, Disabling the Timepicker was having no effect.
 - Issue #408770 by vkareh, Make sure dates with #access = FALSE get passed through date_combo_element_process().
 - Issue #1037174 by das-peter, add ajax support to date popup.

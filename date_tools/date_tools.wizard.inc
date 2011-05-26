@@ -132,8 +132,14 @@ function date_tools_wizard_form_validate(&$form, &$form_state) {
   if (!preg_match('!^[a-z0-9_]+$!', $bundle)) {
     form_set_error('bundle', t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
   }
+  if (!empty($form_state['values']['calendar']) && !empty($form_state['values']['blocks']) && strlen($bundle) > 12) {
+    form_set_error('bundle', t('The content type name must be no more than 12 characters long when using it to create a calendar and blocks.'));
+  }
   if ($existing_instance) {
     form_set_error('field_name', t('This field name already exists.'));
+  }
+  if (strlen($field_name) > 32) {
+    form_set_error('field_name', t('The field name must be no more than 26 characters long.'));
   }
   if (!date_has_time($form_state['values']['granularity']) && $form_state['values']['tz_handling'] != 'none') {
     form_set_error('tz_handling', t('Timezone handling must be none for granularity without time.'));
@@ -145,7 +151,7 @@ function date_tools_wizard_form_submit(&$form, &$form_state) {
   menu_rebuild();
   if (!empty($view_name)) {
     drupal_set_message(t('Change the calendar as needed and save the view.'), 'error');
-    $form_state['redirect'] = 'admin/structure/views/edit/' . $view_name;
+    $form_state['redirect'] = 'admin/structure/views/view/' . $view_name . '/edit';
   }
   else {
     $form_state['redirect'] = 'admin/structure/types/manage/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
@@ -389,18 +395,22 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_in
 
   // Add a default calendar for this content type.
   $calendar_options = variable_get('calendar_default_view_options', array());
+  if (array_key_exists('cal_' . $bundle, $calendar_options)) {
+    unset($calendar_options['cal_' . $bundle]);
+  }
+  // For legacy purposes, find the old, longer name.
   if (array_key_exists('calendar_' . $bundle, $calendar_options)) {
     unset($calendar_options['calendar_' . $bundle]);
   }
   $option = array(
-    'name' => 'calendar_' . $bundle,
+    'name' => 'cal_' . $bundle,
     'description' => 'An event calendar for ' . $date_instance['label'],
     'path' => $path,
     'types' => array($bundle => $bundle),
     'date_fields' => array($date_name),
     'display_fields' => array('title' => array(), $date_name => array()),
   );
-  $calendar_options['calendar_' . $bundle] = $option;
+  $calendar_options['cal_' . $bundle] = $option;
   variable_set('calendar_default_view_options', $calendar_options);
 
   // Make sure menu items get rebuilt as necessary.
@@ -419,7 +429,7 @@ function date_tools_wizard_create_calendar($name, $bundle, $date_field, $date_in
   // Force Views to empty its cache and find the new view.
   views_get_all_views(TRUE);
 
-  return 'calendar_' . $bundle;
+  return 'cal_' . $bundle;
 }
 
 function date_tools_wizard_create_blocks($bundle, $region) {
@@ -441,12 +451,12 @@ function date_tools_wizard_create_blocks($bundle, $region) {
 
   // Mini calendar block. 
   $block->module = 'views';
-  $block->delta = 'calendar_' . $bundle . '-calendar_block_1';
+  $block->delta = 'cal_' . $bundle . '-calendar_block_1';
   date_tools_wizard_add_block($block); 
 
   // Upcoming events block.
   $block->module = 'views';
-  $block->delta = 'calendar_' . $bundle . '-block_1';
+  $block->delta = 'cal_' . $bundle . '-block_1';
   date_tools_wizard_add_block($block);
   return;      
 }

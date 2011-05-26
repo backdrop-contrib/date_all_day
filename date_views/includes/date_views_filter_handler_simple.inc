@@ -87,17 +87,18 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
    * to swap in our default value logic.
    */
   function get_filter_value($prefix, $input) {
-    if (empty($input)) {
-      if (empty($this->options['exposed'])) {
-        return $this->date_default_value($prefix);
-      }
-      elseif (isset($this->options['expose']['identifier']) && !isset($_GET[$this->options['expose']['identifier']])) {
-        return $this->date_default_value($prefix);
-      }
-    }
     // All our date widgets provide datetime values but we use ISO in our SQL
     // for consistency between the way filters and arguments work (arguments
     // cannot contain spaces).
+    if (empty($input)) {
+      if (empty($this->options['exposed'])) {
+        return str_replace(' ', 'T', $this->date_default_value($prefix));
+      }
+      elseif (isset($this->options['expose']['identifier']) && !isset($_GET[$this->options['expose']['identifier']])) {
+        return str_replace(' ', 'T', $this->date_default_value($prefix));
+      }
+    }
+    
     return str_replace(' ', 'T', $input);
   }
 

@@ -211,15 +211,6 @@ function _date_field_instance_settings_form($field, $instance) {
     '#options' => $format_types,
     '#description' => t('Select a default format type to be used for the date display. Visit the <a href="@date-time-page">Date and time date format page</a> to add and edit format types.', array('@date-time-page' => url('admin/config/regional/date-time/formats'))),
     );
-  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    $form['repeat_collapsed'] = array(
-      '#type' => 'radios',
-      '#default_value' => $widget_settings['repeat_collapsed'],
-      '#options' => array(0 => t('Expanded'), 1 => t('Collapsed')),
-      '#title' => t('Repeat display'),
-      '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),
-      );
-  }
   $form['#element_validate'] = array('date_field_instance_settings_form_validate');
   return $form;
 }
@@ -357,6 +348,15 @@ function _date_field_widget_settings_form($field, $instance) {
         '#value' => in_array($key, (array) $settings['text_parts']) ? 1 : 0,
         );
     }
+  }
+  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
+    $form['repeat_collapsed'] = array(
+      '#type' => 'radios',
+      '#default_value' => $settings['repeat_collapsed'],
+      '#options' => array(0 => t('Expanded'), 1 => t('Collapsed')),
+      '#title' => t('Repeat display'),
+      '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),
+      );
   }
   return $form;
 }

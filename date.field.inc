@@ -445,7 +445,7 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
       // Some settings have been moved from field to instance.
       $default_format = $field_value['settings']['default_format'];
       unset($field_value['settings']['default_format']);
-      $instance_value['settings']['repeat_collapsed'] = $field_value['settings']['repeat_collapsed'];
+      $instance_value['widget']['settings']['repeat_collapsed'] = $field_value['settings']['repeat_collapsed'];
       unset($field_value['settings']['repeat_collapsed']);
 
       // Some settings have been moved from widget settings to instance settings.

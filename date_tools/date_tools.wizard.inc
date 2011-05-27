@@ -149,14 +149,7 @@ function date_tools_wizard_form_validate(&$form, &$form_state) {
 function date_tools_wizard_form_submit(&$form, &$form_state) {
   $view_name = date_tools_wizard_build($form_state['values']);
   menu_rebuild();
-  if (!empty($view_name)) {
-    drupal_set_message(t('Change the calendar as needed and save the view.'), 'error');
-    $form_state['redirect'] = 'admin/structure/views/view/' . $view_name . '/edit';
-  }
-  else {
-    $form_state['redirect'] = 'admin/structure/types/manage/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
-  }
-
+  $form_state['redirect'] = 'admin/structure/types/manage/' . str_replace('_', '-', $form_state['values']['bundle']) . '/fields';
 }
 
 function date_tools_wizard_build($form_values) {

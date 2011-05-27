@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1160656 by jjs, Replace missing break in date_api.sql.inc that breaks PostgreSQL.
 - Issue #1150454, Fix undefined index notices for repeat_collapsed value.
 - Issue #1150462, Put length limit on content type names created by Date Tools so block delta won't overflow the allowed size.
 - Issue #1136734, When migrating date format data from D6 to D7, don't try to overwrite existing custom values.

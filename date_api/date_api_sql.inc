@@ -197,6 +197,7 @@ class date_sql_handler {
           case DATE_DATETIME:
             break;
         }
+        break;
       case 'sqlite':
         switch ($this->date_type) {
           case DATE_UNIX:

@@ -1,16 +1,12 @@
 <?php
-class DateFieldTestCase extends DrupalWebTestCase {
+
+/**
+ * Basic functions for Date tests.
+ */
+abstract class DateFieldBasic extends DrupalWebTestCase {
   protected $privileged_user;
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Date Field',
-      'description' => 'Test date field settings and from/to date interaction.',
-      'group' => 'Date',
-    );
-  }
-
-  public function setUp() {
+  protected function setUp() {
     // Load the date_api module.
     parent::setUp('field', 'field_ui', 'date_api', 'date', 'date_popup', 'date_tools');
 
@@ -29,67 +25,49 @@ class DateFieldTestCase extends DrupalWebTestCase {
 
   }
 
-  public function testField() {
-    $edit = array();
-    $edit['name'] = 'Story';
-    $edit['type'] = 'story';
-    $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
-    $this->assertText('The content type Story has been added.', 'Content type added.');
-
-    // Create a date field with simple values.
-    $values = array('label' => 'Test', 'widget_type' => 'date_select');
-    $this->createDateField($values);
-
-    // Create a node with this field.
-    $edit = array();
-    $this->dateForm('select');
-    $this->deleteDateField(); 
-
-  }
-
-  function dateForm($options, $todate = TRUE) {
+  protected function dateForm($field_name, $widget_type, $todate = TRUE) {
     // Tests that date field functions properly.
     $edit = array();
     $edit['title'] = $this->randomName(8);
-    if ($options == 'select') {
-      $edit['field_test[und][0][value][year]'] = '2010';
-      $edit['field_test[und][0][value][month]'] = '10';
-      $edit['field_test[und][0][value][day]'] = '7';
-      $edit['field_test[und][0][value][hour]'] = '10';
-      $edit['field_test[und][0][value][minute]'] = '30';
+    if ($widget_type == 'select') {
+      $edit[$field_name . '[und][0][value][year]'] = '2010';
+      $edit[$field_name . '[und][0][value][month]'] = '10';
+      $edit[$field_name . '[und][0][value][day]'] = '7';
+      $edit[$field_name . '[und][0][value][hour]'] = '10';
+      $edit[$field_name . '[und][0][value][minute]'] = '30';
       if ($todate) {
-        $edit['field_test[und][0][value2][year]'] = '';
-        $edit['field_test[und][0][value2][month]'] = '';
-        $edit['field_test[und][0][value2][day]'] = '';
-        $edit['field_test[und][0][value2][hour]'] = '11';
-        $edit['field_test[und][0][value2][minute]'] = '';
+        $edit[$field_name . '[und][0][value2][year]'] = '';
+        $edit[$field_name . '[und][0][value2][month]'] = '';
+        $edit[$field_name . '[und][0][value2][day]'] = '';
+        $edit[$field_name . '[und][0][value2][hour]'] = '11';
+        $edit[$field_name . '[und][0][value2][minute]'] = '';
       }
     }
-    elseif ($options == 'text') {
-      $edit['field_test[und][0][value][date]'] = '10/07/2010 - 10:30';
+    elseif ($widget_type == 'text') {
+      $edit[$field_name . '[und][0][value][date]'] = '10/07/2010 - 10:30';
       if ($todate) {
-        $edit['field_test[und][0][value2][date]'] = '10/07/2010 - 11:30';
+        $edit[$field_name . '[und][0][value2][date]'] = '10/07/2010 - 11:30';
       }
     }
-    elseif ($options == 'popup') {
-      $edit['field_test[und][0][value][date]'] = '10/07/2010';
-      $edit['field_test[und][0][value][time]'] = '10:30';
+    elseif ($widget_type == 'popup') {
+      $edit[$field_name . '[und][0][value][date]'] = '10/07/2010';
+      $edit[$field_name . '[und][0][value][time]'] = '10:30';
       if ($todate) {
-        $edit['field_test[und][0][value2][date]'] = '';
-        $edit['field_test[und][0][value2][time]'] = '11:30';
+        $edit[$field_name . '[und][0][value2][date]'] = '';
+        $edit[$field_name . '[und][0][value2][time]'] = '11:30';
       }
     }
     $this->drupalPost('node/add/story', $edit, t('Save'));
     $this->assertText($edit['title'], 'Test node has been created');
     $shouldbe = $todate ? 'Thu, 10/07/2010 - 10:30 - 11:30' : 'Thu, 10/07/2010 - 10:30';
-    $this->assertText($shouldbe, "Found the correct date for a datetime field using the $options widget.");
+    $this->assertText($shouldbe, "Found the correct date for a datetime field using the $widget_type widget.");
   }
 
   /**
    * Create a date field from an array of settings values.
    * All values have defaults, only need to specify values that need to be different.
    */
-  function createDateField($values = array()) {
+  protected function createDateField($values = array()) {
     extract($values);
 
     $field_name = !empty($field_name) ? $field_name : 'field_test';
@@ -191,11 +169,47 @@ class DateFieldTestCase extends DrupalWebTestCase {
 
   }
 
-  function deleteDateField($field_name = 'Test', $bundle = 'story', $bundle_name = 'Story') {
+  protected function deleteDateField($label, $bundle = 'story', $bundle_name = 'Story') {
     $this->drupalGet("admin/structure/types/manage/$bundle/fields");
     $this->clickLink('delete');
     $this->drupalPost(NULL, NULL, t('Delete'));
-    $this->assertText("The field $field_name has been deleted from the $bundle_name content type.", 'Removed date field.');
+    $this->assertText("The field $label has been deleted from the $bundle_name content type.", 'Removed date field.');
   }
 
 }
+
+class DateFieldTestCase extends DateFieldBasic {
+  public static function getInfo() {
+    return array(
+      'name' => 'Date Field',
+      'description' => 'Test date field settings and from/to date interaction.',
+      'group' => 'Date',
+    );
+  }
+
+  public function testField() {
+    $edit = array();
+    $edit['name'] = 'Story';
+    $edit['type'] = 'story';
+    $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
+    $this->assertText('The content type Story has been added.', 'Content type added.');
+
+    // Create a date fields with simple values.
+    foreach (array('select', 'popup', 'text') as $type) {
+      $field_name = "field_test_$type";
+      $label = "Test $type";
+      $field_options = array(
+        'label' => $label, 
+        'widget_type' => "date_$type", 
+        'field_name' => $field_name,
+        'input_format' => 'm/d/Y - H:i',
+      );
+      $this->createDateField($field_options);
+      $this->dateForm($field_name, $type);
+      $this->deleteDateField($label);
+    }
+  }
+
+}
+
+

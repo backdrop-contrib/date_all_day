@@ -29,12 +29,6 @@ function date_field_formatter_info() {
       ),
     ),
   );
-  $formats = _system_date_format_types_build();
-  foreach ($formats as $format => $value) {
-    $formatters['date_' . $format] = $formatters['date_default'];
-    $formatters['date_' . $format]['format_type'] = $format;
-    $formatters['date_' . $format]['label'] = $value['title'];
-  }
   return $formatters;
 }
 
@@ -460,65 +454,15 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
       break;
 
       // We need to retrieve formatter settings from the variables and store them in the instance.
-      // Some formatter names changed, and system date type names changed.
-      $new_type = array(
-        'format_interval' => 'format_interval',
-        'default' => 'date_default',
-        'small' => 'date_short',
-        'large' => 'date_long',
-        'medium' => 'date_medium',
-      );
-      $new_settings = array(
-        'date_default' => array(
-          'format_type' => $default_format,
-          'show_repeat_rule' => 'show',
-          'multiple_number' => '',
-          'multiple_from' => '',
-          'multiple_to' => '',
-          'fromto' => 'both',
-        ),                         
-        'format_interval' => array(
-          'interval' => 2,
-        ),
-        'date_short' => array(
-          'format_type' => 'short',
-          'show_repeat_rule' => 'show',
-          'multiple_number' => '',
-          'multiple_from' => '',
-          'multiple_to' => '',
-          'fromto' => 'both',
-        ),                         
-        'date_long' => array(
-          'format_type' => 'long',
-          'show_repeat_rule' => 'show',
-          'multiple_number' => '',
-          'multiple_from' => '',
-          'multiple_to' => '',
-          'fromto' => 'both',
-        ),                         
-        'date_medium' => array(
-          'format_type' => 'medium',
-          'show_repeat_rule' => 'show',
-          'multiple_number' => '',
-          'multiple_from' => '',
-          'multiple_to' => '',
-          'fromto' => 'both',
-        ),                         
-      );
-      // Add the custom date format options to the list.
-      $formats = array_keys(system_get_date_formats());
-      foreach ($formats as $format) {
-        if ($format != 'short' && $format != 'long' && $format != 'medium') {
-          $new_type['date_' . $format] = $new_format;
-          $new_settings['date_' . $format] = $new_settings['date_default'];
-          $new_settings['date_' . $format]['format_type'] = $format;
+      foreach ($instance_value['display'] as $context => $settings) {  
+        if ($instance_value['display'][$context]['type'] == 'format_interval') {
+
         }
-      }
-      foreach ($instance_value['display'] as $context => $settings) {        
-        $instance_value['display'][$context]['type'] = $new_type[$settings['type']];
-        $old_settings = date_old_formatter_get_settings($instance['field_name'], $instance['bundle'], $context);
-        foreach ($new_settings as $key => $value) {
-          $instance_value['display'][$context]['settings'][$key] = !empty($old_settings[$key]) ? $old_settings[$key] : $value;
+        else {      
+          $old_settings = date_old_formatter_get_settings($instance['field_name'], $instance['bundle'], $context);
+          $instance_value['display'][$context]['settings'] = array_merge($instance_value['display'][$context]['settings'], $old_settings);
+          $instance_value['display'][$context]['settings']['format_type'] = $instance_value['display'][$context]['type'];
+          $instance_value['display'][$context]['type'] = 'date_default';
         }
       }
 

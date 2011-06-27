@@ -424,6 +424,7 @@ function date_field_widget_error($element, $error, $form, &$form_state) {
  * Retrieve a date format string from formatter settings.
  */
 function date_formatter_format($formatter, $settings, $granularity = NULL, $langcode = NULL) {
+
   $default = variable_get('date_format_medium',  'D, m/d/Y - H:i');
   $format_type = !empty($settings['format_type']) ? $settings['format_type'] : 'format_interval';
 
@@ -431,19 +432,12 @@ function date_formatter_format($formatter, $settings, $granularity = NULL, $lang
     case 'format_interval':
       return 'format_interval';
       break;
-    case 'date_default':
+    default:
       $format = system_date_format_locale($langcode, $format_type);
       if (empty($format)) {
         $format = variable_get('date_format_'. $format_type, $default);
       }      
       break; 
-    default:
-      $type = str_replace('date_', '', $formatter);
-      $format = system_date_format_locale($langcode, $type);
-      if (empty($format)) {
-        $format = variable_get('date_format_'. $type, $default);
-      }
-      break;
   }
 
   // A selected format might include timezone information.

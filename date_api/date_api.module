@@ -1980,7 +1980,7 @@ function date_format_type_options() {
   $format_types = system_get_date_types();
   if (!empty($format_types)) {
     foreach ($format_types as $type => $type_info) {
-      $options[$type] = $type_info['title'];
+      $options[$type] = $type_info['title'] . ' (' . format_date(REQUEST_TIME, $type) . ')';
     }
   }
   return $options;

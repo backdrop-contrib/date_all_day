@@ -180,7 +180,6 @@ function date_field_info() {
       'default_value_code' => '',
       'default_value2' => 'blank',
       'default_value_code2' => '',
-      'default_format' => 'medium',
     ),
     // Integrate with the Entity Metadata module.
     'property_type' => 'date',

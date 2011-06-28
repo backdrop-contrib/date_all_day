@@ -206,3 +206,9 @@ div.date-calendar-day span.year {
   font-size: .9em;
   padding: 2px;
 }
+
+/* Admin styling */
+.form-item.form-item-instance-widget-settings-input-format-custom,
+.form-item.form-item-field-settings-enddate-required {
+  margin-left: 1.3em;
+}

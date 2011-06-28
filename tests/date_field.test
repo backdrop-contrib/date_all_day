@@ -94,7 +94,6 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
       'settings' => array(
         'default_value' => $default_value, 
         'default_value2' => $default_value2, 
-        'default_format' => $default_format,
       )
     );
 

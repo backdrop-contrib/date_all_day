@@ -220,7 +220,6 @@ function date_tools_wizard_build($form_values) {
     'settings' => array(
       'default_value' => 'now', 
       'default_value2' => 'blank', 
-      'default_format' => 'long',
     )
   );
 

@@ -412,8 +412,6 @@ function date_help($path, $arg) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- *
- * Make sure date information gets updated.
  */
 function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   $field = $form['field'];
@@ -422,6 +420,57 @@ function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => FIELD_CARDINALITY_UNLIMITED);
   }
+  // Reorganize the instance settings and widget settings sections into a more
+  // intuitive combined fieldset.
+  $form['instance']['defaults'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default formats and values'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['instance']['date_format'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date format'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['instance']['default_values'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default values'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['instance']['years_back_and_forward'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Years back and forward'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['instance']['#pre_render'][] = 'date_field_ui_field_edit_form_pre_render';
+}
+
+/**
+ * Rearrange form elements into fieldsets for presentation only.
+ */
+function date_field_ui_field_edit_form_pre_render($form) {
+  foreach ($form as $name => $element) {
+    if (is_array($element) && isset($element['#fieldset'])) {
+      $fieldset = $element['#fieldset'];
+      $form[$fieldset][$name] = $element;
+      unset($form[$name]);
+    }
+  }
+  foreach (array('date_format', 'default_values', 'years_back_and_forward') as $name) {
+    if (element_children($form[$name])) {
+      // Force the items in the fieldset to be resorted now that the instance
+      // and widget settings are combined.
+      $form[$name]['#sorted'] = FALSE;
+      $form['defaults'][$name] = $form[$name];
+    }
+    unset($form[$name]);
+  }
+  return $form;
 }
 
 /**

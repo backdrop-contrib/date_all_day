@@ -132,7 +132,7 @@ class date_sql_handler {
         case 'pgsql':
           db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
           break;
-        case 'sqlsvr':
+        case 'sqlsrv':
           db_query('TimeZone.setDefault(TimeZone.getTimeZone("GMT"))');
           break;
       }
@@ -421,7 +421,7 @@ class date_sql_handler {
           );
         $format = strtr($format, $replace);
         return "strftime('$format', $field)";
-      case 'sqlsvr':
+      case 'sqlsrv':
         $replace = array(
           'Y' => 'yyyy', // 4 digit year number
           'y' => 'yy', // 2 digit year number

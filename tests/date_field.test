@@ -209,7 +209,7 @@ class DateFieldTestCase extends DateFieldBasic {
       }
     }
     $this->drupalPost('node/add/story', $edit, t('Save'));
-    $this->assertText($edit['title'], 'Test node has been created');
+    $this->assertText($edit['title'], "Node has been created");
     $should_be = $todate ? 'Thu, 10/07/2010 - 10:30 - 11:30' : 'Thu, 10/07/2010 - 10:30';
     $this->assertText($should_be, "Found the correct date for a $field_type field using the $widget_type widget.");
   }

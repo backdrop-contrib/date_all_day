@@ -169,7 +169,7 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
   elseif (!empty($element['#default_value'])) {
     $date = date_default_date($element);
   }
-  if (is_object($date) && empty($date->errors)) {
+  if (date_is_date($date)) {
     $return['date'] = $date->format($element['#date_format']);
   }
   return $return;
@@ -234,19 +234,19 @@ function date_text_validate($element, &$form_state) {
   // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
   if (empty($date) || !empty($date->errors)) {
-    if (!empty($date->errors)) {
+    if (is_object($date) && !empty($date->errors)) {
       $message = t('The value input for field %field is invalid:', array('%field' => $label));
       $message .= '<br />' . implode('<br />', $date->errors);
       form_set_error($error_field, $message);
       return;
     }
-    elseif (!empty($element['#required'])) {
+    if (!empty($element['#required'])) {
       $message = t('A valid date is required for %title.', array('%title' => $label));
       form_set_error($error_field, $message); 
       return;
     }
     // Fall through, some other error.
-    elseif (!empty($input['date'])) {
+    if (!empty($input['date'])) {
       form_error($element, t('%title is invalid.', array('%title' => $label))); 
       return;
     }
@@ -268,8 +268,8 @@ function date_text_input_date($element, $input) {
     $date->limitGranularity($granularity);
     if ($date->validGranularity($granularity, $element['#date_flexible'])){
       date_increment_round($date, $element['#date_increment']); 
-      return $date;
     }  
+    return $date;
   }
   return NULL;
 }
@@ -291,7 +291,7 @@ function date_select_element_value_callback($element, $input = FALSE, &$form_sta
   $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
   foreach ($granularity as $field) {
     if ($field != 'timezone') {
-      $return[$field] = is_object($date) ? $date->format($formats[$field]) : '';
+      $return[$field] = date_is_date($date) ? $date->format($formats[$field]) : '';
     }
   }
   return $return;
@@ -527,18 +527,18 @@ function date_select_validate($element, &$form_state) {
   // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
   if (empty($date) || !empty($date->errors)) {
-    if (!empty($date->errors)) {
+    if (is_object($date) && !empty($date->errors)) {
       $message = t('The value input for field %field is invalid:', array('%field' => $label));
       $message .= '<br />' . implode('<br />', $date->errors);
       form_set_error($error_field, $message);
       return;
     }
-    elseif ($element['#required']) {
+    if ($element['#required']) {
       $message = t('A valid date is required for %title.', array('%title' => $label));
       form_set_error($error_field, $message); 
       return;
     }
-    elseif (!empty($input['year'])) {
+    if (!empty($input['year'])) {
       $message = t('The value input for field %field is invalid.', array('%field' => $label));
       form_set_error($error_field, $message);
       return;
@@ -570,8 +570,8 @@ function date_select_input_date($element, $input) {
     $date->limitGranularity($granularity);
     if ($date->validGranularity($granularity, $element['#date_flexible'])) {
       date_increment_round($date, $element['#date_increment']); 
-      return $date;
-    }  
+    }
+    return $date;
   }
   return NULL;
 }

@@ -162,7 +162,9 @@ class DateObject extends DateTime {
         $this->errors['date'] = $e;
         return;
       }
-      $this->setGranularityFromTime($time, $tz);
+      if (empty($this->granularity)) {
+        $this->setGranularityFromTime($time, $tz);
+      }
     }
     // This tz was given as just an offset, which causes problems,
     // or the timezone was invalid.
@@ -288,7 +290,15 @@ class DateObject extends DateTime {
 
   // whether a date is valid for a given $granularity array, depending on if it's allowed to be flexible.
   public function validGranularity($granularity = NULL, $flexible = FALSE) {
-    return $this->hasGranularity() && (!$granularity || $flexible || $this->hasGranularity($granularity));
+    $true = $this->hasGranularity() && (!$granularity || $flexible || $this->hasGranularity($granularity));
+    if (!$true && $granularity) {
+      foreach ((array) $granularity as $part) {
+        if (!$this->hasGranularity($part)) {
+          $this->errors[$part] = t("The @part is missing.", array('@part' => $part));
+        }
+      }
+    }
+    return $true;
   }
 
   /**
@@ -608,13 +618,18 @@ class DateObject extends DateTime {
   public function arrayErrors($arr) {
     $errors = array();
     $now = date_now();
-	$default_month = !empty($arr['month']) ? $arr['month'] : $now->format('n');
+	  $default_month = !empty($arr['month']) ? $arr['month'] : $now->format('n');
     $default_year = !empty($arr['year']) ? $arr['year'] : $now->format('Y');
-
+    
+    $this->granularity = array();
     foreach ($arr as $part => $value) {
-      // Avoid false errors when a numeric value is input as a string by forcing it numeric.
       $value = intval($value);
-	  if (!empty($value) && $this->forceValid($part, $value, 'now', $default_month, $default_year) != $value) {
+      // Explicitly set the granularity to the values in the input array.
+      if (!empty($value) && $value !== 0) {
+        $this->addGranularity($part);
+      }
+      // Avoid false errors when a numeric value is input as a string by forcing it numeric.
+	    if (!empty($value) && $this->forceValid($part, $value, 'now', $default_month, $default_year) != $value) {
         // Use a switchcase to make translation easier by providing a different message for each part.
         switch($part) {
           case 'year':

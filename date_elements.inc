@@ -279,7 +279,7 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   // Create label for error messages that make sense in multiple values
   // and when the title field is left blank.
-  if (!empty($field['cardinality']) && empty($field['settings']['repeat'])) {
+  if ($field['cardinality'] <> 1 && empty($field['settings']['repeat'])) {
     $element[$from_field]['#date_title'] = t('@field_name From date value #@delta', array('@field_name' => $instance['label'], '@delta' => $delta + 1));
     if (!empty($field['settings']['todate'])) {
       $element[$to_field]['#date_title'] = t('@field_name To date value #@delta', array('@field_name' => $instance['label'], '@delta' => $delta + 1));
@@ -439,7 +439,7 @@ function date_combo_validate($element, &$form_state) {
 
     // Neither the from date nor the to date should be empty at this point
     // unless they held values that couldn't be evaluated.
-    if (!$instance['required'] && (empty($from_date) || empty($to_date))) {
+    if (!$instance['required'] && (!date_is_date($from_date) || !date_is_date($to_date))) {
       $item = date_element_empty($element, $form_state);
       $errors[] = t('The dates are invalid.');
     }

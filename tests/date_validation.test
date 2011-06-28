@@ -9,88 +9,93 @@ class DateValidationTestCase extends DateFieldBasic {
   }
 
   public function testValidation() {    
-    $edit = array();
-    $edit['name'] = 'Story';
-    $edit['type'] = 'story';
-    $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
-    $this->assertText('The content type Story has been added.', 'Content type added.');
 
     // Attempts to create text date field stored as a date with default settings (from input which is not valid).
-    $field_name = 'field_test';
-    $label = 'Test';
-    $options = array(
-      'label' => $label,
-      'field_name' => $field_name,
-      'field_type' => 'date',
-      'widget_type' => 'date_text',
-    );
-    $this->createDateField($options);
-    $this->malFormedDate($field_name, 'text');
-    $this->deleteDateField($label);
+    // Can't test the date_select widget because it won't allow invalid input.
+
+    foreach (array('date', 'datestamp', 'datetime') as $field_type) {
+      foreach (array('date_popup', 'date_text') as $widget_type) {
+        $field_name = 'field_test';
+        $label = 'Test';
+        $options = array(
+          'label' => $label,
+          'field_name' => $field_name,
+          'field_type' => $field_type,
+          'widget_type' => $widget_type, 
+          'input_format' => 'm/d/Y - H:i',
+        );
+        $this->createDateField($options);
+        $this->malFormedDate($field_name, $field_type, $widget_type);
+        $this->deleteDateField($label);
+      }
+    }
   }
 
-  function malFormedDate($field_name, $widget_type, $date_format = 'mm/dd/yyyy') {
+  function malFormedDate($field_name, $field_type, $widget_type) {
     // Tests that date field filters improper dates.
     $edit = array();
     $edit['title'] = $this->randomName(8);
     $edit['body[und][0][value]'] = $this->randomName(16);
-    if ($widget_type == 'select') {
+    if ($widget_type == 'date_select') {
       $edit[$field_name . '[und][0][value][year]'] = '2011';
       $edit[$field_name . '[und][0][value][month]'] = '15';
       $edit[$field_name . '[und][0][value][day]'] = '49';
       $edit[$field_name . '[und][0][value][hour]'] = '10';
       $edit[$field_name . '[und][0][value][minute]'] = '30';
     }
-    elseif ($widget_type == 'text') {
+    elseif ($widget_type == 'date_text') {
       $edit[$field_name . '[und][0][value][date]'] = '15/49/2011 - 10:30';
     }
-    elseif ($widget_type == 'popup') {
+    elseif ($widget_type == 'date_popup') {
       $edit[$field_name . '[und][0][value][date]'] = '15/49/2011';
       $edit[$field_name . '[und][0][value][time]'] = '10:30';
     }
     $this->drupalPost('node/add/story', $edit, t('Save'));
     $this->assertNoText('Test node has been created');
-    $this->assertText('The month is invalid.');
-    $this->assertText('The day is invalid.');
+    $this->assertText('The month is invalid.', "Correctly blocked invalid month for a $field_type field using the $widget_type widget.");
+    $this->assertText('The day is invalid.', "Correctly blocked invalid day for a $field_type field using the $widget_type widget.");
 
     // Test two-digit entry for year where 4-digit is expected
-    if ($widget_type == 'select') {
+    if ($widget_type == 'date_select') {
       $edit[$field_name . '[und][0][value][year]'] = '11';
       $edit[$field_name . '[und][0][value][month]'] = '12';
       $edit[$field_name . '[und][0][value][day]'] = '10';
       $edit[$field_name . '[und][0][value][hour]'] = '10';
       $edit[$field_name . '[und][0][value][minute]'] = '30';
     }
-    elseif ($widget_type == 'text') {
+    elseif ($widget_type == 'date_text') {
       $edit[$field_name . '[und][0][value][date]'] = '12/10/11 - 10:30';
     }
-    elseif ($widget_type == 'popup') {
+    elseif ($widget_type == 'date_popup') {
       $edit[$field_name . '[und][0][value][date]'] = '12/10/11';
       $edit[$field_name . '[und][0][value][time]'] = '10:30';
     }
     $this->drupalPost('node/add/story', $edit, t('Save'));
     $this->assertNoText('Test node has been created');
-    $this->assertText('The year is invalid. Please check that entry includes four digits.');
+    $should_be = 'The year is invalid. Please check that entry includes four digits.';
+    $this->assertText($should_be, "Correctly blocked two digit year for a $field_type field using the $widget_type widget.");
 
     // Test invalid hour/minute entry for time
-    if ($widget_type == 'select') {
+    if ($widget_type == 'date_select') {
       $edit[$field_name . '[und][0][value][year]'] = '2011';
       $edit[$field_name . '[und][0][value][month]'] = '12';
       $edit[$field_name . '[und][0][value][day]'] = '10';
       $edit[$field_name . '[und][0][value][hour]'] = '29';
       $edit[$field_name . '[und][0][value][minute]'] = '95';
     }
-    elseif ($widget_type == 'text') {
+    elseif ($widget_type == 'date_text') {
       $edit[$field_name . '[und][0][value][date]'] = '12/10/2011 - 29:95';
     }
-    elseif ($widget_type == 'popup') {
+    elseif ($widget_type == 'date_popup') {
       $edit[$field_name . '[und][0][value][date]'] = '12/10/2011';
-      $edit[$field_name . 't[und][0][value][time]'] = '29:95';
+      $edit[$field_name . '[und][0][value][time]'] = '29:95';
     }
     $this->drupalPost('node/add/story', $edit, t('Save'));
     $this->assertNoText('Test node has been created');
-    $this->assertText('The hour is invalid.');
-    $this->assertText('The minute is invalid.');
+    $should_be = 'The hour is invalid.';
+    $this->assertText($should_be, "Correctly blocked invalid hour for a $field_type field using the $widget_type widget.");
+    $should_be = 'The minute is invalid.';
+    $this->assertText($should_be, "Correctly blocked invalid minute for a $field_type field using the $widget_type widget.");
   }
 
 }

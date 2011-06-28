@@ -116,13 +116,15 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
   $summary = array();
 
   $summary[] = t('Display dates using the @format format', array('@format' => $format_types[$settings['format_type']]));
-
-  $options = array(
-    'both' => t('Display both From and To dates'), 
-    'value' => t('Display From date only'), 
-    'value2' => t('Display To date only'),
-  );
-  $summary[] = $options[$settings['fromto']];
+  
+  if ($field['settings']['todate']) {
+    $options = array(
+      'both' => t('Display both From and To dates'), 
+      'value' => t('Display From date only'), 
+      'value2' => t('Display To date only'),
+    );
+    $summary[] = $options[$settings['fromto']];
+  }
 
   if (!empty($field['cardinality'])) {
     $summary[] = t('Show @count value(s) starting with @date1, ending with @date2', array(

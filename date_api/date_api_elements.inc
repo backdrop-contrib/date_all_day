@@ -228,22 +228,31 @@ function date_text_validate($element, &$form_state) {
 
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   $date = date_text_input_date($element, $input);
-  if (empty($date) && !empty($element['#required'])) {
-    form_error($element, t('A valid date is required for %title.', array('%title' => $label))); 
+
+  // If the field has errors, display them.
+  // If something was input but there is no date, the date is invalid.
+  // If the field is empty and required, set error message and return.
+  $error_field = implode('][', $element['#parents']);
+  if (empty($date) || !empty($date->errors)) {
+    if (!empty($date->errors)) {
+      $message = t('The value input for field %field is invalid:', array('%field' => $label));
+      $message .= '<br />' . implode('<br />', $date->errors);
+      form_set_error($error_field, $message);
+      return;
+    }
+    elseif (!empty($element['#required'])) {
+      $message = t('A valid date is required for %title.', array('%title' => $label));
+      form_set_error($error_field, $message); 
+      return;
+    }
+    // Fall through, some other error.
+    elseif (!empty($input['date'])) {
+      form_error($element, t('%title is invalid.', array('%title' => $label))); 
+      return;
+    }
   }
-  elseif (empty($date) && !empty($element['#value']['date'])) {
-    form_error($element, t('%title is invalid.', array('%title' => $label))); 
-  }
-  elseif (!empty($date->errors)) {
-    form_error($element, implode('<br />', $date->errors));
-  }
-  elseif (!empty($date)) {
-    $value = $date->format(DATE_FORMAT_DATETIME);
-    form_set_value($element, $value, $form_state);
-  }
-  else {
-    form_set_value($element, NULL, $form_state);
-  }
+  $value = !empty($date) ? $date->format(DATE_FORMAT_DATETIME) : NULL;
+  form_set_value($element, $value, $form_state);
 }
 
 /**
@@ -512,18 +521,31 @@ function date_select_validate($element, &$form_state) {
   }
   unset($input['ampm']);
   $date = date_select_input_date($element, $input);
-  if (empty($date) && $element['#required']) {
-    form_error($element, t('A valid value is required.'));
+
+  // If the field has errors, display them.
+  // If something was input but there is no date, the date is invalid.
+  // If the field is empty and required, set error message and return.
+  $error_field = implode('][', $element['#parents']);
+  if (empty($date) || !empty($date->errors)) {
+    if (!empty($date->errors)) {
+      $message = t('The value input for field %field is invalid:', array('%field' => $label));
+      $message .= '<br />' . implode('<br />', $date->errors);
+      form_set_error($error_field, $message);
+      return;
+    }
+    elseif ($element['#required']) {
+      $message = t('A valid date is required for %title.', array('%title' => $label));
+      form_set_error($error_field, $message); 
+      return;
+    }
+    elseif (!empty($input['year'])) {
+      $message = t('The value input for field %field is invalid.', array('%field' => $label));
+      form_set_error($error_field, $message);
+      return;
+    }
   }
-  elseif (!empty($date->errors)) {
-    form_error($element, implode('<br />', $date->errors));
-  }
-  elseif (!empty($date)) {
-    form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
-  }
-  else {
-    form_set_value($element, NULL, $form_state);
-  }
+  $value = !empty($date) ? $date->format(DATE_FORMAT_DATETIME) : NULL;
+  form_set_value($element, $value, $form_state);
 }
 
 /**

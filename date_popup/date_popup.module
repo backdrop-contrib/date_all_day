@@ -384,46 +384,32 @@ function date_popup_validate($element, &$form_state) {
   $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
   $date = date_popup_input_date($element, $input);
 
-  // If the field is empty and not required, set it to empty and return.
+  // If the field has errors, display them.
+  // If something was input but there is no date, the date is invalid.
   // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
-  if (empty($date)) {
-    if ($element['#required']) {
-      // Set message on both date and time to get them highlighted properly.
-      $message = t('Field %field is required.', array('%field' => $label));
-      if (!empty($date_granularity)) {
-        form_set_error($error_field .'][date', $message);
-        $message = ' ';
-      }
-      if (!empty($time_granularity)) {
-        form_set_error($error_field .'][time', $message);
-        return;
-      }
+  if (empty($date) || !empty($date->errors)) {
+    if (!empty($date->errors)) {
+      $message = t('The value input for field %field is invalid:', array('%field' => $label));
+      $message .= '<br />' . implode('<br />', $date->errors);
+      form_set_error($error_field, $message);
+      return;
     }
-    form_set_value($element, NULL, $form_state);
+    if (!empty($input['date'])) {
+      $message = t('The value input for field %field is invalid.', array('%field' => $label));
+      form_set_error($error_field, $message);
+      return;
+    }
+    if ($element['#required']) {
+      $message = t('A valid date is required for %title.', array('%title' => $label));
+      form_set_error($error_field, $message); 
+      return;
+    }
   }
 
   // If the created date is valid, set it.
-  if (!empty($date)) {
-    if (!empty($date->errors)) {
-      form_error($element, implode('<br />', $date->errors));
-      return;
-    }
-    form_set_value($element, $date->format(DATE_FORMAT_DATETIME), $form_state);
-    return;
-  }
-  else {
-    // Set message on both date and time to get them highlighted properly.
-    $message = t('Field %field is invalid.', array('%field' => $label));
-    if (!empty($element['#date_granularity'])) {
-      form_set_error($error_field .'][date', $message);
-      $message = ' ';
-    }
-    if (!empty($element['#time_granularity'])) {
-      form_set_error($error_field .'][time', $message);
-    }
-  }
-  form_set_value($element, NULL, $form_state);
+  $value = !empty($date) ? $date->format(DATE_FORMAT_DATETIME) : NULL;
+  form_set_value($element, $value, $form_state);
 }
 
 /**

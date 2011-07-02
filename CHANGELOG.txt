@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1110012 Remove 'parent' items from Views plugins, no longer needed? See if this fixes the issue.
 - Issue #1183892, Initialize $identifier in date_views_filter_handler_simple.
 - Issue #1103290 by stickywes and ingaro, Change postgres 'FMYYYY-FMMM-FMDDTFMHH:FMMI:FMSS' to 'FMYYYY-FMMM-FMDDTFMHH24:FMMI:FMSS'.
 - Issue #1186528 by jox, Make date field combo label translatable.

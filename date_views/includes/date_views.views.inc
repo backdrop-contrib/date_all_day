@@ -52,22 +52,11 @@ function date_views_views_plugins() {
       ),
     ),
     'style' => array(
-      'parent' => array(
-        // this isn't really a display but is necessary so the file can
-        // be included.
-        'no ui' => TRUE,
-        'handler' => 'views_plugin_style',
-        'path' => "$views_path/plugins",
-        'theme file' => 'theme.inc',
-        'theme path' => "$views_path/theme",
-        'parent' => '',
-      ),
       'date_nav' => array(
         'title' => t('Date browser style'),
         'help' => t('Creates back/next navigation.'),
         'handler' => 'date_navigation_plugin_style',
         'path' => "$path/includes",
-        'parent' => 'parent',
         'theme' => 'date_navigation',
         'theme file' => 'theme.inc',
         'theme path' => "$path/theme",

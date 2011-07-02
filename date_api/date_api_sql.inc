@@ -192,7 +192,7 @@ class date_sql_handler {
             $field = "$field::ABSTIME";
             break;
           case DATE_ISO:
-            $field = "TO_DATE($field, 'FMYYYY-FMMM-FMDDTFMHH:FMMI:FMSS')";
+            $field = "TO_DATE($field, 'FMYYYY-FMMM-FMDDTFMHH24:FMMI:FMSS')";
             break;
           case DATE_DATETIME:
             break;

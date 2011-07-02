@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1103290 by stickywes and ingaro, Change postgres 'FMYYYY-FMMM-FMDDTFMHH:FMMI:FMSS' to 'FMYYYY-FMMM-FMDDTFMHH24:FMMI:FMSS'.
 - Issue #1186528 by jox, Make date field combo label translatable.
 - Issue #1123186 by KingJoshi, Fix misnamed date_part_hour_prefix in hook_theme().
 - Issue #1032942 by fietserwin, Rename date popup functions that are getting picked up by theme('date').

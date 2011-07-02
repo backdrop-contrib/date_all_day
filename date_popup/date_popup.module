@@ -260,19 +260,9 @@ function date_popup_process_date_part(&$element) {
   $year_range = date_range_string($range);
 
   $settings = array(
-    'prevText' => '&lt;' . t('Prev', array(), array('context' => 'date_nav')),
-    'nextText' => t('Next', array(), array('context' => 'date_nav')) .'&gt;',
-    'currentText' => t('Today', array(), array('context' => 'date_nav')),
     'changeMonth' => TRUE,
     'changeYear' => TRUE,
-    'clearText' => t('Clear'),
-    'closeText' => t('Close'),
     'firstDay' => intval(variable_get('date_first_day', 1)),
-    'dayNames' => date_week_days(TRUE),
-    'dayNamesShort' => date_week_days_abbr(TRUE, TRUE, 3),
-    'dayNamesMin' => date_week_days_abbr(TRUE, TRUE, 1),
-    'monthNames' => array_values(date_month_names(TRUE)),
-    'monthNamesShort' => array_values(date_month_names_abbr(TRUE)),
     //'buttonImage' => base_path() . drupal_get_path('module', 'date_api') ."/images/calendar.png",
     //'buttonImageOnly' => TRUE,
     'autoPopUp' => 'focus',

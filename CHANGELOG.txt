@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1173374 by fietserwin, Remove translation of the jQuery datepicker day and month names, now handled by core.
+- Issue #1192020 by tim.plunkett: Fixed date granularity is too fragile in date_field_all_day().
 - Issue #1110012 Remove 'parent' items from Views plugins, no longer needed? See if this fixes the issue.
 - Issue #1183892, Initialize $identifier in date_views_filter_handler_simple.
 - Issue #1103290 by stickywes and ingaro, Change postgres 'FMYYYY-FMMM-FMDDTFMHH:FMMI:FMSS' to 'FMYYYY-FMMM-FMDDTFMHH24:FMMI:FMSS'.

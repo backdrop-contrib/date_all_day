@@ -1783,7 +1783,7 @@ function date_api_theme() {
     'date_text' => $base + array('render element' => 'element'),
     'date_select_element' => $base + array('render element' => 'element'),
     'date_textfield_element' => $base + array('render element' => 'element'),
-    'date_date_part_hour_prefix' => $base + array('render element' => 'element'),
+    'date_part_hour_prefix' => $base + array('render element' => 'element'),
     'date_part_minsec_prefix' => $base + array('render element' => 'element'),
     'date_part_label_year' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
     'date_part_label_month' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),

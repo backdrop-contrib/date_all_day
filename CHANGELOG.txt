@@ -5,6 +5,18 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1032942 by fietserwin, Rename date popup functions that are getting picked up by theme('date').
+- Issue #1206756 More tweaks to the validation changes. They were blocking zero times and causing some test failures.
+- Issue #1180612 by mikeryan, Add support for Migrate module.
+- Issue #1197352 Don't display language about from and to dates when there is no todate.
+- Issue #1201288 by rafa0961, fix broken references to SQLSERVER.
+- Issue #1198320 by ksenzee, David_Rothstein, Noyz: UI improvements to field settings page.
+- More work on cleaning up validation, add in some ideas from fearlsgrove about checking the granularity of the input array against the expected granularity.
+- Issue #1161006 Dates that should have time but do not were not correctly caught in validation.
+- Issue #1161006 by justinrandall, Add tests to check that dates that should have time but do not are correctly caught in validation.
+- More work on tests, add a foreach loop to run through all field_type/widget_type combinations.
+- Rework tests to use a base class rather than copying the same functions everywhere.
+- Get rid of overlapping formatter functionality. There should be a default formatter with the option to choose a date format as a setting, not a formatter for each format. This was a leftover from the D6 functionality.
 - Issue #1159404 by mikeryan, Fix incorrect call to parse an rrule in date_repeat_build_dates().
 - Issue #1160656 by jjs, Replace missing break in date_api.sql.inc that breaks PostgreSQL.
 - Issue #1150454, Fix undefined index notices for repeat_collapsed value.

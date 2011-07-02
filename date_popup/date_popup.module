@@ -230,8 +230,8 @@ function date_popup_element_process($element, $form_state, $form) {
     );
   }
 
-  $element['date'] = date_popup_process_date($element);
-  $element['time'] = date_popup_process_time($element);
+  $element['date'] = date_popup_process_date_part($element);
+  $element['time'] = date_popup_process_time_part($element);
 
   if (isset($element['#element_validate'])) {
     array_push($element['#element_validate'], 'date_popup_validate');
@@ -245,7 +245,7 @@ function date_popup_element_process($element, $form_state, $form) {
 /**
 * Process the date portion of the element.
 */
-function date_popup_process_date(&$element) {
+function date_popup_process_date_part(&$element) {
   $granularity = date_format_order($element['#date_format']);
   $date_granularity = date_popup_date_granularity($element);
   if (empty($date_granularity)) return array();
@@ -311,7 +311,7 @@ function date_popup_process_date(&$element) {
 /**
 * Process the time portion of the element.
 */
-function date_popup_process_time(&$element) {
+function date_popup_process_time_part(&$element) {
   $granularity = date_format_order($element['#date_format']);
   $has_time = date_has_time($granularity);
   if (empty($has_time)) return array();

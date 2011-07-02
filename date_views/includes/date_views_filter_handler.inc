@@ -87,6 +87,11 @@ class date_views_filter_handler extends date_views_filter_handler_simple {
         if ($field['table_name'] != $this->table || !empty($this->relationship)) {
           $this->related_table_alias = $this->query->queue_table($field['table_name'], $this->relationship);
         }
+        // $this->related_table_alias gets set when the first field is processed if otherwise empty.
+        // For subsequent fields, we need to be sure it is emptied again.
+        elseif (empty($this->relationship)) {
+          $this->related_table_alias = NULL;
+        }
         $table_alias = !empty($this->related_table_alias) ? $this->related_table_alias : $field['table_name'];
         $query_field['field']['fullname'] = $table_alias .'.'. $query_field['field']['field_name'];
         parent::op_simple($query_field['field']['fullname']);

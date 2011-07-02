@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1186528 by jox, Make date field combo label translatable.
+- Issue #1123186 by KingJoshi, Fix misnamed date_part_hour_prefix in hook_theme().
 - Issue #1032942 by fietserwin, Rename date popup functions that are getting picked up by theme('date').
 - Issue #1206756 More tweaks to the validation changes. They were blocking zero times and causing some test failures.
 - Issue #1180612 by mikeryan, Add support for Migrate module.

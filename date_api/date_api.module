@@ -118,7 +118,8 @@ class DateObject extends DateTime {
         $date->setTimezone($tz);
       }
       $time = $date->format(DATE_FORMAT_DATETIME);
-      $format = DATE_FORMAT_DATETIME; 
+      $format = DATE_FORMAT_DATETIME;
+      $this->addGranularity('timezone');
     }
 
     if (is_array($time)) {
@@ -379,6 +380,7 @@ class DateObject extends DateTime {
     array_shift($values);
     // if we did not find all the values for the patterns in the format, abort
     if (count($letters) != count($values)) {
+      $this->errors['invalid'] = t("The value @date does not match the expected format.", array('@date' => $date));
       return FALSE;
     }
     $this->granularity = array();
@@ -623,13 +625,13 @@ class DateObject extends DateTime {
     
     $this->granularity = array();
     foreach ($arr as $part => $value) {
-      $value = intval($value);
       // Explicitly set the granularity to the values in the input array.
-      if (!empty($value) && $value !== 0) {
+      if (is_numeric($value)) {
         $this->addGranularity($part);
       }
       // Avoid false errors when a numeric value is input as a string by forcing it numeric.
-	    if (!empty($value) && $this->forceValid($part, $value, 'now', $default_month, $default_year) != $value) {
+	    $value = intval($value);
+      if (!empty($value) && $this->forceValid($part, $value, 'now', $default_month, $default_year) != $value) {
         // Use a switchcase to make translation easier by providing a different message for each part.
         switch($part) {
           case 'year':
@@ -652,6 +654,9 @@ class DateObject extends DateTime {
             break;
         }
       }
+    }
+    if ($this->hasTime()) {
+      $this->addGranularity('timezone');
     }
     return $errors;
   }

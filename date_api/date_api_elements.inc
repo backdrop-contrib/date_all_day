@@ -97,8 +97,8 @@ function date_default_date($element) {
     $date->limitGranularity($granularity);
     if ($date->validGranularity($granularity, $element['#date_flexible'])) {
       date_increment_round($date, $element['#date_increment']); 
-      return $date;
     }
+    return $date;
   }    
   return NULL;
 }

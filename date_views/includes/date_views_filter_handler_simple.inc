@@ -214,9 +214,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
-
+    
+    $identifier = $this->options['expose']['identifier'];
     if (!empty($form_state['exposed'])) {
-      $identifier = $this->options['expose']['identifier'];
 
       if (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator_id'])) {
         // exposed and locked.

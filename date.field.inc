@@ -70,7 +70,7 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
  *   $entity->date_id
  *     If set, this will show only an individual date on a field with
  *     multiple dates. The value should be a string that contains
- *     the following values, separated with colons:
+ *     the following values, separated with periods:
  *     - module name of the module adding the item
  *     - node nid
  *     - field name
@@ -106,7 +106,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
   $selected_deltas = array();
   if (!empty($entity->date_id)) {
     foreach ((array) $entity->date_id as $key => $id) {
-      list($module, $nid, $field_name, $selected_delta, $other) = explode(':', $id);
+      list($module, $nid, $field_name, $selected_delta, $other) = explode('.', $id . '.');
       if ($field_name == $field['field_name']) {
         $selected_deltas[] = $selected_delta;
       }

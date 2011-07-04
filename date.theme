@@ -62,7 +62,7 @@ function theme_date_display_combination($vars) {
   // If date_id is set for this field and the delta doesn't match, don't display it.
   if (!empty($entity->date_id)) {
     foreach ((array) $entity->date_id as $key => $id) {
-      list($module, $nid, $field_name, $item_delta, $other) = explode('.', $id);
+      list($module, $nid, $field_name, $item_delta, $other) = explode('.', $id . '.');
       if ($field_name == $field['field_name'] && isset($delta) && $item_delta != $delta) {
         return $output;
       }

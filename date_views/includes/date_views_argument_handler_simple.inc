@@ -200,6 +200,11 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->ensure_my_table();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
+    // Add the delta field to the view so we can later find the value that matched our query.
+    if (substr($this->real_field, -6) == '_value' || substr($this->real_field, -7) == '_value2') {
+      $this->query->add_field($this->table, 'delta');
+    }
+
     // Now that our table is secure, get our formula.
     if ($this->date_handler->granularity != 'week') {
       $placeholder = $this->placeholder();

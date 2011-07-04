@@ -118,6 +118,12 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   }
 
   function op_between($field) {
+    // Add the delta field to the view so we can later find the value that matched our query.
+    list($table_name, $field_name) = explode('.', $field);
+    if (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2') {
+      $this->query->add_field($table_name, 'delta');
+    }
+
     $min_value = $this->get_filter_value('min', $this->value['min']);
     $max_value = $this->get_filter_value('max', $this->value['max']);
     $field = $this->date_handler->sql_field($field);
@@ -134,6 +140,12 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
   }
 
   function op_simple($field) {
+    // Add the delta field to the view so we can later find the value that matched our query.
+    list($table_name, $field_name) = explode('.', $field);
+    if (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2') {
+      $this->query->add_field($table_name, 'delta');
+    }
+    
     $value = $this->get_filter_value('value', $this->value['value']);
     $field = $this->date_handler->sql_field($field);
     $field = $this->date_handler->sql_format($this->format, $field);

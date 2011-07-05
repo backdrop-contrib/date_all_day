@@ -8,3 +8,4 @@ files[] = date_repeat_calc.inc
 files[] = date_repeat_form.inc
 files[] = date_repeat.install
 files[] = date_repeat.module
+files[] = tests/date_repeat.test

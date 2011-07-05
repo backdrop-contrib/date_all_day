@@ -45,6 +45,11 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   // Get the parsed array of rule values.
   $rrule = date_ical_parse_rrule('RRULE:', $rrule);
 
+  // These default values indicate there is no RRULE here.
+  if ($rrule['FREQ'] == 'NONE' || $rrule['INTERVAL'] == 0) {
+    return array();
+  }
+
   // Create a date object for the start and end dates.
   $start_date = new DateObject($start, $timezone);
   $end_date = new DateObject($end, $timezone);

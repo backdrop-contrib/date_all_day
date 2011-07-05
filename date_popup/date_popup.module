@@ -56,13 +56,6 @@ function date_popup_library() {
 }
 
 /**
-* Implement hook_init().
-*/
-function date_popup_init() {
-  drupal_add_css(drupal_get_path('module', 'date_popup')  .'/themes/datepicker.1.7.css');
-}
-
-/**
 * Create a unique CSS id name and output a single inline JS block for
 * each startup function to call and settings array to pass it.  This
 * used to create a unique CSS class for each unique combination of

@@ -766,13 +766,6 @@ function date_type_format($type) {
 }
 
 /**
- * Implement hook_init().
- */
-function date_api_init() {
-  drupal_add_css(drupal_get_path('module', 'date_api') . '/date.css', array('weight' => CSS_THEME));
-}
-
-/**
  * An untranslated array of month names
  *
  * Needed for css, translation functions, strtotime(), and other places

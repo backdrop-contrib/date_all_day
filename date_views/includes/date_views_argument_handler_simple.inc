@@ -88,6 +88,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $options['year_range'] = array('default' => '-3:+3', 'export' => 'export_plugin');
     $options['granularity'] = array('default' => 'month', 'export' => 'export_plugin');
     $options['default_argument_type'] = array('default' => 'date', 'export' => 'export_plugin');
+    $options['add_delta'] = array('default' => '', 'export' => 'export_plugin');  
     return $options;
   }
 
@@ -97,7 +98,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function export_plugin($indent, $prefix, $storage, $option, $definition, $parents) {
     $output = '';
-    if (in_array($option, array('year_range', 'granularity', 'default_argument_type'))) {
+    if (in_array($option, array('year_range', 'granularity', 'default_argument_type', 'add_delta'))) {
       $name = $this->options[$option];
       $output .= $indent . $prefix . "['$option'] = '$name';\n";
       return $output;
@@ -128,6 +129,15 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       '#default_value' => $this->options['year_range'],
       '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
+
+    $form['add_delta'] = array(
+      '#type' => 'radios',
+      '#title' => t('Add multiple value identifier'),
+      '#default_value' => $this->options['add_delta'],
+      '#options' => array('' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
+    );
+
   }
 
   function options_validate(&$form, &$form_state) {
@@ -201,7 +211,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
     // Add the delta field to the view so we can later find the value that matched our query.
-    if (substr($this->real_field, -6) == '_value' || substr($this->real_field, -7) == '_value2') {
+    if (!empty($this->options['add_delta']) && (substr($this->real_field, -6) == '_value' || substr($this->real_field, -7) == '_value2')) {
       $this->query->add_field($this->table, 'delta');
     }
 

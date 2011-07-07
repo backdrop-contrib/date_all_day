@@ -51,6 +51,18 @@ function date_views_views_plugins() {
         'help topic' => 'date-browser',
       ),
     ),
+
+    'pager' => array(
+      'date_views_pager' => array(
+        'title' => t('Page by date'),
+        'help' => t('Page using the value of a date field.'),
+        'handler' => 'date_views_plugin_pager',
+        'path' => "$path/includes",
+        'help topic' => 'date-views-pager',
+        'uses options' => TRUE,
+      ),
+    ),
+
     'style' => array(
       'date_nav' => array(
         'title' => t('Date browser style'),
@@ -174,6 +186,11 @@ function date_views_querystring($view, $extra_params = array()) {
   if (empty($extra_params['view'])) {
     $exclude[] = 'view';
   }
+  // Clear out old date pager settings if not explicitly added.
+  if (!empty($view->date_info->pager_id) && empty($extra_params[$view->date_info->pager_id])) {
+    $exclude[] = $view->date_info->pager_id;
+  }
+
   $query = drupal_get_query_parameters($query_params, $exclude);
   // To prevent an empty query string from adding a "?" on to the end of a URL,
   // we return NULL.

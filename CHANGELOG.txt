@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1211744 Add a Date pager plugin that is designed to add paging in conjunction with a Date argument.
 - Issue #1209408 Make sure date_repeat_calc() returns empty array for FREQ=NONE and INTERVAL=0, also add a test for that.
 - Issue #1173374 by fietserwin, Remove translation of the jQuery datepicker day and month names, now handled by core.
 - Issue #1192020 by tim.plunkett: Fixed date granularity is too fragile in date_field_all_day().

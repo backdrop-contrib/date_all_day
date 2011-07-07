@@ -17,6 +17,13 @@ function date_views_theme() {
     'date_valarm' => $base + array('variables' => array('alarm' => NULL)),
     'date_views_filter_form' => $base + array('template' => 'date-views-filter-form', 'render element' => 'form'),
     'date_calendar_day' => $base + array('variables' => array('date' => NULL)),  
+
+    'date_views_pager' => $base + array(
+      'variables' => array('plugin' => NULL, 'input' => NULL),
+      // Register a pattern so that it can work like all views templates.
+      'pattern' => 'date_views_pager__',
+      'template' => 'date-views-pager',
+    ),
   );
 }
 
@@ -144,9 +151,19 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
     $args = $view->args;
   }
   // Is this an embedded or a block view?
+  // Return the pager query value.
   if (!$force_view_url && 
   (!empty($view->preview) || !empty($view->date_info->block_identifier))) {
-    $url = $view->get_url($args);
+
+    // @TODO Come back and clean out the old method of using the whole url 
+    // in the block link and standardize on the new date pager method.
+    // Not sure what that will affect yet, so keeping both in place for now.
+    if (!empty($view->date_info->pager_id)) {
+      $url = $args[$pos];
+    }
+    else {
+      $url = $view->get_url($args);
+    }
     $key = date_block_identifier($view);
     if (!empty($key)) {
       return url($_GET['q'], array(
@@ -154,12 +171,14 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
         'absolute' => TRUE));
     }
   }  
+  
   // Normal views may need querystrings appended to them
   // if they use exposed filters.
   return url($view->get_url($args), array(
     'query' => date_views_querystring($view), 
     'absolute' => TRUE));
 }
+
 function date_block_identifier($view) {
   if (!empty($view->block_identifier)) {
     return $view->block_identifier;

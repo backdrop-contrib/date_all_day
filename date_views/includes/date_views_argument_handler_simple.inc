@@ -16,9 +16,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
   function init(&$view, &$options) {
     parent::init($view, $options);
 
-    // Identify the type of display we're using.
-    $this->display_handler = $view->display_handler->definition['handler'];
-
     // Add a date handler.
     module_load_include('inc', 'date_api', 'date_api_sql');
     $this->date_handler = new date_sql_handler(DATE_UNIX);
@@ -34,7 +31,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
- }
+  }
 
   /**
    * Add a callback for the formula to wrap the field in the right SQL.
@@ -58,6 +55,16 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     else {
       return !empty($this->options[$this->option_name]) ? $this->options[$this->option_name] : 'Y-m';
     }
+  }
+
+  function get_related_pager_type() {
+    $display = $this->view->current_display;
+    $this->pager_type = $this->view->$display['display_options']['pager']['type'];
+  }
+
+  function get_related_pager_options() {
+    $display = $this->view->current_display;
+    $this->pager_options = $this->view->$display['display_options']['pager']['options'];
   }
 
   /**

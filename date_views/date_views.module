@@ -155,18 +155,76 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
   if (!$force_view_url && 
   (!empty($view->preview) || !empty($view->date_info->block_identifier))) {
 
-    // @TODO Come back and clean out the old method of using the whole url 
-    // in the block link and standardize on the new date pager method.
-    // Not sure what that will affect yet, so keeping both in place for now.
-    if (!empty($view->date_info->pager_id)) {
-      $url = $args[$pos];
-    }
-    else {
-      $url = $view->get_url($args);
-    }
+    $url = $view->get_url($args);
     $key = date_block_identifier($view);
     if (!empty($key)) {
       return url($_GET['q'], array(
+        'query' => date_views_querystring($view, array($key => $url)), 
+        'absolute' => TRUE));
+    }
+  }  
+  
+  // Normal views may need querystrings appended to them
+  // if they use exposed filters.
+  return url($view->get_url($args), array(
+    'query' => date_views_querystring($view), 
+    'absolute' => TRUE));
+}
+
+/**
+ * A version of date_real_url that formats links correctly for the new Date pager.
+ */
+function date_pager_url($view, $date_type = NULL, $date_arg = NULL, $force_view_url = FALSE) {
+  $args = $view->args;
+  $pos = $view->date_info->date_arg_pos;
+
+  // The View arguments array is indexed numerically but is not necessarily
+  // in numerical order. Sort the arguments to ensure the correct order.
+  ksort($args);
+
+  // If there are empty arguments before the date argument, 
+  // pad them with the wildcard so the date argument will be in 
+  // the right position.
+  if (count($args) < $pos) {
+    foreach ($view->argument as $name => $argument) {
+      if ($argument->position == $pos) {
+        break;
+      }
+      $args[] = $argument->options['exception']['value'];
+    }
+  }
+
+  if (!empty($date_type)) {
+    switch ($date_type) {
+      case 'year':
+        $args[$pos] = date_pad($view->date_info->year, 4);
+        break;
+      case 'week':
+        $args[$pos] = date_pad($view->date_info->year, 4) . '-W' . date_pad($view->date_info->week);
+        break;
+      case 'day':
+        $args[$pos] = date_pad($view->date_info->year, 4) . '-' . date_pad($view->date_info->month) . '-' . date_pad($view->date_info->day);
+        break;
+      default:
+        $args[$pos] = date_pad($view->date_info->year, 4) . '-' . date_pad($view->date_info->month);
+        break;
+    }
+  }
+  elseif (!empty($date_arg)) {
+    $args[$pos] = $date_arg;
+  }
+  else {
+    $args = $view->args;
+  }
+  // Is this an embedded or a block view?
+  // Return the pager query value.
+  if (!$force_view_url && 
+  (!empty($view->preview) || !empty($view->date_info->block_identifier))) {
+
+    $url = $args[$pos];
+    $key = date_block_identifier($view);
+    if (!empty($key)) {
+      return url($view->get_url($args), array(
         'query' => date_views_querystring($view, array($key => $url)), 
         'absolute' => TRUE));
     }

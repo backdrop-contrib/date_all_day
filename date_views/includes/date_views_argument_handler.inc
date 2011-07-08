@@ -165,7 +165,6 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     if ($this->date_forbid()) {
       return;
     }
-
     $this->get_query_fields();
     $block_identifier = date_block_identifier($this->view);
     if (!empty($this->view->block_identifier) || isset($_GET[$block_identifier])) {

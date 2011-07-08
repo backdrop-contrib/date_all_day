@@ -181,8 +181,8 @@ function template_preprocess_date_views_pager(&$vars) {
     $prev_path = str_replace($date_info->date_arg, $prev_arg, $date_info->url);
     $next_args[$pos] = $next_arg;
     $prev_args[$pos] = $prev_arg;
-    $vars['next_url'] = date_real_url($view, NULL, $next_arg);
-    $vars['prev_url'] = date_real_url($view, NULL, $prev_arg);
+    $vars['next_url'] = date_pager_url($view, NULL, $next_arg);
+    $vars['prev_url'] = date_pager_url($view, NULL, $prev_arg);
     $vars['next_options'] = $vars['prev_options'] = array();
   }
   else {

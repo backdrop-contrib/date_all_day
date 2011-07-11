@@ -131,20 +131,23 @@ function template_preprocess_date_navigation(&$vars) {
 function template_preprocess_date_views_pager(&$vars) {
   ctools_add_css('date_views', 'date_views');
   $plugin = $vars['plugin'];
+  $input = $vars['input'];
   $view = $plugin->view;
   
   $vars['nav_title'] = '';
   $vars['next_url'] = '';
   $vars['prev_url'] = '';
 
-  if (empty($view->date_info)) {
+  if (empty($view->date_info) || empty($view->date_info->min_date)) {
     return;
   }
   $date_info = $view->date_info;
+  // Make sure we have some sort of granularity.
+  $granularity = !empty($date_info->granularity) ? $date_info->granularity : 'month';
   $pos = $date_info->date_arg_pos;
-
-  if (!empty($plugin->date_id)) {
-    $view->args[$pos] = $plugin->date_id;
+  if (!empty($input)) {
+    $id = $plugin->options['date_id'];
+    $view->args[$pos] = $input[$id];
   }
 
   $next_args = $view->args;
@@ -154,7 +157,7 @@ function template_preprocess_date_views_pager(&$vars) {
 
   // Set up the pager link format. Setting the block identifier
   // will force pager style links.
-  if ($date_info->date_pager_format != 'clean' || !empty($date_info->block)) {
+  if ((isset($date_info->date_pager_format) && $date_info->date_pager_format != 'clean') || !empty($date_info->block)) {
     if (empty($date_info->block_identifier)) {
       $date_info->block_identifier = $date_info->pager_id;
     }
@@ -166,7 +169,7 @@ function template_preprocess_date_views_pager(&$vars) {
     $next_date = clone($min_date);
     date_modify($next_date, '+1 ' . $date_info->granularity);
     $format = array('year' => 'Y', 'month' => 'Y-m', 'day' => 'Y-m-d');
-    switch ($date_info->granularity) {
+    switch ($granularity) {
       case 'week':
         $next_week = date_week(date_format($next_date, 'Y-m-d'));
         $prev_week = date_week(date_format($prev_date, 'Y-m-d'));
@@ -174,8 +177,8 @@ function template_preprocess_date_views_pager(&$vars) {
         $prev_arg = date_format($prev_date, 'Y-\W') . $prev_week;
         break;
       default:
-        $next_arg = date_format($next_date, $format[$date_info->granularity]);
-        $prev_arg = date_format($prev_date, $format[$date_info->granularity]);
+        $next_arg = date_format($next_date, $format[$granularity]);
+        $prev_arg = date_format($prev_date, $format[$granularity]);
     }
     $next_path = str_replace($date_info->date_arg, $next_arg, $date_info->url);
     $prev_path = str_replace($date_info->date_arg, $prev_arg, $date_info->url);

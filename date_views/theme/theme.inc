@@ -235,6 +235,10 @@ function template_preprocess_date_views_pager(&$vars) {
   $vars['prev_options']['attributes'] += array('rel' => 'nofollow');
   $vars['next_options']['attributes'] += array('rel' => 'nofollow');
 
+  // Need this so we can use '&laquo;' or images in the links.
+  $vars['prev_options'] += array('html' => TRUE);
+  $vars['next_options'] += array('html' => TRUE);
+
   $link = FALSE;
   // Month navigation titles are used as links in the block view.
   if (!empty($date_info->mini) && $date_info->granularity == 'month') {

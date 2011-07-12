@@ -28,24 +28,26 @@
  * $view
  *   The view object for this navigation.
  * 
- * The &nbsp; in the prev and next divs is to be sure they are never
- * completely empty, needed in some browsers to prop the header open
- * so the title stays centered.
+ * $pager_prefix
+ *   Additional information that might be added by overriding template_process_date_views_pager().
  * 
  */
 ?>
-<div class="date-nav clear-block">
-  <div class="date-prev">
-    <?php if (!empty($prev_url)) : ?>
+<div class="date-nav-wrapper clear-block">
+  <?php if (!empty($pager_prefix)) print $pager_prefix; ?>
+  <div class="date-nav">
+    <div class="date-prev">
+      <?php if (!empty($prev_url)) : ?>
       <span class="next">  <?php print l('&laquo;' . ($mini ? '' : t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?></span>
-    <?php endif; ?>
-  &nbsp;</div>
-  <div class="date-heading">
-    <h3><?php print $nav_title ?></h3>
-  </div>
-  <div class="date-next">&nbsp;
+      <?php endif; ?>
+    &nbsp;</div>
+    <div class="date-heading">
+      <h3><?php print $nav_title ?></h3>
+    </div>
+    <div class="date-next">&nbsp;
     <?php if (!empty($next_url)) : ?>
       <span class="next"> <?php print l(($mini ? '' : t('Next', array(), array('context' => 'date_nav'))) . ' &raquo;', $next_url, $next_options); ?> </span>
     <?php endif; ?>  
+    </div>
   </div>
 </div>

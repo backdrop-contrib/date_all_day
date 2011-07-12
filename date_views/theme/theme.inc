@@ -157,7 +157,7 @@ function template_preprocess_date_views_pager(&$vars) {
 
   // Set up the pager link format. Setting the block identifier
   // will force pager style links.
-  if ((isset($date_info->date_pager_format) && $date_info->date_pager_format != 'clean') || !empty($date_info->block)) {
+  if ((isset($date_info->date_pager_format) && $date_info->date_pager_format != 'clean') || !empty($date_info->mini)) {
     if (empty($date_info->block_identifier)) {
       $date_info->block_identifier = $date_info->pager_id;
     }
@@ -237,7 +237,7 @@ function template_preprocess_date_views_pager(&$vars) {
 
   $link = FALSE;
   // Month navigation titles are used as links in the block view.
-  if (!empty($date_info->block) && $date_info->granularity == 'month') {
+  if (!empty($date_info->mini) && $date_info->granularity == 'month') {
     $link = TRUE;
   }
   $params = array(
@@ -247,8 +247,7 @@ function template_preprocess_date_views_pager(&$vars) {
   );
   $nav_title = theme('date_nav_title', $params);
   $vars['nav_title'] = $nav_title;
-  $vars['block'] = !empty($date_info->block);
-
+  $vars['mini'] = !empty($date_info->mini);
 }
 
 /**
@@ -284,7 +283,7 @@ function theme_date_nav_title($params) {
   if (!empty($date_info->mini) || $link) {
   	// Month navigation titles are used as links in the mini view.
     $attributes = array('title' => t('View full page month'));
-  	$url = date_real_url($view, $granularity, $date_arg, TRUE);
+  	$url = date_pager_url($view, $granularity, $date_arg, TRUE);
     return l($title, $url, array('attributes' => $attributes));
   }
   else {

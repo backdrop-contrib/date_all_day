@@ -130,6 +130,7 @@ function template_preprocess_date_navigation(&$vars) {
  */
 function template_preprocess_date_views_pager(&$vars) {
   ctools_add_css('date_views', 'date_views');
+
   $plugin = $vars['plugin'];
   $input = $vars['input'];
   $view = $plugin->view;

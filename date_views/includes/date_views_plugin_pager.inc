@@ -11,20 +11,21 @@
  * - The pager id: Set an id to be used as the identifier in the url for pager values, defaults to 'date'.
  * - Pager position: Choose whether to display the date pager above, below, or both above and below the content.
  * - Link format: Choose whether the pager links will be in the simple 'calendar/2011-12' format or the 
- *   more complex 'calendar/2011-12?date=2011-12' pager format. The second one is more likely to work correctly
+ *   more complex 'calendar/?date=2011-12' pager format. The second one is more likely to work correctly
  *   if the pager is used in blocks and panels.
  *
  * The pager works in combination with a Date argument and it will use the date fields and granularity
  * set in that argument to create its back/next links. If the view has no Date argument, the pager can
  * do nothing. The argument can either be a 'Date' argument that lets you select one or more date fields
- * in the argument, or the simple 'Content' argument for an individual date field.
+ * in the argument, or the simple 'Content' argument for an individual date field. It must be an
+ * argument that uses the date argument handler.
  *
  * DEVELOPER NOTES
  *
- * The pager could technically create a query of its own rather than depending on the date argument to set the query,
- * but it has only a limited set of tools to work with because it is a plugin, not a handler: 
+ * The pager could technically create a query of its own rather than depending on the date argument to 
+ * set the query, but it has only a limited set of tools to work with because it is a plugin, not a handler: 
  * it has no knowledge about relationships, it cannot use the ensure_my_table() function, 
- * plugins are not even invoked in pre_query() so it can do nothing there. 
+ * plugins are not even invoked in pre_query(), so can't do anything there. 
  *
  * My conclusion was that the date pager simply is not powerful enough to create its own queries for
  * date fields, which require very complex queries. Instead, we can combine this with a date argument and
@@ -32,12 +33,14 @@
  * date argument, the pager will do nothing.
  *
  * There are still other problems. The pager is not even initialized until after all the handlers
- * have created their queries, so it has no chance to alter values ahead of that. That means
- * we can't have the pager swap in a new argument value based on the input from the pager.
- * For the moment, the solution is to alter the back/next links so they always include the
- * correct date argument as well as the pager value. This means you have pager links like
- * 'calendar/2011-12?date=2011-12', which looks a little silly. But this means both the pager
- * and the argument have the right date information.
+ * have created their queries, so it has no chance to alter values ahead of that. And the argument
+ * has no knowledge of the pager, so it can't check for pager values before the query is created.
+ *
+ * The solution used here is to let the argument create the original query. The pager query
+ * runs after that, so the pager checks to see if there is a pager value that needs to be used in the query.
+ * The date argument has identified the placeholders it used in the query. So if a change is needed,
+ * we can swap the pager value into the query created by the date argument and adjust the
+ * $view->date_info values set by the argument accordingly so the theme will pick up the new information.
  */
 
 /**
@@ -114,13 +117,39 @@ class date_views_plugin_pager extends views_plugin_pager {
   }
 
   /**
-   * Transfer date information from the argument to the view so the pager theme can use it.
+   * Transfer date information from the argument to the view so the pager theme can use it
+   * and update the date argument value to whatever is set by the pager.
    */
-  function pre_execute(&$query) {
+  function query() {
+
     // By fetching our data from the exposed input, it is possible to
     // feed pager data through some method other than $_GET.
     $input = $this->view->get_exposed_input();
+    $value = NULL;
+    if (!empty($input) && !empty($input[$this->options['date_id']])) {
+      $value = $input[$this->options['date_id']];
+    }
+
+    // Is this a view that needs to be altered based on a pager value?
+    // If there is pager input and the argument has set the placeholders, 
+    // swap the pager value in for the placeholder set by the argument.
     
+    if (!empty($value) && !empty($this->view->date_info->placeholders)) {
+      $placeholders = $this->view->date_info->placeholders;
+      foreach ($this->view->query->where as $group => $data) {
+        foreach ($data['conditions'] as $delta => $condition) {
+          if (array_key_exists('value', $condition) && is_array($condition['value'])) {
+            foreach ($condition['value'] as $placeholder => $placeholder_value) {
+              if (array_key_exists($placeholder, $placeholders)) {
+                //dsm('resetting '. $placeholder . ' from ' . $placeholders[$placeholder] . ' to '. $value);
+                $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $value;
+              }
+            }
+          }
+        }
+      }
+    }
+
     // Bring the argument information into the view so our theme can access it.
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {
@@ -132,6 +161,14 @@ class date_views_plugin_pager extends views_plugin_pager {
         $date_handler = $argument->date_handler;
         $this->options['date_argument'] = $id;
         $this->options['granularity'] = $argument->date_handler->granularity;
+
+        // Reset values set by argument if pager requires it.
+        if (!empty($value)) {
+          $argument->argument = $value;
+          $argument->date_range = $argument->date_handler->arg_range($value);
+          $argument->min_date = $argument->date_range[0];
+          $argument->max_date = $argument->date_range[1];
+        }
         
         $this->view->date_info = new stdClass();
         $this->view->date_info->granularity = $argument->date_handler->granularity;

@@ -224,7 +224,7 @@ function date_pager_url($view, $date_type = NULL, $date_arg = NULL, $force_view_
     $url = $args[$pos];
     $key = date_block_identifier($view);
     if (!empty($key)) {
-      return url($view->get_url($args), array(
+      return url($_GET['q'], array(
         'query' => date_views_querystring($view, array($key => $url)), 
         'absolute' => TRUE));
     }

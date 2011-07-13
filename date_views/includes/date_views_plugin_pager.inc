@@ -90,7 +90,7 @@ class date_views_plugin_pager extends views_plugin_pager {
     $form['date_id'] = array(
       '#title' => t('Date identifier'),
       '#type' => 'textfield',
-      '#description' => t('The query identifier to use when fetching date data from in the URL.'),
+      '#description' => t('The query identifier to use when fetching date data from in the URL. Note that if you have more than one display in the same view that uses the date pager (like a page and a block), the pager id must be different for each one or both will change when the pager value changes.'),
       '#default_value' => $this->options['date_id'],
       '#required' => TRUE,
     );
@@ -130,26 +130,6 @@ class date_views_plugin_pager extends views_plugin_pager {
       $value = $input[$this->options['date_id']];
     }
 
-    // Is this a view that needs to be altered based on a pager value?
-    // If there is pager input and the argument has set the placeholders, 
-    // swap the pager value in for the placeholder set by the argument.
-    
-    if (!empty($value) && !empty($this->view->date_info->placeholders)) {
-      $placeholders = $this->view->date_info->placeholders;
-      foreach ($this->view->query->where as $group => $data) {
-        foreach ($data['conditions'] as $delta => $condition) {
-          if (array_key_exists('value', $condition) && is_array($condition['value'])) {
-            foreach ($condition['value'] as $placeholder => $placeholder_value) {
-              if (array_key_exists($placeholder, $placeholders)) {
-                //dsm('resetting '. $placeholder . ' from ' . $placeholders[$placeholder] . ' to '. $value);
-                $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $value;
-              }
-            }
-          }
-        }
-      }
-    }
-
     // Bring the argument information into the view so our theme can access it.
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {
@@ -169,9 +149,6 @@ class date_views_plugin_pager extends views_plugin_pager {
           $argument->min_date = $argument->date_range[0];
           $argument->max_date = $argument->date_range[1];
         }
-        
-        $this->view->date_info = new stdClass();
-        $this->view->date_info->granularity = $argument->date_handler->granularity;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;
         $this->view->date_info->year = date_format($argument->min_date, 'Y');
@@ -188,6 +165,38 @@ class date_views_plugin_pager extends views_plugin_pager {
         $this->view->date_info->date_pager_format = $this->options['link_format'];
       }
       $i++;
+    }
+
+    // Is this a view that needs to be altered based on a pager value?
+    // If there is pager input and the argument has set the placeholders, 
+    // swap the pager value in for the placeholder set by the argument.
+    
+    if (!empty($value) && !empty($this->view->date_info->placeholders)) {
+      $placeholders = $this->view->date_info->placeholders;
+      $count = count($placeholders);
+      foreach ($this->view->query->where as $group => $data) {
+        foreach ($data['conditions'] as $delta => $condition) {
+          if (array_key_exists('value', $condition) && is_array($condition['value'])) {
+            foreach ($condition['value'] as $placeholder => $placeholder_value) {
+              if (array_key_exists($placeholder, $placeholders)) {
+                if ($value == $placeholder_value) {
+                  //dsm('resetting '. $placeholder . ' from ' . $placeholders[$placeholder] . ' to '. $value);
+                  $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $value;
+                }
+                elseif ($count > 0) {
+                  // If we didn't get a match, this is a > $min < $max query that uses the view
+                  // min and max dates as placeholders.
+                  $date = ($count == 2) ? $this->view->date_info->min_date : $this->view->date_info->max_date;
+                  $next_placeholder = array_shift($placeholders);
+                  //dsm('resetting '. $placeholder . ' from ' . $next_placeholder . ' to '. $date->format(DATE_FORMAT_DATETIME));
+                  $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $date->format(DATE_FORMAT_DATETIME);
+                  $count--;
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 

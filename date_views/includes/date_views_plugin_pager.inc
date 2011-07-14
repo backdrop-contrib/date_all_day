@@ -149,6 +149,8 @@ class date_views_plugin_pager extends views_plugin_pager {
           $argument->min_date = $argument->date_range[0];
           $argument->max_date = $argument->date_range[1];
         }
+        $format = $argument->sql_format;
+        $this->view->date_info->granularity = $argument->date_handler->granularity;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;
         $this->view->date_info->year = date_format($argument->min_date, 'Y');
@@ -179,16 +181,16 @@ class date_views_plugin_pager extends views_plugin_pager {
           if (array_key_exists('value', $condition) && is_array($condition['value'])) {
             foreach ($condition['value'] as $placeholder => $placeholder_value) {
               if (array_key_exists($placeholder, $placeholders)) {
-                if ($value == $placeholder_value) {
-                  //dsm('resetting '. $placeholder . ' from ' . $placeholders[$placeholder] . ' to '. $value);
+                if ($count < 2) {
+                  //dsm('1 resetting '. $placeholder . ' from ' . $placeholders[$placeholder] . ' to '. $value);
                   $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $value;
                 }
-                elseif ($count > 0) {
+                else {
                   // If we didn't get a match, this is a > $min < $max query that uses the view
                   // min and max dates as placeholders.
                   $date = ($count == 2) ? $this->view->date_info->min_date : $this->view->date_info->max_date;
                   $next_placeholder = array_shift($placeholders);
-                  //dsm('resetting '. $placeholder . ' from ' . $next_placeholder . ' to '. $date->format(DATE_FORMAT_DATETIME));
+                  //dsm('2 resetting '. $placeholder . ' from ' . $next_placeholder . ' to '. $date->format(DATE_FORMAT_DATETIME));
                   $this->view->query->where[$group]['conditions'][$delta]['value'][$placeholder] = $date->format(DATE_FORMAT_DATETIME);
                   $count--;
                 }

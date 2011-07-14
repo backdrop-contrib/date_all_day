@@ -166,9 +166,9 @@ function template_preprocess_date_views_pager(&$vars) {
 
   if (empty($date_info->hide_nav)) {
     $prev_date = clone($min_date);
-    date_modify($prev_date, '-1 ' . $date_info->granularity);
+    date_modify($prev_date, '-1 ' . $granularity);
     $next_date = clone($min_date);
-    date_modify($next_date, '+1 ' . $date_info->granularity);
+    date_modify($next_date, '+1 ' . $granularity);
     $format = array('year' => 'Y', 'month' => 'Y-m', 'day' => 'Y-m-d');
     switch ($granularity) {
       case 'week':
@@ -211,7 +211,7 @@ function template_preprocess_date_views_pager(&$vars) {
   $next_title = '';
 
   // Build next/prev link titles.
-  switch ($date_info->granularity) {
+  switch ($granularity) {
     case 'year':
       $prev_title = t('Navigate to previous year');
       $next_title = t('Navigate to next year');
@@ -242,11 +242,11 @@ function template_preprocess_date_views_pager(&$vars) {
 
   $link = FALSE;
   // Month navigation titles are used as links in the block view.
-  if (!empty($date_info->mini) && $date_info->granularity == 'month') {
+  if (!empty($date_info->mini) && $granularity == 'month') {
     $link = TRUE;
   }
   $params = array(
-    'granularity' => $date_info->granularity, 
+    'granularity' => $granularity, 
     'view' => $view, 
     'link' => $link,
   );

@@ -26,7 +26,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       }
     }
     $this->date_handler->granularity = $this->options['granularity'];
-
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     // $this->arg_format is the format the parent date handler will use to create a default argument.
@@ -208,13 +207,11 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if ($this->date_forbid()) {
       return;
     }
-    
     $this->formula = $this->formula($this->real_field);
     $this->date_handler->granularity = $this->date_handler->arg_granularity($this->argument);
     $this->granularity = $this->date_handler->granularity;
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
-
     $this->ensure_my_table();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 

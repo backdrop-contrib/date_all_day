@@ -753,6 +753,9 @@ class date_sql_handler {
   }
 
   function views_formats($granularity, $type = 'sql') {
+    if (empty($granularity)) {
+      return DATE_FORMAT_ISO;
+    }
     $formats = array('display', 'sql');
     // Start with the site long date format and add seconds to it
     $long = str_replace(':i', ':i:s', variable_get('date_format_long',  'l, F j, Y - H:i'));

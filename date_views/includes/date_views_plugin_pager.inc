@@ -151,6 +151,7 @@ class date_views_plugin_pager extends views_plugin_pager {
         }
         $format = $argument->sql_format;
         $this->view->date_info->granularity = $argument->date_handler->granularity;
+        $this->view->date_info->placeholders = $argument->date_handler->placeholders;
         $this->view->date_info->date_arg = $argument->argument;
         $this->view->date_info->date_arg_pos = $i;
         $this->view->date_info->year = date_format($argument->min_date, 'Y');
@@ -172,7 +173,6 @@ class date_views_plugin_pager extends views_plugin_pager {
     // Is this a view that needs to be altered based on a pager value?
     // If there is pager input and the argument has set the placeholders, 
     // swap the pager value in for the placeholder set by the argument.
-    
     if (!empty($value) && !empty($this->view->date_info->placeholders)) {
       $placeholders = $this->view->date_info->placeholders;
       $count = count($placeholders);

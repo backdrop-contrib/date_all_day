@@ -228,7 +228,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
         $placeholder => $this->argument,
       );
       $this->query->add_where($group, $formula, $placeholders, 'formula');
-      $this->view->date_info->placeholders = $placeholders;
+      $this->date_handler->placeholders = $placeholders;
     }
     else {
       $min_value = date_format($this->min_date, DATE_FORMAT_DATETIME);
@@ -237,7 +237,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       $field = $this->date_handler->sql_format(DATE_FORMAT_DATETIME, $field);
       $placeholder_min = $this->placeholder();
       $placeholder_max = $this->placeholder();
-      $this->view->date_info->placeholders = array($placeholder_min => $min_value, $placeholder_max => $max_value);
+      $this->date_handler->placeholders = array($placeholder_min => $min_value, $placeholder_max => $max_value);
       $this->query->add_where_expression($group, "$field >= $placeholder_min AND $field <= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));
     }
 

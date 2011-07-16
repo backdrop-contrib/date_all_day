@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #307274 by ksenzee, Fix broken validation for absolute value in years back/forward.
 - Issue #1216996 by ksenzee, Change the years back/forward setting into two drop down boxes.
 - Issue #1215738 by ksenzee, Make granularity settings checkboxes horizontal.
 - Issue #1215686 by ksenzee, Change name of date field types to be more intuitive.

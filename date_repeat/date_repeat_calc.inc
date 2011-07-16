@@ -46,7 +46,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   $rrule = date_ical_parse_rrule('RRULE:', $rrule);
 
   // These default values indicate there is no RRULE here.
-  if ($rrule['FREQ'] == 'NONE' || $rrule['INTERVAL'] == 0) {
+  if ($rrule['FREQ'] == 'NONE' || (isset($rrule['INTERVAL']) && $rrule['INTERVAL'] == 0)) {
     return array();
   }
 

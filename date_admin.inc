@@ -284,17 +284,37 @@ function _date_field_widget_settings_form($field, $instance) {
       '#value' => '',
       );
   }
+
+  // Year range is stored in the -3:+3 format, but collected as two separate
+  // fieldsets.
+  $form['year_range'] = array(
+    '#type' => 'hidden',
+    '#value' => $settings['year_range'],
+  );
   if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat'))) {
-    $form['year_range'] = array(
+    list($years_back, $years_forward) = explode(':', $settings['year_range']);
+    drupal_add_js(drupal_get_path('module', 'date') . '/date_admin.js');
+    $form['#attached']['js'][] = drupal_get_path('module', 'date') . '/date_admin.js';
+    $form['years_back'] = array(
       '#type' => 'textfield',
-      '#title' => t('Years back and forward'),
-      '#default_value' => $settings['year_range'],
+      '#title' => t('Years back in the selection list'),
+      '#default_value' => $years_back,
       '#size' => 10,
       '#maxsize' => 10,
-      '#description' => t('Number of years to go back and forward in the year selection list, default is -3:+3.'),
-      '#weight' => 6,
       '#fieldset' => 'years_back_and_forward',
-      );
+      '#attributes' => array('class' => array('select-list-with-custom-option', 'back')),
+      '#description' => t('Must be in the format -9, or an absolute year such as 1980.'),
+    );
+    $form['years_forward'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Years forward in the selection list'),
+      '#default_value' => $years_forward,
+      '#size' => 10,
+      '#maxsize' => 10,
+      '#fieldset' => 'years_back_and_forward',
+      '#attributes' => array('class' => array('select-list-with-custom-option', 'forward')),
+      '#description' => t('Must be in the format +9, or an absolute year such as 2030.'),
+    );
     $form['increment'] = array(
       '#type' => 'select', '#title' => t('Choose how users enter time'),
       '#default_value' => $settings['increment'],
@@ -313,10 +333,6 @@ function _date_field_widget_settings_form($field, $instance) {
     $form['increment'] = array(
       '#type' => 'hidden',
       '#value' => $settings['increment'],
-      );
-    $form['year_range'] = array(
-      '#type' => 'hidden',
-      '#value' => $settings['year_range'],
       );
   }
 
@@ -382,13 +398,18 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   unset($settings['advanced']);
   form_set_value(array('#parents' => array('instance', 'widget', 'settings')), $settings, $form_state);
 
-  $widget = $form_state['values']['instance']['widget'];
+  $widget = &$form_state['values']['instance']['widget'];
   // Munge the table display for text parts back into an array of text parts.
   if (is_array($widget['settings']['text_parts'])) {
     form_set_value($form['text_parts'], array_keys(array_filter($widget['settings']['text_parts'])), $form_state);
   }
-  if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat')) && !date_range_valid($widget['settings']['year_range'])) {
-    form_set_error('instance][widget][settings][year_range', t('Years back and forward must be in the format -9:+9.'));
+  // Recombine the years back and years forward values into year_range.
+  if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat'))) {
+    $widget['settings']['year_range'] = $widget['settings']['years_back'] . ':' . $widget['settings']['years_forward'];
+    if (!date_range_valid($widget['settings']['year_range'])) {
+      form_set_error('instance][widget][settings][years_back', t('Years back must be in the format -9, or an absolute year such as 1980.'));
+      form_set_error('instance][widget][settings][years_forward', t('Years forward must be in the format +9, or an absolute year such as 2030.'));
+    }
   }
   if ($widget['settings']['input_format'] === 'custom' && empty($widget['settings']['input_format_custom'])) {
     form_set_error('instance][widget][settings][input_format_custom', t('Please enter a custom date format, or choose one of the preset formats.'));

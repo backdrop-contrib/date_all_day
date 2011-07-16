@@ -415,16 +415,27 @@ function _date_field_settings_form($field, $instance, $has_data) {
     $form['repeat'] = array('#type' => 'hidden', '#value' => 0);
   }
 
-  $description = t('Set the date elements to be stored (at least a year is required).');
+  $description = t('Select the date elements to collect, store, and present. Year is required.');
+  $options = date_granularity_names();
+  $checkbox_year = array(
+    '#type' => 'checkbox',
+    '#title' => $options['year'],
+    '#value' => 'year',
+    '#return_value' => 'year',
+    '#disabled' => TRUE,
+  );
+  unset($options['year']);
   $form['granularity'] = array(
-    '#type' => 'select', 
-    '#title' => t('Granularity'),
+    '#type' => 'checkboxes',
+    '#title' => t('Date attributes to collect'),
     '#default_value' => $granularity,
-    '#options' => date_granularity_names(),
-    '#multiple' => TRUE,
+    '#options' => $options,
+    '#attributes' => array('class' => array('container-inline')),
     '#description' => $description,
     '#disabled' => $has_data,
+    'year' => $checkbox_year,
   );
+
   $description = t('End dates are used to collect duration. E.g., allow an event to start on September 15, and end on September 16.');
   $form['enddate'] = array(
     '#type' => 'checkbox',
@@ -473,9 +484,6 @@ function date_field_settings_validate(&$form, &$form_state) {
   }
   else {
     form_set_value($form['timezone_db'], date_get_timezone_db($field['settings']['tz_handling']), $form_state);
-  }
-  if (!in_array('year', $field['settings']['granularity'])) {
-    form_set_error('field][settings][granularity', t('Granularity must include a year.'));
   }
   if ($field['settings']['tz_handling'] != 'none' && !in_array('hour', array_filter($field['settings']['granularity']))) {
     form_set_error('field][settings][tz_handling', t('Dates without hours granularity must not use any timezone handling.'));

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1215738 by ksenzee, Make granularity settings checkboxes horizontal.
 - Issue #1215686 by ksenzee, Change name of date field types to be more intuitive.
 - Issue #1211744 by EclipseGC and KarenS, Add a Date pager plugin that is designed to add paging in conjunction with a Date argument.
 - Issue #1209408 Make sure date_repeat_calc() returns empty array for FREQ=NONE and INTERVAL=0, also add a test for that.

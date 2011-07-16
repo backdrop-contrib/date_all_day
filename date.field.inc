@@ -186,21 +186,21 @@ function date_field_info() {
     'property_callbacks' => array('date_entity_metadata_property_info_alter'),
   );
   return array(
-    'date' => array(
+    'datetime' => array(
       'label' => 'Date',
+      'description' => t('Store a date in the database as a datetime field, recommended for complete dates and times that may need timezone conversion.'),
+      'default_widget' => 'date_select',
+      'default_formatter' => 'date_default',
+      ) + $settings,
+    'date' => array(
+      'label' => 'Date (ISO format)',
       'description' => t('Store a date in the database as an ISO date, recommended for historical or partial dates.'),
       'default_widget' => 'date_select',
       'default_formatter' => 'date_default',
       ) + $settings,
     'datestamp' => array(
-      'label' => 'Datestamp',
-      'description' => t('Store a date in the database as a timestamp, deprecated format to suppport legacy data.'),
-      'default_widget' => 'date_select',
-      'default_formatter' => 'date_default',
-      ) + $settings,
-    'datetime' => array(
-      'label' => 'Datetime',
-      'description' => t('Store a date in the database as a datetime field, recommended for complete dates and times that may need timezone conversion.'),
+      'label' => 'Date (Unix timestamp)',
+      'description' => t('Store a date in the database as a timestamp, deprecated format to support legacy data.'),
       'default_widget' => 'date_select',
       'default_formatter' => 'date_default',
       ) + $settings,
@@ -234,29 +234,29 @@ function date_field_widget_info() {
 
   $info = array(
     'date_select' => array(
-      'label' =>  t('Select List'),
+      'label' =>  t('Select list'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $settings,
     'date_select_repeat' => array(
-      'label' =>  t('Select List with Repeat options'),
+      'label' =>  t('Select list with repeat options'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $repeat_settings,
     'date_text' => array(
-      'label' =>  t('Text Field with custom input format'),
+      'label' =>  t('Text field'),
       'field types' => array('date', 'datestamp', 'datetime'),
      ) + $settings,
     'date_text_repeat' => array(
-      'label' =>  t('Text Field with Repeat options'),
+      'label' =>  t('Text field with repeat options'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $repeat_settings,
   );
   if (module_exists('date_popup')) {
     $info['date_popup'] = array(
-      'label' =>  t('Text Field with Date Pop-up calendar'),
+      'label' =>  t('Pop-up calendar'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $settings;
     $info['date_popup_repeat'] = array(
-      'label' =>  t('Text Field with Date Pop-up and Repeat options'),
+      'label' =>  t('Pop-up calendar with repeat options'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $repeat_settings;
   }

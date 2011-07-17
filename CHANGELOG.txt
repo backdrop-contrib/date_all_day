@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1147620 by KarenS with an assist from tim.plunkett, Fix the query so it will locate dates that span days or months by checking the intersection of the date range and the query range. Also add an option to the argument so you can do a simple query for either the from or to date when checking the whole range isn't the right solution.
 - Issue #307274 by ksenzee, Fix broken validation for absolute value in years back/forward.
 - Issue #1216996 by ksenzee, Change the years back/forward setting into two drop down boxes.
 - Issue #1215738 by ksenzee, Make granularity settings checkboxes horizontal.

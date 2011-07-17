@@ -47,7 +47,7 @@ function _date_views_fields($base = 'node') {
     $field_name = $tmp[1];
     $table_name = $tmp[0];
 
-    $fromto = array(str_replace('.', '_', $name), str_replace('.', '_', $name));
+    $fromto = array($name, $name);
 
     // If we don't have a filter handler, we don't need to do anything more.
     if (!$handler = views_get_handler($table_name, $field_name, 'filter')) {
@@ -86,8 +86,8 @@ function _date_views_fields($base = 'node') {
       $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
 
       $fromto = array(
-        $table_name . '_' . $db_info['columns'][$table_name]['value'],
-        $table_name . '_' . (!empty($field['settings']['todate']) ? $db_info['columns'][$table_name]['value2'] : $db_info['columns'][$table_name]['value']),
+        $table_name . '.' . $db_info['columns'][$table_name]['value'],
+        $table_name . '.' . (!empty($field['settings']['todate']) ? $db_info['columns'][$table_name]['value2'] : $db_info['columns'][$table_name]['value']),
       );
 
       if (isset($field['settings']['tz_handling'])) {

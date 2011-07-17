@@ -23,6 +23,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       $field = field_info_field($this->definition['field_name']);
       if (!empty($field) && !empty($field['type'])) {
         $this->date_handler->date_type = $field['type'];
+        $this->original_table = $this->definition['table'];
       }
     }
     $this->date_handler->granularity = $this->options['granularity'];
@@ -30,21 +31,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
-  }
 
-  /**
-   * Add a callback for the formula to wrap the field in the right SQL.
-   */
-  function formula() {
-    $formula =  $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
-    return $formula;
-  }
-
-  /**
-   * Override the parent get_formula() to use the date_handler formula.
-   */
-  function get_formula() {
-    return str_replace('***table***', $this->table_alias, $this->formula());
   }
 
   function format() {
@@ -54,16 +41,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     else {
       return !empty($this->options[$this->option_name]) ? $this->options[$this->option_name] : 'Y-m';
     }
-  }
-
-  function get_related_pager_type() {
-    $display = $this->view->current_display;
-    $this->pager_type = $this->view->$display['display_options']['pager']['type'];
-  }
-
-  function get_related_pager_options() {
-    $display = $this->view->current_display;
-    $this->pager_options = $this->view->$display['display_options']['pager']['options'];
   }
 
   /**
@@ -95,6 +72,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $options['granularity'] = array('default' => 'month', 'export' => 'export_plugin');
     $options['default_argument_type'] = array('default' => 'date', 'export' => 'export_plugin');
     $options['add_delta'] = array('default' => '', 'export' => 'export_plugin');  
+    $options['use_fromto'] = array('default' => '', 'export' => 'export_plugin');  
     return $options;
   }
 
@@ -141,7 +119,15 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       '#title' => t('Add multiple value identifier'),
       '#default_value' => $this->options['add_delta'],
       '#options' => array('' => t('No'), 'yes' => t('Yes')),
-      '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
+      '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar. Use this option if you are having trouble getting multiple value date fields to display only the values that match the view filters.'),
+    );
+
+    $form['use_fromto'] = array(
+      '#type' => 'radios',
+      '#title' => t('Dates to compare'),
+      '#default_value' => $this->options['use_fromto'],
+      '#options' => array('' => t('From/To date range'), 'no' => t('Only this field')),
+      '#description' => t("If selected the view will check if any value starting with the 'From' date and ending with the 'To' date matches the view criteria. Otherwise the view will be limited to the specifically selected fields. Comparing to the whole From/To range is the recommended setting when using this filter in a Calendar. When using the From/To option, it is not necessary to add both the From and To fields to the filter, either one will do."),
     );
 
   }
@@ -195,8 +181,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if ($this->date_forbid()) {
       return;
     }
-    $this->formula = $this->formula($this->real_field);
-    parent::summary_query();
+    // @TODO Need to write a custom query here, the parent query won't work.
   }
 
   /**
@@ -204,41 +189,63 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Override the parent query to be able to control the $group.
    */
   function query($group_by = FALSE) {
+
+    // @TODO Not doing anything with $group_by yet, need to figure out what has to be done.
+
     if ($this->date_forbid()) {
       return;
     }
-    $this->formula = $this->formula($this->real_field);
-    $this->date_handler->granularity = $this->date_handler->arg_granularity($this->argument);
+    
+    // See if we need to reset granularity based on an argument value.
+    // Make sure we don't try to reset to some bogus value if someone has typed in an unexpected argument.
+    $granularity = $this->date_handler->arg_granularity($this->argument);
+    if (!empty($granularity)) {
+      $this->date_handler->granularity = $granularity;
+      $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
+      $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
+    }
     $this->granularity = $this->date_handler->granularity;
-    $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
-    $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     $this->ensure_my_table();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : 0;
 
-    // Add the delta field to the view so we can later find the value that matched our query.
+    // If requested, add the delta field to the view so we can later find the value that matched our query.
     if (!empty($this->options['add_delta']) && (substr($this->real_field, -6) == '_value' || substr($this->real_field, -7) == '_value2')) {
-      $this->query->add_field($this->table, 'delta');
+      $this->query->add_field($this->table_alias, 'delta');
     }
 
-    // Now that our table is secure, get our formula.
-    if ($this->date_handler->granularity != 'week') {
-      $placeholder = $this->placeholder();
-      $formula = $this->get_formula() .' = ' . $placeholder;
-      $placeholders = array(
-        $placeholder => $this->argument,
-      );
-      $this->query->add_where($group, $formula, $placeholders, 'formula');
-      $this->date_handler->placeholders = $placeholders;
+    $format = $this->date_handler->granularity == 'week' ? DATE_FORMAT_DATETIME : $this->sql_format;
+    $view_min = date_format($this->min_date, $format);
+    $view_max = date_format($this->max_date, $format);
+    $view_min_placeholder = $this->placeholder();
+    $view_max_placeholder = $this->placeholder();
+    $this->date_handler->placeholders = array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max);
+
+    // Are we comparing this field only or the From/To date range to the view criteria?
+    if (!empty($this->options['use_fromto'])) {
+
+      // The simple case, match the field to the view range.
+      $field = $this->date_handler->sql_field($this->table_alias . '.' . $this->real_field);
+      $field = $this->date_handler->sql_format($format, $field);
+      $this->query->add_where_expression($group, "$field >= $view_min_placeholder AND $field <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
+
     }
     else {
-      $min_value = date_format($this->min_date, DATE_FORMAT_DATETIME);
-      $max_value = date_format($this->max_date, DATE_FORMAT_DATETIME);
-      $field = $this->date_handler->sql_field($this->table . '.' . $this->real_field);
-      $field = $this->date_handler->sql_format(DATE_FORMAT_DATETIME, $field);
-      $placeholder_min = $this->placeholder();
-      $placeholder_max = $this->placeholder();
-      $this->date_handler->placeholders = array($placeholder_min => $min_value, $placeholder_max => $max_value);
-      $this->query->add_where_expression($group, "$field >= $placeholder_min AND $field <= $placeholder_max", array($placeholder_min => $min_value, $placeholder_max => $max_value));
+
+      // Look for the intersection of the range of the date field with the range of the view.
+      // Get the FromTo values for this field. Retrieve using the original table name.
+      // Swap the current table name (adjusted for relationships) into the query.
+      // @TODO We may be able to use Views substitutions here, investigate that later.
+      $fields = date_views_fields($this->view->base_table);
+      $fields = $fields['name'];
+      $fromto = $fields[$this->original_table . '.' . $this->real_field]['fromto'];
+      
+      $value_min = str_replace($this->original_table, $this->table_alias, $fromto[0]);
+      $value_max = str_replace($this->original_table, $this->table_alias, $fromto[1]);
+      $field_min = $this->date_handler->sql_field($value_min);
+      $field_min = $this->date_handler->sql_format($format, $field_min);
+      $field_max = $this->date_handler->sql_field($value_max);
+      $field_max = $this->date_handler->sql_format($format, $field_max);
+      $this->query->add_where_expression($group, "$field_max >= $view_min_placeholder AND $field_min <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
     }
 
   }
@@ -264,4 +271,5 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     }
     return FALSE;
   }
+
 }

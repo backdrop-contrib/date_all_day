@@ -255,7 +255,7 @@ function date_popup_process_date_part(&$element) {
   $settings = array(
     'changeMonth' => TRUE,
     'changeYear' => TRUE,
-    'firstDay' => intval(variable_get('date_first_day', 1)),
+    'firstDay' => intval(variable_get('date_first_day', 0)),
     //'buttonImage' => base_path() . drupal_get_path('module', 'date_api') ."/images/calendar.png",
     //'buttonImageOnly' => TRUE,
     'autoPopUp' => 'focus',

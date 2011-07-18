@@ -36,8 +36,8 @@
  * 
  */
 ?>
-<div class="date-nav-wrapper clear-block<?php if (!empty($extra_classes)) print $extra_classes; ?>">
   <?php if (!empty($pager_prefix)) print $pager_prefix; ?>
+<div class="date-nav-wrapper clear-block<?php if (!empty($extra_classes)) print $extra_classes; ?>">
   <div class="date-nav">
     <div class="date-prev">
       <?php if (!empty($prev_url)) : ?>

@@ -97,7 +97,8 @@ function date_repeat_page($entity, $entity_type = 'node') {
   $field_names = date_repeat_fields($entity, $entity_type);
   $output = '';
   foreach ($field_names as $field_name) {
-    $output .= drupal_render(field_view_field($entity_type, $entity, $field_name, 'full'));
+    $field = field_view_field($entity_type, $entity, $field_name, 'full');
+    $output .= drupal_render($field);
   }
   return $output;
 }

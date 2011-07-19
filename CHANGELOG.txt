@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Fix 'variables cannot be passed by reference' notice on repeats page.
 - Issue #1222736 Fix export errors caused when previous export fix of using export plugins got broken by changes in Views.
 - Issue #1077490 Fix notices about missing #date_flexible.
 - Move the 'top' date pager to below the header instead of below attachment_before so you can add header text above it.

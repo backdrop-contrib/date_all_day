@@ -181,7 +181,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if ($this->date_forbid()) {
       return;
     }
-    
+
     // See if we need to reset granularity based on an argument value.
     // Make sure we don't try to reset to some bogus value if someone has typed in an unexpected argument.
     $granularity = $this->date_handler->arg_granularity($this->argument);

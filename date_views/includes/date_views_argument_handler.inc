@@ -33,23 +33,9 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
-    $options['date_method'] = array('default' => 'OR', 'export' => 'export_plugin');
-    $options['date_group'] = array('default' => 'date', 'export' => 'export_plugin');
+    $options['date_method'] = array('default' => 'OR');
+    $options['date_group'] = array('default' => 'date');
     return $options;
-  }
-
-  /**
-   * Make sure our custom options get exported.
-   * Handle the options we know about, pass the rest to the parent plugin.
-   */
-  function export_plugin($indent, $prefix, $storage, $option, $definition, $parents) {
-    $output = '';
-    if (in_array($option, array('date_method', 'date_group'))) {
-      $name = $this->options[$option];
-      $output .= $indent . $prefix . "['$option'] = '$name';\n";
-      return $output;
-    }
-    return parent::export_plugin($indent, $prefix, $storage, $option, $definition, $parents);
   }
 
   /**

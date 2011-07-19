@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1222736 Fix export errors caused when previous export fix of using export plugins got broken by changes in Views.
 - Issue #1077490 Fix notices about missing #date_flexible.
 - Move the 'top' date pager to below the header instead of below attachment_before so you can add header text above it.
 - The value for variable_get('date_first_day') should default to zero to match core default.

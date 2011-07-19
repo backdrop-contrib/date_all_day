@@ -43,6 +43,7 @@ function _date_repeat_widget(&$element, $field, $instance, $items, $delta) {
     '#prev_rrule' => isset($items[0]['rrule']) ? $items[0]['rrule'] : '',
     '#date_repeat_widget' => str_replace('_repeat', '', $instance['widget']['type']),
     '#date_repeat_collapsed' => $instance['widget']['settings']['repeat_collapsed'],
+    '#date_flexible' => 0,
     );
   return $element;
 }

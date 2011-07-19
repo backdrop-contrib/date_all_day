@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1077490 Fix notices about missing #date_flexible.
+- Move the 'top' date pager to below the header instead of below attachment_before so you can add header text above it.
 - The value for variable_get('date_first_day') should default to zero to match core default.
 - Issue #1147620 by KarenS with an assist from tim.plunkett, Fix the query so it will locate dates that span days or months by checking the intersection of the date range and the query range. Also add an option to the argument so you can do a simple query for either the from or to date when checking the whole range isn't the right solution.
 - Issue #307274 by ksenzee, Fix broken validation for absolute value in years back/forward.

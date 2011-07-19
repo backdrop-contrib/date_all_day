@@ -13,11 +13,11 @@ function date_views_preprocess_views_view(&$vars) {
   if (!empty($view->date_info) && !empty($view->date_info->date_pager_position)) {
     switch ($view->date_info->date_pager_position) {
       case 'top':
-        $vars['attachment_before'] .= $vars['pager'];
+        $vars['header'] .= $vars['pager'];
         $vars['pager'] = '';
         break;
       case 'both':
-        $vars['attachment_before'] .= $vars['pager'];
+        $vars['header'] .= $vars['pager'];
         break;
       default:
         // Already on the bottom.

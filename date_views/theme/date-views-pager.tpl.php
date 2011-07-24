@@ -41,7 +41,7 @@
   <div class="date-nav">
     <div class="date-prev">
       <?php if (!empty($prev_url)) : ?>
-      <span class="next">  <?php print l('&laquo;' . ($mini ? '' : t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?></span>
+      <span class="prev">  <?php print l('&laquo;' . ($mini ? '' : t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?></span>
       <?php endif; ?>
     &nbsp;</div>
     <div class="date-heading">

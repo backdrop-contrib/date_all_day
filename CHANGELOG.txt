@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1094408, Change method of identifying Field module filters, using the name of the group is not robust enough.
 - Issue #1227264 by gapa, Fix wrong class in date-pager.tpl.php.
 - Issue #1207540, Summary grouping won't work right unless the formula alias doesn't match an actual field value.
 - Issue #1227350 Summary query still needs the formula, add it back.

@@ -167,7 +167,24 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if ($this->date_forbid()) {
       return;
     }
-    // @TODO Need to write a custom query here, the parent query won't work.
+    $this->formula = $this->formula($this->real_field);
+    $this->ensure_my_table();
+    // Now that our table is secure, get our formula.
+    $formula = $this->get_formula();
+
+    // Add the field, give it an alias that does NOT match the actual field name or grouping won't work right.
+    $this->base_alias = $this->name_alias = $this->query->add_field(NULL, $formula, $this->field . '_summary');
+    $this->query->set_count_field(NULL, $formula, $this->field);
+
+    return $this->summary_basics(FALSE);
+  }
+
+  /**
+   * Add a callback for the formula to wrap the field in the right SQL.
+   */
+  function formula() {
+    $formula =  $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
+    return $formula;
   }
 
   /**

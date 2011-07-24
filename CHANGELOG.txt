@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1207540, Summary grouping won't work right unless the formula alias doesn't match an actual field value.
+- Issue #1227350 Summary query still needs the formula, add it back.
 - Fix 'variables cannot be passed by reference' notice on repeats page.
 - Issue #1222736 Fix export errors caused when previous export fix of using export plugins got broken by changes in Views.
 - Issue #1077490 Fix notices about missing #date_flexible.

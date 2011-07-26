@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
 - Issue #1229362, Date Popup module needs date_is_date() function, which should not require Date module. Move that to Date API.
 - Issue #1227208 by ksenzee, Minor text changes.
 - Issue #1094408, Change method of identifying Field module filters, using the name of the group is not robust enough.

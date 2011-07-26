@@ -2083,6 +2083,17 @@ function date_increment_round(&$date, $increment) {
 }
 
 /**
+ * Helper function to tell if a date object contains
+ * a valid date, centralized to make it easier to use.
+ */
+function date_is_date($date) {
+  if (empty($date) || !is_object($date) || !empty($date->errors)) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Return the nested form elements for a field by name.
  * This can be used either to retrieve the entire sub-element
  * for a field by name, no matter how deeply nested it is within

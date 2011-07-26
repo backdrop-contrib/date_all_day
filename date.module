@@ -147,17 +147,6 @@ function date_input_date($field, $instance, $element, $input) {
 }
 
 /**
- * Helper function to tell if a date object contains
- * a valid date, centralized to make it easier to use.
- */
-function date_is_date($date) {
-  if (empty($date) || !is_object($date) || !empty($date->errors)) {
-    return FALSE;
-  }
-  return TRUE;
-}
-
-/**
  * Implements hook_theme().
  */
 function date_theme() {

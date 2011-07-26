@@ -141,7 +141,7 @@ function theme_date_part_label_second($vars) {
 function theme_date_part_label_ampm($vars) {
   $part_type = $vars['part_type'];
   $element = $vars['element'];
-  return ' . ';
+  return '&nbsp;';
 }
 function theme_date_part_label_timezone($vars) {
   $part_type = $vars['part_type'];

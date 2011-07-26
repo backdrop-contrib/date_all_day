@@ -173,7 +173,7 @@ function _date_field_instance_settings_form($field, $instance) {
     '#fieldset' => 'default_values',
     );
 
-  $description = t("The relative value to use. This should be something that describes a time by reference to the current day using strtotime, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php')));
+  $description = t("Describe a time by reference to the current day, like '+90 days' (90 days from the day the field is created) or '+1 Saturday' (the next Saturday). See !strtotime for more details.", array('!strtotime' => l(t('strtotime'), 'http://www.php.net/manual/en/function.strtotime.php')));
   $form['default_value_code'] = array(
     '#type' => 'textfield', 
     '#title' => t('Relative default value'),
@@ -324,7 +324,7 @@ function _date_field_widget_settings_form($field, $instance) {
         10 => t('10 minute intervals'),
         15 => t('15 minute intervals'),
         30 => t('30 minute intervals')),
-      '#description' => t('Provide an easier way to choose a time by limiting choices to larger intervals, e.g. 15, 30, 45 minutes.'),
+      '#description' => t('Limit choices to larger intervals, e.g., 15, 30, 45 minutes.'),
       '#weight' => 7,
       '#fieldset' => 'date_format',
     );
@@ -357,7 +357,7 @@ function _date_field_widget_settings_form($field, $instance) {
     '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
     '#default_value' => $settings['label_position'],
     '#title' => t('Position of date part labels'),
-    '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' will display them as titles above each date part. 'Within' will insert the label as the first option in the select list and in blank textfields. 'None' will not label any of the date parts. The exact text in the label is controlled by themes like 'date_part_label_year' and 'date_part_label_month' ."),
+    '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' displays the label as titles above each date part. 'Within' inserts the label as the first option in the select list and in blank textfields. 'None' doesn't label any of the date parts. Theme functions like 'date_part_label_year' and 'date_part_label_month' control label text."),
     );
   $form['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts' : '',
@@ -436,7 +436,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     $form['repeat'] = array('#type' => 'hidden', '#value' => 0);
   }
 
-  $description = t('Select the date elements to collect, store, and present. Year is required.');
+  $description = t('Select the date attributes to collect, store, and present.');
   $options = date_granularity_names();
   $checkbox_year = array(
     '#type' => 'checkbox',
@@ -476,7 +476,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
       ),
     ),
   );
-  $description = t('Select the timezone handling method to be used for this date field.');
+  $description = t('Select the timezone handling method for this date field.');
   $form['tz_handling'] = array(
     '#type' => 'select',
     '#title' => t('Time zone handling'),

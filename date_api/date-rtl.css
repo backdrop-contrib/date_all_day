@@ -17,3 +17,11 @@
   margin-left: 0;
   margin-right: -5px;
 }
+
+.form-type-date-select .form-type-select[class$=hour] {
+  margin-right: .75em;
+}
+
+#edit-field-settings-granularity .form-type-checkbox {
+  margin-left: .6em;
+}

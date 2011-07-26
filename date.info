@@ -1,5 +1,5 @@
 name = Date
-description = Defines date/time fields and widgets.
+description = Makes date/time fields available.
 dependencies[] = date_api
 package = Date/Time
 core = 7.x

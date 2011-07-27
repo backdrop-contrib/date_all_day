@@ -297,7 +297,7 @@ function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone
 /**
  * Generate the repeat rule setting form.
  */
-function date_repeat_rrule_process($element, $form_state, $form) {
+function date_repeat_rrule_process($element, &$form_state, $form) {
   module_load_include('inc', 'date_repeat', 'date_repeat_form');
   return _date_repeat_rrule_process($element, $form_state, $form);
 }

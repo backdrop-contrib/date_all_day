@@ -3,13 +3,20 @@
 Drupal.behaviors.dateAdmin = {};
 
 Drupal.behaviors.dateAdmin.attach = function (context, settings) {
+  var $fieldset, $hour, $textfield, $textfields, i;
+
   // Turn the years back and forward fieldsets into dropdowns.
-  var $fieldset, $textfield, $textfields, i;
   $fieldset = $('#edit-instance-years-back-and-forward').once('date-admin');
   $textfields = $fieldset.find('input.select-list-with-custom-option');
   for (i = 0; i < $textfields.length; i++) {
     $textfield = $($textfields[i]);
-    new Drupal.dateAdmin.selectListWithCustomOption($textfield);
+    new Drupal.dateAdmin.SelectListWithCustomOption($textfield);
+  }
+
+  // Remove timezone handling options for fields without hours granularity.
+  $hour = $('#edit-field-settings-granularity-hour').once('date-admin');
+  if ($hour.length) {
+    new Drupal.dateAdmin.TimezoneHandler($hour);
   }
 };
 
@@ -17,13 +24,13 @@ Drupal.behaviors.dateAdmin.attach = function (context, settings) {
 Drupal.dateAdmin = {};
 
 /**
- * Constructor for the selectListWithCustomOption object.
+ * Constructor for the SelectListWithCustomOption object.
  *
  * This object is responsible for turning the years back and forward textfields
  * into dropdowns with an 'other' option that lets the user enter a custom
  * value.
  */
-Drupal.dateAdmin.selectListWithCustomOption = function ($textfield) {
+Drupal.dateAdmin.SelectListWithCustomOption = function ($textfield) {
   this.$textfield = $textfield;
   this.$description = $textfield.next('div.description');
   this.defaultValue = $textfield.val();
@@ -40,7 +47,7 @@ Drupal.dateAdmin.selectListWithCustomOption = function ($textfield) {
  *   The original value of the textfield. Returned as an integer, if the type
  *   parameter was 'int'.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.getOriginal = function (type) {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.getOriginal = function (type) {
   var original;
   if (type === 'int') {
     original = parseInt(this.defaultValue, 10);
@@ -57,7 +64,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.getOriginal = function (ty
 /**
  * Get the correct first value for the dropdown.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.getStartValue = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.getStartValue = function () {
   var direction = this.getDirection();
   var start;
   switch (direction) {
@@ -76,7 +83,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.getStartValue = function (
 /**
  * Get the correct last value for the dropdown.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.getEndValue = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.getEndValue = function () {
   var direction = this.getDirection();
   var end;
   var originalString = this.getOriginal();
@@ -103,7 +110,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.getEndValue = function () 
 /**
  * Create a dropdown select list with the correct options for this textfield.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.createDropdown = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.createDropdown = function () {
   var $dropdown = $('<select>').addClass('form-select');
   var $option, i, value;
   var start = this.getStartValue();
@@ -141,7 +148,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.createDropdown = function 
   return $dropdown;
 };
 
-Drupal.dateAdmin.selectListWithCustomOption.prototype._setInitialDropdownValue = function ($dropdown) {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype._setInitialDropdownValue = function ($dropdown) {
   var textfieldValue = this.getOriginal();
   // Determine whether the original textfield value exists in the dropdown.
   var possible = $dropdown.find('option[value=' + textfieldValue + ']');
@@ -162,7 +169,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype._setInitialDropdownValue =
 /**
  * Determine whether this is the "years back" or "years forward" textfield.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.getDirection = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.getDirection = function () {
   if (this.direction) {
     return this.direction;
   }
@@ -180,7 +187,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.getDirection = function ()
 /**
  * Click handler for the 'Other' option in the dropdown.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.revealTextfield = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.revealTextfield = function () {
   this.syncTextfield();
   this.$textfield.show();
   this.$description.show();
@@ -189,7 +196,7 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.revealTextfield = function
 /**
  * Click handler for the preset options in the dropdown.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.hideTextfield = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.hideTextfield = function () {
   this.syncTextfield();
   this.$textfield.hide();
   this.$description.hide();
@@ -201,9 +208,75 @@ Drupal.dateAdmin.selectListWithCustomOption.prototype.hideTextfield = function (
  * FAPI doesn't know about the JS-only dropdown, so the textfield needs to
  * reflect the value of the dropdown.
  */
-Drupal.dateAdmin.selectListWithCustomOption.prototype.syncTextfield = function () {
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.syncTextfield = function () {
   var value = this.$dropdown.val();
   this.$textfield.val(value);
+};
+
+
+/**
+ * Constructor for the TimezoneHandler object.
+ *
+ * This object is responsible for showing the timezone handling options dropdown
+ * when the user has chosen to collect hours as part of the date field, and
+ * hiding it otherwise.
+ */
+Drupal.dateAdmin.TimezoneHandler = function ($checkbox) {
+  this.$checkbox = $checkbox;
+  this.$dropdown = $('#edit-field-settings-tz-handling');
+  this.$timezoneDiv = $('.form-item-field-settings-tz-handling');
+  // Store the initial value of the timezone handling dropdown.
+  this.storeTimezoneHandling();
+  // Toggle the timezone handling section when the user clicks the "Hour"
+  // checkbox.
+  this.$checkbox.bind('click', $.proxy(this.clickHandler, this));
+  // Trigger the click handler so that if the checkbox is unchecked on initial
+  // page load, the timezone handling section will be hidden.
+  this.clickHandler();
+};
+
+/**
+ * Event handler triggered when the user clicks the "Hour" checkbox.
+ */
+Drupal.dateAdmin.TimezoneHandler.prototype.clickHandler = function () {
+  if (this.$checkbox.is(':checked')) {
+    this.restoreTimezoneHandlingOptions();
+  }
+  else {
+    this.hideTimezoneHandlingOptions();
+  }
+};
+
+/**
+ * Hide the timezone handling options section of the form.
+ */
+Drupal.dateAdmin.TimezoneHandler.prototype.hideTimezoneHandlingOptions = function () {
+  this.storeTimezoneHandling();
+  this.$dropdown.val('none');
+  this.$timezoneDiv.hide();
+};
+
+/**
+ * Show the timezone handling options section of the form.
+ */
+Drupal.dateAdmin.TimezoneHandler.prototype.restoreTimezoneHandlingOptions = function () {
+  var val = this.getTimezoneHandling();
+  this.$dropdown.val(val);
+  this.$timezoneDiv.show();
+};
+
+/**
+ * Store the current value of the timezone handling dropdown.
+ */
+Drupal.dateAdmin.TimezoneHandler.prototype.storeTimezoneHandling = function () {
+  this._timezoneHandling = this.$dropdown.val();
+};
+
+/**
+ * Return the stored value of the timezone handling dropdown.
+ */
+Drupal.dateAdmin.TimezoneHandler.prototype.getTimezoneHandling = function () {
+  return this._timezoneHandling;
 };
 
 })(jQuery);

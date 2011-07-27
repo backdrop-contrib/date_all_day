@@ -5,7 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
-- Date repeat additions and exceptions need to be reworked into full datetime values when passing them to FAPI as default values.
+- Issue #1222468 by ksenzee, Hide timezone options when using granularity without time.
+- Date repeat additions and exceptions need to be reworked into full, timezone-adjusted, datetime values when passing them to FAPI as default values.
 - Issue #1223034 by c4rl, Make sure repeating date additions and exceptions work correctly when there is more than one repeating date in the same form.
 - Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
 - Issue #1229362, Date Popup module needs date_is_date() function, which should not require Date module. Move that to Date API.

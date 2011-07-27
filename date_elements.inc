@@ -76,7 +76,6 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     $date = date_local_date($form, $form_state, $delta, $items[$delta], $timezone, $field, $instance, $processed);
     $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
-
   $element += array(
     '#type' => 'date_combo',
     '#theme_wrappers' => array('date_combo'),
@@ -268,9 +267,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
     $element[$to_field]['#required'] = FALSE;
     $element[$to_field]['#weight'] += .1;
-    if ($instance['widget']['type'] == 'date_select') {
-      $description .= ' ' . t("Empty 'To date' values will use the 'From date' values.");
-    }
+    $description .= ' ' . t("Empty 'To date' values will use the 'From date' values.");
     $element['#fieldset_description'] = $description;
   }
   else {

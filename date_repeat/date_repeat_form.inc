@@ -178,7 +178,9 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   for ($i = 0; $i < max($form_state['num_exceptions'][$instance], 1) ; $i++) {
     $EXCEPT = '';
     if (!empty($exceptions[$i]['datetime'])) {
-      $EXCEPT = $exceptions[$i]['datetime'];
+      $ex_date = new DateObject($exceptions[$i]['datetime'], $exceptions[$i]['tz']);
+      date_timezone_set($ex_date, timezone_open($timezone));
+      $EXCEPT = date_format($ex_date, DATE_FORMAT_DATETIME);
     }
     $element['exceptions']['EXDATE'][$i] = array(
       '#tree' => TRUE,
@@ -221,7 +223,9 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   for ($i = 0; $i < max($form_state['num_additions'][$instance], 1) ; $i++) {
     $RDATE = '';
     if (!empty($additions[$i]['datetime'])) {
-      $RDATE = $additions[$i]['datetime'];
+      $rdate = new DateObject($additions[$i]['datetime'], $additions[$i]['tz']);
+      date_timezone_set($rdate, timezone_open($timezone));
+      $RDATE = date_format($rdate, DATE_FORMAT_DATETIME);
     }
     $element['additions']['RDATE'][$i] = array(
       '#tree' => TRUE,
@@ -266,7 +270,6 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   ); 
 
   $element['#date_repeat_collapsed'] = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
-
   return $element;
 }
 
@@ -321,7 +324,7 @@ function date_repeat_merge($form_values, $element) {
   if (array_key_exists('UNTIL', $form_values) && is_array($form_values['UNTIL']['datetime'])) {
     $function = $element['#date_repeat_widget'] . '_input_date';
     $until_element = $element;
-    $until_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
+    $until_element['#date_format'] = !empty($element['#date_format']) ? date_limit_format($element['#date_format'], array('year', 'month', 'day')) : 'Y-m-d';
     $date = $function($until_element, $form_values['UNTIL']['datetime']);
     $form_values['UNTIL']['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
   }
@@ -330,7 +333,7 @@ function date_repeat_merge($form_values, $element) {
     $exdate_element = $element;
     foreach ($form_values['EXDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
-        $exdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
+        $exdate_element['#date_format'] = !empty($element['#date_format']) ? date_limit_format($element['#date_format'], array('year', 'month', 'day')) : 'Y-m-d';
         $date = $function($exdate_element, $form_values['EXDATE'][$delta]['datetime']);
         $form_values['EXDATE'][$delta]['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
       }
@@ -341,7 +344,7 @@ function date_repeat_merge($form_values, $element) {
     $rdate_element = $element;
     foreach ($form_values['RDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
-        $rdate_element['#date_format'] = date_limit_format($element['#date_format'], array('year', 'month', 'day'));
+        $rdate_element['#date_format'] = !empty($element['#date_format']) ? date_limit_format($element['#date_format'], array('year', 'month', 'day')) : 'Y-m-d';
         $form_values['RDATE'][$delta]['datetime'] = $function($rdate_element, $form_values['RDATE'][$delta]['datetime']);
       }
     }

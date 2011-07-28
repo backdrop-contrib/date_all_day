@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1231382 by dboulet, Clean up date css, code style fixes.
 - Issue #821200 by scor and KarenS, Add RDF support to the date field.
 - Issue #1222468 by ksenzee, Hide timezone options when using granularity without time.
 - Date repeat additions and exceptions need to be reworked into full, timezone-adjusted, datetime values when passing them to FAPI as default values.

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1017866 by KarenS and Jason89s, Make sure views argument and filter don't do timezone adjustment for dates that don't have time.
 - Issue #1204988 by paulsheldrake, Remove IE6 code from datepicker CSS.
 - Issue #1231864 by Damien McKenna, Clean up line endings in vevent and vcalendar tpl files.
 - Issue #1231382 by dboulet, Clean up date css, code style fixes.

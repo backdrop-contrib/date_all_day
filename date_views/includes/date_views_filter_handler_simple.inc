@@ -6,6 +6,7 @@
 
 class date_views_filter_handler_simple extends views_handler_filter_date {
   var $date_handler = NULL;
+  var $offset = NULL;
 
   function init(&$view, &$options) {
     parent::init($view, $options);
@@ -104,6 +105,11 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
   }
 
+  function pre_query() {
+    // Setting the offset to avoid trying to use timezone adjustments for dates that don't need it.
+    $this->offset = in_array($this->date_handler->granularity, array('hour', 'minute', 'sec')) ? NULL : 0;
+  }
+
   function op_between($field) {
     // Add the delta field to the view so we can later find the value that matched our query.
     list($table_name, $field_name) = explode('.', $field);
@@ -113,7 +119,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
     $min_value = $this->get_filter_value('min', $this->value['min']);
     $max_value = $this->get_filter_value('max', $this->value['max']);
-    $field = $this->date_handler->sql_field($field);
+    $field = $this->date_handler->sql_field($field, $this->offset);
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder_min = $this->placeholder();
     $placeholder_max = $this->placeholder();
@@ -134,7 +140,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     }
     
     $value = $this->get_filter_value('value', $this->value['value']);
-    $field = $this->date_handler->sql_field($field);
+    $field = $this->date_handler->sql_field($field, $this->offset);
     $field = $this->date_handler->sql_format($this->format, $field);
     $placeholder = $this->placeholder();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];

@@ -8,6 +8,7 @@
  * Date API argument handler.
  */
 class date_views_argument_handler_simple extends views_handler_argument_date {
+  var $offset = NULL;
 
   /**
    * Get granularity and use it to create the formula and a format
@@ -31,7 +32,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
-
   }
 
   function format() {
@@ -183,8 +183,13 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Add a callback for the formula to wrap the field in the right SQL.
    */
   function formula() {
-    $formula =  $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field"));
+    $formula =  $this->date_handler->sql_format($this->sql_format, $this->date_handler->sql_field("***table***.$this->real_field", $this->offset));
     return $formula;
+  }
+
+  function pre_query() {
+    // Setting the offset to avoid trying to use timezone adjustments for dates that don't need it.
+    $this->offset = in_array($this->date_handler->granularity, array('hour', 'minute', 'sec')) ? NULL : 0;
   }
 
   /**
@@ -227,7 +232,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if (!empty($this->options['use_fromto'])) {
 
       // The simple case, match the field to the view range.
-      $field = $this->date_handler->sql_field($this->table_alias . '.' . $this->real_field);
+      $field = $this->date_handler->sql_field($this->table_alias . '.' . $this->real_field, $this->offset);
       $field = $this->date_handler->sql_format($format, $field);
       $this->query->add_where_expression($group, "$field >= $view_min_placeholder AND $field <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
 
@@ -244,9 +249,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       
       $value_min = str_replace($this->original_table, $this->table_alias, $fromto[0]);
       $value_max = str_replace($this->original_table, $this->table_alias, $fromto[1]);
-      $field_min = $this->date_handler->sql_field($value_min);
+      $field_min = $this->date_handler->sql_field($value_min, $this->offset);
       $field_min = $this->date_handler->sql_format($format, $field_min);
-      $field_max = $this->date_handler->sql_field($value_max);
+      $field_max = $this->date_handler->sql_field($value_max, $this->offset);
       $field_max = $this->date_handler->sql_format($format, $field_max);
       $this->query->add_where_expression($group, "$field_max >= $view_min_placeholder AND $field_min <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
     }

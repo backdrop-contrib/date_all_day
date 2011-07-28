@@ -57,6 +57,10 @@ function theme_date_display_combination($vars) {
   $formatter   = $display['type'];
   $options     = $display['settings'];
   $dates       = $vars['dates'];
+  $attributes  = $vars['attributes'];
+  $rdf_mapping = $vars['rdf_mapping'];
+  $add_rdf     = $vars['add_rdf'];
+
   $output = ''; 
 
   // If date_id is set for this field and the delta doesn't match, don't display it.
@@ -129,7 +133,11 @@ function theme_date_display_combination($vars) {
   elseif ($date1 == $date2 || empty($date2)) {
     $output .= theme('date_display_single', array(
       'date' => $date1, 
-      'timezone' => $timezone
+      'timezone' => $timezone,
+      'attributes' => $attributes,
+      'rdf_mapping' => $rdf_mapping,
+      'add_rdf' => $add_rdf,
+      'dates' => $dates,
     ));
   }
   // Same day, different times, don't repeat the date but show both From and To times.
@@ -141,13 +149,36 @@ function theme_date_display_combination($vars) {
     $time1 = preg_replace('([\)\]]$)', '', $time1);
     $time2 = preg_replace('`^([\(\[])`', '', $dates['value2']['formatted_time']);
     $time2 = preg_replace('([\)\]]$)', '', $time2);
-    $time = theme('date_display_range', array('date1' => $time1, 'date2' => $time2));
+    $time = theme('date_display_range', array(
+      'date1' => $time1, 
+      'date2' => $time2,
+      'timezone' => $timezone, 
+      'attributes' => $attributes,
+      'rdf_mapping' => $rdf_mapping,
+      'add_rdf' => $add_rdf,
+      'dates' => $dates,
+    ));
     $replaced = str_replace($time1, $time, $date1);
-    $output .= theme('date_display_single', array('date' => $replaced, 'timezone' => $timezone));
+    $output .= theme('date_display_single', array(
+      'date' => $replaced, 
+      'timezone' => $timezone,
+      'attributes' => array(),
+      'rdf_mapping' => array(),
+      'add_rdf' => FALSE,
+      'dates' => $dates,
+    ));
   }
   // Different days, display both in their entirety.
   else {
-    $output .= theme('date_display_range', array('date1' => $date1, 'date2' => $date2, 'timezone' => $timezone));
+    $output .= theme('date_display_range', array(
+      'date1' => $date1, 
+      'date2' => $date2, 
+      'timezone' => $timezone, 
+      'attributes' => $attributes,
+      'rdf_mapping' => $rdf_mapping,
+      'add_rdf' => $add_rdf,
+      'dates' => $dates,
+    ));
   }
 
   return $output;
@@ -155,17 +186,57 @@ function theme_date_display_combination($vars) {
 
 function theme_date_display_single($vars) {
   $date = $vars['date'];
-  $timezone = !empty($vars['timezone']) ? $vars['timezone'] : NULL;
-  return '<span class="date-display-single">' . $date . $timezone . '</span>';
+  $dates = $vars['dates'];
+  $timezone = $vars['timezone'];
+  $add_rdf = $vars['add_rdf'];
+  $attributes = $vars['attributes'];
+
+  if ($add_rdf) {
+    // Pass along the rdf mapping for this field, if any.
+    // Add some default rdf attributes that will be used if not overridden by attributes passed in.
+    $rdf_mapping = $vars['rdf_mapping'];
+    $base_attributes = array(
+      'property' => array('dc:date'),
+      'datatype' => 'xsd:dateTime',
+      'content' => $dates['value']['formatted_iso'],
+    );
+    $attributes = $attributes + $base_attributes;
+  }
+
+  // Wrap the result with the attributes.
+  return '<span class="date-display-single"' . drupal_attributes($attributes) . '>' . $date . $timezone . '</span>';
 }
 
 function theme_date_display_range($vars) {
   $date1 = $vars['date1'];
   $date2 = $vars['date2'];
-  $timezone = !empty($vars['timezone']) ? $vars['timezone'] : NULL;
-  return '<span class="date-display-start">' . $date1 . '</span>' .
+  $dates = $vars['dates'];
+  $timezone = $vars['timezone'];
+  $add_rdf = $vars['add_rdf'];
+  $attributes1 = $vars['attributes'];
+  $attributes2 = $vars['attributes'];
+
+  if ($add_rdf) {
+    // Pass along the rdf mapping for this field, if any.
+    // Add some default rdf attributes that will be used if not overridden by attributes passed in.
+    $rdf_mapping = $vars['rdf_mapping'];
+    $base_attributes = array(
+      'property' => array('dc:date'),
+      'datatype' => 'xsd:dateTime',
+      'content' => $dates['value']['formatted_iso'],
+    );
+    $attributes1 = $attributes1 + $base_attributes;
+    $attributes2 = $attributes2 + $base_attributes;
+    $attributes2['content'] = $dates['value2']['formatted_iso'];
+    foreach ($attributes2['property'] as $delta => $property) {
+      $attributes2['property'][$delta] = str_replace('start', 'end', $property);
+    }
+  }
+
+  // Wrap the result with the attributes.
+  return '<span class="date-display-start"' . drupal_attributes($attributes1) . '>' . $date1 . '</span>' .
       '<span class="date-display-separator"> - </span>' .
-      '<span class="date-display-end">' . $date2 . $timezone. '</span>';
+      '<span class="date-display-end"' . drupal_attributes($attributes2) . '>' . $date2 . $timezone. '</span>';
 }
 
 /**
@@ -192,6 +263,9 @@ function theme_date_display_interval($vars) {
   $options     = $display['settings'];
   $dates       = $vars['dates'];
   $formatter   = $display['type'];
+  $attributes  = $vars['attributes'];
+  $rdf_mapping = $vars['rdf_mapping'];
+  $add_rdf     = $vars['add_rdf'];
 
   // Get the formatter settings, either the default settings for this node
   // type or the View settings stored in $entity->date_info.
@@ -204,7 +278,7 @@ function theme_date_display_interval($vars) {
     'end_date' => $dates['value2']['local']['object'],
     'interval' => $options['interval'],
   );
-  return theme('date_time_ago', $time_ago_vars);
+  return '<span class="date-display-interval"' . drupal_attributes($attributes1) . '>' .theme('date_time_ago', $time_ago_vars) . '</span>';
 }
 
 /**

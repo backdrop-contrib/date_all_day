@@ -99,8 +99,18 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
     'items' => $items,
     'display' => $display,
     'dates' => array(),
+    'attributes' => array(),
+    'rdf_mapping' => array(),
+    'add_rdf' => module_exists('rdf'),
   );
 
+  // See if there is rdf mapping for this date field. If so, pass it down to the theme.
+  $rdf_mapping = array();
+  if (!empty($entity->rdf_mapping) && function_exists('rdf_rdfa_attributes')) {
+    if (!empty($entity->rdf_mapping[$field['field_name']])) {
+      $vars['rdf_mapping'] = $rdf_mapping = $entity->rdf_mapping[$field['field_name']];
+    }
+  }
   // See if we are only supposed to display a selected
   // item from multiple value date fields.
   $selected_deltas = array();
@@ -123,6 +133,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
           $vars['delta'] = $delta;
           $vars['item'] = $item;
           $vars['dates'] = date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
+          $vars['attributes'] = !empty($rdf_mapping) ? rdf_rdfa_attributes($rdf_mapping, $item['value']) : array();
           $element[$delta] = array('#markup' => theme('date_display_interval', $vars));
         }
       }
@@ -136,12 +147,12 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
           $vars['delta'] = $delta;
           $vars['item'] = $item;
           $vars['dates'] = date_formatter_process($formatter, $entity_type, $entity, $field, $instance, $langcode, $item, $display);
+          $vars['attributes'] = !empty($rdf_mapping) ? rdf_rdfa_attributes($rdf_mapping, $item['value']) : array();
           $element[$delta] = array('#markup' => theme('date_display_combination', $vars));
         }
       }
       break;
   }
-
   return $element;
 }
 

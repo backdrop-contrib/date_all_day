@@ -177,13 +177,21 @@ function date_theme() {
     'date_all_day_label' => $base + array('variables' => array()),
     'date_display_single' => $base + array('variables' => array(
         'date' => NULL,
-        'timezone' => NULL
+        'timezone' => NULL,
+        'dates' => NULL,
+        'attributes' => NULL,
+        'rdf_mapping' => NULL,
+        'add_rdf' => NULL,
     )),
     'date_display_range' => $base + array(
       'variables' => array(
         'date1' => NULL,
         'date2' => NULL,
-        'timezone' => NULL
+        'timezone' => NULL,
+        'dates' => NULL,
+        'attributes' => NULL,
+        'rdf_mapping' => NULL,
+        'add_rdf' => NULL,
     )),
     'date_repeat_display' => $base + array(
       'variables' => array(
@@ -194,33 +202,39 @@ function date_theme() {
         'dates' => NULL
       ),
       'function' => 'theme_date_repeat_display',
+    ),
+    'date_display_combination' => $base + array(
+      'variables' => array(
+        'entity_type' => NULL,
+        'entity' => NULL,
+        'field' => NULL,
+        'instance' => NULL,
+        'langcode' => NULL,
+        'item' => NULL,
+        'delta' => NULL,
+        'display' => NULL,
+        'dates' => NULL,
+        'attributes' => NULL,
+        'rdf_mapping' => NULL,
+        'add_rdf' => NULL,
       ),
-     'date_display_combination' => $base + array(
-       'variables' => array(
-         'entity_type' => NULL,
-         'entity' => NULL,
-         'field' => NULL,
-         'instance' => NULL,
-         'langcode' => NULL,
-         'item' => NULL,
-         'delta' => NULL,
-         'display' => NULL,
-         'dates' => NULL,
-        ),
-     ),
-     'date_display_interval' => $base + array(
-       'variables' => array(
-         'entity_type' => NULL,
-         'entity' => NULL,
-         'field' => NULL,
-         'instance' => NULL,
-         'langcode' => NULL,
-         'item' => NULL,
-         'delta' => NULL,
-         'display' => NULL,
-         'dates' => NULL,
-        ),
-     ),
+    ),
+    'date_display_interval' => $base + array(
+      'variables' => array(
+        'entity_type' => NULL,
+        'entity' => NULL,
+        'field' => NULL,
+        'instance' => NULL,
+        'langcode' => NULL,
+        'item' => NULL,
+        'delta' => NULL,
+        'display' => NULL,
+        'dates' => NULL,
+        'attributes' => NULL,
+        'rdf_mapping' => NULL,
+        'add_rdf' => NULL,
+       ),
+    ),
   );
 
   return $themes;
@@ -308,6 +322,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
 
       //format the date, special casing the 'interval' format which doesn't need to be processed
       $dates[$processed]['formatted'] = '';
+      $dates[$processed]['formatted_iso'] = date_format_date($date, 'custom', 'c');
       if (is_object($date)) {
         if ($format == 'format_interval') {
            $dates[$processed]['interval'] = date_format_interval($date);

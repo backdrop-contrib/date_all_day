@@ -298,6 +298,7 @@ function date_popup_process_time_part(&$element) {
   $granularity = date_format_order($element['#date_format']);
   $has_time = date_has_time($granularity);
   if (empty($has_time)) return array();
+  $all_day_id = !empty($element['#date_all_day_id']) ? $element['#date_all_day_id'] : '';
 
   $spinner_text = array(t('Now'), t('Previous field'), t('Next field'), t('Increment'), t('Decrement'));
   $settings = array(
@@ -332,6 +333,10 @@ function date_popup_process_time_part(&$element) {
     '#parents' => $parents,
     '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
     '#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
+    '#states' => array(
+      'visible' => array(
+        '#' . $all_day_id => array('checked' => FALSE),
+    )),
   );
   $sub_element['#value'] = $sub_element['#default_value'];
 

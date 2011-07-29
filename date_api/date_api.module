@@ -2013,7 +2013,6 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
   $hour2 = $count > 3 ? intval($matches[3]) : 0;
   $min2 = $count > 4 ? intval($matches[4]) : 0;
   $sec2 = $count > 5 ? intval($matches[5]) : 0;
-
   if (empty($date1) || empty($date2)) {
     return FALSE;
   }
@@ -2043,7 +2042,7 @@ function date_is_all_day($string1, $string2, $granularity = 'second', $increment
       $min_match = TRUE;
       $max_match = FALSE;
   }
-
+  
   if ($min_match && $max_match) {
     return TRUE;
   }

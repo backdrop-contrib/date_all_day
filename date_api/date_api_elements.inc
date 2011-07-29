@@ -372,6 +372,9 @@ function date_parts_element($element, $date, $format) {
   $month_function  = strpos($element['#date_format'], 'F') !== FALSE ? 'date_month_names' : 'date_month_names_abbr';
   $count = 0;
   $increment = min(intval($element['#date_increment']), 1);
+
+  $all_day_id = !empty($element['#date_all_day_id']) ? $element['#date_all_day_id'] : '';
+
   foreach ($granularity as $field) {
     // Allow empty value as option if date is not required 
     // or if empty value was provided as a starting point.
@@ -411,6 +414,10 @@ function date_parts_element($element, $date, $format) {
           $sub_element[$field]['#options'] = drupal_map_assoc(date_hours($hours_format, $part_required));
         }
         $sub_element[$field]['#prefix'] = theme('date_part_hour_prefix', $element);
+        $sub_element[$field]['#states'] = array(
+          'visible' => array(
+            '#' . $all_day_id => array('checked' => FALSE),
+        ));
         break;
       case 'minute':
         $sub_element[$field]['#default_value'] = is_object($date) ? $date->format('i') : '';
@@ -418,6 +425,10 @@ function date_parts_element($element, $date, $format) {
           $sub_element[$field]['#options'] = drupal_map_assoc(date_minutes('i', $part_required, $element['#date_increment']));
         }
         $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
+        $sub_element[$field]['#states'] = array(
+          'visible' => array(
+            '#' . $all_day_id => array('checked' => FALSE),
+        ));
         break;
       case 'second':
         $sub_element[$field]['#default_value'] = is_object($date) ? $date->format('s') : '';
@@ -425,6 +436,10 @@ function date_parts_element($element, $date, $format) {
           $sub_element[$field]['#options'] = drupal_map_assoc(date_seconds('s', $part_required, $element['#date_increment']));
         }
         $sub_element[$field]['#prefix'] = theme('date_part_minsec_prefix', $element);
+        $sub_element[$field]['#states'] = array(
+          'visible' => array(
+            '#' . $all_day_id => array('checked' => FALSE),
+        ));
         break;
     }
 
@@ -477,6 +492,10 @@ function date_parts_element($element, $date, $format) {
       '#weight' => 8,
       '#attributes' => array('class' => array('date-ampm')),
     );
+    $sub_element['ampm']['#states'] = array(
+      'visible' => array(
+        '#' . $all_day_id => array('checked' => FALSE),
+    ));
     if ($element['#date_label_position'] == 'within') {
       $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', array('part_type' => 'ampm', 'eleement' => $element))) + $sub_element['ampm']['#options'];
     }

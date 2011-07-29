@@ -191,7 +191,6 @@ function date_combo_element_process($element, &$form_state, $form) {
   if (isset($element['#access']) && empty($element['#access'])) {
     return $element;
   }
-
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
@@ -215,6 +214,18 @@ function date_combo_element_process($element, &$form_state, $form) {
     unset($element['#default_value'][$to_field]);
   }
 
+  $date_is_all_day = date_is_all_day($element['#default_value'][$from_field], $element['#default_value'][$to_field]);
+  $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
+  $element['all_day'] = array(
+    '#title' => t('All day'),
+    '#type' => 'checkbox',
+    '#default_value' => $all_day,
+    '#weight' => -21,
+    '#prefix' => '<div class="clearfix"><div class="date-float">',
+    '#suffix' => '</div>',
+  );
+  $all_day_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-all-day');
+
   $element[$from_field] = array(
     '#field'         => $field,
     '#instance'      => $instance,
@@ -229,6 +240,8 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_increment'   => $instance['widget']['settings']['increment'],
     '#date_year_range'  => $instance['widget']['settings']['year_range'],
     '#date_label_position' => $instance['widget']['settings']['label_position'],
+    '#date_all_day_id'  => $all_day_id,
+    '#prefix' => '</div>', // End the wrapper around all_day and show_todate.
     );
 
   $description =  !empty($instance['description']) ? t($instance['description']) : ''; 
@@ -267,6 +280,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
     $element[$to_field]['#required'] = FALSE;
     $element[$to_field]['#weight'] += .2;
+    $element[$to_field]['#prefix'] = '';
     $description .= ' ' . t("Empty 'To date' values will use the 'From date' values.");
     $element['#fieldset_description'] = $description;
 
@@ -277,6 +291,8 @@ function date_combo_element_process($element, &$form_state, $form) {
         '#type' => 'checkbox',
         '#default_value' => $show_todate,
         '#weight' => -20,
+        '#prefix' => '<div class="date-float">',
+        '#suffix' => '</div>',
       );
       $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
       $element[$to_field]['#states'] = array(
@@ -400,6 +416,13 @@ function date_combo_validate($element, &$form_state) {
     $posted[$to_field] = $posted[$from_field];
   }
 
+  // If the user chose the option to not show the to date, just swap in the 
+  // from date as that value so the from and to dates are the same.
+  if (!empty($item['all_day'])) {
+    $all_day = TRUE;
+  }
+
+
   if ($empty) {
     $item = date_element_empty($element, $form_state);
     if (!$element['#required']) {
@@ -471,6 +494,12 @@ function date_combo_validate($element, &$form_state) {
       // Convert input dates back to their UTC values and re-format to ISO
       // or UNIX instead of the DATETIME format used in element processing.
       $item[$tz_field] = $timezone;
+
+      // If this is an 'All day' value, set the time to midnight.
+      if ($all_day) {
+        $from_date->setTime(0, 0, 0);
+        $to_date->setTime(0, 0, 0);
+      }
 
       $item[$offset_field] = date_offset_get($from_date);
 

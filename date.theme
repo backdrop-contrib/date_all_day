@@ -366,7 +366,7 @@ function theme_date_combo($vars) {
   $fieldset = array(
     '#title' => t($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => '',
-    '#description' => $element['#fieldset_description'],
+    '#description' => !empty($element['#fieldset_description']) ? $element['#fieldset_description'] : '',
     '#attributes' => array(),
     '#children' => $element['#children'],
   );

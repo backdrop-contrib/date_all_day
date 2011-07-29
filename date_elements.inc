@@ -88,9 +88,11 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   if ($field['settings']['tz_handling'] == 'date') {
     $element['timezone'] = array(
       '#type' => 'date_timezone',
+      '#theme_wrappers' => array('date_timezone'),
       '#delta' => $delta,
       '#default_value' => $timezone,
-      '#weight' => $instance['widget']['weight'] + .2,
+      '#weight' => $instance['widget']['weight'] + .5,
+      '#attributes' => array('class' => array('date-clear')),
       );  
   }
 
@@ -232,15 +234,12 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   // Give this element the right type, using a Date API
   // or a Date Popup element type.
+  $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
+  $element[$from_field]['#wrapper_attributes'] = array('class' => array());
 
   switch ($instance['widget']['type']) {
     case 'date_select':
     case 'date_select_repeat':
-      // From/to selectors with lots of parts will look better if displayed 
-      // on two rows instead of in a single row.
-      if (!empty($field['settings']['todate']) && count($field['settings']['granularity']) > 3) {
-        $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
-      }
       $element[$from_field]['#type'] = 'date_select';
       $element[$from_field]['#theme_wrappers'] = array('date_select');
       break;
@@ -260,15 +259,32 @@ function date_combo_element_process($element, &$form_state, $form) {
   // is the 'From' and which is the 'To' .
 
   if (!empty($field['settings']['todate'])) {
-    $element['#date_float'] = TRUE;
-    $element[$from_field]['#title']  = t('From date');
+    // Add class to allow date parts to float together on the same line. 
+    $element[$from_field]['#title']  = ''; // The title is in the fieldset.
     $element[$to_field] = $element[$from_field];
-    $element[$to_field]['#title'] = t('To date');
+    $element[$to_field]['#wrapper_attributes']['class'][] = 'date-clear-block';
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
     $element[$to_field]['#required'] = FALSE;
-    $element[$to_field]['#weight'] += .1;
+    $element[$to_field]['#weight'] += .2;
     $description .= ' ' . t("Empty 'To date' values will use the 'From date' values.");
     $element['#fieldset_description'] = $description;
+
+    if ($field['settings']['todate'] == 'optional') {
+      $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
+      $element['show_todate'] = array(
+        '#title' => t('Collect To date'),
+        '#type' => 'checkbox',
+        '#default_value' => $show_todate,
+        '#weight' => -20,
+      );
+      $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
+      $element[$to_field]['#states'] = array(
+        'visible' => array(
+          '#' . $show_id => array('checked' => TRUE),
+      ));
+    }
+
+
   }
   else {
     $element[$from_field]['#description'] = $description;
@@ -289,7 +305,6 @@ function date_combo_element_process($element, &$form_state, $form) {
   else {
     $element[$from_field]['#date_title'] = $instance['label'];
   }
-
   return $element;
 }
 
@@ -375,6 +390,13 @@ function date_combo_validate($element, &$form_state) {
         }
       }
     }
+  }
+
+  // If the user chose the option to not show the to date, just swap in the 
+  // from date as that value so the from and to dates are the same.
+  if ($field['settings']['todate'] == 'optional' && empty($item['show_todate'])) {
+    $item[$to_field] = $item[$from_field];
+    $posted[$to_field] = $posted[$from_field];
   }
 
   if ($empty) {

@@ -91,8 +91,8 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       '#theme_wrappers' => array('date_timezone'),
       '#delta' => $delta,
       '#default_value' => $timezone,
-      '#weight' => $instance['widget']['weight'] + .5,
-      '#attributes' => array('class' => array('date-clear')),
+      '#weight' => $instance['widget']['weight'] + 1,
+      '#attributes' => array('class' => array('date-no-float')),
       '#date_label_position' => $instance['widget']['settings']['label_position'],
       );  
   }
@@ -237,6 +237,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   // or a Date Popup element type.
   $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
   $element[$from_field]['#wrapper_attributes'] = array('class' => array());
+  $element[$from_field]['#wrapper_attributes']['class'][] = 'date-float';
 
   switch ($instance['widget']['type']) {
     case 'date_select':
@@ -263,7 +264,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     // Add class to allow date parts to float together on the same line. 
     $element[$from_field]['#title']  = ''; // The title is in the fieldset.
     $element[$to_field] = $element[$from_field];
-    $element[$to_field]['#wrapper_attributes']['class'][] = 'date-clear-block';
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
     $element[$to_field]['#required'] = FALSE;
     $element[$to_field]['#weight'] += .2;

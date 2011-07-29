@@ -405,7 +405,7 @@ function theme_date_repeat_current_additions($rows = array()) {
  */
 function theme_date_repeat_rrule($vars) {
   $element = $vars['element'];
-  $class = $element['#date_repeat_collapsed'] ? array('collapsible', 'collapsed') : array('collapsible');
+  $class = $element['#date_repeat_collapsed'] ? array('date-no-float', 'collapsible', 'collapsed') : array('date-no-float', 'collapsible');
   $fieldset = array(
     '#title' => t('Repeat'),
     '#value' => '',
@@ -413,9 +413,6 @@ function theme_date_repeat_rrule($vars) {
     '#attributes' => array('class' => $class),
     '#children' => $element['#children'],
   );
-  // Make sure we don't get floating parts where we don't want them.
-  $element['#prefix'] = '<div class="date-clear">';
-  $element['#suffix'] = '</div>';
 
   return theme('fieldset', array('element' => $fieldset));
 }

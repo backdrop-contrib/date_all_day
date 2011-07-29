@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1232570 by dboulet, Remove some unneeded duplication of core clearfix and other css cleanup.
 - Issue #1232614 by dboulet, Date css should not be setting font family.
 - Timezone and Date Popup weren't obeying the settings for displaying the date part label.
 - Issue #1233612, Add 'Collect end date' checkbox for dates with optional end dates.

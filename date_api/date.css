@@ -5,11 +5,16 @@
 
 /* Force from/to dates to float using inline-block, where it works, otherwise inline. */
 .container-inline-date {
+  background-color: #eee;
   clear: both;
   display: inline-block;
   margin-right: 0.5em; /* LTR */
+  margin-bottom: 10px;
   vertical-align: top;
   width: auto;
+}
+.container-inline-date .date-padding {
+  padding: 10px;
 }
 .container-inline-date .form-item {
   float: none;
@@ -135,9 +140,15 @@ span.date-display-separator {
   float: none;
 }
 
-.date-clear-block {
+.date-no-float {
   clear: both;
   float: none;
+  width: auto;
+}
+
+.date-float {
+  clear: none;
+  float: left;
   width: auto;
 }
 
@@ -145,29 +156,6 @@ span.date-display-separator {
 .form-type-date-select .form-type-select[class$=hour] {
   margin-left: .75em; /* LTR */
 }
-
-/**
- * Markup free clearing that fixes unwanted scrollbars
- * @see http://drupal.org/node/232959
- */
-.date-clear-block:after {
-  clear: both;
-  content: " ";
-  display: block;
-  height: 0;
-  visibility: hidden;
-}
-.date-clear-block {
-  display: inline-block;
-}
-/* Hides from IE-mac \*/
-* html .date-clear-block {
-  height: 1%;
-}
-.date-clear-block {
-  display: block;
-}
-/* End hide from IE-mac */
 
 .date-container .date-format-delete {
   float: left;

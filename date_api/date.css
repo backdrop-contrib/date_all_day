@@ -5,7 +5,7 @@
 
 /* Force from/to dates to float using inline-block, where it works, otherwise inline. */
 .container-inline-date {
-  background-color: #eee;
+  border: 1px #dedede solid;
   clear: both;
   display: inline-block;
   margin-right: 0.5em; /* LTR */

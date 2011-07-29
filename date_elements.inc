@@ -93,6 +93,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       '#default_value' => $timezone,
       '#weight' => $instance['widget']['weight'] + .5,
       '#attributes' => array('class' => array('date-clear')),
+      '#date_label_position' => $instance['widget']['settings']['label_position'],
       );  
   }
 

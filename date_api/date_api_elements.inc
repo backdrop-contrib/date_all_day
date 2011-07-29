@@ -126,9 +126,10 @@ function date_timezone_element_value_callback($element, $input = FALSE, &$form_s
  */
 function date_timezone_element_process($element, $form_state, $form) {
   $element['#tree'] = TRUE;
+  $label = theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element));
   $element['timezone'] = array(
     '#type' => 'select',
-    '#title' => theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element)),
+    '#title' => $element['#date_label_position'] == 'above' ? $label : '',
     '#options' => date_timezone_names($element['#required']),
     '#value' => $element['#value'],
     '#weight' => $element['#weight'],

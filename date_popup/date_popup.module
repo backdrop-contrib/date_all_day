@@ -274,6 +274,7 @@ function date_popup_process_date_part(&$element) {
   $parents = array_merge($element['#parents'], array('date'));
   $sub_element = array(
     '#type' => 'textfield',
+    '#title' => $element['#date_label_position'] == 'above' ? t('Date') : '',
     '#default_value' => $element['#value']['date'],
     '#id' => $id,
     '#input' => FALSE,
@@ -322,6 +323,7 @@ function date_popup_process_time_part(&$element) {
   $parents = array_merge($element['#parents'], array('time'));
   $sub_element = array(
     '#type' => 'textfield',
+    '#title' => $element['#date_label_position'] == 'above' ? t('Time') : '',
     '#default_value' => $element['#value']['time'],
     '#id' => $id,
     '#size' => 10,

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Timezone and Date Popup weren't obeying the settings for displaying the date part label.
 - Issue #1233612, Add 'Collect end date' checkbox for dates with optional end dates.
 - Issue #1130814 by cdracars, mikeryan, mayobutter, Fix date_modify difference between PHP 5.3.5 and 5.3.6 so both work to compute repeating dates.
 - Issue #1017866 by KarenS and Jason89s, Make sure views argument and filter don't do timezone adjustment for dates that don't have time.

@@ -22,6 +22,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1234090, Fix undefined variable 'all_day'.
 - Issue #1232570 by dboulet, Remove some unneeded duplication of core clearfix and other css cleanup.
 - Issue #1232614 by dboulet, Date css should not be setting font family.
 - Timezone and Date Popup weren't obeying the settings for displaying the date part label.

@@ -214,10 +214,12 @@ function date_combo_element_process($element, &$form_state, $form) {
     unset($element['#default_value'][$to_field]);
   }
 
-  $date_is_all_day = date_is_all_day($element['#default_value'][$from_field], $element['#default_value'][$to_field]);
+  $from = $element['#default_value'][$from_field];
+  $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];
+  $date_is_all_day = date_is_all_day($from, $to);
   $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
   $element['all_day'] = array(
-    '#title' => t('All day'),
+    '#title' => t('All Day'),
     '#type' => 'checkbox',
     '#default_value' => $all_day,
     '#weight' => -21,
@@ -287,7 +289,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     if ($field['settings']['todate'] == 'optional') {
       $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
       $element['show_todate'] = array(
-        '#title' => t('Collect To date'),
+        '#title' => t('Show To Date'),
         '#type' => 'checkbox',
         '#default_value' => $show_todate,
         '#weight' => -20,
@@ -418,6 +420,7 @@ function date_combo_validate($element, &$form_state) {
 
   // If the user chose the option to not show the to date, just swap in the 
   // from date as that value so the from and to dates are the same.
+  $all_day = FALSE;
   if (!empty($item['all_day'])) {
     $all_day = TRUE;
   }

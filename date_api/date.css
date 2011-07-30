@@ -13,8 +13,8 @@
   vertical-align: top;
   width: auto;
 }
-.container-inline-date .date-padding {
-  padding: 10px;
+.views-exposed-form .container-inline-date {
+  border:none;
 }
 .container-inline-date .form-item {
   float: none;
@@ -51,6 +51,14 @@
   clear: both;
   float: none;
   width: auto;
+}
+
+/* The exposed Views form doesn't need some of these styles */
+.container-inline-date .date-padding {
+  padding: 10px;
+}
+.views-exposed-form .container-inline-date .date-padding {
+  padding: 0:
 }
 
 /* Fixes for date popup css so it will behave in Drupal */

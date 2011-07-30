@@ -4,6 +4,18 @@ Date Module 7.x
 ===================
 Version 7.x-2.x-dev
 ===================
+Notes to themers:
+
+Previous versions put dates with both From and To dates into a fieldset and other dates were not.
+The new code adds additional floating elements that are hard to contain, so now all dates are
+enclosed in fieldsets in the node form. There are also new elements on the form, an optional
+checkbox for hiding/showing the To date and an optional checkbox for hiding/showing time.
+Previously dates on the node form had 'From date' and 'To date' labels above them, this
+has been changed to remove those labels, using the Google calendar date entry screen
+as a model. This simplifies the node form and dates take up less space. A light grey border
+has been added around each collection of dates (the From date and the To date). The display
+of labels above the date parts (year, month, day, date, time, etc) is controlled in the
+field settings. Previous versions did not always honor those settings, this one does.
 
 New Features/UX Improvements
 

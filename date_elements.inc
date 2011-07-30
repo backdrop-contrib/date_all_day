@@ -223,15 +223,28 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#type' => 'checkbox',
     '#default_value' => $all_day,
     '#weight' => -21,
-    '#prefix' => '<div class="clearfix"><div class="date-float">',
+    '#access' => date_has_time($field['settings']['granularity']),
+    '#prefix' => '<div class="date-float">',
     '#suffix' => '</div>',
   );
   $all_day_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-all-day');
 
+  $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
+  $element['show_todate'] = array(
+    '#title' => t('Show To Date'),
+    '#type' => 'checkbox',
+    '#default_value' => $show_todate,
+    '#weight' => -20,
+    '#access' => $field['settings']['todate'] == 'optional',
+    '#prefix' => '<div class="date-float">',
+    '#suffix' => '</div>',
+  );
+  $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
+
+
   $element[$from_field] = array(
     '#field'         => $field,
     '#instance'      => $instance,
-    '#title'         => t($instance['label']),
     '#weight'        => $instance['widget']['weight'],
     '#required'      => ($instance['required'] && $delta == 0) ? 1 : 0,
     '#default_value' => isset($element['#default_value'][$from_field]) ? $element['#default_value'][$from_field] : '',
@@ -243,7 +256,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_year_range'  => $instance['widget']['settings']['year_range'],
     '#date_label_position' => $instance['widget']['settings']['label_position'],
     '#date_all_day_id'  => $all_day_id,
-    '#prefix' => '</div>', // End the wrapper around all_day and show_todate.
     );
 
   $description =  !empty($instance['description']) ? t($instance['description']) : ''; 
@@ -252,7 +264,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   // or a Date Popup element type.
   $element[$from_field]['#attributes'] = array('class' => array('date-clear'));
   $element[$from_field]['#wrapper_attributes'] = array('class' => array());
-  $element[$from_field]['#wrapper_attributes']['class'][] = 'date-float';
+  $element[$from_field]['#wrapper_attributes']['class'][] = 'date-no-float';
 
   switch ($instance['widget']['type']) {
     case 'date_select':
@@ -287,23 +299,11 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element['#fieldset_description'] = $description;
 
     if ($field['settings']['todate'] == 'optional') {
-      $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
-      $element['show_todate'] = array(
-        '#title' => t('Show To Date'),
-        '#type' => 'checkbox',
-        '#default_value' => $show_todate,
-        '#weight' => -20,
-        '#prefix' => '<div class="date-float">',
-        '#suffix' => '</div>',
-      );
-      $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
       $element[$to_field]['#states'] = array(
         'visible' => array(
           '#' . $show_id => array('checked' => TRUE),
       ));
     }
-
-
   }
   else {
     $element[$from_field]['#description'] = $description;

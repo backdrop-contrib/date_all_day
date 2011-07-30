@@ -92,14 +92,37 @@ function _date_api_element_info() {
  */
 function date_default_date($element) {
   $granularity = date_format_order($element['#date_format']);
-  $date = new DateObject($element['#default_value'], $element['#date_timezone'], DATE_FORMAT_DATETIME);
+  $default_value = $element['#default_value'];
+  $format = DATE_FORMAT_DATETIME;
+
+  // The text and popup widgets might return less than a full datetime string.
+  if (strlen($element['#default_value']) < 19) {
+    switch (strlen($element['#default_value'])) {
+      case 16:
+        $format = 'Y-m-d H:i';
+        break;
+      case 13:
+        $format = 'Y-m-d H';
+        break;
+      case 10:
+        $format = 'Y-m-d';
+        break;
+      case 7:
+        $format = 'Y-m';
+        break;
+      case 4:
+        $format = 'Y';
+        break;
+    }
+  }
+  $date = new DateObject($default_value, $element['#date_timezone'], $format);
   if (is_object($date)) {
     $date->limitGranularity($granularity);
     if ($date->validGranularity($granularity, $element['#date_flexible'])) {
       date_increment_round($date, $element['#date_increment']); 
     }
     return $date;
-  }    
+  }
   return NULL;
 }
 

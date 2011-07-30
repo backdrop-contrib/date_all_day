@@ -35,6 +35,8 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1160132 by seanbfuller and KarenS, Exposed filter widgets were not displaying the default values.
+- Adjust the way widgets are styled in Views exposed filters after the latest style changes for form elements.
 - Issue #1234114 by arlinsandbulte, Add more space between checkboxes.
 - Issue #1234090, Fix undefined variable 'all_day'.
 - Issue #1232570 by dboulet, Remove some unneeded duplication of core clearfix and other css cleanup.

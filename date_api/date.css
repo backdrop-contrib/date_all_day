@@ -152,6 +152,11 @@ span.date-display-separator {
   width: auto;
 }
 
+/* Add space between date option checkboxes ('All day' & 'Collect To Date') */
+.date-float .form-type-checkbox{
+  padding-right: 1em;
+}
+
 /* Add space between the date and time portions of the date_select widget. */
 .form-type-date-select .form-type-select[class$=hour] {
   margin-left: .75em; /* LTR */

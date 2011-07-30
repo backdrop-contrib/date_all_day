@@ -4,6 +4,7 @@ Date Module 7.x
 ===================
 Version 7.x-2.x-dev
 ===================
+
 Notes to themers:
 
 Previous versions put dates with both From and To dates into a fieldset and other dates were not.
@@ -34,6 +35,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1234114 by arlinsandbulte, Add more space between checkboxes.
 - Issue #1234090, Fix undefined variable 'all_day'.
 - Issue #1232570 by dboulet, Remove some unneeded duplication of core clearfix and other css cleanup.
 - Issue #1232614 by dboulet, Date css should not be setting font family.

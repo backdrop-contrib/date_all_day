@@ -1985,10 +1985,10 @@ function date_format_type_options() {
 }
 
 /**
- * Determine if a from/to date combination qualify as 'All day'.
+ * Determine if a start/end date combination qualify as 'All day'.
  *
- * @param object $date1, a string date in datetime format for the 'from' date.
- * @param object $date2, a string date in datetime format for the 'to' date.
+ * @param object $date1, a string date in datetime format for the 'start' date.
+ * @param object $date2, a string date in datetime format for the 'end' date.
  * @return TRUE or FALSE.
  */
 function date_is_all_day($string1, $string2, $granularity = 'second', $increment = 1) {

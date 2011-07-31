@@ -37,7 +37,7 @@ function date_field_schema($field) {
       break;
   }
 
-  // If a second date is needed for 'To date', just make a copy of the first one.
+  // If a second date is needed for 'End date', just make a copy of the first one.
   if (!empty($field['settings']['todate'])) {
     $db_columns['value2'] = $db_columns['value'];
 

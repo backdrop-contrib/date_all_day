@@ -16,7 +16,7 @@
  *   for the filter form and an option to set the default value to 
  *   a set date or something like 'now +90 days' . If the operator is 
  *   set to 'between' or 'not between' you can set a default value for
- *   both the from and to dates. 
+ *   both the start and end dates. 
  * 
  * Current date argument default
  *   Adds a default option to set the argument to the current date 

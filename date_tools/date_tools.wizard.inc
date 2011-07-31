@@ -66,8 +66,8 @@ function date_tools_wizard_form() {
     '#type' => 'select',
     '#default_value' => 'optional',
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
-    '#title' => t('To Date'),
-    '#description' => t("Display a matching second date field as a 'To date'."),
+    '#title' => t('End Date'),
+    '#description' => t("Display a matching second date field as a 'End date'."),
     );  
   $form['field']['advanced']['field_type'] = array(
     '#type' => 'select',

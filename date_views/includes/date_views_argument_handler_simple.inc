@@ -112,8 +112,8 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       '#type' => 'radios',
       '#title' => t('Dates to compare'),
       '#default_value' => $this->options['use_fromto'],
-      '#options' => array('' => t('From/To date range'), 'no' => t('Only this field')),
-      '#description' => t("If selected the view will check if any value starting with the 'From' date and ending with the 'To' date matches the view criteria. Otherwise the view will be limited to the specifically selected fields. Comparing to the whole From/To range is the recommended setting when using this filter in a Calendar. When using the From/To option, it is not necessary to add both the From and To fields to the filter, either one will do."),
+      '#options' => array('' => t('Start/End date range'), 'no' => t('Only this field')),
+      '#description' => t("If selected the view will check if any value starting with the 'Start' date and ending with the 'End' date matches the view criteria. Otherwise the view will be limited to the specifically selected fields. Comparing to the whole Start/End range is the recommended setting when using this filter in a Calendar. When using the Start/End option, it is not necessary to add both the Start and End fields to the filter, either one will do."),
     );
 
   }
@@ -228,7 +228,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $view_max_placeholder = $this->placeholder();
     $this->date_handler->placeholders = array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max);
 
-    // Are we comparing this field only or the From/To date range to the view criteria?
+    // Are we comparing this field only or the Start/End date range to the view criteria?
     if (!empty($this->options['use_fromto'])) {
 
       // The simple case, match the field to the view range.
@@ -240,7 +240,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     else {
 
       // Look for the intersection of the range of the date field with the range of the view.
-      // Get the FromTo values for this field. Retrieve using the original table name.
+      // Get the Start/End values for this field. Retrieve using the original table name.
       // Swap the current table name (adjusted for relationships) into the query.
       // @TODO We may be able to use Views substitutions here, investigate that later.
       $fields = date_views_fields($this->view->base_table);

@@ -61,7 +61,7 @@ class DateExampleMigration extends XMLMigration {
     $this->addFieldMapping('field_date', 'date')
          ->xpath('date');
 
-    // For date ranges, we add the "to" value in prepareRow() below
+    // For date ranges, we add the "end" value in prepareRow() below
     $this->addFieldMapping('field_date_range', 'date_range_from');
 
     // RRULEs on repeat fields are also done in prepareRow()
@@ -92,7 +92,7 @@ class DateExampleMigration extends XMLMigration {
 
   public function prepareRow($current_row) {
     // An advanced feature of the date field handler is that in addition to the
-    // basic (from) date itself, we can add additional properties like timezone,
+    // basic (Start) date itself, we can add additional properties like timezone,
     // encapsulating them as JSON.
 
     // The date range field can have multiple values

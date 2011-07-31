@@ -11,7 +11,7 @@
  * which is stored in the zero position of the field values. During widget
  * validation, the rule is parsed to see what dates it will create,
  * and multiple values are added to the field, one for each repeat date.
- * That update only happens when the rule, the from date, or the to date
+ * That update only happens when the rule, the start date, or the end date
  * change, no need to waste processing cycles for other changes to the node
  * values.
  *

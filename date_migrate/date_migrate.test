@@ -51,9 +51,9 @@ class DateMigrateExampleUnitTest extends DrupalWebTestCase {
     $this->drupalGet('/node/' . $node->nid);
     $this->assertText('2012-06-21 15:32', t('First date value found'));
     $this->assertText('2012-12-02 11:08', t('Second date value found'));
-    $this->assertText('2004-02-03 01:15', t('From for first date range found'));
-    $this->assertText('2005-03-04 22:11', t('To for first date range found'));
-    $this->assertText('2014-09-01 17:21', t('From for second date range found'));
-    $this->assertText('2015-12-23 00:01', t('to for first second range found'));
+    $this->assertText('2004-02-03 01:15', t('Start for first date range found'));
+    $this->assertText('2005-03-04 22:11', t('End for first date range found'));
+    $this->assertText('2014-09-01 17:21', t('Start for second date range found'));
+    $this->assertText('2015-12-23 00:01', t('End for first second range found'));
   }
 }

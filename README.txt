@@ -203,7 +203,7 @@ To make RDF easier to use, the base date themes (date_display_single and
 date_display_range) have been expanded so they pass attributes and 
 RDF mappings for the field, if any, to the theme. If RDF is installed
 and no other mappings are provided, the theme adds RDF information
-to mark both the From and To dates as 'xsd:dateTime' datatypes with the
+to mark both the Start and End dates as 'xsd:dateTime' datatypes with the
 property of 'dc:date'.
 
 To mark these as events instead, you could install the schemaorg

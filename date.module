@@ -243,9 +243,9 @@ function date_theme() {
 /**
  * Implements hook_element_info().
  *
- * date_combo will create a 'from' and optional 'to' date, along with
+ * date_combo will create a 'start' and optional 'end' date, along with
  * an optional 'timezone' column for date-specific timezones. Each
- * 'from' and 'to' date will be constructed from date_select or date_text.
+ * 'start' and 'end' date will be constructed from date_select or date_text.
  */
 function date_element_info() {
   $type = array();
@@ -269,7 +269,7 @@ function date_element_info() {
  * @param array $field
  * @param array $item - a entity field item, like $entity->myfield[0]
  *
- * @return array that holds the From and To date objects
+ * @return array that holds the Start and End date objects
  *  Each date object looks like:
  *       date [value] => array (
  *         [db] => array (  // the value stored in the database
@@ -629,12 +629,12 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
     $property['property info'] = array(
       'value' => array(
         'type' => 'date',
-        'label' => t('From date'),
+        'label' => t('Start date'),
         'getter callback' => 'date_entity_metadata_struct_getter',
       ),
       'value2' => array(
         'type' => 'date',
-        'label' => t('To date'),
+        'label' => t('End date'),
         'getter callback' => 'date_entity_metadata_struct_getter',
       ),
       'duration' => array(
@@ -683,11 +683,11 @@ function date_entity_metadata_duration_getter($item, array $options, $name, $typ
 }
 
 /**
- * Determine if a from/to date combination qualify as 'All day'.
+ * Determine if a Start/End date combination qualify as 'All day'.
  *
  * @param array $field, the field definition for this date field.
- * @param object $date1, a date/time object for the 'from' date.
- * @param object $date2, a date/time object for the 'to' date.
+ * @param object $date1, a date/time object for the 'Start' date.
+ * @param object $date2, a date/time object for the 'End' date.
  * @return TRUE or FALSE.
  */
 function date_field_all_day($field, $instance, $date1, $date2 = NULL) {

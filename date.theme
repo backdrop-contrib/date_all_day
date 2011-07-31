@@ -10,7 +10,7 @@
  * Formatter themes
  */
 /**
- * Theme from/to date combination in the view.
+ * Theme Start/End date combination in the view.
  *
  *   $entity->date_id 
  *     If set, this will show only an individual date on a field with 
@@ -31,16 +31,16 @@
  *     start date and the repeat rule will be displayed.
  * 
  *   $dates['format'] - the format string used on these dates
- *   $dates['value']['local']['object'] - the local date object for the From date
- *   $dates['value2']['local']['object'] - the local date object for the To date
- *   $dates['value']['local']['datetime'] - the datetime value of the From date database (GMT) value
- *   $dates['value2']['local']['datetime'] - the datetime value of the To date database (GMT) value
- *   $dates['value']['formatted'] = formatted From date, i.e. 'February 15, 2007 2:00 pm';
- *   $dates['value']['formatted_date'] - only the date part of the formatted From date
- *   $dates['value']['formatted_time'] - only the time part of the formatted From date
- *   $dates['value2']['formatted'] = formatted To date, i.e. 'February 15, 2007 6:00 pm';
- *   $dates['value2']['formatted_date'] - only the date part of the formatted To date
- *   $dates['value2']['formatted_time'] - only the time part of the formatted To date
+ *   $dates['value']['local']['object'] - the local date object for the Start date
+ *   $dates['value2']['local']['object'] - the local date object for the End date
+ *   $dates['value']['local']['datetime'] - the datetime value of the Start date database (GMT) value
+ *   $dates['value2']['local']['datetime'] - the datetime value of the End date database (GMT) value
+ *   $dates['value']['formatted'] = formatted Start date, i.e. 'February 15, 2007 2:00 pm';
+ *   $dates['value']['formatted_date'] - only the date part of the formatted Start date
+ *   $dates['value']['formatted_time'] - only the time part of the formatted Start date
+ *   $dates['value2']['formatted'] = formatted End date, i.e. 'February 15, 2007 6:00 pm';
+ *   $dates['value2']['formatted_date'] - only the date part of the formatted End date
+ *   $dates['value2']['formatted_time'] - only the time part of the formatted End date
  */
 function theme_date_display_combination($vars) {
   static $repeating_ids = array();
@@ -129,7 +129,7 @@ function theme_date_display_combination($vars) {
   if (empty($date1) && empty($date2)) {
     $output .= '';
   }
-  // From and To dates match or there is no To date, display a complete single date.
+  // Start and End dates match or there is no End date, display a complete single date.
   elseif ($date1 == $date2 || empty($date2)) {
     $output .= theme('date_display_single', array(
       'date' => $date1, 
@@ -140,9 +140,9 @@ function theme_date_display_combination($vars) {
       'dates' => $dates,
     ));
   }
-  // Same day, different times, don't repeat the date but show both From and To times.
+  // Same day, different times, don't repeat the date but show both Start and End times.
   elseif (date_has_time($field['settings']['granularity']) && $dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {
-    // Replace the original time with the from/to time in the formatted start date.  
+    // Replace the original time with the start/end time in the formatted start date.  
     // Make sure that parentheses or brackets wrapping the time will be retained in the
     // final result.
     $time1 = preg_replace('`^([\(\[])`', '', $dates['value']['formatted_time']);
@@ -301,12 +301,12 @@ function theme_date_repeat_display($vars) {
 }
 
 /**
- * Adjust from/to date format to account for 'all day' .
+ * Adjust start/end date format to account for 'all day' .
  *
  * @param array $field, the field definition for this date field.
  * @param string $which, which value to return, 'date1' or 'date2' .
- * @param object $date1, a date/time object for the 'from' date.
- * @param object $date2, a date/time object for the 'to' date.
+ * @param object $date1, a date/time object for the 'start' date.
+ * @param object $date2, a date/time object for the 'end' date.
  * @param string $format
  * @param object $entity, the node this date comes from (may be incomplete, always contains nid).
  * @param object $view, the view this node comes from, if applicable.
@@ -352,14 +352,14 @@ function theme_date_all_day_label() {
 }
 
 /**
- *  Theme from/to date combination on form.
+ *  Theme start/end date combination on form.
  */
 function theme_date_combo($vars) {
   $element = $vars['element'];
   $field = field_info_field($element['#field_name']);
   $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
 
-  // Group from/to items together in fieldset.
+  // Group start/end items together in fieldset.
   $fieldset = array(
     '#title' => t($instance['label']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => '',

@@ -254,11 +254,11 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#type' => 'textfield',
       '#title' => t('Date default'),
       '#default_value' => $this->options['default_date'],
-      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The To date default value is used when the operator is set to 'between' or 'not between'.") . ' ' . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
+      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The End date default value is used when the operator is set to 'between' or 'not between'.") . ' ' . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
       );
     $form['value']['default_to_date'] = array(
       '#type' => 'textfield',
-      '#title' => t('To date default'),
+      '#title' => t('End date default'),
       '#default_value' => $this->options['default_to_date'],
       );
 
@@ -295,10 +295,10 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     module_load_include('inc', 'date_api', 'date_api_elements');
     switch($prefix) {
       case 'min':
-        $name = t('From date');
+        $name = t('Start date');
         break;
       case 'max':
-        $name = t('To date');
+        $name = t('End date');
         break;
       default:
         $name = '';
@@ -355,7 +355,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
     if (($form_state['values']['options']['operator'] == 'between' || $form_state['values']['options']['operator'] == 'not between') && 
     !empty($form_state['values']['options']['value']['default_date']) && empty($form_state['values']['options']['value']['default_to_date'])) {
-      form_error($form['value']['default_to_date'], t('Please set a default value for the To date as well as the From date when using default values with the Between or Not between operators.'));
+      form_error($form['value']['default_to_date'], t('Please set a default value for the End date as well as the Start date when using default values with the Between or Not between operators.'));
     }
     if (isset($form_state['values']['options']['value']['default_date'])) {
       $this->options['default_date'] = $form_state['values']['options']['value']['default_date'];

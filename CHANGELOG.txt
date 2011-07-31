@@ -31,6 +31,7 @@ New Features/UX Improvements
 - Issue #1216996 by ksenzee, Change the years back/forward setting into two drop down boxes.
 - Issue #1222468 by ksenzee, Hide timezone options when using granularity without time.
 - Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
+- Issue #1234140 by arlinsundbulte, Change terminology in user-facing text from 'From/To Date' to 'Start/End Date'.
 - Lots of new tests.
 
 Bugfixes

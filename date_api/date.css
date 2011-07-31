@@ -3,7 +3,7 @@
  * Main stylesheet for Date module.
  */
 
-/* Force from/to dates to float using inline-block, where it works, otherwise inline. */
+/* Force start/end dates to float using inline-block, where it works, otherwise inline. */
 .container-inline-date {
   border: 1px #dedede solid;
   clear: both;
@@ -82,7 +82,7 @@
   padding: 0;
 }
 
-/* formatting for from/to dates in nodes and views */
+/* formatting for start/end dates in nodes and views */
 span.date-display-single {
 }
 span.date-display-start {
@@ -160,7 +160,7 @@ span.date-display-separator {
   width: auto;
 }
 
-/* Add space between date option checkboxes ('All day' & 'Collect To Date') */
+/* Add space between date option checkboxes ('All day' & 'Collect End Date') */
 .date-float .form-type-checkbox{
   padding-right: 1em;
 }

@@ -150,7 +150,7 @@ class DateFieldTestCase extends DateFieldBasic {
   public static function getInfo() {
     return array(
       'name' => 'Date Field',
-      'description' => 'Test date field settings and from/to date interaction.',
+      'description' => 'Test date field settings and Start/End date interaction.',
       'group' => 'Date',
     );
   }

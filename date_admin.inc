@@ -26,9 +26,9 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#title' => t('Display:'),
     '#type' => 'select',
     '#options' => array(
-      'both' => t('Both From and To dates'), 
-      'value' => t('From date only'), 
-      'value2' => t('To date only'),
+      'both' => t('Both Start and End dates'), 
+      'value' => t('Start date only'), 
+      'value2' => t('End date only'),
       ),
     '#access' => $field['settings']['todate'],
     '#default_value' => $settings['fromto'],
@@ -119,9 +119,9 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
   
   if ($field['settings']['todate']) {
     $options = array(
-      'both' => t('Display both From and To dates'), 
-      'value' => t('Display From date only'), 
-      'value2' => t('Display To date only'),
+      'both' => t('Display both Start and End dates'), 
+      'value' => t('Display Start date only'), 
+      'value2' => t('Display End date only'),
     );
     $summary[] = $options[$settings['fromto']];
   }
@@ -224,7 +224,7 @@ function date_field_instance_settings_form_validate(&$form, &$form_state) {
   if (isset($settings['default_value2']) && $settings['default_value2'] == 'strtotime') {
     $is_strtotime = @strtotime($settings['default_value_code2']);
     if (!$is_strtotime) {
-      form_set_error('instance][settings][default_value_code2', t('The Strtotime default value for the To Date is invalid.'));
+      form_set_error('instance][settings][default_value_code2', t('The Strtotime default value for the End Date is invalid.'));
     }
   }
 }

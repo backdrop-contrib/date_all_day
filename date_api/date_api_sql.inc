@@ -811,9 +811,9 @@ class date_sql_handler {
    * See http://en.wikipedia.org/wiki/ISO_8601#Duration for definitions of ISO duration and time interval.
    *
    * Parses a value like 2006-01-01--2006-01-15, or 2006-W24, or @P1W.
-   * Separate from and to dates or date and period with a double hyphen (--).
+   * Separate start and end dates or date and period with a double hyphen (--).
    *
-   * The 'to' portion of the argument can be eliminated if it is the same as the 'from' portion.
+   * The 'end' portion of the argument can be eliminated if it is the same as the 'start' portion.
    * Use @ instead of a date to substitute in the current date and time.
    *
    * Use periods (P1H, P1D, P1W, P1M, P1Y) to get next hour/day/week/month/year from now.

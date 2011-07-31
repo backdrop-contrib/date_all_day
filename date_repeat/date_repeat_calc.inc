@@ -490,27 +490,27 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
     $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the month.
-      date_modify($date, '+1 month' . $modify_time);
+      date_modify($date, '+1 month');
     }
     else {
       // For positive search, back up one day to get outside the
       // current month, so we can catch the first of the month.
-      date_modify($date, '-1 day' . $modify_time);
+      date_modify($date, '-1 day');
     }
 
     if (empty($day)) {
-      date_modify($date, $direction . $count . ' days' . $modify_time);
+      date_modify($date, $direction . $count . ' days');
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
       $step = $count <= 5 ? $order[$direction . $count] : $count;
-      date_modify($date, $step . ' ' . $day . $modify_time);
+      date_modify($date, $step . ' ' . $day);
     }
 
     // If that takes us outside the current month, don't go there.
-    if (date_format($date, 'n') == $current_month . $modify_time) {
+    if (date_format($date, 'n') == $current_month) {
       return $date;
     }
   }
@@ -537,22 +537,22 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
     $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the year.
-      date_modify($date, '+1 year' . $modify_time);
+      date_modify($date, '+1 year');
     }
     else {
       // For positive search, back up one day to get outside the
       // current year, so we can catch the first of the year.
-      date_modify($date, '-1 day' . $modify_time);
+      date_modify($date, '-1 day');
     }
     if (empty($day)) {
-      date_modify($date, $direction . $count . ' days' . $modify_time);
+      date_modify($date, $direction . $count . ' days');
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
       $step = $count <= 5 ? $order[$direction . $count] : $count;
-      date_modify($date, $step . ' ' . $day . $modify_time);
+      date_modify($date, $step . ' ' . $day);
     }
 
     // If that takes us outside the current year, don't go there.

@@ -35,6 +35,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Follow up to Issue #1130814, It looks like the modification is not needed in date_repeat_set_month_day and date_repeat_set_month_day.
 - Issue #1160132 by seanbfuller and KarenS, Exposed filter widgets were not displaying the default values.
 - Adjust the way widgets are styled in Views exposed filters after the latest style changes for form elements.
 - Issue #1234114 by arlinsandbulte, Add more space between checkboxes.

@@ -296,14 +296,20 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
         if (array_key_exists('argument', $value)) {
           $result[$table][$column]['argument']['handler'] = 'date_views_argument_handler_simple';
           $result[$table][$column]['argument']['empty field name'] = t('Undated');
+          $result[$table][$column]['argument']['is date'] = TRUE;
         }
-        if (array_key_exists('filter', $value)) {  
+        if (array_key_exists('filter', $value)) {
           $result[$table][$column]['filter']['handler'] = 'date_views_filter_handler_simple';
-          $result[$table][$column]['argument']['empty field name'] = t('Undated');
+          $result[$table][$column]['filter']['empty field name'] = t('Undated');
+          $result[$table][$column]['filter']['is date'] = TRUE;
         } 
+        if (array_key_exists('sort', $value)) {
+          $result[$table][$column]['sort']['is date'] = TRUE;
+        }
         // The old 'entity_id' and 'revision_id' values got rewritten in Views.
         // The old values are still there with a 'moved to' key, so ignore them.
         if (array_key_exists('field', $value) && !array_key_exists('moved to', $value['field'])) {
+          $result[$table][$column]['field']['is date'] = TRUE;
           // Not sure yet if we still need a custom field handler in D7 now that custom formatters are available.
           // Might still need it to handle grouping of multiple value dates.
           //$result[$table][$column]['field']['handler'] = 'date_handler_field_date';

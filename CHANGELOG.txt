@@ -20,6 +20,8 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #1145976 by tim.plunkett and KarenS, Add 'is date' identifier to all date handlers.
+- Issue #1234140 by arlinsundbulte, Change terminology in user-facing text from 'From/To Date' to 'Start/End Date'.
 - Issue #1233948 by KarenS, Add 'All Day' checkbox to hide/show the time parts of the date form. If All day is chosen, any time is replaced with 00:00:00 when the form is submitted.
 - Issue #1233612 by KarenS, Add 'Collect end date' checkbox for dates with optional end dates to hide/show the end date.
 - Issue #821200 by scor and KarenS, Add RDF support to the date field.
@@ -31,11 +33,11 @@ New Features/UX Improvements
 - Issue #1216996 by ksenzee, Change the years back/forward setting into two drop down boxes.
 - Issue #1222468 by ksenzee, Hide timezone options when using granularity without time.
 - Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
-- Issue #1234140 by arlinsundbulte, Change terminology in user-facing text from 'From/To Date' to 'Start/End Date'.
 - Lots of new tests.
 
 Bugfixes
 
+- Remove unused date_handler_field_multiple.
 - Follow up to Issue #1130814, It looks like the modification is not needed in date_repeat_set_month_day and date_repeat_set_year_day.
 - Issue #1160132 by seanbfuller and KarenS, Exposed filter widgets were not displaying the default values.
 - Adjust the way widgets are styled in Views exposed filters after the latest style changes for form elements.

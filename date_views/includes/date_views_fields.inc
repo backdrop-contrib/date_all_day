@@ -55,7 +55,9 @@ function _date_views_fields($base = 'node') {
     }
     $handler = views_get_handler($table_name, $field_name, 'filter');
     $handler_name = $handler->definition['handler'];
-    if ($handler_name == 'views_handler_filter_broken') {
+
+    // We don't care about anything but date handlers
+    if (empty($handler->definition['is date'])) {
       continue;
     }
 
@@ -119,7 +121,7 @@ function _date_views_fields($base = 'node') {
     }
 
     // Allow custom modules to provide date fields.
-    elseif (date_views_handler_is_date($handler, 'filter')) {
+    else {
       foreach (module_implements('date_views_fields') as $module) {
         $function = $module . '_date_views_fields';
         if ($custom = $function("$table_name.$field_name")) {
@@ -129,7 +131,7 @@ function _date_views_fields($base = 'node') {
       }
     }
     // Don't do anything if this is not a date field we can handle.
-    if (!empty($type)) {
+    if (!empty($type) || empty($custom)) {
       $alias = str_replace('.', '_', $alias);
       $fields['name'][$name] = array(
         'type' => $type,

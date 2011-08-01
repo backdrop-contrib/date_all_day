@@ -1593,6 +1593,20 @@ function date_has_date($granularity) {
 }
 
 /**
+ * Helper function to get a format for a specific part of a date field.
+ */
+function date_part_format($part, $format) {
+  switch ($part) {
+    case 'date':
+      return date_limit_format($format, array('year', 'month', 'day'));
+    case 'time':
+      return date_limit_format($format, array('hour', 'minute', 'second'));
+    default:
+      return date_limit_format($format, array($part));
+  }
+}
+
+/**
  * Rewrite a format string so it only includes elements from a
  * specified granularity array.
  *

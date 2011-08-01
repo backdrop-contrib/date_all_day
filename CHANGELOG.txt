@@ -37,6 +37,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Follow up to Issue #874322, Date popup field needs to accept date without time for the all day flag to work.
 - Remove unused date_handler_field_multiple.
 - Follow up to Issue #1130814, It looks like the modification is not needed in date_repeat_set_month_day and date_repeat_set_year_day.
 - Issue #1160132 by seanbfuller and KarenS, Exposed filter widgets were not displaying the default values.

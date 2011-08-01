@@ -223,7 +223,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#type' => 'checkbox',
     '#default_value' => $all_day,
     '#weight' => -21,
-    '#access' => date_has_time($field['settings']['granularity']),
+    '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text', 'date_text_repeat')),
     '#prefix' => '<div class="date-float">',
     '#suffix' => '</div>',
   );
@@ -297,7 +297,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$to_field]['#prefix'] = '';
     $description .= ' ' . t("Empty 'End date' values will use the 'Start date' values.");
     $element['#fieldset_description'] = $description;
-
     if ($field['settings']['todate'] == 'optional') {
       $element[$to_field]['#states'] = array(
         'visible' => array(
@@ -418,8 +417,8 @@ function date_combo_validate($element, &$form_state) {
     $posted[$to_field] = $posted[$from_field];
   }
 
-  // If the user chose the option to not show the end date, just swap in the 
-  // start date as that value so the start and end dates are the same.
+  // If the user chose the option to make this field an all day field,
+  // we'll need to adjust the time.
   $all_day = FALSE;
   if (!empty($item['all_day'])) {
     $all_day = TRUE;

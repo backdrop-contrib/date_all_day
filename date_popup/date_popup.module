@@ -31,14 +31,49 @@ function date_popup_add() {
   }
   drupal_add_library('system', 'ui.datepicker');
   drupal_add_library('date_popup', 'timeentry');
+
+  // Add the wvega-timepicker library if it's available.
+  $wvega_path = date_popup_get_wvega_path();
+  if ($wvega_path) {
+    drupal_add_js($wvega_path . '/jquery.timepicker.js');
+    drupal_add_css($wvega_path . '/jquery.timepicker.css');
+  }
   $loaded = TRUE;
 }
 
+/**
+ * Get the location of the Willington Vega timepicker library.
+ *
+ * @return
+ *   The location of the library, or FALSE if the library isn't installed.
+ */
+function date_popup_get_wvega_path() {
+  $path = FALSE;
+  if (function_exists('libraries_get_path')) {
+    $path = libraries_get_path('wvega-timepicker');
+  }
+  elseif (file_exists('sites/all/libraries/wvega-timepicker/jquery.timepicker.js')) {
+    $path = 'sites/all/libraries/wvega-timepicker';
+  }
+  return $path;
+}
+
+/**
+ * Get the name of the preferred default timepicker.
+ *
+ * If the wvega timepicker is available on the system, default to using that,
+ * unless the administrator has specifically chosen otherwise.
+ */
+function date_popup_get_preferred_timepicker() {
+  $wvega_available = date_popup_get_wvega_path();
+  return $wvega_available ? 'wvega' : 'default';
+}
+
+/**
+ * Implements hook_library().
+ */
 function date_popup_library() {
   $libraries = array();
-  if (variable_get('date_popup_timepicker', 'default') != 'default') {
-    return $libraries;
-  }
 
   $path = drupal_get_path('module', 'date_popup');
   $libraries['timeentry'] = array(
@@ -149,6 +184,7 @@ function date_popup_theme() {
 *
 */
 function date_popup_element_info() {
+  $timepicker = date_popup_get_preferred_timepicker();
   return array(
     'date_popup' => array(
       '#input' => TRUE,
@@ -156,6 +192,7 @@ function date_popup_element_info() {
       '#date_timezone' => date_default_timezone(),
       '#date_flexible' => 0,
       '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+      '#timepicker' => variable_get('date_popup_timepicker', $timepicker),
       '#date_increment' => 1,
       '#date_year_range' => '-3:+3',
       '#process' => array('date_popup_element_process'),
@@ -180,7 +217,7 @@ function date_popup_date_format($element) {
 }
 
 function date_popup_time_format($element) {
-  return date_popup_format_to_popup_time(date_limit_format($element['#date_format'], date_popup_time_granularity($element)));
+  return date_popup_format_to_popup_time(date_limit_format($element['#date_format'], date_popup_time_granularity($element)), $element['#timepicker']);
 }
 
 /**
@@ -303,24 +340,48 @@ function date_popup_process_time_part(&$element) {
   if (empty($has_time)) return array();
   $all_day_id = !empty($element['#date_all_day_id']) ? $element['#date_all_day_id'] : '';
 
-  $spinner_text = array(t('Now'), t('Previous field'), t('Next field'), t('Increment'), t('Decrement'));
-  $settings = array(
-    'show24Hours' => strpos($element['#date_format'], 'H') !== FALSE ? TRUE : FALSE,
-    'showSeconds' => (in_array('second', $granularity) ? TRUE : FALSE),
-    'timeSteps' => array(1, intval($element['#date_increment']), (in_array('second', $granularity) ? $element['#date_increment'] : 0)),
-    'spinnerImage' => '',
-    'fromTo' => isset($fromto),
-    );
-  if (strpos($element['#date_format'], 'a') !== FALSE) {
-    // Then we are using lowercase am/pm.
-    $settings['ampmNames'] = array('am', 'pm');
-  }
-  if (strpos($element['#date_format'], ' A') !== FALSE || strpos($element['#date_format'], ' a') !== FALSE) {
-    $settings['ampmPrefix'] = ' ';
+  switch ($element['#timepicker']) {
+    case 'default':
+      $func = 'timeEntry';
+      $settings = array(
+        'show24Hours' => strpos($element['#date_format'], 'H') !== FALSE ? TRUE : FALSE,
+        'showSeconds' => (in_array('second', $granularity) ? TRUE : FALSE),
+        'timeSteps' => array(1, intval($element['#date_increment']), (in_array('second', $granularity) ? $element['#date_increment'] : 0)),
+        'spinnerImage' => '',
+        'fromTo' => isset($fromto),
+        );
+      if (strpos($element['#date_format'], 'a') !== FALSE) {
+        // Then we are using lowercase am/pm.
+        $settings['ampmNames'] = array('am', 'pm');
+      }
+      if (strpos($element['#date_format'], ' A') !== FALSE || strpos($element['#date_format'], ' a') !== FALSE) {
+        $settings['ampmPrefix'] = ' ';
+      }
+      break;
+    case 'wvega':
+      $func = 'timepicker';
+      $time_granularity = array_intersect($granularity, array('hour', 'minute', 'second'));
+      $format = date_popup_format_to_popup_time(date_limit_format($element['#date_format'], $time_granularity), 'wvega');
+      // The first value in the dropdown list should be the same as the element
+      // default_value, but it needs to be in JS format (i.e. milliseconds since
+      // the epoch).
+      $start_time = new DateObject($element['#default_value']);
+      date_increment_round($start_time, $element['#date_increment']);
+      $start_time = $start_time->format(DATE_FORMAT_UNIX) * 1000;
+      $settings = array(
+        'timeFormat' => $format,
+        'interval' => $element['#date_increment'],
+        'startTime' => $start_time,
+      );
+      break;
+    default:
+      $func = '';
+      $settings = array();
+      break;
   }
 
   // Create a unique id for each set of custom settings.
-  $id = date_popup_js_settings_id($element['#id'], 'timeEntry', $settings);
+  $id = date_popup_js_settings_id($element['#id'], $func, $settings);
   
   // Manually build this element and set the value - this will prevent corrupting
   // the parent value
@@ -330,7 +391,7 @@ function date_popup_process_time_part(&$element) {
     '#title' => $element['#date_label_position'] == 'above' ? t('Time') : '',
     '#default_value' => $element['#value']['time'],
     '#id' => $id,
-    '#size' => 10,
+    '#size' => 15,
     '#maxlength' => 10,
     '#attributes' => $element['#attributes'],
     '#parents' => $parents,
@@ -344,7 +405,9 @@ function date_popup_process_time_part(&$element) {
   $sub_element['#value'] = $sub_element['#default_value'];
 
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = t('E.g., @date', array('@date' => date_format_date(date_now(), 'custom', date_popup_time_format($element))));
+  $example_date = date_now();
+  date_increment_round($example_date, $element['#date_increment']);
+  $sub_element['#description'] = t('E.g., @date', array('@date' => date_format_date($example_date, 'custom', date_popup_time_format($element))));
   return ($sub_element);
 }
 
@@ -489,12 +552,12 @@ function date_popup_format_to_popup($format) {
 * @return string
 *   a format string that the popup can accept like h:i a
 */
-function date_popup_format_to_popup_time($format) {
+function date_popup_format_to_popup_time($format, $timepicker = NULL) {
   if (empty($format)) {
     $format = 'H:i';
   }
-  $format = strtr($format, timepicker_format_replacements());
   $format = str_replace(array('/', '-', ' .', ',', 'F', 'M', 'l', 'z', 'w', 'W', 'd', 'j', 'm', 'n', 'y', 'Y'), '', $format);
+  $format = strtr($format, timepicker_format_replacements($timepicker));
   return $format;
 }
 
@@ -511,11 +574,30 @@ function date_popup_popup_to_format($format) {
   return strtr($format, $replace);
 }
 
-function timepicker_format_replacements() {
-  return array(
-    'G' => 'H',
-    'g' => 'h',
-    );
+/**
+ * Return a map of format replacements required for a given timepicker.
+ *
+ * Client-side time entry plugins don't support all possible date formats.
+ * This function returns a map of format replacements required to change any
+ * input format into one that the given timepicker can support.
+ *
+ * @param $timepicker
+ *   The time entry plugin being used: either 'wvega' or 'default'.
+ * @return
+ *   A map of replacements.
+ */
+function timepicker_format_replacements($timepicker = 'default') {
+  switch ($timepicker) {
+    case 'wvega':
+      return array(
+        'a' => 'A', // The wvega timepicker only supports uppercase AM/PM.
+      );
+    default:
+      return array(
+        'G' => 'H', // The default timeEntry plugin requires leading zeros.
+        'g' => 'h',
+        );
+  }
 }
 
 /**
@@ -572,15 +654,25 @@ function date_popup_menu() {
 * General configuration form for controlling the Date Popup behaviour.
 */
 function date_popup_settings() {
-  $form['#prefix'] = t('<p>The Date Popup module uses a jQuery timepicker module. There is no "official" jQuery UI timepicker, and not everyone likes the one that is included here. If you do not want to use the timepicker, you can turn it off below and users will get a regular textfield instead.</p>');
+  $wvega_available = date_popup_get_wvega_path();
+  $preferred_timepicker = date_popup_get_preferred_timepicker();
 
+  $form['#prefix'] = t('<p>The Date Popup module uses allows for manual time entry or use of a jQuery timepicker plugin. The Date module comes with a default jQuery timepicker which is already installed. The module also supports a dropdown timepicker that must be downloaded separately. The dropdown timepicker will not appear as an option until the code is available in the libraries folder. If you do not want to use a jQuery timepicker, you can choose the "Manual time entry" option below and users will get a regular textfield instead.</p>');
   $form['date_popup_timepicker'] = array(
     '#type' => 'select',
-    '#options' => array('default' => t('Use default jQuery timepicker'), 'none' => t('Manual time entry, no jQuery timepicker')),
+    '#options' => array(
+      'default' => t('Use default jQuery timepicker'),
+      'wvega' => t('Use dropdown timepicker'),
+      'none' => t('Manual time entry, no jQuery timepicker')
+    ),
     '#title' => t('Timepicker'),
-    '#default_value' => variable_get('date_popup_timepicker', 'default'),
-    '#description' => t("Choose the jQuery timepicker to user."),
+    '#default_value' => variable_get('date_popup_timepicker', $preferred_timepicker),
   );
+
+  if (!$wvega_available) {
+    $form['#prefix'] .= t('<p>To install the dropdown timepicker, create a <code>!directory</code> directory in your site installation. Then visit <a href="@download">@download</a>, download the latest copy and unzip it. You will see files with names like jquery.timepicker-1.1.2.js and jquery.timepicker-1.1.2.css. Rename them to jquery.timepicker.js and jquery.timepicker.css and copy them into <code>!directory</code>.</p>', array('!directory' => 'sites/all/libraries/wvega-timepicker', '@download' => 'https://github.com/wvega/timepicker/archives/master'));
+    unset($form['date_popup_timepicker']['#options']['wvega']);
+  }
 
   $css = <<<EOM
 /* ___________ IE6 IFRAME FIX ________ */
@@ -597,7 +689,7 @@ function date_popup_settings() {
 }
 EOM;
 
-  $form['#suffix'] = t('<p>The Date Popup calendar includes some css for IE6 that breaks css validation. Since IE 6 is now superceded by IE 7 and IE 8, the special css for IE 6 has been removed from the regular css used by the Date Popup. If you find you need that css after all, you can add it back in your theme. Look at the way the Garland theme adds special IE-only css in in its page.tpl.php file. The css you need is:</p>') .'<blockquote><PRE>' . $css .'</PRE></blockquote>';
+  $form['#suffix'] = t('<p>The Date Popup calendar includes some css for IE6 that breaks css validation. Since IE 6 is now superceded by IE 7, 8, and 9, the special css for IE 6 has been removed from the regular css used by the Date Popup. If you find you need that css after all, you can add it back in your theme. Look at the way the Garland theme adds special IE-only css in in its page.tpl.php file. The css you need is:</p>') .'<blockquote><PRE>' . $css .'</PRE></blockquote>';
 
   return system_settings_form($form);
 }

@@ -60,28 +60,26 @@ function _date_views_fields($base = 'node') {
     if (empty($handler->definition['is date'])) {
       continue;
     }
+    $is_field = FALSE;
 
     // For Field module fields, get the date type.
     $custom = array();
     if (isset($handler->definition['field_name'])) {
       $field = field_info_field($handler->definition['field_name']);
+      $is_field = TRUE;
       switch ($field['type']) {
        case 'date':
-          $type = 'cck_string';
           $sql_type = DATE_ISO;
           break;
         case 'datestamp':
-          $type = 'cck_timestamp';
           break;
         case 'datetime':
-          $type = 'cck_datetime';
           $sql_type = DATE_DATETIME;
-          break;          
+          break;
+        default:
+          // If this is not a date field, nothing more to do.
+          continue;          
       }      
-      if (empty($type)) {
-        // If this is not a date field, nothing more to do.
-        continue;
-      }
       
       $db_info = date_api_database_info($field);      
       $name = $table_name . "." . $field_name;
@@ -134,7 +132,7 @@ function _date_views_fields($base = 'node') {
     if (!empty($type) || empty($custom)) {
       $alias = str_replace('.', '_', $alias);
       $fields['name'][$name] = array(
-        'type' => $type,
+        'is_field' => $is_field,
         'sql_type' => $sql_type,
         'label' => $val['group'] . ': ' . $val['title'],
         'granularity' => $granularity,

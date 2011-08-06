@@ -38,6 +38,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1240628 by David_Rothsein, Make the date increment default to 15 instead of 1.
 - Take the guesswork out of examining Date info for Views, add is_field flag.
 - Follow up to Issue #874322, Date popup field needs to accept date without time for the all day flag to work.
 - Remove unused date_handler_field_multiple.

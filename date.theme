@@ -234,9 +234,10 @@ function theme_date_display_range($vars) {
   }
 
   // Wrap the result with the attributes.
-  return '<span class="date-display-start"' . drupal_attributes($attributes1) . '>' . $date1 . '</span>' .
-      '<span class="date-display-separator"> - </span>' .
-      '<span class="date-display-end"' . drupal_attributes($attributes2) . '>' . $date2 . $timezone. '</span>';
+  return t('!start-date to !end-date', array(
+    '!start-date' => '<span class="date-display-start"' . drupal_attributes($attributes1) . '>' . $date1 . '</span>',
+    '!end-date' => '<span class="date-display-end"' . drupal_attributes($attributes2) . '>' . $date2 . $timezone. '</span>',
+  ));
 }
 
 /**

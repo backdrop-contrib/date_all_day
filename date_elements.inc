@@ -422,6 +422,10 @@ function date_combo_validate($element, &$form_state) {
   $all_day = FALSE;
   if (!empty($item['all_day'])) {
     $all_day = TRUE;
+    // If we have an all day flag on this date and the time is empty,
+    // change the format to match the input value so we don't get validation errors.
+    $element[$from_field]['#date_format'] = date_part_format('date', $element[$from_field]['#date_format']);
+    $element[$to_field]['#date_format'] = date_part_format('date', $element[$to_field]['#date_format']);
   }
 
 
@@ -484,6 +488,7 @@ function date_combo_validate($element, &$form_state) {
 
     // Neither the start date nor the end date should be empty at this point
     // unless they held values that couldn't be evaluated.
+
     if (!$instance['required'] && (!date_is_date($from_date) || !date_is_date($to_date))) {
       $item = date_element_empty($element, $form_state);
       $errors[] = t('The dates are invalid.');

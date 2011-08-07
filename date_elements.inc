@@ -425,7 +425,9 @@ function date_combo_validate($element, &$form_state) {
     // If we have an all day flag on this date and the time is empty,
     // change the format to match the input value so we don't get validation errors.
     $element[$from_field]['#date_format'] = date_part_format('date', $element[$from_field]['#date_format']);
-    $element[$to_field]['#date_format'] = date_part_format('date', $element[$to_field]['#date_format']);
+    if (!empty($field['settings']['todate'])) {
+      $element[$to_field]['#date_format'] = date_part_format('date', $element[$to_field]['#date_format']);
+    }
   }
 
 
@@ -442,7 +444,7 @@ function date_combo_validate($element, &$form_state) {
 
     // Check todate input for blank values and substitute in fromdate
     // values where needed, then re-compute the todate with those values.
-    if ($field['settings']['todate']) {
+    if (!empty($field['settings']['todate'])) {
       $merged_date = array();
       $to_date_empty = TRUE;
       foreach ($posted[$to_field] as $part => $value) {

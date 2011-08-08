@@ -16,7 +16,7 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
     ));
     $this->drupalLogin($this->privileged_user);
 
-    variable_set('date_format_long', 'D, m/d/Y - H:i');
+    variable_set('date_format_long', 'D, m/d/Y - H:i:s');
     variable_set('date_popup_timepicker', 'none');
 
     module_load_include('inc', 'node', 'content_types');
@@ -51,6 +51,7 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
     $granularity = !empty($granularity) ? $granularity : array('year', 'month', 'day', 'hour', 'minute');
     $year_range = !empty($year_range) ? $year_range : '2010:+1';
     $input_format = !empty($input_format) ? $input_format : date_default_format($widget_type);
+    $input_format_custom = !empty($input_format_custom) ? $input_format_custom : '';
     $text_parts = !empty($text_parts) ? $text_parts : array();
     $increment = !empty($increment) ? $increment : 15;
     $default_value = !empty($default_value) ? $default_value : 'now';
@@ -85,6 +86,7 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
           'year_range' => $year_range,
 
           'input_format' => $input_format,
+          'input_format_custom' => $input_format_custom,
           'text_parts' => $text_parts,
           'label_position' => 'above',
           'repeat_collapsed' => 0,          
@@ -134,6 +136,10 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
     //_field_info_collate_fields(TRUE);
     field_info_cache_clear(TRUE);
     field_cache_clear(TRUE); 
+
+    // Look at how the field got configured.
+    $this->drupalGet("admin/structure/types/manage/$bundle/fields/$field_name");
+    $this->drupalGet("admin/structure/types/manage/$bundle/display");
 
   }
 

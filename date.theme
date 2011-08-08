@@ -60,6 +60,7 @@ function theme_date_display_combination($vars) {
   $attributes  = $vars['attributes'];
   $rdf_mapping = $vars['rdf_mapping'];
   $add_rdf     = $vars['add_rdf'];
+  $precision   = date_granularity_precision($field['settings']['granularity']);
 
   $output = ''; 
 
@@ -124,6 +125,17 @@ function theme_date_display_combination($vars) {
   }
   $date1 = str_replace($timezone, '', $date1);
   $date2 = str_replace($timezone, '', $date2);
+  $time1 = preg_replace('`^([\(\[])`', '', $dates['value']['formatted_time']);
+  $time1 = preg_replace('([\)\]]$)', '', $time1);
+  $time2 = preg_replace('`^([\(\[])`', '', $dates['value2']['formatted_time']);
+  $time2 = preg_replace('([\)\]]$)', '', $time2);
+
+  // A date with a granularity of 'hour' has a time string that is just an integer value.
+  // We can't use that to replace time strings in formatted dates.
+  $has_time_string = date_has_time($field['settings']['granularity']);
+  if ($precision == 'hour') {
+    $has_time_string = FALSE;
+  }
 
   // No date values, display nothing.
   if (empty($date1) && empty($date2)) {
@@ -141,14 +153,11 @@ function theme_date_display_combination($vars) {
     ));
   }
   // Same day, different times, don't repeat the date but show both Start and End times.
-  elseif (date_has_time($field['settings']['granularity']) && $dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {
+  // We can NOT do this if the replacement value is an integer instead of a time string.
+  elseif ($has_time_string && $dates['value']['formatted_date'] == $dates['value2']['formatted_date']) {
     // Replace the original time with the start/end time in the formatted start date.  
     // Make sure that parentheses or brackets wrapping the time will be retained in the
     // final result.
-    $time1 = preg_replace('`^([\(\[])`', '', $dates['value']['formatted_time']);
-    $time1 = preg_replace('([\)\]]$)', '', $time1);
-    $time2 = preg_replace('`^([\(\[])`', '', $dates['value2']['formatted_time']);
-    $time2 = preg_replace('([\)\]]$)', '', $time2);
     $time = theme('date_display_range', array(
       'date1' => $time1, 
       'date2' => $time2,

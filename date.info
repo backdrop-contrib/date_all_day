@@ -17,3 +17,4 @@ files[] = tests/date_api.test
 files[] = tests/date.test
 files[] = tests/date_field.test
 files[] = tests/date_validation.test
+files[] = tests/date_timezone.test

@@ -1083,15 +1083,15 @@ function date_granularity_array_from_precision($precision) {
   $granularity_array = array('year', 'month', 'day', 'hour', 'minute', 'second');
   switch(($precision)) {
     case 'year':
-      return array_slice($granularity_array, -6);
+      return array_slice($granularity_array, -6, 1);
     case 'month':
-      return array_slice($granularity_array, -5);
+      return array_slice($granularity_array, -6, 2);
     case 'day':
-      return array_slice($granularity_array, -4);
+      return array_slice($granularity_array, -6, 3);
     case 'hour':
-      return array_slice($granularity_array, -3);
+      return array_slice($granularity_array, -6, 4);
     case 'minute':
-      return array_slice($granularity_array, -2);
+      return array_slice($granularity_array, -6, 5);
     default:
       return $granularity_array;
   }

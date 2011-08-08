@@ -30,8 +30,8 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $options['form_type'] = array('default' => 'date_select');
     $options['default_date'] = array('default' => '');
     $options['default_to_date'] = array('default' => '');
-    $options['year_range'] = array('default' => '-3:+3');  
-    $options['add_delta'] = array('default' => '');  
+    $options['year_range'] = array('default' => '-3:+3');
+    $options['add_delta'] = array('default' => '');
     return $options;
   }
 
@@ -85,7 +85,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
         return str_replace(' ', 'T', $this->date_default_value($prefix));
       }
     }
-    
+
     return str_replace(' ', 'T', $input);
   }
 
@@ -97,7 +97,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       $element_input['max'] = $this->get_filter_value('max', !empty($element_input['max']) ? $element_input['max'] : '');
       unset($element_input['default_date']);
       unset($element_input['default_to_date']);
-  
+
       $input[$this->options['expose']['identifier']] = $element_input;
     }
     return parent::accept_exposed_input($input);
@@ -137,7 +137,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     if (!empty($this->options['add_delta']) && (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2')) {
       $this->query->add_field($table_name, 'delta');
     }
-    
+
     $value = $this->get_filter_value('value', $this->value['value']);
     $field = $this->date_handler->sql_field($field, $this->offset);
     $field = $this->date_handler->sql_format($this->format, $field);
@@ -156,13 +156,13 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
    */
   function widget_options() {
     $options = array(
-      'date_select' => t('Select'), 
-      'date_text' => t('Text'), 
+      'date_select' => t('Select'),
+      'date_text' => t('Text'),
       'date_popup' => t('Popup'),
       );
     if (!module_exists('date_popup')) {
       unset($options['date_popup']);
-    }  
+    }
     return $options;
   }
 
@@ -226,7 +226,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     if (!empty($form['operator'])) {
       $source = ($form['operator']['#type'] == 'radios') ? 'radio:options[operator]' : 'edit-options-operator';
     }
-    
+
     $identifier = $this->options['expose']['identifier'];
     if (!empty($form_state['exposed'])) {
 
@@ -240,38 +240,14 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     }
 
     if ($which == 'all' || $which == 'value') {
-      $form['value'] += $this->date_parts_form($form_state, 'value', $source, $which, $this->operator_values(1), $identifier);
+      $form['value'] += $this->date_parts_form($form_state, 'value', $source, $which, $this->operator_values(1), $identifier, 'default_date');
     }
 
     if ($which == 'all' || $which == 'minmax') {
-      $form['value'] += $this->date_parts_form($form_state, 'min', $source, $which, $this->operator_values(2), $identifier);
-      $form['value'] += $this->date_parts_form($form_state, 'max', $source, $which, $this->operator_values(2), $identifier);
+      $form['value'] += $this->date_parts_form($form_state, 'min', $source, $which, $this->operator_values(2), $identifier, 'default_date');
+      $form['value'] += $this->date_parts_form($form_state, 'max', $source, $which, $this->operator_values(2), $identifier, 'default_to_date');
     }
 
-    // Add some text to make it clear when additional options are available.
-    $extra = t("You can use any values PHP's date_create() can understand, like between '12AM today' and '12AM tomorrow.");
-    $form['value']['default_date'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Date default'),
-      '#default_value' => $this->options['default_date'],
-      '#prefix' => '<div class="form-item"><label>' . t('Relative value') . '</label><p>' . t("Relative values will be used if no date is set above. Use 'now' to default to the current date at runtime or add modifiers like 'now +1 day' . The End date default value is used when the operator is set to 'between' or 'not between'.") . ' ' . $extra . '</p><p>' . t('If the filter is exposed, these values will be used to set the inital value of the exposed filter. Leave both date and default values blank to start with no value in the exposed filter.') . '</p></div>',
-      );
-    $form['value']['default_to_date'] = array(
-      '#type' => 'textfield',
-      '#title' => t('End date default'),
-      '#default_value' => $this->options['default_to_date'],
-      );
-
-    // Test if this value is in the UI or exposed, only show these elements in the UI.
-    // We'll save it as an option rather than a value to store it for use
-    // in the exposed filter.
-    if (!empty($form_state['exposed'])) {
-      $form['value']['default_date']['#type'] = 'value';
-      $form['value']['default_date']['#value'] = $form['value']['default_date']['#default_value'];
-      $form['value']['default_to_date']['#type'] = 'value';
-      $form['value']['default_to_date']['#value'] = $form['value']['default_to_date']['#default_value'];
-      unset($form['value']['default_date']['#prefix']);
-    }
   }
 
   /**
@@ -285,23 +261,28 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
    *   Which element to provide, 'all', 'value', or 'minmax' .
    * @param array $operator_values
    *   An array of the allowed operators for this element.
-   * @param array $limit
-   *   An array of date parts to limit this element to.
+   * @param array $identifier
+   *   Identifier of the exposed element.
+   * @param array $relative_id
+   *   Form element id to use for the relative date field.
    *
    * @return
    *   The form date part element for this instance.
    */
-  function date_parts_form($form_state, $prefix, $source, $which, $operator_values, $identifier) {
+  function date_parts_form($form_state, $prefix, $source, $which, $operator_values, $identifier, $relative_id) {
     module_load_include('inc', 'date_api', 'date_api_elements');
     switch($prefix) {
       case 'min':
-        $name = t('Start date');
+        $label = t('Start date');
+        $relative_label = t('Relative start date');
         break;
       case 'max':
-        $name = t('End date');
+        $label = t('End date');
+        $relative_label = t('Relative end date');
         break;
       default:
-        $name = '';
+        $label = t('Date value');
+        $relative_label = t('Relative date');
         break;
     }
 
@@ -312,56 +293,152 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
     $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
     $granularity = array_keys($this->date_handler->date_parts($this->options['granularity']));
+    $relative_value = ($prefix == 'max' ? $this->options['default_to_date'] : $this->options['default_date']);
 
-    // Don't set a default date in the UI, only in the exposed form.
-    $default_date = '';
     if (!empty($form_state['exposed'])) {
+      // UI when the date selector is exposed.
       $default_date = $this->date_default_value($prefix);
+      $id = 'edit-' . str_replace('_', '-', $this->field) . '-' . $prefix;
+      $form[$prefix] = array(
+        '#title' => $label,
+        '#type' => $type,
+        '#size' => 20,
+        '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
+        '#date_format' => date_limit_format($format, $granularity),
+        '#date_label_position' => 'within',
+        '#date_year_range' => $this->options['year_range'],
+        '#process' => array($type . '_element_process'),
+        '#prefix' => '<div id="' . $id . '-wrapper"><div id="' . $id . '">',
+        '#suffix' => '</div></div>',
+      );
+      if ($which == 'all') {
+        $form[$prefix]['#pre_render'][] = 'ctools_dependent_pre_render';
+        $form[$prefix]['#dependency'] = array($source => $operator_values);
+      }
+      if (!isset($form_state['input'][$identifier][$prefix])) {
+        $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
+      }
+      // Add relative value as non-editable.
+      $form[$relative_id] = array(
+        '#type' => 'value',
+        '#value' => $relative_value,
+      );
     }
-    $id = !empty($form_state['exposed']) ? 'edit-' . str_replace('_', '-', $this->field) . '-' . $prefix : 'edit-options-value-' . $prefix;
-    $form[$prefix] = array(
-      '#title' => $name,
-      '#type' => $type,
-      '#size' => 20,
-      '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
-      '#date_format' => date_limit_format($format, $granularity),
-      '#date_label_position' => 'within',
-      '#date_year_range' => $this->options['year_range'],
-      '#process' => array($type . '_element_process'),
-      '#prefix' => '<div id="' . $id . '-wrapper"><div id="' . $id . '">',
-      '#suffix' => '</div></div>',
-    );
-    if ($which == 'all') {
-      $form[$prefix]['#pre_render'][] = 'ctools_dependent_pre_render';
-      $form[$prefix]['#dependency'] = array($source => $operator_values);
+    else {
+      // UI when the date selector is on the views configuration screen.
+      $default_date = '';
+      $id = 'edit-options-value-' . $prefix;
+      $form[$prefix . '_group'] = array(
+        '#type' => 'fieldset',
+        '#attributes' => array('class' => array('date-views-filter-fieldset')),
+      );
+      $form[$prefix . '_group'][$prefix . '_choose_input_type'] = array(
+        '#title' => $label,
+        '#type' => 'select',
+        '#options' => array('date' => t('Select a date'), 'relative' => ('Enter a relative date')),
+        '#attributes' => array('class' => array($prefix . '-choose-input-type')),
+        '#default_value' => !empty($relative_value) ? 'relative' : 'date',
+      );
+      $form[$prefix . '_group'][$prefix] = array(
+        '#title' => t('Select a date'),
+        '#type' => $type,
+        '#size' => 20,
+        '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
+        '#date_format' => date_limit_format($format, $granularity),
+        '#date_label_position' => 'within',
+        '#date_year_range' => $this->options['year_range'],
+        '#process' => array($type . '_element_process'),
+        '#prefix' => '<div id="' . $id . '-wrapper"><div id="' . $id . '">',
+        '#suffix' => '</div></div>',
+        '#states' => array(
+          'visible' => array(
+            ":input.{$prefix}-choose-input-type" => array('value' => 'date'),
+          ),
+        ),
+      );
+      $form[$prefix . '_group'][$relative_id] = array(
+        '#type' => 'textfield',
+        '#title' => $relative_label,
+        '#default_value' => $relative_value,
+        '#description' => t("Relative dates are computed when the view is displayed. Examples: now, now +1 day, 12AM today, Monday next week. <a href=\"@relative_format\">More examples of relative date formats in the PHP documentation</a>.", array('@relative_format' => 'http://www.php.net/manual/en/datetime.formats.relative.php')),
+        '#states' => array(
+          'visible' => array(
+            ":input.{$prefix}-choose-input-type" => array('value' => 'relative'),
+          ),
+        ),
+      );
+      if ($which == 'all') {
+        $form[$prefix . '_group']['#pre_render'][] = 'ctools_dependent_pre_render';
+        $form[$prefix . '_group']['#dependency'] = array($source => $operator_values);
+      }
     }
-    if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier][$prefix])) {
-      $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
-    } 
     return $form;
   }
 
   /**
    * Value validation.
-   * 
+   *
    * TODO add in more validation.
-   * 
+   *
    * We are setting an extra option using a value form
-   * because it makes more sense to set it there. 
+   * because it makes more sense to set it there.
    * That's not the normal method, so we have to manually
    * transfer the selected value back to the option.
    */
   function value_validate($form, &$form_state) {
 
-    if (($form_state['values']['options']['operator'] == 'between' || $form_state['values']['options']['operator'] == 'not between') && 
-    !empty($form_state['values']['options']['value']['default_date']) && empty($form_state['values']['options']['value']['default_to_date'])) {
-      form_error($form['value']['default_to_date'], t('Please set a default value for the End date as well as the Start date when using default values with the Between or Not between operators.'));
-    }
-    if (isset($form_state['values']['options']['value']['default_date'])) {
-      $this->options['default_date'] = $form_state['values']['options']['value']['default_date'];
-      $this->options['default_to_date'] = $form_state['values']['options']['value']['default_to_date'];
-    }
+    $options = &$form_state['values']['options'];
 
+    if ($options['operator'] == 'between' || $options['operator'] == 'not between') {
+      if ($options['value']['min_group']['min_choose_input_type'] == 'relative') {
+        if (empty($options['value']['min_group']['default_date'])) {
+          form_set_error('options][value][min_group][default_date', t('Relative start date not specified.'));
+        }
+        else {
+          $this->options['default_date'] = $options['value']['min_group']['default_date'];
+          // NULL out the value field, user wanted the relative value to take hold.
+          $options['value']['min_group']['min'] = NULL;
+        }
+      }
+      // If an absolute date was used, be sure to wipe the relative date.
+      else {
+        $this->options['default_date'] = '';
+      }
+      if ($options['value']['max_group']['max_choose_input_type'] == 'relative') {
+        if (empty($options['value']['max_group']['default_to_date'])) {
+          form_set_error('options][value][max_group][default_to_date', t('Relative end date not specified.'));
+        }
+        else {
+          $this->options['default_to_date'] = $options['value']['max_group']['default_to_date'];
+          // NULL out the value field, user wanted the relative value to take hold.
+          $options['value']['max_group']['max'] = NULL;
+        }
+      }
+      // If an absolute date was used, be sure to wipe the relative date.
+      else {
+        $this->options['default_to_date'] = '';
+      }
+    }
+    elseif (in_array($options['operator'], array('<', '<=', '=', '!=', '>=', '>'))) {
+      if ($options['value']['value_group']['value_choose_input_type'] == 'relative') {
+        if (empty($options['value']['value_group']['default_date'])) {
+          form_set_error('options][value][value_group][default_date', t('Relative date not specified.'));
+        }
+        else {
+          $this->options['default_date'] = $options['value']['value_group']['default_date'];
+          // NULL out the value field, user wanted the relative value to take hold.
+          $options['value']['value_group']['value'] = NULL;
+        }
+      }
+      // If an absolute date was used, be sure to wipe the relative date.
+      else {
+        $this->options['default_date'] = '';
+      }
+    }
+    // Flatten the form structure for views, so the values can be saved.
+    foreach(array('value', 'min', 'max') as $key) {
+      $options['value'][$key] = $options['value'][$key . '_group'][$key];
+    }
   }
 
   /**

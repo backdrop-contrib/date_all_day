@@ -20,6 +20,7 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #1239228 by G‡bor Hojtsy, Date Views filter form UI improvements, clarify the way absolute and relative dates work.
 - Issue #233047 by ksenzee and David_Rothstein, Add the Vegas jQuery timepicker as a new time selector option.
 - Issue #1145976 by tim.plunkett and KarenS, Add 'is date' identifier to all date handlers.
 - Issue #1234140 by arlinsundbulte, Change terminology in user-facing text from 'From/To Date' to 'Start/End Date'.

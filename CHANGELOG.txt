@@ -38,6 +38,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Follow up to Issue #1239956, Fix tests broken by change in date separator.
 - Issue #1241576, Fix date combo validation for all-day dates so they don't fail validation because the format is unexpected.
 - Issue #1239956 by David_Rothstein, Change the default separation between from and to dates to use 'to' instead of a hyphen.
 - Issue #1240628 by David_Rothstein, Make the date increment default to 15 instead of 1.

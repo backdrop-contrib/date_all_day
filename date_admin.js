@@ -133,15 +133,14 @@ Drupal.dateAdmin.SelectListWithCustomOption.prototype.createDropdown = function 
     }
     $option = $('<option>' + value + '</option>').val(value);
     $dropdown.append($option);
-    // When the user clicks on one of the preset options, hide the 'other'
-    // textfield.
-    $option.bind('click', $.proxy(this.hideTextfield, this));
   }
   // Create an 'Other' option.
-  $option = $('<option>' + Drupal.t('Other') + '</option>').val('');
+  $option = $('<option class="custom-option">' + Drupal.t('Other') + '</option>').val('');
   $dropdown.append($option);
-  // When the user clicks on it, show the textfield so they can type into it.
-  $option.bind('click', $.proxy(this.revealTextfield, this));
+
+  // When the user changes the selected option in the dropdown, perform
+  // appropriate actions (such as showing or hiding the textfield).
+  $dropdown.bind('change', $.proxy(this.handleDropdownChange, this));
 
   // Set the initial value of the dropdown.
   this._setInitialDropdownValue($dropdown);
@@ -156,8 +155,7 @@ Drupal.dateAdmin.SelectListWithCustomOption.prototype._setInitialDropdownValue =
   // it and hide the 'other' textfield.
   if (possible.length) {
     $dropdown.val(textfieldValue);
-    this.$textfield.hide();
-    this.$description.hide();
+    this.hideTextfield();
   }
   // If the original textfield value isn't one of the dropdown options, choose
   // the 'Other' option in the dropdown.
@@ -185,19 +183,35 @@ Drupal.dateAdmin.SelectListWithCustomOption.prototype.getDirection = function ()
 };
 
 /**
- * Click handler for the 'Other' option in the dropdown.
+ * Change handler for the dropdown, to modify the textfield as appropriate.
+ */
+Drupal.dateAdmin.SelectListWithCustomOption.prototype.handleDropdownChange = function () {
+  // Since the dropdown changed, we need to make the content of the textfield
+  // match the (new) selected option.
+  this.syncTextfield();
+
+  // Show the texfield if the 'Other' option was selected, and hide it if one
+  // of the preset options was selected.
+  if ($(':selected', this.$dropdown).hasClass('custom-option')) {
+    this.revealTextfield();
+  }
+  else {
+    this.hideTextfield();
+  }
+};
+
+/**
+ * Display the textfield and its description.
  */
 Drupal.dateAdmin.SelectListWithCustomOption.prototype.revealTextfield = function () {
-  this.syncTextfield();
   this.$textfield.show();
   this.$description.show();
 };
 
 /**
- * Click handler for the preset options in the dropdown.
+ * Hide the textfield and its description.
  */
 Drupal.dateAdmin.SelectListWithCustomOption.prototype.hideTextfield = function () {
-  this.syncTextfield();
   this.$textfield.hide();
   this.$description.hide();
 };

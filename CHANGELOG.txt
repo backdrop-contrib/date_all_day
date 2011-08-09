@@ -39,6 +39,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1229406 by David Rothstein, G‡bor Hojtsy, and tim.plunkett Fix broken timepicker in Chrome and Safari.
 - Issue #1239412 by keithm, Fix validation error when #access is false.
 - Issue #1232522, Don't alter field_ui_field_edit form except on date fields.
 - Issue #1243842, Make sure the All Day and Show End Date flags work correctly in unlimited value fields that use ajax.

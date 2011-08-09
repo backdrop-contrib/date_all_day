@@ -190,7 +190,7 @@ Drupal.dateAdmin.SelectListWithCustomOption.prototype.handleDropdownChange = fun
   // match the (new) selected option.
   this.syncTextfield();
 
-  // Show the texfield if the 'Other' option was selected, and hide it if one
+  // Show the textfield if the 'Other' option was selected, and hide it if one
   // of the preset options was selected.
   if ($(':selected', this.$dropdown).hasClass('custom-option')) {
     this.revealTextfield();

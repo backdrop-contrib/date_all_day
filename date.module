@@ -419,8 +419,13 @@ function date_help($path, $arg) {
  * Implements hook_form_FORM_ID_alter().
  */
 function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-  $field = $form['field'];
-  $instance = $form['instance'];
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+ 
+  if (!in_array($field['type'], array('date', 'datetime', 'datestamp'))) {
+    return;
+  }
+
   // If adding a repeat, override the Content module's handling of the multiple values option.
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => FIELD_CARDINALITY_UNLIMITED);

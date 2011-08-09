@@ -309,7 +309,7 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
   // since the element won't have been munged back into a date.
   if (!form_get_errors()) {
     foreach ($items as $delta => $item) {
-      if (is_array($item) && !empty($item)) {
+      if (is_array($item) && isset($item['value'])) {
         $process = date_process_values($field, $instance);
         $date1 = new DateObject($item['value'], $item['timezone'], date_type_format($field['type']));
         if (empty($item['value2']) && $item['value2'] !== 0) {

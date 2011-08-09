@@ -198,6 +198,10 @@ function date_combo_element_process($element, &$form_state, $form) {
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
 
+  // Figure out how many items are in the form, including new ones added by ajax.
+  $field_state = field_form_get_state($element['#field_parents'], $field_name, $element['#language'], $form_state);
+  $items_count = $field_state['items_count'];
+
   $columns = $element['#columns'];
   if (isset($columns['rrule'])) {
     unset($columns['rrule']);
@@ -229,6 +233,21 @@ function date_combo_element_process($element, &$form_state, $form) {
   );
   $all_day_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-all-day');
 
+  // Unlimited fields using javascript Add more button end up with altered ids.
+  // Even on ajax-created items, the newest form element will have the original id.
+  // If the form won't pass validation, the multiple values will get re-displayed, but this time NOT using ajax.
+  // !empty($form_state['triggering_element']['#ajax']['callback'] tells us if this item is being added by ajax.
+  $ajax_field = !empty($form_state['triggering_element']['#ajax'])
+   && !empty($form_state['triggering_element']['#ajax']['callback'])
+   && $form_state['triggering_element']['#ajax']['callback'] == 'field_add_more_js'
+   && $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED
+   && $items_count > 0 && $delta < $items_count;
+
+  // Adjust the id for ajax 'add more' items.
+  if ($ajax_field) {
+    $all_day_id .= '--' . ($items_count - $delta + 1);
+  }
+
   $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
   $element['show_todate'] = array(
     '#title' => t('Show End Date'),
@@ -241,6 +260,10 @@ function date_combo_element_process($element, &$form_state, $form) {
   );
   $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
 
+  // Adjust the id for ajax 'add more' items.
+  if ($ajax_field) {
+    $show_id .= '--' . ($items_count - $delta + 1);
+  }
 
   $element[$from_field] = array(
     '#field'         => $field,

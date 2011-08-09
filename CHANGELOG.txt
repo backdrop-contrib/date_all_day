@@ -39,6 +39,7 @@ New Features/UX Improvements
 
 Bugfixes
 
+- Issue #1243842, Make sure the All Day and Show End Date flags work correctly in unlimited value fields that use ajax.
 - Issue #1242764 Add tests for every possible combination of field type, timezone handling, and granularity.
 - Follow up to Issue #1239956, Fix tests broken by change in date separator.
 - Issue #1241576, Fix date combo validation for all-day dates so they don't fail validation because the format is unexpected.

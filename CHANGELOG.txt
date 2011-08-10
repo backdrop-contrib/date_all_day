@@ -39,6 +39,9 @@ New Features/UX Improvements
 - Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
 - Lots of new tests.
 
+Removed deprecated functions
+- Removed date_views_real_url() and date_views_page_url(), used by older calendar version.
+
 Bugfixes
 
 - Issue #1245690 by mikeryan, Migration plugin missing seconds from date formats

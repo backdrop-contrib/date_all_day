@@ -657,7 +657,7 @@ function date_popup_settings() {
   $wvega_available = date_popup_get_wvega_path();
   $preferred_timepicker = date_popup_get_preferred_timepicker();
 
-  $form['#prefix'] = t('<p>The Date Popup module uses allows for manual time entry or use of a jQuery timepicker plugin. The Date module comes with a default jQuery timepicker which is already installed. The module also supports a dropdown timepicker that must be downloaded separately. The dropdown timepicker will not appear as an option until the code is available in the libraries folder. If you do not want to use a jQuery timepicker, you can choose the "Manual time entry" option below and users will get a regular textfield instead.</p>');
+  $form['#prefix'] = t('<p>The Date Popup module allows for manual time entry or use of a jQuery timepicker plugin. The Date module comes with a default jQuery timepicker which is already installed. The module also supports a dropdown timepicker that must be downloaded separately. The dropdown timepicker will not appear as an option until the code is available in the libraries folder. If you do not want to use a jQuery timepicker, you can choose the "Manual time entry" option below and users will get a regular textfield instead.</p>');
   $form['date_popup_timepicker'] = array(
     '#type' => 'select',
     '#options' => array(

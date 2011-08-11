@@ -108,16 +108,16 @@ class DateMigrateFieldHandler extends MigrateFieldHandler {
           break;
         case 'datetime':
           // YYYY-MM-DD HH:MM:SS
-          $from = format_date($from, 'custom', 'Y-m-d H:i', $timezone);
+          $from = format_date($from, 'custom', 'Y-m-d H:i:s', $timezone);
           if ($to) {
-            $to = format_date($to, 'custom', 'Y-m-d H:i', $timezone);
+            $to = format_date($to, 'custom', 'Y-m-d H:i:s', $timezone);
           }
           break;
         case 'date':
           // ISO date: YYYY-MM-DDTHH:MM:SS
-          $from = format_date($from, 'custom', 'Y-m-d\TH:i', $timezone);
+          $from = format_date($from, 'custom', 'Y-m-d\TH:i:s', $timezone);
           if ($to) {
-            $to = format_date($to, 'custom', 'Y-m-d\TH:i', $timezone);
+            $to = format_date($to, 'custom', 'Y-m-d\TH:i:s', $timezone);
           }
           break;
         default:

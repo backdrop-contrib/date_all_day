@@ -188,14 +188,13 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
      $form['form_type'] = array(
       '#type' => 'radios',
-      '#title' => t('Date form type'),
+      '#title' => t('Date selection form element'),
       '#default_value' => $this->options['form_type'],
       '#options' => $this->widget_options(),
-      '#description' => t('Choose the form element to use for date selection.'),
       );
 
     $form['granularity'] = $this->date_handler->granularity_form($this->options['granularity']);
-    $form['granularity']['#description'] = '<p>' . t("Select a granularity for the date filter. For instance, selecting 'day' will create a filter where users can select the year, month, and day.") . '</p>';
+    $form['granularity']['#title'] = t('Filter granularity');
 
     $form['year_range'] = array(
       '#title' => t('Date year range'),

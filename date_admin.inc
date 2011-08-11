@@ -436,7 +436,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     $form['repeat'] = array('#type' => 'hidden', '#value' => 0);
   }
 
-  $description = t('Select the date attributes to collect, store, and present.');
+  $description = t('Select the date attributes to collect and store.');
   $options = date_granularity_names();
   $checkbox_year = array(
     '#type' => 'checkbox',

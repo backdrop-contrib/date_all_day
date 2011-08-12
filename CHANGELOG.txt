@@ -23,7 +23,7 @@ New Features/UX Improvements
 - Issue #1239934 by David_Rothstein and Gábor Hojtsy, Reuse the "years back and forward" dropdown widget on the Views filter settings page.
 - Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
 - Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed
-- Issue #1239228 by G‡bor Hojtsy, Date Views filter form UI improvements, clarify the way absolute and relative dates work.
+- Issue #1239228 by Gábor Hojtsy, Date Views filter form UI improvements, clarify the way absolute and relative dates work.
 - Issue #233047 by ksenzee and David_Rothstein, Add the Vegas jQuery timepicker as a new time selector option.
 - Issue #1145976 by tim.plunkett and KarenS, Add 'is date' identifier to all date handlers.
 - Issue #1234140 by arlinsundbulte, Change terminology in user-facing text from 'From/To Date' to 'Start/End Date'.
@@ -45,6 +45,7 @@ Removed deprecated functions
 
 Bugfixes
 
+- Issue #1235994, Don't display 'All Day' when using a format that has no time.
 - Issue #1245690 by mikeryan, Migration plugin missing seconds from date formats
 - Issue #1229406 by David Rothstein, G‡bor Hojtsy, and tim.plunkett Fix broken timepicker in Chrome and Safari.
 - Issue #1239412 by keithm, Fix validation error when #access is false.

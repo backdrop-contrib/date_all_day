@@ -344,7 +344,14 @@ function theme_date_all_day($vars) {
     return date_format_date($$which, 'custom', $format);
   }
 
-  if ($all_day = date_field_all_day($field, $instance, $date1, $date2)) {
+  $format_granularity = date_format_order($format);
+  $format_has_time = FALSE;
+  if (in_array('hour', $format_granularity)) {
+    $format_has_time = TRUE;
+  }
+  $all_day = date_field_all_day($field, $instance, $date1, $date2);
+
+  if ($all_day && $format_has_time) {
     $format = date_limit_format($format, array('year', 'month', 'day'));
     return trim(date_format_date($$which, 'custom', $format) .' '. theme('date_all_day_label'));
   }

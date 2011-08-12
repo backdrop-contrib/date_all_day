@@ -197,10 +197,8 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $form['granularity']['#title'] = t('Filter granularity');
 
     $form['year_range'] = array(
-      '#title' => t('Date year range'),
-      '#type' => 'textfield',
+      '#type' => 'date_year_range',
       '#default_value' => $this->options['year_range'],
-      '#description' => t("Set the allowable minimum and maximum year range for this argument, either a -X:+X offset from the current year, like '-3:+3' or an absolute minimum and maximum year, like '2005:2010' . When the argument is set to a date outside the range, the page will be returned as 'Page not found (404)' ."),
     );
   }
 

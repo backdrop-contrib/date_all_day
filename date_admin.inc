@@ -285,35 +285,11 @@ function _date_field_widget_settings_form($field, $instance) {
       );
   }
 
-  // Year range is stored in the -3:+3 format, but collected as two separate
-  // fieldsets.
-  $form['year_range'] = array(
-    '#type' => 'hidden',
-    '#value' => $settings['year_range'],
-  );
   if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat'))) {
-    list($years_back, $years_forward) = explode(':', $settings['year_range']);
-    drupal_add_js(drupal_get_path('module', 'date') . '/date_admin.js');
-    $form['#attached']['js'][] = drupal_get_path('module', 'date') . '/date_admin.js';
-    $form['years_back'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Years back in the selection list'),
-      '#default_value' => $years_back,
-      '#size' => 10,
-      '#maxsize' => 10,
+    $form['year_range'] = array(
+      '#type' => 'date_year_range',
+      '#default_value' => $settings['year_range'],
       '#fieldset' => 'years_back_and_forward',
-      '#attributes' => array('class' => array('select-list-with-custom-option', 'back')),
-      '#description' => t('Must be in the format -9, or an absolute year such as 1980.'),
-    );
-    $form['years_forward'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Years forward in the selection list'),
-      '#default_value' => $years_forward,
-      '#size' => 10,
-      '#maxsize' => 10,
-      '#fieldset' => 'years_back_and_forward',
-      '#attributes' => array('class' => array('select-list-with-custom-option', 'forward')),
-      '#description' => t('Must be in the format +9, or an absolute year such as 2030.'),
     );
     $form['increment'] = array(
       '#type' => 'select', '#title' => t('Choose how users enter time'),
@@ -330,10 +306,14 @@ function _date_field_widget_settings_form($field, $instance) {
     );
   }
   else {
+    $form['year_range'] = array(
+      '#type' => 'hidden',
+      '#value' => $settings['year_range'],
+    );
     $form['increment'] = array(
       '#type' => 'hidden',
       '#value' => $settings['increment'],
-      );
+    );
   }
 
   $form['label_position'] = array(
@@ -403,14 +383,7 @@ function date_field_widget_settings_form_validate(&$form, &$form_state) {
   if (is_array($widget['settings']['text_parts'])) {
     form_set_value($form['text_parts'], array_keys(array_filter($widget['settings']['text_parts'])), $form_state);
   }
-  // Recombine the years back and years forward values into year_range.
-  if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat'))) {
-    $widget['settings']['year_range'] = $widget['settings']['years_back'] . ':' . $widget['settings']['years_forward'];
-    if (!date_range_valid($widget['settings']['year_range'])) {
-      form_set_error('instance][widget][settings][years_back', t('Years back must be in the format -9, or an absolute year such as 1980.'));
-      form_set_error('instance][widget][settings][years_forward', t('Years forward must be in the format +9, or an absolute year such as 2030.'));
-    }
-  }
+
   if ($widget['settings']['input_format'] === 'custom' && empty($widget['settings']['input_format_custom'])) {
     form_set_error('instance][widget][settings][input_format_custom', t('Please enter a custom date format, or choose one of the preset formats.'));
   }
@@ -484,6 +457,9 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#options' => date_timezone_handling_options(),
     '#description' => $description,
     '#disabled' => $has_data,
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'date') . '/date_admin.js'),
+    ),
   );
   // Force this value to hidden because we don't want to allow it to be changed right now,
   // but allow it to be a variable if needed.

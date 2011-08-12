@@ -20,6 +20,7 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #1239934 by David_Rothstein and Gábor Hojtsy, Reuse the "years back and forward" dropdown widget on the Views filter settings page.
 - Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
 - Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed
 - Issue #1239228 by G‡bor Hojtsy, Date Views filter form UI improvements, clarify the way absolute and relative dates work.

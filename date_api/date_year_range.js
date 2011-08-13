@@ -104,7 +104,7 @@ Drupal.dateYearRange.SelectListWithCustomOption.prototype.getEndValue = function
  * Create a dropdown select list with the correct options for this textfield.
  */
 Drupal.dateYearRange.SelectListWithCustomOption.prototype.createDropdown = function () {
-  var $dropdown = $('<select>').addClass('form-select');
+  var $dropdown = $('<select>').addClass('form-select date-year-range-select');
   var $option, i, value;
   var start = this.getStartValue();
   var end = this.getEndValue();

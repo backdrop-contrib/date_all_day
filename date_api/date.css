@@ -230,3 +230,7 @@ div.date-calendar-day span.year {
 #edit-field-settings-granularity .form-type-checkbox {
   margin-right: .6em; /* LTR */
 }
+
+.date-year-range-select {
+  margin-right: 1em;
+}

@@ -216,6 +216,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     // construct our own form element.
     $form['value'] = array();
     $form['value']['#tree'] = TRUE;
+    $form['#attached']['css'][]  = drupal_get_path('module', 'date_views') . '/css/date_views.css';
 
     // Below section copied from views_handler_filter_numeric.inc.
     $which = 'all';

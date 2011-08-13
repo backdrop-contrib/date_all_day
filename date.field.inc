@@ -10,7 +10,7 @@
 function date_field_formatter_info() {
   $formatters = array(
     'date_default' => array(
-      'label' => t('Default'),
+      'label' => t('Date and time'),
       'field types' => array('date', 'datestamp', 'datetime'),
       'settings' => array(
         'format_type' => 'long',
@@ -22,7 +22,7 @@ function date_field_formatter_info() {
       ),
     ),
     'format_interval' => array(
-      'label' => t('As Time Ago'),
+      'label' => t('Time ago'),
       'field types' => array('date', 'datestamp', 'datetime'),
       'settings' => array(
         'interval' => 2,

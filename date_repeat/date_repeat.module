@@ -24,6 +24,9 @@ function date_repeat_element_info() {
     '#value_callback' => 'date_repeat_value_callback',
     '#theme_wrappers' => array('date_repeat_rrule'),
   );
+  if (module_exists('ctools')) {
+    $type['date_repeat_rrule']['#pre_render'] = array('ctools_dependent_pre_render');
+  }
   return $type;
 }
 

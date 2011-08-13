@@ -257,7 +257,10 @@ function date_element_info() {
     '#element_validate' => array('date_combo_validate'),
     '#value_callback' => 'date_combo_value_callback',
     '#theme_wrappers' => array('date_combo'),
-    );
+  );
+  if (module_exists('ctools')) {
+    $type['date_combo']['#pre_render'] = array('ctools_dependent_pre_render');
+  }
   return $type;
 }
 

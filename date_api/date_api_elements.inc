@@ -72,29 +72,32 @@ function _date_api_element_info() {
     '#date_increment' => 1,
     '#date_year_range' => '-3:+3',
     '#date_label_position' => 'above',
-    );
+  );
+  if (module_exists('ctools')) {
+    $date_base['#pre_render'] = array('ctools_dependent_pre_render');
+  }
   $type['date_select'] = array_merge($date_base, array(
     '#process' => array('date_select_element_process'),
     '#theme_wrappers' => array('date_select'),
     '#value_callback' => 'date_select_element_value_callback',
-    ));
+  ));
   $type['date_text'] = array_merge($date_base, array(
     '#process' => array('date_text_element_process'),
     '#theme_wrappers' => array('date_text'),
     '#value_callback' => 'date_text_element_value_callback',
-    ));
+  ));
   $type['date_timezone'] = array(
     '#input' => TRUE, '#tree' => TRUE,
     '#process' => array('date_timezone_element_process'),
     '#theme_wrappers' => array('date_text'),
     '#value_callback' => 'date_timezone_element_value_callback',
-    );
+  );
   $type['date_year_range'] = array(
     '#input' => TRUE,
     '#process' => array('date_year_range_element_process'),
     '#value_callback' => 'date_year_range_element_value_callback',
     '#element_validate' => array('date_year_range_validate'),
-    );
+  );
   return $type;
 }
 

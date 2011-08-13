@@ -185,21 +185,23 @@ function date_popup_theme() {
 */
 function date_popup_element_info() {
   $timepicker = date_popup_get_preferred_timepicker();
-  return array(
-    'date_popup' => array(
-      '#input' => TRUE,
-      '#tree' => TRUE,
-      '#date_timezone' => date_default_timezone(),
-      '#date_flexible' => 0,
-      '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-      '#timepicker' => variable_get('date_popup_timepicker', $timepicker),
-      '#date_increment' => 1,
-      '#date_year_range' => '-3:+3',
-      '#process' => array('date_popup_element_process'),
-      '#value_callback' => 'date_popup_element_value_callback',
-      '#theme_wrappers' => array('date_popup'),
-      ),
-    );
+  $type['date_popup'] = array(
+    '#input' => TRUE,
+    '#tree' => TRUE,
+    '#date_timezone' => date_default_timezone(),
+    '#date_flexible' => 0,
+    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+    '#timepicker' => variable_get('date_popup_timepicker', $timepicker),
+    '#date_increment' => 1,
+    '#date_year_range' => '-3:+3',
+    '#process' => array('date_popup_element_process'),
+    '#value_callback' => 'date_popup_element_value_callback',
+    '#theme_wrappers' => array('date_popup'),
+  );
+  if (module_exists('ctools')) {
+    $type['date_popup']['#pre_render'] = array('ctools_dependent_pre_render');
+  }
+  return $type;
 }
 
 function date_popup_date_granularity($element) {

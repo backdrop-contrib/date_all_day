@@ -197,6 +197,7 @@ function date_popup_element_info() {
     '#timepicker' => variable_get('date_popup_timepicker', $timepicker),
     '#date_increment' => 1,
     '#date_year_range' => '-3:+3',
+    '#date_label_position' => 'above',
     '#process' => array('date_popup_element_process'),
     '#value_callback' => 'date_popup_element_value_callback',
     '#theme_wrappers' => array('date_popup'),

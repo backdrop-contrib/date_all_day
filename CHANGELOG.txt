@@ -48,6 +48,7 @@ Removed deprecated functions
 
 Bugfixes
 
+- Issue #1236192 by loganfsmyth, Make sure #date_label_position has a default value in the Date Popup module.
 - Issue #1246416, Test whether libraries_get_path() returns a valid path before using it.
 - Issue #1235994, Don't display 'All Day' when using a format that has no time.
 - Issue #1245690 by mikeryan, Migration plugin missing seconds from date formats

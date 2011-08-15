@@ -603,7 +603,7 @@ function date_parts_element($element, $date, $format) {
           '#' . $all_day_id => array('checked' => FALSE),
         ));
     }
-    $element['#date_label_position'] == 'within') {
+    if ($element['#date_label_position'] == 'within') {
       $sub_element['ampm']['#options'] = array('' => '-' . theme('date_part_label_ampm', array('part_type' => 'ampm', 'eleement' => $element))) + $sub_element['ampm']['#options'];
     }
     elseif ($element['#date_label_position'] != 'none') {

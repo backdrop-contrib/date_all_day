@@ -51,6 +51,9 @@ function date_popup_get_wvega_path() {
   $path = FALSE;
   if (function_exists('libraries_get_path')) {
     $path = libraries_get_path('wvega-timepicker');
+    if (!file_exists($path)) {
+      $path = FALSE;
+    }
   }
   elseif (file_exists('sites/all/libraries/wvega-timepicker/jquery.timepicker.js')) {
     $path = 'sites/all/libraries/wvega-timepicker';

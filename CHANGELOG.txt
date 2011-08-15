@@ -48,6 +48,7 @@ Removed deprecated functions
 
 Bugfixes
 
+- Issue #1246416, Test whether libraries_get_path() returns a valid path before using it.
 - Issue #1235994, Don't display 'All Day' when using a format that has no time.
 - Issue #1245690 by mikeryan, Migration plugin missing seconds from date formats
 - Issue #1229406 by David Rothstein, G‡bor Hojtsy, and tim.plunkett Fix broken timepicker in Chrome and Safari.

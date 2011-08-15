@@ -403,13 +403,17 @@ function date_popup_process_time_part(&$element) {
     '#parents' => $parents,
     '#name' => array_shift($parents) . '['. implode('][', $parents) .']',
     '#ajax' => !empty($element['#ajax']) ? $element['#ajax'] : FALSE,
-    '#states' => array(
+  );
+
+  if ($all_day_id != '') {
+    $sub_element['#states'] = array(
       'visible' => array(
         '#' . $all_day_id => array('checked' => FALSE),
-    )),
-  );
-  $sub_element['#value'] = $sub_element['#default_value'];
+      ));
+  }
 
+  $sub_element['#value'] = $sub_element['#default_value'];
+  
   // TODO, figure out exactly when we want this description. In many places it is not desired.
   $example_date = date_now();
   date_increment_round($example_date, $element['#date_increment']);

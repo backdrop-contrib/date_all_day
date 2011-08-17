@@ -255,7 +255,7 @@ function _date_field_widget_settings_form($field, $instance) {
     '#title' => t('Choose how users enter dates'),
     '#default_value' => $settings['input_format'],
     '#options' => $options,
-    '#description' => t('Control the order and format of the options users see when entering or editing dates.'),
+    '#description' => t('Control the order and format of the options users see.'),
     '#weight' => 4,
     '#fieldset' => 'date_format',
   );
@@ -300,7 +300,6 @@ function _date_field_widget_settings_form($field, $instance) {
         10 => t('10 minute intervals'),
         15 => t('15 minute intervals'),
         30 => t('30 minute intervals')),
-      '#description' => t('Limit choices to larger intervals, e.g., 15, 30, 45 minutes.'),
       '#weight' => 7,
       '#fieldset' => 'date_format',
     );

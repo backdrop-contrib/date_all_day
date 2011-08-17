@@ -426,10 +426,10 @@ function date_content_migrate_field_alter(&$field_value, $instance_value) {
 
   switch ($field_value['module']) {
     case 'date':
-
-      // So far, no changes to field except those we have to make
-      // later in the instance, to move some values from the
-      // field to the widget.
+      // Those settings do not exist anymore, or have been moved to the instance
+      // level.
+      unset($field_value['settings']['default_format']);
+      unset($field_value['settings']['repeat_collapsed']);
       break; 
   }
 }
@@ -447,10 +447,7 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
     case 'date':
 
       // Some settings have been moved from field to instance.
-      $default_format = $field_value['settings']['default_format'];
-      unset($field_value['settings']['default_format']);
       $instance_value['widget']['settings']['repeat_collapsed'] = $field_value['settings']['repeat_collapsed'];
-      unset($field_value['settings']['repeat_collapsed']);
 
       // Some settings have been moved from widget settings to instance settings.
       $instance_value['settings']['default_value'] = $instance_value['default_value'];
@@ -461,23 +458,23 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
       unset($instance_value['widget']['settings']['default_value2']);
       $instance_value['settings']['default_value_code2'] = $instance_value['widget']['settings']['default_value_code2'];
       unset($instance_value['widget']['settings']['default_value_code2']);
-      break;
 
       // We need to retrieve formatter settings from the variables and store them in the instance.
-      foreach ($instance_value['display'] as $context => $settings) {  
-        if ($instance_value['display'][$context]['type'] == 'format_interval') {
+      foreach ($instance_value['display'] as $context => &$display) {
+        if ($display['type'] == 'format_interval') {
 
         }
         else {      
-          $old_settings = date_old_formatter_get_settings($instance['field_name'], $instance['bundle'], $context);
-          $instance_value['display'][$context]['settings'] = array_merge($instance_value['display'][$context]['settings'], $old_settings);
-          $instance_value['display'][$context]['settings']['format_type'] = $instance_value['display'][$context]['type'];
-          $instance_value['display'][$context]['type'] = 'date_default';
+          $old_settings = date_old_formatter_get_settings($instance_value['field_name'], $instance_value['bundle'], $context);
+          $display['settings'] = array_merge($display['settings'], $old_settings);
+          // If the formatter was the 'default', then use the old 'default_format'
+          // field property..
+          $format = ($display['type'] == 'default') ? $field_value['settings']['default_format'] : $display['type'];
+          $display['settings']['format_type'] = $format;
+          $display['type'] = 'date_default';
         }
       }
 
-      // We changed some of the field values, save them.
-      field_info_update($field_values);
       break;
   }
 }

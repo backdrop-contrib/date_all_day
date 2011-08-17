@@ -49,6 +49,7 @@ Removed deprecated functions
 
 Bugfixes
 
+- Issue #1249116 by yched, Fix various glitches with D6 migration code.
 - Issue #1243022 by fmosca and KarenS, Make sure all_day #states visibility is only set when there is a value for all_day.
 - Issue #1236192 by loganfsmyth, Make sure #date_label_position has a default value in the Date Popup module.
 - Issue #1246416, Test whether libraries_get_path() returns a valid path before using it.

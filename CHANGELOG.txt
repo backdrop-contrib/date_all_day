@@ -58,6 +58,7 @@ Tests
 
 Bugfixes
 
+- Issue #1239228 by Gábor Hojtsy, More tweaks to filter css.
 - Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
 - Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed
 - Issue #1247444 by Gábor Hojtsy, Give a little breathing space to the date year range "other" field

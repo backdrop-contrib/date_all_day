@@ -19,7 +19,7 @@ function theme_date_timezone($vars) {
   //$attributes['class'][] = 'container-inline-date';
   // Add an wrapper to mimic the way a single value field works, for ease in using #states.
   if (isset($element['#children'])) {
-    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding">' . $element['#children'] . '</div>';
+    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding clearfix">' . $element['#children'] . '</div>';
   }
   return '<div ' . drupal_attributes($attributes) .'>' . theme('form_element', $element) . '</div>';
 }
@@ -39,7 +39,7 @@ function theme_date_select($vars) {
   $attributes['class'][] = 'container-inline-date';
   // Add an wrapper to mimic the way a single value field works, for ease in using #states.
   if (isset($element['#children'])) {
-    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding">' . $element['#children'] . '</div>';
+    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding clearfix">' . $element['#children'] . '</div>';
   }
   return '<div ' . drupal_attributes($attributes) .'>' . theme('form_element', $element) . '</div>';
 }
@@ -59,7 +59,7 @@ function theme_date_text($vars) {
   $attributes['class'][] = 'container-inline-date';
   // Add an wrapper to mimic the way a single value field works, for ease in using #states.
   if (isset($element['#children'])) {
-    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding">' . $element['#children'] . '</div>';
+    $element['#children'] = '<div id="' . $element['#id'] . '" class="date-padding clearfix">' . $element['#children'] . '</div>';
   }
   return '<div ' . drupal_attributes($attributes) .'>' . theme('form_element', $element) . '</div>';
 }

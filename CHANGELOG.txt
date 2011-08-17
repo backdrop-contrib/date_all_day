@@ -45,6 +45,7 @@ New Features/UX Improvements
 - Lots of new tests.
 
 Removed deprecated functions
+- Removed date_handler_fields(), only applicable to D6 code.
 - Removed date_views_real_url() and date_views_page_url(), used by older calendar version.
 
 Bugfixes

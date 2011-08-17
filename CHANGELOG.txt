@@ -20,13 +20,12 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #1239956 by David_Rothstein, Change the default separation between from and to dates to use 'to' instead of a hyphen.
+- Issue #1240628 by David_Rothstein, Make the date increment default to 15 instead of 1.
 - Issue #1249724 by David_Rothstein: Improve usability of date and time input configuration
 - Issue #1177198 by tim.plunkett: Allow CTools to process #dependency for date elements.
-- Issue #1247444 by Gábor Hojtsy, Give a little breathing space to the date year range "other" field
 - Issue #1245562 by David_Rothstein, Rename the default date display format to something friendlier
 - Issue #1239934 by David_Rothstein and Gábor Hojtsy, Reuse the "years back and forward" dropdown widget on the Views filter settings page.
-- Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
-- Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed
 - Issue #1239228 by Gábor Hojtsy, Date Views filter form UI improvements, clarify the way absolute and relative dates work.
 - Issue #233047 by ksenzee and David_Rothstein, Add the Vegas jQuery timepicker as a new time selector option.
 - Issue #1145976 by tim.plunkett and KarenS, Add 'is date' identifier to all date handlers.
@@ -42,14 +41,26 @@ New Features/UX Improvements
 - Issue #1216996 by ksenzee, Change the years back/forward setting into two drop down boxes.
 - Issue #1222468 by ksenzee, Hide timezone options when using granularity without time.
 - Issue #1229388 by ksenzee, Hide formatter from/to choices on fields without multiple values.
-- Lots of new tests.
 
 Removed deprecated functions
+
 - Removed date_handler_fields(), only applicable to D6 code.
 - Removed date_views_real_url() and date_views_page_url(), used by older calendar version.
+- Remove unused date_handler_field_multiple.
+
+Tests
+
+- Issue #1242764 Add tests for every possible combination of field type, timezone handling, and granularity.
+- More work on tests, add a foreach loop to run through all field_type/widget_type combinations.
+- Rework tests to use a base class rather than copying the same functions everywhere.
+- Issue #1209408 Make sure date_repeat_calc() returns empty array for FREQ=NONE and INTERVAL=0, also add a test for that.
+- Issue #1161006 by justinrandall, Add tests to check that dates that should have time but do not are correctly caught in validation.
 
 Bugfixes
 
+- Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
+- Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed
+- Issue #1247444 by Gábor Hojtsy, Give a little breathing space to the date year range "other" field
 - Issue #1250344 by jessebeach, Fix padding around date fields by adding clearfix class.
 - Issue #1249116 by yched, Fix various glitches with D6 migration code.
 - Issue #1243022 by fmosca and KarenS, Make sure all_day #states visibility is only set when there is a value for all_day.
@@ -61,14 +72,10 @@ Bugfixes
 - Issue #1239412 by keithm, Fix validation error when #access is false.
 - Issue #1232522, Don't alter field_ui_field_edit form except on date fields.
 - Issue #1243842, Make sure the All Day and Show End Date flags work correctly in unlimited value fields that use ajax.
-- Issue #1242764 Add tests for every possible combination of field type, timezone handling, and granularity.
 - Follow up to Issue #1239956, Fix tests broken by change in date separator.
 - Issue #1241576, Fix date combo validation for all-day dates so they don't fail validation because the format is unexpected.
-- Issue #1239956 by David_Rothstein, Change the default separation between from and to dates to use 'to' instead of a hyphen.
-- Issue #1240628 by David_Rothstein, Make the date increment default to 15 instead of 1.
 - Take the guesswork out of examining Date info for Views, add is_field flag.
 - Follow up to Issue #874322, Date popup field needs to accept date without time for the all day flag to work.
-- Remove unused date_handler_field_multiple.
 - Follow up to Issue #1130814, It looks like the modification is not needed in date_repeat_set_month_day and date_repeat_set_year_day.
 - Issue #1160132 by seanbfuller and KarenS, Exposed filter widgets were not displaying the default values.
 - Adjust the way widgets are styled in Views exposed filters after the latest style changes for form elements.
@@ -97,7 +104,6 @@ Bugfixes
 - The value for variable_get('date_first_day') should default to zero to match core default.
 - Issue #1147620 by KarenS with an assist from tim.plunkett, Fix the query so it will locate dates that span days or months by checking the intersection of the date range and the query range. Also add an option to the argument so you can do a simple query for either the from or to date when checking the whole range isn't the right solution.
 - Issue #307274 by ksenzee, Fix broken validation for absolute value in years back/forward.
-- Issue #1209408 Make sure date_repeat_calc() returns empty array for FREQ=NONE and INTERVAL=0, also add a test for that.
 - Issue #1173374 by fietserwin, Remove translation of the jQuery datepicker day and month names, now handled by core.
 - Issue #1192020 by tim.plunkett: Fixed date granularity is too fragile in date_field_all_day().
 - Issue #1110012 Remove 'parent' items from Views plugins, no longer needed? See if this fixes the issue.
@@ -111,9 +117,6 @@ Bugfixes
 - Issue #1201288 by rafa0961, fix broken references to SQLSERVER.
 - More work on cleaning up validation, add in some ideas from fearlsgrove about checking the granularity of the input array against the expected granularity.
 - Issue #1161006 Dates that should have time but do not were not correctly caught in validation.
-- Issue #1161006 by justinrandall, Add tests to check that dates that should have time but do not are correctly caught in validation.
-- More work on tests, add a foreach loop to run through all field_type/widget_type combinations.
-- Rework tests to use a base class rather than copying the same functions everywhere.
 - Get rid of overlapping formatter functionality. There should be a default formatter with the option to choose a date format as a setting, not a formatter for each format. This was a leftover from the D6 functionality.
 - Issue #1159404 by mikeryan, Fix incorrect call to parse an rrule in date_repeat_build_dates().
 - Issue #1160656 by jjs, Replace missing break in date_api.sql.inc that breaks PostgreSQL.

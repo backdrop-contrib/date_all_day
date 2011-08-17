@@ -1800,6 +1800,8 @@ function date_api_theme() {
     'date_part_label_second' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
     'date_part_label_ampm' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
     'date_part_label_timezone' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_date' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
+    'date_part_label_time' => $base + array('variables' => array('date_part' => NULL, 'element' => NULL)),
     'date_views_filter_form' => $base + array('template' => 'date-views-filter-form', 'render element' => 'form'),
     'date_calendar_day' => $base + array('variables' => array('date' => NULL)),  
     'date_time_ago' => $base + array('variables' => array('start_date' => NULL, 'end_date' => NULL, 'interval' => NULL))

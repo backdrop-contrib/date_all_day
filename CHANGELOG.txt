@@ -20,6 +20,7 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #334435, Add a theme function for the 'Date' and 'Time' labels in the Popup widget.
 - Issue #1239956 by David_Rothstein, Change the default separation between from and to dates to use 'to' instead of a hyphen.
 - Issue #1240628 by David_Rothstein, Make the date increment default to 15 instead of 1.
 - Issue #1249724 by David_Rothstein: Improve usability of date and time input configuration

@@ -320,7 +320,7 @@ function date_popup_process_date_part(&$element) {
   $parents = array_merge($element['#parents'], array('date'));
   $sub_element = array(
     '#type' => 'textfield',
-    '#title' => $element['#date_label_position'] == 'above' ? t('Date') : '',
+    '#title' => $element['#date_label_position'] == 'above' ? theme('date_part_label_date', array('part_type' => 'date', 'element' => $element)) : '',
     '#default_value' => $element['#value']['date'],
     '#id' => $id,
     '#input' => FALSE,
@@ -394,7 +394,7 @@ function date_popup_process_time_part(&$element) {
   $parents = array_merge($element['#parents'], array('time'));
   $sub_element = array(
     '#type' => 'textfield',
-    '#title' => $element['#date_label_position'] == 'above' ? t('Time') : '',
+    '#title' => $element['#date_label_position'] == 'above' ? theme('date_part_label_time', array('part_type' => 'time', 'element' => $element)) : '',
     '#default_value' => $element['#value']['time'],
     '#id' => $id,
     '#size' => 15,

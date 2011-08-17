@@ -155,6 +155,17 @@ function theme_date_part_label_timezone($vars) {
   $element = $vars['element'];
   return t('Timezone');
 }
+function theme_date_part_label_date($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
+  return t('Date', array(), array('context' => 'datetime'));
+}
+function theme_date_part_label_time($vars) {
+  $part_type = $vars['part_type'];
+  $element = $vars['element'];
+  return t('Time', array(), array('context' => 'datetime'));
+}
+
 
 /**
  * Theme for a date block that looks like a mini calendar day.

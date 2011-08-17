@@ -58,6 +58,7 @@ Tests
 
 Bugfixes
 
+- Follow up to Issue #1250344, We don't need extra space when there is a description, only when there is not.
 - Issue #1239228 by Gábor Hojtsy, More tweaks to filter css.
 - Issue #1244924 by Gábor Hojtsy, Minor text improvements in date filter configuration
 - Issue #1245556 by David_Rothstein, Date granularity description incorrectly implies that it affects the date attributes that are displayed

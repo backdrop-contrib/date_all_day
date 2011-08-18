@@ -20,6 +20,9 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #742146, Add option to remove X-WR-CALNAME if VEVENT is not a feed.
+- Add option to change method from PUBLISH to REQUEST in VCALENDAR.
+- Issue #1087798 by anj, Fix X-WR-CALNAME in VCALENDAR.
 - Issue #334435, Add a theme function for the 'Date' and 'Time' labels in the Popup widget.
 - Issue #1239956 by David_Rothstein, Change the default separation between from and to dates to use 'to' instead of a hyphen.
 - Issue #1240628 by David_Rothstein, Make the date increment default to 15 instead of 1.
@@ -59,8 +62,6 @@ Tests
 
 Bugfixes
 
-- Add option to change method from PUBLISH to REQUEST in VCALENDAR.
-- Issue #1087798 by anj, Fix X-WR-CALNAME in VCALENDAR.
 - Move vcalendar and vevent templates from Date Views to Date API modules.
 - Follow up to Issue #1250344, We don't need extra space when there is a description, only when there is not.
 - Issue #1239228 by Gábor Hojtsy, More tweaks to filter css.

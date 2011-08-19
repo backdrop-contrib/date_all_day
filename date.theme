@@ -193,59 +193,70 @@ function theme_date_display_combination($vars) {
   return $output;
 }
 
-function theme_date_display_single($vars) {
-  $date = $vars['date'];
-  $dates = $vars['dates'];
-  $timezone = $vars['timezone'];
-  $add_rdf = $vars['add_rdf'];
-  $attributes = $vars['attributes'];
-
-  if ($add_rdf) {
+/**
+ * Template preprocess function for displaying a single date.
+ */
+function template_preprocess_date_display_single(&$vars) {
+  if ($vars['add_rdf']) {
     // Pass along the rdf mapping for this field, if any.
     // Add some default rdf attributes that will be used if not overridden by attributes passed in.
     $rdf_mapping = $vars['rdf_mapping'];
     $base_attributes = array(
       'property' => array('dc:date'),
       'datatype' => 'xsd:dateTime',
-      'content' => $dates['value']['formatted_iso'],
+      'content' => $vars['dates']['value']['formatted_iso'],
     );
-    $attributes = $attributes + $base_attributes;
+    $vars['attributes'] = $vars['attributes'] + $base_attributes;
   }
+}
+
+function theme_date_display_single($vars) {
+  $date = $vars['date'];
+  $timezone = $vars['timezone'];
+  $attributes = $vars['attributes'];
 
   // Wrap the result with the attributes.
   return '<span class="date-display-single"' . drupal_attributes($attributes) . '>' . $date . $timezone . '</span>';
 }
 
-function theme_date_display_range($vars) {
-  $date1 = $vars['date1'];
-  $date2 = $vars['date2'];
-  $dates = $vars['dates'];
-  $timezone = $vars['timezone'];
-  $add_rdf = $vars['add_rdf'];
-  $attributes1 = $vars['attributes'];
-  $attributes2 = $vars['attributes'];
+/**
+ * Template preprocess function for displaying a range of dates.
+ */
+function template_preprocess_date_display_range(&$vars) {
+  // Merge in the shared attributes for themes to use.
+  $vars['attributes_start'] += $vars['attributes'];
+  $vars['attributes_end'] += $vars['attributes'];
 
-  if ($add_rdf) {
+  if ($vars['add_rdf']) {
     // Pass along the rdf mapping for this field, if any.
     // Add some default rdf attributes that will be used if not overridden by attributes passed in.
     $rdf_mapping = $vars['rdf_mapping'];
+    $dates = $vars['dates'];
     $base_attributes = array(
       'property' => array('dc:date'),
       'datatype' => 'xsd:dateTime',
       'content' => $dates['value']['formatted_iso'],
     );
-    $attributes1 = $attributes1 + $base_attributes;
-    $attributes2 = $attributes2 + $base_attributes;
-    $attributes2['content'] = $dates['value2']['formatted_iso'];
-    foreach ($attributes2['property'] as $delta => $property) {
-      $attributes2['property'][$delta] = str_replace('start', 'end', $property);
+    $vars['attributes_start'] += $base_attributes;
+    $vars['attributes_end'] += $base_attributes;
+    $vars['attributes_end']['content'] = $dates['value2']['formatted_iso'];
+    foreach ($vars['attributes_end']['property'] as $delta => $property) {
+      $vars['attributes_end']['property'][$delta] = str_replace('start', 'end', $property);
     }
   }
+}
+
+function theme_date_display_range($vars) {
+  $date1 = $vars['date1'];
+  $date2 = $vars['date2'];
+  $timezone = $vars['timezone'];
+  $attributes_start = $vars['attributes_start'];
+  $attributes_end = $vars['attributes_end'];
 
   // Wrap the result with the attributes.
   return t('!start-date to !end-date', array(
-    '!start-date' => '<span class="date-display-start"' . drupal_attributes($attributes1) . '>' . $date1 . '</span>',
-    '!end-date' => '<span class="date-display-end"' . drupal_attributes($attributes2) . '>' . $date2 . $timezone. '</span>',
+    '!start-date' => '<span class="date-display-start"' . drupal_attributes($attributes_start) . '>' . $date1 . '</span>',
+    '!end-date' => '<span class="date-display-end"' . drupal_attributes($attributes_end) . '>' . $date2 . $timezone. '</span>',
   ));
 }
 

@@ -179,7 +179,7 @@ function date_theme() {
         'date' => NULL,
         'timezone' => NULL,
         'dates' => NULL,
-        'attributes' => NULL,
+        'attributes' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
     )),
@@ -189,7 +189,13 @@ function date_theme() {
         'date2' => NULL,
         'timezone' => NULL,
         'dates' => NULL,
-        'attributes' => NULL,
+        // HTML attributes that will be applied to both the start and end dates
+        // (unless overridden).
+        'attributes' => array(),
+        // HTML attributes that will be applied to the start date only.
+        'attributes_start' => array(),
+        // HTML attributes that will be applied to the end date only.
+        'attributes_end' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
     )),
@@ -214,7 +220,7 @@ function date_theme() {
         'delta' => NULL,
         'display' => NULL,
         'dates' => NULL,
-        'attributes' => NULL,
+        'attributes' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
       ),
@@ -230,7 +236,7 @@ function date_theme() {
         'delta' => NULL,
         'display' => NULL,
         'dates' => NULL,
-        'attributes' => NULL,
+        'attributes' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
        ),

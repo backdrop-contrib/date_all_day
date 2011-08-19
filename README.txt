@@ -204,7 +204,9 @@ date_display_range) have been expanded so they pass attributes and
 RDF mappings for the field, if any, to the theme. If RDF is installed
 and no other mappings are provided, the theme adds RDF information
 to mark both the Start and End dates as 'xsd:dateTime' datatypes with the
-property of 'dc:date'.
+property of 'dc:date'. This occurs in the theme preprocess layer, in
+particular via the functions template_preprocess_date_display_single() and
+template_preprocess_date_display_range().
 
 To mark these as events instead, you could install the schemaorg
 module, which will load the schema.org vocabulary. The mark the content type
@@ -214,6 +216,8 @@ property and tag other fields in the content type with the appropriate
 property types. The Date module theme will wrap the start and end
 date output with appropriate markup.
 
-If the result is not quite what you need, you should be able to override
-the themes and alter the attributes to use the values you want.
+If the result is not quite what you need, you should be able to implement your
+own theme preprocess functions, e.g. MYTHEME_preprocess_date_display_single()
+or MYTHEME_preprocess_date_display_range() and alter the attributes to use the
+values you want.
 

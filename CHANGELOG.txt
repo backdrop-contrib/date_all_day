@@ -61,6 +61,7 @@ Tests
 
 Bugfixes
 
+- Issue #1254540 by David_Rothstein, Move borders off of the wrappers so they don't appear when the dates inside them are hidden.
 - Issue #1253248 by David_Rothstein, Move RDF attributes handling to preprocess function.
 - Issue #1087798 by anj, Fix X-WR-CALNAME in VCALENDAR.
 - Issue #1254582 Repeat additions need to be adjusted to use the same time as the original date.

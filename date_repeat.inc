@@ -174,7 +174,8 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   $parsed_rdates = (array) $parts[2];
   $additions = array();
   foreach ($parsed_rdates as $rdate) {
-    $additions[] = date_ical_date($rdate, $timezone);
+    $date = date_ical_date($rdate, $timezone);
+    $additions[] = date_format($date, 'Y-m-d');
   }
 
   $dates = date_repeat_calc($rrule, $start_datetime, $end_datetime, $exceptions, $timezone, $additions);

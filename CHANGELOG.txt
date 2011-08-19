@@ -62,6 +62,7 @@ Tests
 
 Bugfixes
 
+- Issue #1254582 Repeat additions need to be adjusted to use the same time as the original date.
 - Move vcalendar and vevent templates from Date Views to Date API modules.
 - Follow up to Issue #1250344, We don't need extra space when there is a description, only when there is not.
 - Issue #1239228 by Gábor Hojtsy, More tweaks to filter css.

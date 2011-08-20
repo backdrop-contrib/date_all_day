@@ -250,25 +250,69 @@ function date_block_identifier($view) {
  * Create a Views field for each date column we care about
  * to supplement the generic 'entity_id' and 'revision_id'
  * fields that are automatically created.
+ *
+ * Also use friendlier labels to distinguish the start date
+ * and end date in listings (for fields that use both).
  */
 function date_views_field_views_data_alter(&$result, $field, $module) {
   if ($module == 'date') {
+    $has_end_date = !empty($field['settings']['todate']);
+    if ($has_end_date) {
+      $labels = field_views_field_label($field['field_name']);
+      $label = array_shift($labels);
+    }
     foreach ($result as $table => $data) {
       $additional = array();
       $field_name = $field['field_name'];
       foreach ($data as $column => $value) {
+        // We will replace the label with a friendlier name in the case of
+        // arguments, filters, and sorts (but only if this field uses an end
+        // date).
+        $replace_label = FALSE;
         if (array_key_exists('argument', $value)) {
           $result[$table][$column]['argument']['handler'] = 'date_views_argument_handler_simple';
           $result[$table][$column]['argument']['empty field name'] = t('Undated');
           $result[$table][$column]['argument']['is date'] = TRUE;
+          $replace_label = $has_end_date;
         }
         if (array_key_exists('filter', $value)) {
           $result[$table][$column]['filter']['handler'] = 'date_views_filter_handler_simple';
           $result[$table][$column]['filter']['empty field name'] = t('Undated');
           $result[$table][$column]['filter']['is date'] = TRUE;
+          $replace_label = $has_end_date;
         } 
         if (array_key_exists('sort', $value)) {
           $result[$table][$column]['sort']['is date'] = TRUE;
+          $replace_label = $has_end_date;
+        }
+        if ($replace_label) {
+          // Determine if this column is for the start date ('value') or the
+          // end date ('value2').
+          $this_column = NULL;
+          foreach (array_keys($field['columns']) as $candidate_column) {
+            if ($column == $field['field_name'] . '_' . $candidate_column) {
+              $this_column = $candidate_column;
+              break;
+            }
+          }
+          // Insert the phrase "start date" or "end date" after the label, so
+          // users can distinguish them in listings (compared to the default
+          // behavior of field_views_field_default_views_data(), which only
+          // uses the 'value2' column name to distinguish them).
+          switch ($this_column) {
+            case 'value':
+              // Insert a deliberate double space before 'start date' in the
+              // translatable string. This is a hack to get it to appear right
+              // before 'end date' in the listing (i.e., in a non-alphabetical,
+              // but more user friendly, order).
+              $result[$table][$column]['title'] = t('@label -  start date (!name)', array('@label' => $label, '!name' => $field['field_name']));
+              $result[$table][$column]['title short'] = t('@label -  start date', array('@label' => $label));
+              break;
+            case 'value2':
+              $result[$table][$column]['title'] = t('@label - end date (!name:!column)', array('@label' => $label, '!name' => $field['field_name'], '!column' => $this_column));
+              $result[$table][$column]['title short'] = t('@label - end date:!column', array('@label' => $label, '!column' => $this_column));
+              break;
+          }
         }
         // The old 'entity_id' and 'revision_id' values got rewritten in Views.
         // The old values are still there with a 'moved to' key, so ignore them.

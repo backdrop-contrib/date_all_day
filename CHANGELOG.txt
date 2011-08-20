@@ -20,6 +20,7 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
+- Issue #1250784 by David_Rothstein, Add user-friendly labels for start and end date values in Views.
 - Issue #742146, Add option to remove X-WR-CALNAME if VEVENT is not a feed.
 - Add option to change method from PUBLISH to REQUEST in VCALENDAR.
 - Issue #334435, Add a theme function for the 'Date' and 'Time' labels in the Popup widget.

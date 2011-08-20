@@ -61,6 +61,7 @@ Tests
 
 Bugfixes
 
+- Issue #1250784, Don't save psuedo field settings created by the new UI in the field itself.
 - Issue #1239228 by David_Rothstein, Always add Date Views css to View UI edit forms.
 - Issue #1254540 by David_Rothstein, Move borders off of the wrappers so they don't appear when the dates inside them are hidden.
 - Issue #1253248 by David_Rothstein, Move RDF attributes handling to preprocess function.

@@ -430,7 +430,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
   );
 
   $description = t('End dates are used to collect duration. E.g., allow an event to start on September 15, and end on September 16.');
-  $form['enddate'] = array(
+  $form['enddate_get'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collect an end date'),
     '#description' => $description,
@@ -444,7 +444,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#disabled' => $has_data,
     '#states' => array(
       'invisible' => array(
-        'input[name="field[settings][enddate]"]' => array('checked' => FALSE)
+        'input[name="field[settings][enddate_get]"]' => array('checked' => FALSE)
       ),
     ),
   );
@@ -485,7 +485,7 @@ function date_field_settings_validate(&$form, &$form_state) {
     form_set_error('field][settings][tz_handling', t('Dates without hours granularity must not use any timezone handling.'));
   }
   // Extract the correct 'todate' value out of the two end date checkboxes.
-  if ($field['settings']['enddate']) {
+  if ($field['settings']['enddate_get']) {
     if ($field['settings']['enddate_required']) {
       $field['settings']['todate'] = 'required';
     }
@@ -496,6 +496,8 @@ function date_field_settings_validate(&$form, &$form_state) {
   else {
     $field['settings']['todate'] = '';
   }
+  // Don't save the pseudo values created in the UI.
+  unset($field['settings']['enddate_get'], $field['settings']['enddate_required']);
 }
 
 /**

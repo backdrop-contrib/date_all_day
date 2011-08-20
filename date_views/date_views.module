@@ -285,6 +285,17 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function date_views_form_views_ui_edit_form_alter(&$form, &$form_state) {
+  // This CSS is needed for the configuration form provided by the Date filter
+  // (date_views_filter_handler_simple), but we have to add it here so that
+  // it's already on the edit form the first time a Date filter is being added
+  // to the View. See http://drupal.org/node/1239228#comment-4885288.
+  $form['#attached']['css'][] = drupal_get_path('module', 'date_views') . '/css/date_views.css';
+}
+
+/**
  * The instanceof function makes this work for any handler that was derived 
  * from 'views_handler_filter_date' or 'views_handler_argument_date', 
  * which includes core date fields like the node updated field.

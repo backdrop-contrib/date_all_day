@@ -39,6 +39,7 @@ class DateTimezoneTestCase extends DateFieldBasic {
   }
 
   public function dateForm($field_name, $field_type, $max_granularity, $tz_handling) {
+    variable_set('date_format_long', 'D, m/d/Y - H:i:s');
     $edit = array();
     $edit['title'] = $this->randomName(8);
     $edit[$field_name . '[und][0][show_todate]'] = '1';

@@ -54,6 +54,7 @@ Removed deprecated functions
 
 Tests
 
+- Issue #1251592 by David_Rothstein, Set reasonable default values if date formats have not been configured, and add tests for that.
 - Issue #1242764 Add tests for every possible combination of field type, timezone handling, and granularity.
 - More work on tests, add a foreach loop to run through all field_type/widget_type combinations.
 - Rework tests to use a base class rather than copying the same functions everywhere.

@@ -442,7 +442,6 @@ function date_select_element_process($element, $form_state, $form) {
     $element['#element_validate'] = array('date_select_validate');
   }
 
-  $element['#attached']['js'][] = drupal_get_path('module', 'date') . '/date.js';
   return $element;
 }
 

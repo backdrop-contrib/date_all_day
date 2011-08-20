@@ -461,7 +461,7 @@ function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id
   );
   $form['instance']['years_back_and_forward'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Years back and forward'),
+    '#title' => t('Starting and ending year'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );

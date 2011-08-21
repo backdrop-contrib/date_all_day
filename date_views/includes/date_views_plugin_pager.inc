@@ -75,7 +75,7 @@ class date_views_plugin_pager extends views_plugin_pager {
   function option_definition() {
     $options = parent::option_definition();
     $options['date_id'] = array('default' => 'date');
-    $options['pager_position'] = array('default' => 'bottom');
+    $options['pager_position'] = array('default' => 'top');
     $options['link_format'] = array('default' => 'pager');
     $options['date_argument'] = array('default' => 'Unknown');
     $options['granularity'] = array('default' => 'Unknown');
@@ -86,7 +86,7 @@ class date_views_plugin_pager extends views_plugin_pager {
    * Provide the form for setting options.
    */
   function options_form(&$form, &$form_state) {
-    $form['markup']['#markup'] = t('This pager works together with a Date or Content date field contextual filter. If a Date filter has been added to the view, this pager will provide back/next paging to match the granularity of that filter (i.e. paging by year, month, week, or day). If there is no Date contextual filter on this view, the pager will not appear.');
+    $form['markup']['#markup'] = t('This pager works together with a Date or Content date field contextual filter. If a Date filter has been added to the view, this pager will provide back/next paging to match the granularity of that filter (i.e. paging by year, month, week, or day). The filter must also be configured to use a DATE default value. If there is no Date contextual filter on this view, or if it has not been set to use a default date, the pager will not appear.');
     $form['date_id'] = array(
       '#title' => t('Date identifier'),
       '#type' => 'textfield',
@@ -134,6 +134,12 @@ class date_views_plugin_pager extends views_plugin_pager {
     $i = 0;    
     foreach ($this->view->argument as $id => $argument) {
       if (date_views_handler_is_date($argument, 'argument')) {
+
+        // If the argument is empty, nothing to do. This could be from
+        // an argument that does not set a default value.
+        if (empty($argument->argument) || empty($argument->date_handler)) {
+          continue;
+        }
         
         // Storing this information in the pager so it's available for summary info.
         // The view argument information is not otherwise accessible to the pager.

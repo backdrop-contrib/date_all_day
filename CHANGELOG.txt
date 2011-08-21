@@ -63,6 +63,7 @@ Tests
 
 Bugfixes
 
+- Issue #1238364, Make sure the Date pager doesn't throw errors if the default date is missing.
 - Issue #1246416, Add info to the Date Popup README.txt about how to download the WVega timepicker.
 - Issue #1253230, Package name of Date Migrate was different than the other Date components.
 - Issue #1251592, Add installation message and system requirements warnings about missing system date settings.

@@ -418,7 +418,7 @@ function theme_date_text_parts($vars) {
     return implode($rows) . drupal_render_children($element);
   }
   else {
-    $header = array(t('Input Type'), t('Select list'), t('Text field'));
+    $header = array(t('Date part'), t('Select list'), t('Text field'));
     return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($element);
   }
 }

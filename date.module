@@ -443,13 +443,13 @@ function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id
   // intuitive combined fieldset.
   $form['instance']['defaults'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Default formats and values'),
+    '#title' => t('More settings and values'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   $form['instance']['date_format'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Date format'),
+    '#title' => t('Date entry'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );

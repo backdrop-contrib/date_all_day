@@ -252,7 +252,7 @@ function _date_field_widget_settings_form($field, $instance) {
   }
   $form['input_format'] = array(
     '#type' => 'select',
-    '#title' => t('Choose how users enter dates'),
+    '#title' => t('Date entry options'),
     '#default_value' => $settings['input_format'],
     '#options' => $options,
     '#description' => t('Control the order and format of the options users see.'),
@@ -289,17 +289,18 @@ function _date_field_widget_settings_form($field, $instance) {
     $form['year_range'] = array(
       '#type' => 'date_year_range',
       '#default_value' => $settings['year_range'],
-      '#fieldset' => 'years_back_and_forward',
+      '#fieldset' => 'date_format',
+      '#weight' => 6,
     );
     $form['increment'] = array(
-      '#type' => 'select', '#title' => t('Choose how users enter time'),
+      '#type' => 'select', '#title' => t('Time increments'),
       '#default_value' => $settings['increment'],
       '#options' => array(
-        1 => t('1 minute intervals'),
-        5 => t('5 minute intervals'),
-        10 => t('10 minute intervals'),
-        15 => t('15 minute intervals'),
-        30 => t('30 minute intervals')),
+        1 => t('1 minute'),
+        5 => t('5 minute'),
+        10 => t('10 minute'),
+        15 => t('15 minute'),
+        30 => t('30 minute')),
       '#weight' => 7,
       '#fieldset' => 'date_format',
     );
@@ -325,18 +326,26 @@ function _date_field_widget_settings_form($field, $instance) {
     );
   $form['advanced'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Advanced formatting'),
+    '#title' => t('Advanced settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#fieldset' => 'date_format',
     '#weight' => 9,
     );
+  if (in_array($widget['type'], array('date_select', 'date_select_repeat'))) {
+    $options = array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None'));
+    $description = t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' displays the label as titles above each date part. 'Within' inserts the label as the first option in the select list and in blank textfields. 'None' doesn't label any of the date parts. Theme functions like 'date_part_label_year' and 'date_part_label_month' control label text.");
+  }
+  else {
+    $options = array('above' => t('Above'), 'none' => t('None'));
+    $description = t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' displays the label as titles above each date part. 'None' doesn't label any of the date parts. Theme functions like 'date_part_label_year' and 'date_part_label_month' control label text.");
+  }
   $form['advanced']['label_position'] = array(
     '#type' => 'radios',
-    '#options' => array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None')),
+    '#options' => $options,
     '#default_value' => $settings['label_position'],
     '#title' => t('Position of date part labels'),
-    '#description' => t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' displays the label as titles above each date part. 'Within' inserts the label as the first option in the select list and in blank textfields. 'None' doesn't label any of the date parts. Theme functions like 'date_part_label_year' and 'date_part_label_month' control label text."),
+    '#description' => $description,
     );
   $form['advanced']['text_parts'] = array(
     '#theme' => $widget['type'] == 'date_select' ? 'date_text_parts' : '',

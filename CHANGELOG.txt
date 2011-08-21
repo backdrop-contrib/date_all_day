@@ -63,6 +63,7 @@ Tests
 
 Bugfixes
 
+- Follow up to Issue #1145976, Make sure 'is date' only gets applied to the date values, not delta, timezone, etc.
 - Issue #1238364, Make sure the Date pager doesn't throw errors if the default date is missing.
 - Issue #1246416, Add info to the Date Popup README.txt about how to download the WVega timepicker.
 - Issue #1253230, Package name of Date Migrate was different than the other Date components.

@@ -265,6 +265,22 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
       $additional = array();
       $field_name = $field['field_name'];
       foreach ($data as $column => $value) {
+    
+        // Determine if this column is for the start date ('value') or the
+        // end date ('value2').
+        $this_column = NULL;
+        foreach (array_keys($field['columns']) as $candidate_column) {
+          if ($column == $field['field_name'] . '_' . $candidate_column) {
+            $this_column = $candidate_column;
+            break;
+          }
+        }
+
+        // Only alter the date fields, not timezone, rrule, offset, etc.
+        if ($this_column != 'value' && $this_column != 'value2') {
+          continue;
+        }
+
         // We will replace the label with a friendlier name in the case of
         // arguments, filters, and sorts (but only if this field uses an end
         // date).

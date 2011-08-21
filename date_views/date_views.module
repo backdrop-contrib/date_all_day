@@ -266,8 +266,18 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
       $field_name = $field['field_name'];
       foreach ($data as $column => $value) {
     
-        // Determine if this column is for the start date ('value') or the
-        // end date ('value2').
+        // The old 'entity_id' and 'revision_id' values got rewritten in Views.
+        // The old values are still there with a 'moved to' key, so ignore them.
+        if (array_key_exists('field', $value) && !array_key_exists('moved to', $value['field'])) {
+          $result[$table][$column]['field']['is date'] = TRUE;
+          // Not sure yet if we still need a custom field handler in D7 now that custom formatters are available.
+          // Might still need it to handle grouping of multiple value dates.
+          //$result[$table][$column]['field']['handler'] = 'date_handler_field_date';
+          //$result[$table][$column]['field']['add fields to query'] = TRUE;
+        } 
+        
+        // For filters, arguments, and sorts, determine if this column is for 
+        // the start date ('value') or the end date ('value2').
         $this_column = NULL;
         foreach (array_keys($field['columns']) as $candidate_column) {
           if ($column == $field['field_name'] . '_' . $candidate_column) {
@@ -330,18 +340,10 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
               break;
           }
         }
-        // The old 'entity_id' and 'revision_id' values got rewritten in Views.
-        // The old values are still there with a 'moved to' key, so ignore them.
-        if (array_key_exists('field', $value) && !array_key_exists('moved to', $value['field'])) {
-          $result[$table][$column]['field']['is date'] = TRUE;
-          // Not sure yet if we still need a custom field handler in D7 now that custom formatters are available.
-          // Might still need it to handle grouping of multiple value dates.
-          //$result[$table][$column]['field']['handler'] = 'date_handler_field_date';
-          //$result[$table][$column]['field']['add fields to query'] = TRUE;
-        } 
       } 
     }
   }
+  dsm($result);
 }
 
 /**

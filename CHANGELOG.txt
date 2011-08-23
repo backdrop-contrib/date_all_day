@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1216878, Re-introduce 'repeat' as a field setting rather than a widget type so people can't try to switch back and forth between repeating and non-repeating dates. Eliminate repeat widgets.
+
 ======================
 Version 7.x-2.0-alpha4
 ======================
@@ -24,7 +26,6 @@ field settings. Previous versions did not always honor those settings, this one 
 
 New Features/UX Improvements
 
-- Issue #1216878, Re-introduce 'repeat' as a field setting rather than a widget type so people can't try to switch back and forth between repeating and non-repeating dates. Eliminate repeat widgets.
 - Issue #1249724 by KarenS, Gábor Hojtsy, David_Rothstein, Improve usability of date and time input configuration.
 - Issue #1250784 by David_Rothstein, Add user-friendly labels for start and end date values in Views.
 - Issue #742146, Add option to remove X-WR-CALNAME if VEVENT is not a feed.

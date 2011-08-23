@@ -285,7 +285,7 @@ function _date_field_widget_settings_form($field, $instance) {
       );
   }
 
-  if (in_array($widget['type'], array('date_select', 'date_popup', 'date_select_repeat', 'date_popup_repeat'))) {
+  if (in_array($widget['type'], array('date_select', 'date_popup'))) {
     $form['year_range'] = array(
       '#type' => 'date_year_range',
       '#default_value' => $settings['year_range'],
@@ -332,7 +332,7 @@ function _date_field_widget_settings_form($field, $instance) {
     '#fieldset' => 'date_format',
     '#weight' => 9,
     );
-  if (in_array($widget['type'], array('date_select', 'date_select_repeat'))) {
+  if (in_array($widget['type'], array('date_select'))) {
     $options = array('above' => t('Above'), 'within' => t('Within'), 'none' => t('None'));
     $description = t("The location of date part labels, like 'Year', 'Month', or 'Day' . 'Above' displays the label as titles above each date part. 'Within' inserts the label as the first option in the select list and in blank textfields. 'None' doesn't label any of the date parts. Theme functions like 'date_part_label_year' and 'date_part_label_month' control label text.");
   }
@@ -403,19 +403,30 @@ function _date_field_settings_form($field, $instance, $has_data) {
   $form = array(
     '#element_validate' => array('date_field_settings_validate'),
   );
+
+  if (module_exists('date_repeat')) {
+    $form['repeat'] = array(
+      '#type' => 'select',
+      '#title' => t('Repeating date'),
+      '#default_value' => $field['settings']['repeat'],
+      '#options' => array(0 => t('No'), 1 => t('Yes')),
+      '#attributes' => array('class' => array('container-inline')),
+      '#description' => t("Repeating dates use an 'Unlimited' number of values. Instead of the 'Add more' button, they include a form to select when and how often the date should repeat."),
+      '#disabled' => $has_data,
+    );
+  }
+  else {
+    $form['repeat'] = array(
+      '#type' => 'hidden',
+      '#value' => 0,
+    );
+  }
+
   // Make sure granularity is in the right format and has no empty values.
   if (!empty($settings['granularity']) && is_array($settings['granularity'])) {
     $granularity = array_filter($settings['granularity']);  
   }
   $tz_handling = $settings['tz_handling'];
-
-  // If adding a repeat, override the Content module's handling of the multiple values option.
-  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    $form['repeat'] = array('#type' => 'hidden', '#value' => 1);
-  }
-  else {
-    $form['repeat'] = array('#type' => 'hidden', '#value' => 0);
-  }
 
   $description = t('Select the date attributes to collect and store.');
   $options = date_granularity_names();
@@ -484,6 +495,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
  */
 function date_field_settings_validate(&$form, &$form_state) {
   $field = &$form_state['values']['field'];
+
   if ($field['settings']['tz_handling'] == 'none') {
     form_set_value($form['timezone_db'], '', $form_state);
   }

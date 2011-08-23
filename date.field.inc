@@ -238,45 +238,21 @@ function date_field_widget_info() {
     ),
   );
 
-  // Repeating dates have custom handling
-  // for multiple values.
-  $repeat_settings = $settings;
-  $repeat_settings['behaviors']['multiple values'] = FIELD_BEHAVIOR_CUSTOM;
-
   $info = array(
     'date_select' => array(
       'label' =>  t('Select list'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $settings,
-    'date_select_repeat' => array(
-      'label' =>  t('Select list with repeat options'),
-      'field types' => array('date', 'datestamp', 'datetime'),
-    ) + $repeat_settings,
     'date_text' => array(
       'label' =>  t('Text field'),
       'field types' => array('date', 'datestamp', 'datetime'),
      ) + $settings,
-    'date_text_repeat' => array(
-      'label' =>  t('Text field with repeat options'),
-      'field types' => array('date', 'datestamp', 'datetime'),
-    ) + $repeat_settings,
   );
   if (module_exists('date_popup')) {
     $info['date_popup'] = array(
       'label' =>  t('Pop-up calendar'),
       'field types' => array('date', 'datestamp', 'datetime'),
     ) + $settings;
-    $info['date_popup_repeat'] = array(
-      'label' =>  t('Pop-up calendar with repeat options'),
-      'field types' => array('date', 'datestamp', 'datetime'),
-    ) + $repeat_settings;
-  }
-  if (!module_exists('date_repeat')) {
-    unset($info['date_select_repeat']);
-    unset($info['date_text_repeat']);
-    if (isset($info['date_popup_repeat'])) {
-      unset($info['date_popup_repeat']);
-    }
   }
   return $info;
 }

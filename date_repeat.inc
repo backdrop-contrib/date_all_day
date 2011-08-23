@@ -109,6 +109,9 @@ function _date_repeat_widget_validate($element, &$form_state) {
       }
     }    
     $value = date_repeat_build_dates($rrule, $rrule_values, $field, $item);
+    // Unset the delta value of the parents.
+    array_pop($element['#parents']);
+    // Set the new delta values for this item to the array of values returned by the repeat rule.
     form_set_value($element, $value, $form_state);
   }
   else {

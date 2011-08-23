@@ -46,6 +46,19 @@
  */
 function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
   $element = $base;
+  $field_name = $field['field_name'];
+
+  // Since repeating dates cannot use the default Add more button, we have to handle our own behaviors here.
+  // Return only the first multiple value for repeating dates, then clean up the 'Add more' bits in #after_build.
+  if (!empty($field['settings']['repeat'])) {
+    if ($delta == 0) {
+      $form['#after_build'] = array('date_repeat_after_build');
+      $form_state['storage']['repeat_fields'][$field_name] = array_merge($form['#parents'], array($field_name));
+    }
+    else {
+      return;
+    }
+  }
 
   module_load_include('inc', 'date_api', 'date_api_elements');  
   $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
@@ -98,7 +111,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   }
 
   // Add a date repeat form element, if needed.
-  if (module_exists('date_repeat') && $field['settings']['repeat'] == 1) {
+  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     module_load_include('inc', 'date', 'date_repeat');    
     _date_repeat_widget($element, $field, $instance, $items, $delta);
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
@@ -111,6 +124,21 @@ function date_combo_value_callback($element, $input = FALSE, &$form_state) {
   if (!$input) {
     return array();
   }
+}
+
+/**
+ * Remove the 'Add more' elements from a repeating date form.
+ */
+function date_repeat_after_build(&$element, &$form_state) {
+  foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
+    $value = drupal_array_get_nested_value($element, $parents);
+    $lang = $value['#language'];
+    unset($value[$lang]['add_more'], $value[$lang]['#suffix'], $value[$lang]['#prefix'], $value[$lang][0]['_weight']);
+    $value[$lang]['#cardinality'] = 1;
+    $value[$lang]['#max_delta'] = 1;
+    drupal_array_set_nested_value($element, $parents, $value);
+  }
+  return $element;
 }
 
 /**
@@ -227,7 +255,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#type' => 'checkbox',
     '#default_value' => $all_day,
     '#weight' => -21,
-    '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text', 'date_text_repeat')),
+    '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text')),
     '#prefix' => '<div class="date-float">',
     '#suffix' => '</div>',
   );
@@ -291,12 +319,10 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   switch ($instance['widget']['type']) {
     case 'date_select':
-    case 'date_select_repeat':
       $element[$from_field]['#type'] = 'date_select';
       $element[$from_field]['#theme_wrappers'] = array('date_select');
       break;
     case 'date_popup':
-    case 'date_popup_repeat':  
       $element[$from_field]['#type'] = 'date_popup';
       $element[$from_field]['#theme_wrappers'] = array('date_popup');
       break;
@@ -377,10 +403,8 @@ function date_combo_validate($element, &$form_state) {
     return;
   }
 
-  // Repeating dates have a different form structure, so get the
-  // right item values.
-  $item = isset($form_values[$field_name][$langcode]['rrule']) ? $form_values[$field_name][$langcode] : $form_values[$field_name][$langcode][$delta];
-  $posted = isset($form_values[$field_name][$langcode]['rrule']) ? $form_input[$field_name][$langcode] : $form_input[$field_name][$langcode][$delta];
+  $item = $form_values[$field_name][$langcode][$delta];
+  $posted = $form_input[$field_name][$langcode][$delta];
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
@@ -564,7 +588,6 @@ function date_combo_validate($element, &$form_state) {
           $errors[] = t('The End date is invalid.');
         }
       }
-
       if (empty($errors)) {
         form_set_value($element, $item, $form_state);
       }

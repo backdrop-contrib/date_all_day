@@ -72,29 +72,34 @@ function date_repeat_type($entity, $entity_type = 'node') {
   return FALSE;
 }
 
-function date_repeat_fields($entity, $entity_type = 'node') {
-  $bundle = '';
+function date_repeat_fields() {
+  $values = array();
+  $items = field_info_instances();
+  foreach ($items as $entity_type => $bundles) {
+    foreach ($bundles as $bundle => $widgets) {
+      foreach ($widgets as $field_name => $widget) {
+        $field = field_info_field($field_name);
+        if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
+          $values[$entity_type][$bundle][] = $field_name;
+        }
+      }
+    }
+  }
+  return $values;
+}
+
+function date_repeat_page($entity, $entity_type = 'node') {
+  $bundle = $entity_type;
   switch ($entity_type) {
     case 'node':
       $bundle = $entity->type;
       break;
   }
-  $type = field_info_instances($entity_type, $bundle);
-  $fields = array();
-  foreach ($type as $field_name => $field) {
-    $field = field_info_field($field_name);
-    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
-      $fields[] = $field_name;
-    }
-  }
-  return $fields;
-}
-
-function date_repeat_page($entity, $entity_type = 'node') {
   drupal_set_title($entity->title);
   $entity->date_repeat_show_all = TRUE;
   $entity->content = array();
-  $field_names = date_repeat_fields($entity, $entity_type);
+  $fields = date_repeat_fields();
+  $field_names = $fields[$entity_type][$bundle];
   $output = '';
   foreach ($field_names as $field_name) {
     $field = field_view_field($entity_type, $entity, $field_name, 'full');
@@ -104,18 +109,15 @@ function date_repeat_page($entity, $entity_type = 'node') {
 }
 
 function date_is_repeat_field($field, $instance) {
-  $repeat_widgets = array(
-    'date_select_repeat',
-    'date_text_repeat',
-    'date_popup_repeat',
-    );
-  if (in_array($instance['widget']['type'], $repeat_widgets)) {
-    return TRUE;
+  $value = $field['settings']['repeat'];
+
+  // This might be either a field form or a real field.
+  if (is_array($value)) {
+    return $value['#value'];
   }
-  elseif (in_array($instance['widget']['type']['#value'], $repeat_widgets)) {
-    return TRUE;
+  else {
+    return $value;
   }
-  return FALSE;
 }
 
 function date_default_format($type) {
@@ -133,11 +135,9 @@ function date_default_format($type) {
 function date_input_date($field, $instance, $element, $input) {
   switch ($instance['widget']['type']) {
     case 'date_text':
-    case 'date_text_repeat':
       $function = 'date_text_input_date';
       break;
     case 'date_popup':
-    case 'date_popup_repeat':
       $function = 'date_popup_input_date';
       break;
     default:
@@ -435,10 +435,12 @@ function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id
     return;
   }
 
-  // If adding a repeat, override the Content module's handling of the multiple values option.
+  // If using repeating dates, override the Field module's handling of the multiple values option.
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    $form['field']['cardinality'] = array('#type' => 'hidden', '#value' => FIELD_CARDINALITY_UNLIMITED);
+    $form['field']['cardinality']['#disabled'] = TRUE;
+    $form['field']['cardinality']['#value'] = FIELD_CARDINALITY_UNLIMITED;
   }
+
   // Reorganize the instance settings and widget settings sections into a more
   // intuitive combined fieldset.
   $form['instance']['defaults'] = array(

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1233722, Fix undefined index notice in pager when other filters are used.
 - Issue #1216878, Re-introduce 'repeat' as a field setting rather than a widget type so people can't try to switch back and forth between repeating and non-repeating dates. Eliminate repeat widgets.
 
 ======================

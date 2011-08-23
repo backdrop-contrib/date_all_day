@@ -148,7 +148,9 @@ function template_preprocess_date_views_pager(&$vars) {
   $pos = $date_info->date_arg_pos;
   if (!empty($input)) {
     $id = $plugin->options['date_id'];
-    $view->args[$pos] = $input[$id];
+    if (array_key_exists($id, $input) && !empty($input[$id])) {
+      $view->args[$pos] = $input[$id];
+    }
   }
 
   $next_args = $view->args;

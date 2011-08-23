@@ -175,6 +175,12 @@ function date_real_url($view, $date_type = NULL, $date_arg = NULL, $force_view_u
  * A version of date_real_url that formats links correctly for the new Date pager.
  */
 function date_pager_url($view, $date_type = NULL, $date_arg = NULL, $force_view_url = FALSE) {
+
+  // If someone adds a pager without a matching argument, there is not date information to work with.
+  if (empty($view->date_info) || empty($view->date_info->date_arg_pos)) {
+    return '';
+  }
+
   $args = $view->args;
   $pos = $view->date_info->date_arg_pos;
 

@@ -5,6 +5,10 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+======================
+Version 7.x-2.0-alpha4
+======================
+
 Notes to themers:
 
 Previous versions put dates with both From and To dates into a fieldset and other dates were not.

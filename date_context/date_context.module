@@ -101,8 +101,13 @@ class date_context_date_condition extends context_condition_node {
       foreach ($this->get_contexts() as $context) {
         $options = $this->fetch_from_context($context, 'options');
         $fields = $this->fetch_from_context($context, 'values');
-        
+
         foreach ($fields as $field_name => $label) {
+         
+          // If this field does not exist on this entity, just move along.
+          if (empty($entity->{$field_name})) {
+            continue;
+          }
 
           $items = $entity->{$field_name};
           $language = $entity->language;

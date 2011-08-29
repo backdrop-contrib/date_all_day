@@ -13,6 +13,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1260962, Repeating date fields should save the date even if there is no repeat information.
 - Issue #1241836 by kzoli, Fix undefined cardinality indexes.
 - Issue #1233722, Fix undefined index notice in pager when other filters are used.
 

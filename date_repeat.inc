@@ -68,10 +68,13 @@ function _date_repeat_widget_validate($element, &$form_state) {
   }
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
 
-  // If no start date was set, clean up the form and return.
-  // If no repeats are set, clean up the form and return.
-  if (empty($item['value']) || $rrule_values['FREQ'] == 'NONE') {
+  // If no repeat information was set, treat this as a normal, non-repeating value.
+  if ($rrule_values['FREQ'] == 'NONE') {
     $item['rrule'] = NULL;
+  }
+
+  // If no start date was set, clean up the form and return.
+  if (empty($item['value'])) {
     form_set_value($element, array($item), $form_state);
     return;
   }
@@ -80,7 +83,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
   // The RRULE has already been created by this point, so go back
   // to the posted values to see if this was filled out.
   $error_field = implode('][', $element['#parents']) . '][rrule][UNTIL][datetime][date';
-  if (empty($rrule_values['UNTIL']['datetime'])) {
+  if (!empty($item['rrule']) && empty($rrule_values['UNTIL']['datetime'])) {
     form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
   }
   if (form_get_errors()) {
@@ -113,12 +116,6 @@ function _date_repeat_widget_validate($element, &$form_state) {
     array_pop($element['#parents']);
     // Set the new delta values for this item to the array of values returned by the repeat rule.
     form_set_value($element, $value, $form_state);
-  }
-  else {
-    // If no changes are needed, move the RRULE back to the zero value
-    // item of the field.
-    form_set_value(array('#parents' => array($field_name, $element['#language'], 0, 'rrule')), $rrule, $form_state);
-    form_set_value($element, NULL, $form_state);
   }
 }
 

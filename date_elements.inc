@@ -488,7 +488,6 @@ function date_combo_validate($element, &$form_state) {
   // because otherwise we'll show errors on the nested elements
   // more than once.
   elseif (!form_get_errors()) {
-
     // Check todate input for blank values and substitute in fromdate
     // values where needed, then re-compute the todate with those values.
     if (!empty($field['settings']['todate'])) {

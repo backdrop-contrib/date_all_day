@@ -5,6 +5,11 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+Notes:
+The date repeat widgets have been removed to keep users from trying to change repeating dates into non-repeating dates.
+There are now just three widgets, Date Select, Date Text, and Date Popup. Whether or not a date is a repeating date
+is now controlled by a field setting.
+
 New Features/UX Changes/API Changes
 
 - Issue #1261478 by stevector and KarenS, Reconfigure the back/next buttons into item lists so Views ajax pager works right.

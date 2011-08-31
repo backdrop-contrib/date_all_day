@@ -45,12 +45,12 @@
     <ul class="pager">
     <?php if (!empty($prev_url)) : ?>
       <li class="date-prev">
-        <?php print l('&laquo;' . ($mini ? '' : t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?>
+        <?php print l('&laquo;' . ($mini ? '' : ' ' . t('Prev', array(), array('context' => 'date_nav'))), $prev_url, $prev_options); ?>
       &nbsp;</li>
     <?php endif; ?>
     <?php if (!empty($next_url)) : ?>
       <li class="date-next">&nbsp;
-        <?php print l(($mini ? '' : t('Next', array(), array('context' => 'date_nav'))) . ' &raquo;', $next_url, $next_options); ?> 
+        <?php print l(($mini ? '' : t('Next', array(), array('context' => 'date_nav')) . ' ') . '&raquo;', $next_url, $next_options); ?> 
       </li>
     <?php endif; ?>
     </ul>

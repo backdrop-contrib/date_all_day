@@ -18,6 +18,8 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Tweak date_pager_url to allow a way to create non-absolute urls.
+- Make sure deleted displays won't create errors in Views by returning FALSE in date_forbid() if there is no date argument.
 - Issue #1257830, Beef up the logic when creating the date repeat tabs to work for more kinds of entities.
 - Issue #1260962, Repeating date fields should save the date even if there is no repeat information.
 - Issue #1241836 by kzoli, Fix undefined cardinality indexes.

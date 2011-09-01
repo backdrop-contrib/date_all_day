@@ -255,7 +255,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       $field_max = $this->date_handler->sql_format($format, $field_max);
       $this->query->add_where_expression($group, "$field_max >= $view_min_placeholder AND $field_min <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
     }
-
   }
 
   /**
@@ -263,7 +262,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function date_forbid() {
     if (empty($this->argument)) {
-      return;
+      return TRUE;
     }
     $this->date_range = $this->date_handler->arg_range($this->argument);
     $this->min_date = $this->date_range[0];

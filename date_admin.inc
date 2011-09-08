@@ -190,7 +190,7 @@ function _date_field_instance_settings_form($field, $instance) {
     '#type' => !empty($field['settings']['todate']) ? 'select' : 'hidden', 
     '#title' => t('Default end date'),
     '#default_value' => $settings['default_value2'],
-    '#options' => array('same' => t('Same as start date'), 'blank' => t('No default value'), 'now' => t('Now'), 'strtotime' => t('Relative')),
+    '#options' => array('same' => t('Same as Default date'), 'blank' => t('No default value'), 'now' => t('Now'), 'strtotime' => t('Relative')),
     '#weight' => 2,
     '#fieldset' => 'default_values',
     );

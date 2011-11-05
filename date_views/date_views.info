@@ -1,4 +1,4 @@
-name = Date Views 
+name = Date Views
 description = Views integration for date fields and date functionality.
 package = Date/Time
 dependencies[] = date_api

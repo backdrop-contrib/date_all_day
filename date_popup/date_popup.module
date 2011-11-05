@@ -388,7 +388,7 @@ function date_popup_process_time_part(&$element) {
 
   // Create a unique id for each set of custom settings.
   $id = date_popup_js_settings_id($element['#id'], $func, $settings);
-  
+
   // Manually build this element and set the value - this will prevent corrupting
   // the parent value
   $parents = array_merge($element['#parents'], array('time'));
@@ -413,7 +413,7 @@ function date_popup_process_time_part(&$element) {
   }
 
   $sub_element['#value'] = $sub_element['#default_value'];
-  
+
   // TODO, figure out exactly when we want this description. In many places it is not desired.
   $example_date = date_now();
   date_increment_round($example_date, $element['#date_increment']);
@@ -474,7 +474,7 @@ function date_popup_validate($element, &$form_state) {
     }
     if ($element['#required']) {
       $message = t('A valid date is required for %title.', array('%title' => $label));
-      form_set_error($error_field, $message); 
+      form_set_error($error_field, $message);
       return;
     }
   }

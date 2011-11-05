@@ -110,7 +110,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
       if (empty($item[$key])) {
         $item[$key] = '';
       }
-    }    
+    }
     $value = date_repeat_build_dates($rrule, $rrule_values, $field, $item);
     // Unset the delta value of the parents.
     array_pop($element['#parents']);
@@ -121,7 +121,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
 
 /**
  * Helper function to build repeating dates from a $node_field.
- * 
+ *
  * Pass in either the RRULE or the $form_values array for the RRULE,
  * whichever is missing will be created when needed.
  */
@@ -136,7 +136,7 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
     $rrule_values = date_ical_parse_rrule(NULL, $rrule);
   }
 
-  // By the time we get here, the start and end dates have been 
+  // By the time we get here, the start and end dates have been
   // adjusted back to UTC, but we want localtime dates to do
   // things like '+1 Tuesday', so adjust back to localtime.
   $timezone = date_get_timezone($field['settings']['tz_handling'], $item['timezone']);
@@ -185,8 +185,8 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
     // not necessarily $field['type'] dates.
     // Convert returned dates back to db timezone before storing.
     $date_start = new DateObject($date, $timezone, DATE_FORMAT_DATETIME);
-    $date_start->limitGranularity($field['settings']['granularity']);  
-    date_timezone_set($date_start, timezone_open($timezone_db));    
+    $date_start->limitGranularity($field['settings']['granularity']);
+    date_timezone_set($date_start, timezone_open($timezone_db));
     $date_end = clone($date_start);
     date_modify($date_end, '+' . $duration . ' seconds');
     $value[$delta] = array(
@@ -198,5 +198,5 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
       'rrule' => $rrule,
       );
   }
-  return $value;  
+  return $value;
 }

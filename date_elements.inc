@@ -60,7 +60,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     }
   }
 
-  module_load_include('inc', 'date_api', 'date_api_elements');  
+  module_load_include('inc', 'date_api', 'date_api_elements');
   $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
 
   // TODO see if there's a way to keep the timezone element from ever being
@@ -107,12 +107,12 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       '#weight' => $instance['widget']['weight'] + 1,
       '#attributes' => array('class' => array('date-no-float')),
       '#date_label_position' => $instance['widget']['settings']['label_position'],
-      );  
+      );
   }
 
   // Add a date repeat form element, if needed.
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    module_load_include('inc', 'date', 'date_repeat');    
+    module_load_include('inc', 'date', 'date_repeat');
     _date_repeat_widget($element, $field, $instance, $items, $delta);
     $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
   }
@@ -240,8 +240,8 @@ function date_combo_element_process($element, &$form_state, $form) {
   $offset_field = 'offset';
   $offset_field2 = 'offset2';
 
-  if ($field['settings']['todate'] != 'required' 
-  && !empty($element['#default_value'][$to_field]) 
+  if ($field['settings']['todate'] != 'required'
+  && !empty($element['#default_value'][$to_field])
   && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
     unset($element['#default_value'][$to_field]);
   }
@@ -309,7 +309,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_all_day_id'  => $all_day_id,
     );
 
-  $description =  !empty($instance['description']) ? t($instance['description']) : ''; 
+  $description =  !empty($instance['description']) ? t($instance['description']) : '';
 
   // Give this element the right type, using a Date API
   // or a Date Popup element type.
@@ -337,7 +337,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   // is the 'Start' and which is the 'End' .
 
   if (!empty($field['settings']['todate'])) {
-    // Add class to allow date parts to float together on the same line. 
+    // Add class to allow date parts to float together on the same line.
     $element[$from_field]['#title']  = ''; // The title is in the fieldset.
     $element[$to_field] = $element[$from_field];
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
@@ -457,7 +457,7 @@ function date_combo_validate($element, &$form_state) {
     }
   }
 
-  // If the user chose the option to not show the end date, just swap in the 
+  // If the user chose the option to not show the end date, just swap in the
   // start date as that value so the start and end dates are the same.
   if ($field['settings']['todate'] == 'optional' && empty($item['show_todate'])) {
     $item[$to_field] = $item[$from_field];
@@ -504,10 +504,10 @@ function date_combo_validate($element, &$form_state) {
         }
       }
 
-      // If all date values were empty and a date is required, throw 
-      // an error on the first element. We don't want to create 
-      // duplicate messages on every date part, so the error will 
-      // only go on the first.  
+      // If all date values were empty and a date is required, throw
+      // an error on the first element. We don't want to create
+      // duplicate messages on every date part, so the error will
+      // only go on the first.
       if ($to_date_empty && $field['settings']['todate'] == 'required') {
         $errors[] = t('Some value must be entered in the End date.');
       }
@@ -574,7 +574,7 @@ function date_combo_validate($element, &$form_state) {
       // and we are using a date with time granularity,
       // test a roundtrip back to the original timezone to catch
       // invalid dates, like 2AM on the day that spring daylight savings
-      // time begins in the US.  
+      // time begins in the US.
       $granularity = date_format_order($element[$from_field]['#date_format']);
       if ($timezone != $timezone_db && date_has_time($granularity)) {
         date_timezone_set($from_date, timezone_open($timezone));
@@ -597,7 +597,7 @@ function date_combo_validate($element, &$form_state) {
       form_set_error($error_field, t('There are errors in @field_name value #@delta:', array('@field_name' => $instance['label'], '@delta' => $delta + 1)) . theme('item_list', array('items' => $errors)));
     }
     else {
-      form_set_error($error_field, t('There are errors in @field_name:', array('@field_name' => $instance['label'])) . theme('item_list', array('items' => $errors)));      
+      form_set_error($error_field, t('There are errors in @field_name:', array('@field_name' => $instance['label'])) . theme('item_list', array('items' => $errors)));
     }
   }
 }

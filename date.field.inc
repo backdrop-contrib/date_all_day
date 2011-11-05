@@ -161,7 +161,7 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
  */
 function date_field_is_empty($item, $field) {
   // Sometimes a $item is a date object.
-  // Coming from repeating dates. Why?? 
+  // Coming from repeating dates. Why??
   if (!is_array($item)) {
     return FALSE;
   }
@@ -309,8 +309,8 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
               'error' => 'value2',
               'message' => t("An 'End date' is required for field %field #%delta.", array('%delta' => $field['cardinality'] ? intval($delta + 1) : '', '%field' => t($instance['label']))),
             );
-          }            
-        }       
+          }
+        }
       }
     }
   }
@@ -348,8 +348,8 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
       $items[$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
       $items[$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
       $items[$delta]['date_type'] = $field['type'];
-    }  
-  }  
+    }
+  }
   $entity->{$field['field_name']}[$langcode] = $items;
 
   foreach ($values as $delta => $item) {
@@ -362,7 +362,7 @@ function date_field_update($entity_type, $entity, $field, $instance, $langcode, 
         if ($field['settings']['todate']) {
           //$items[$delta]['value2'] = date_limit_value($items[$delta]['value2'], date_granularity($field), $field['type']);
         }
-      }  
+      }
     }
   }
   $entity->{$field['field_name']}[$langcode] = $items;
@@ -389,12 +389,12 @@ function date_field_settings_form($field, $instance, $has_data) {
 
 /**
  * Implements hook_content_migrate_field_alter().
- * 
+ *
  * Use this to tweak the conversion of field settings
  * from the D6 style to the D7 style for specific
  * situations not handled by basic conversion,
  * as when field types or settings are changed.
- * 
+ *
  * $field_value['widget_type'] is available to
  * see what widget type was originally used.
  */
@@ -406,13 +406,13 @@ function date_content_migrate_field_alter(&$field_value, $instance_value) {
       // level.
       unset($field_value['settings']['default_format']);
       unset($field_value['settings']['repeat_collapsed']);
-      break; 
+      break;
   }
 }
 
 /**
  * Implements hook_content_migrate_instance_alter().
- * 
+ *
  * Use this to tweak the conversion of instance or widget settings
  * from the D6 style to the D7 style for specific
  * situations not handled by basic conversion, as when
@@ -440,7 +440,7 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
         if ($display['type'] == 'format_interval') {
 
         }
-        else {      
+        else {
           $old_settings = date_old_formatter_get_settings($instance_value['field_name'], $instance_value['bundle'], $context);
           $display['settings'] = array_merge($display['settings'], $old_settings);
           // If the formatter was the 'default', then use the old 'default_format'
@@ -462,6 +462,6 @@ function date_old_formatter_get_settings($field_name, $type_name, $context) {
   $options['multiple_number'] = variable_get($value .'_multiple_number', '');
   $options['multiple_from'] = variable_get($value .'_multiple_from', '');
   $options['multiple_to'] = variable_get($value .'_multiple_to', '');
-  $options['fromto'] = variable_get($value .'_fromto', 'both');  
+  $options['fromto'] = variable_get($value .'_fromto', 'both');
   return $options;
 }

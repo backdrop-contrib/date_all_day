@@ -114,7 +114,7 @@ Bugfixes
 - Issue #1246416, Test whether libraries_get_path() returns a valid path before using it.
 - Issue #1235994, Don't display 'All Day' when using a format that has no time.
 - Issue #1245690 by mikeryan, Migration plugin missing seconds from date formats
-- Issue #1229406 by David Rothstein, G‡bor Hojtsy, and tim.plunkett Fix broken timepicker in Chrome and Safari.
+- Issue #1229406 by David Rothstein, Gábor Hojtsy, and tim.plunkett Fix broken timepicker in Chrome and Safari.
 - Issue #1239412 by keithm, Fix validation error when #access is false.
 - Issue #1232522, Don't alter field_ui_field_edit form except on date fields.
 - Issue #1243842, Make sure the All Day and Show End Date flags work correctly in unlimited value fields that use ajax.
@@ -272,21 +272,21 @@ Abandoned the 7.x-1.x branch.
 
 Start a new 7.x-2.x branch that will contain a complete re-work of the Views handling.
 
-The 7.x-2.x branch will totally re-work and simplify the Views filters. These changes may/will 
-break some views and will require that you check views that use the date filter or 
+The 7.x-2.x branch will totally re-work and simplify the Views filters. These changes may/will
+break some views and will require that you check views that use the date filter or
 argument to be sure they are still configured correctly.
 
-There is a new date_filter_handler_simple for an individual date field that simplifies 
-the Views handling by using most of the core Views field handling but adds in the 
-possibility to set a default date using options like 'now', along with a choice of a 
+There is a new date_filter_handler_simple for an individual date field that simplifies
+the Views handling by using most of the core Views field handling but adds in the
+possibility to set a default date using options like 'now', along with a choice of a
 month/day/year drop-down selector or popup calendar selector.
 
-The date_filter_handler is an extension of the simple handler that allows you to combine 
-multiple dates into a single filter so that you can control all of them with the same 
+The date_filter_handler is an extension of the simple handler that allows you to combine
+multiple dates into a single filter so that you can control all of them with the same
 filter widget, allowing you to either 'OR' or 'AND' them together.
 
-The arguments will be rewritten in the same way, with a simple argument handler for 
-individual dates and another handler that extends that to control multiple dates with 
+The arguments will be rewritten in the same way, with a simple argument handler for
+individual dates and another handler that extends that to control multiple dates with
 a single argument.
 
 - Add some error trapping in case the parent dateObject is unable to make a date out of a string to avoid showing the user errors.
@@ -299,7 +299,7 @@ a single argument.
 Version 7.x-1.0-alpha2
 ======================
 
-- Views made lots of changes to field handling just before the new release, which broke lots of things here. 
+- Views made lots of changes to field handling just before the new release, which broke lots of things here.
 - Adding some work-arounds to get things working again and waiting until the dust settles on how the new core fields will be handled in Views before doing much more with the Views integration. These changes should get things working with latest Views release.
 
 ======================
@@ -307,6 +307,5 @@ Version 7.x-1.0-alpha1
 ======================
 
 - Initial release, probably still buggy.
-- Remove Date PHP4, no longer needed because PHP4 is not supported any more. 
+- Remove Date PHP4, no longer needed because PHP4 is not supported any more.
 - Remove Date Timezone, now handled by core.
-

@@ -169,11 +169,11 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
 
   // Make sure there will be an empty description for any unused parts.
   $description = array(
-    '!interval' => '', 
-    '!byday' => '', 
-    '!bymonth' => '', 
+    '!interval' => '',
+    '!byday' => '',
+    '!bymonth' => '',
     '!count' => '',
-    '!until' => '', 
+    '!until' => '',
     '!except' => '',
     '!additional' => '',
     '!week_starts_on' => '',
@@ -293,7 +293,7 @@ function date_repeat_split_rrule($rrule) {
  * Analyze a RRULE and return dates that match it.
  */
 function date_repeat_calc($rrule, $start, $end, $exceptions = array(), $timezone = NULL, $additions = array()) {
-  module_load_include('inc', 'date_repeat', 'date_repeat_calc');  
+  module_load_include('inc', 'date_repeat', 'date_repeat_calc');
   return _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additions);
 }
 

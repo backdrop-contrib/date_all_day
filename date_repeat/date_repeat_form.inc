@@ -165,7 +165,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   else {
     $collapsed = FALSE;
   }
- 
+
   $element['exceptions'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -174,7 +174,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#description' => t('Dates to omit from the list of repeating dates.'),
     '#prefix' => '<div id="date-repeat-exceptions-' . $instance . '" class="date-repeat">',
     '#suffix' => '</div>',
-    );  
+    );
   for ($i = 0; $i < max($form_state['num_exceptions'][$instance], 1) ; $i++) {
     $EXCEPT = '';
     if (!empty($exceptions[$i]['datetime'])) {
@@ -256,7 +256,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
       'callback' => 'date_repeat_add_exception_callback',
       'wrapper' => 'date-repeat-exceptions-' . $instance,
     ),
-  ); 
+  );
   $element['additions']['additions_add'] = array(
     '#type' => 'submit',
     '#name' => 'additions_add|' . $instance,
@@ -267,7 +267,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
       'callback' => 'date_repeat_add_addition_callback',
       'wrapper' => 'date-repeat-additions-' . $instance,
     ),
-  ); 
+  );
 
   $element['#date_repeat_collapsed'] = !empty($rrule['INTERVAL']) || !empty($rrule['FREQ']) ? 0 : (!empty($element['#date_repeat_collapsed']) ? $element['#date_repeat_collapsed'] : 0);
   return $element;
@@ -398,7 +398,7 @@ function theme_date_repeat_current_additions($rows = array()) {
     }
   }
   return theme('table', array('header' => array(t('Delete'), t('Current additions')), 'rows' => $rows_info));
-} 
+}
 
 /**
  * Wrapper fieldset for repeat rule.

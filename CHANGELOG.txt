@@ -19,6 +19,9 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1233084, fix a few places that were wrapping $instance['label'] with t().
+- Issue #1188380 by Xen and jherencia, use #title instead of field['label'] in date display because that has the i18n translation.
+- Issue #1330768 by das-peter, remove whitespace.
 - Tweak date_pager_url to allow a way to create non-absolute urls.
 - Make sure deleted displays won't create errors in Views by returning FALSE in date_forbid() if there is no date argument.
 - Issue #1257830, Beef up the logic when creating the date repeat tabs to work for more kinds of entities.

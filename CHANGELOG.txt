@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1237974, Schema module wants the datetime column to be lower case.
 - Issue #1233084, fix a few places that were wrapping $instance['label'] with t().
 - Issue #1188380 by Xen and jherencia, use #title instead of field['label'] in date display because that has the i18n translation.
 - Issue #1330768 by das-peter, remove whitespace.

@@ -109,9 +109,7 @@ class date_context_date_condition extends context_condition_node {
             continue;
           }
 
-          $items = $entity->{$field_name};
-          $language = $entity->language;
-          $items = $items[$language];
+          $items = field_get_items('node', $entity, $field_name);
 
           // If there are no values, nothing to do unless we were looking for 'empty' or '!='.
           if (empty($items)) {

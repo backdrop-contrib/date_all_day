@@ -19,6 +19,8 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1178176, by das-peter, Fix date_combo_value_callback to return NULL to avoid data lost on untranslatable dates used with Entity Translation.
+- Date Context module was making incorrect assumptions about the $language of the field.
 - Issue #1237974, Schema module wants the datetime column to be lower case.
 - Issue #1233084, fix a few places that were wrapping $instance['label'] with t().
 - Issue #1188380 by Xen and jherencia, use #title instead of field['label'] in date display because that has the i18n translation.

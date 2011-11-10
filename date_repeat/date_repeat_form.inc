@@ -317,9 +317,9 @@ function date_repeat_merge($form_values, $element) {
     unset($form_values['exceptions']);
     unset($form_values['additions']);
   }
-  if (array_key_exists('BYDAY', $form_values)) unset($form_values['BYDAY']['']);
-  if (array_key_exists('BYMONTH', $form_values)) unset($form_values['BYMONTH']['']);
-  if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
+  if (array_key_exists('BYDAY', $form_values) && is_array($form_values['BYDAY'])) unset($form_values['BYDAY']['']);
+  if (array_key_exists('BYMONTH', $form_values) && is_array($form_values['BYMONTH'])) unset($form_values['BYMONTH']['']);
+  if (array_key_exists('BYMONTHDAY', $form_values) && is_array($form_values['BYMONTHDAY'])) unset($form_values['BYMONTHDAY']['']);
 
   if (array_key_exists('UNTIL', $form_values) && is_array($form_values['UNTIL']['datetime'])) {
     $function = $element['#date_repeat_widget'] . '_input_date';

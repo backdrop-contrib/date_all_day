@@ -671,17 +671,17 @@ function date_api_ical_build_rrule($form_values) {
   $RRULE .= ';INTERVAL=' . (!array_key_exists('INTERVAL', $form_values) ? 1 : $form_values['INTERVAL']);
 
   // Unset the empty 'All' values.
-  if (array_key_exists('BYDAY', $form_values)) unset($form_values['BYDAY']['']);
-  if (array_key_exists('BYMONTH', $form_values)) unset($form_values['BYMONTH']['']);
-  if (array_key_exists('BYMONTHDAY', $form_values)) unset($form_values['BYMONTHDAY']['']);
+  if (array_key_exists('BYDAY', $form_values) && is_array($form_values['BYDAY'])) unset($form_values['BYDAY']['']);
+  if (array_key_exists('BYMONTH', $form_values) && is_array($form_values['BYMONTH'])) unset($form_values['BYMONTH']['']);
+  if (array_key_exists('BYMONTHDAY', $form_values) && is_array($form_values['BYMONTHDAY'])) unset($form_values['BYMONTHDAY']['']);
 
-  if (array_key_exists('BYDAY', $form_values) && $BYDAY = implode(",", $form_values['BYDAY'])) {
+  if (array_key_exists('BYDAY', $form_values) && is_array($form_values['BYDAY']) && $BYDAY = implode(",", $form_values['BYDAY'])) {
     $RRULE .= ';BYDAY=' . $BYDAY;
   }
-  if (array_key_exists('BYMONTH', $form_values) && $BYMONTH = implode(",", $form_values['BYMONTH'])) {
+  if (array_key_exists('BYMONTH', $form_values) && is_array($form_values['BYMONTH']) && $BYMONTH = implode(",", $form_values['BYMONTH'])) {
     $RRULE .= ';BYMONTH=' . $BYMONTH;
   }
-  if (array_key_exists('BYMONTHDAY', $form_values) && $BYMONTHDAY = implode(",", $form_values['BYMONTHDAY'])) {
+  if (array_key_exists('BYMONTHDAY', $form_values) && is_array($form_values['BYMONTHDAY']) && $BYMONTHDAY = implode(",", $form_values['BYMONTHDAY'])) {
     $RRULE .= ';BYMONTHDAY=' . $BYMONTHDAY;
   }
   // The UNTIL date is supposed to always be expressed in UTC.

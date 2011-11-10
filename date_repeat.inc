@@ -62,10 +62,18 @@ function _date_repeat_widget_validate($element, &$form_state) {
   $form_values = $form_state['values'];
   $item = $form_values;
   $input = $form_state['input'];
+
+  // $input might be empty when a node form is submitted that uses translations but has
+  // untranslated dates, or any time the field has been marked #access = FALSE or #disabled.
+  if (empty($input[$field_name])) {
+    return;
+  }
+
   foreach ($element['#parents'] as $key) {
     $item = $item[$key];
     $input = $input[$key];
   }
+
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
 
   // If no repeat information was set, treat this as a normal, non-repeating value.

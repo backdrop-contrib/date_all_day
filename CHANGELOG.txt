@@ -19,7 +19,9 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
-- Issue #1178176, by das-peter, Fix date_combo_value_callback to return NULL to avoid data lost on untranslatable dates used with Entity Translation.
+- Issue #1178716 by das-peter and KarenS, Tweak the date repeat widget to identify empty input when used on nodes with translation. 
+- Issue #1178716 by das-peter and KarenS, Fix date repeat form values that are not arrays when hidden on a node that has translation.
+- Issue #1178176 by das-peter, Fix date_combo_value_callback to return NULL to avoid data lost on untranslatable dates used with Entity Translation.
 - Date Context module was making incorrect assumptions about the $language of the field.
 - Issue #1237974, Schema module wants the datetime column to be lower case.
 - Issue #1233084, fix a few places that were wrapping $instance['label'] with t().

@@ -34,8 +34,13 @@
  * Generate the repeat setting form.
  */
 function _date_repeat_rrule_process($element, &$form_state, $form) {
-  module_load_include('inc', 'date_api', 'date_api_ical');
 
+  // The RRULE field is not visible to the user, needs no processing or validation.
+  if (isset($element['#access']) && empty($element['#access'])) {
+    return;
+  }
+
+  module_load_include('inc', 'date_api', 'date_api_ical');
   if (empty($element['#date_repeat_widget'])) {
     $element['#date_repeat_widget'] = module_exists('date_popup') ? 'date_popup' : 'date_select';
   }
@@ -356,6 +361,12 @@ function date_repeat_merge($form_values, $element) {
  * Build a RRULE out of the form values.
  */
 function date_repeat_rrule_validate($element, &$form_state) {
+
+  // The RRULE field is not visible to the user, needs no processing or validation.
+  if (isset($element['#access']) && empty($element['#access'])) {
+    return;
+  }
+
   module_load_include('inc', 'date_api', 'date_api_ical');
 
   $item = drupal_array_get_nested_value($form_state['values'], $element['#parents']);

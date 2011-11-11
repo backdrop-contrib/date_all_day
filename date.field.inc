@@ -288,7 +288,7 @@ function date_field_validate($entity_type, $entity, $field, $instance, $langcode
       if (is_array($item) && isset($item['value'])) {
         $process = date_process_values($field, $instance);
         $date1 = new DateObject($item['value'], $item['timezone'], date_type_format($field['type']));
-        if (empty($item['value2']) && $item['value2'] !== 0) {
+        if (count($process) == 1 || (empty($item['value2']) && $item['value2'] !== 0)) {
           $date2 = clone($date1);
         }
         else {

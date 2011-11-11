@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1338194, Logic for creating end date wasn't taking into account the possibility that a field might have no value2.
 - Issue #1179715, Default value callback for the timezone widget was not returning an array.
 - Issue #1179716, Remove value_callback for date_repeat and date_combo forms, the default behavior works fine.
 - Issue #1178716 by das-peter, Use drupal_array_get_nested_value() in Date Repeat instead of trying to find it manually.

@@ -21,22 +21,12 @@ function date_repeat_element_info() {
     '#input' => TRUE,
     '#process' => array('date_repeat_rrule_process'),
     '#element_validate' => array('date_repeat_rrule_validate'),
-    '#value_callback' => 'date_repeat_value_callback',
     '#theme_wrappers' => array('date_repeat_rrule'),
   );
   if (module_exists('ctools')) {
     $type['date_repeat_rrule']['#pre_render'] = array('ctools_dependent_pre_render');
   }
   return $type;
-}
-
-/**
- * A value callback for the date_repeat_rrule element.
- */
-function date_repeat_value_callback($element, $input = FALSE, &$form_state) {
-  if (!$input) {
-    return array();
-  }
 }
 
 function date_repeat_theme() {

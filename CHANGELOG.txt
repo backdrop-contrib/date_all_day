@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1179716, Remove value_callback for date_repeat and date_combo forms, the default behavior works fine.
 - Issue #1178716 by das-peter, Use drupal_array_get_nested_value() in Date Repeat instead of trying to find it manually.
 - Issue #1178716 by das-peter and KarenS, Tweak the date repeat widget to identify empty input when used on nodes with translation. 
 - Issue #1178716 by das-peter and KarenS, Fix date repeat form values that are not arrays when hidden on a node that has translation.

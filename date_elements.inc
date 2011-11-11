@@ -120,12 +120,6 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   return $element;
 }
 
-function date_combo_value_callback($element, $input = FALSE, &$form_state) {
-  if (!$input) {
-    return NULL;
-  }
-}
-
 /**
  * Remove the 'Add more' elements from a repeating date form.
  */

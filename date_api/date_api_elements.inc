@@ -210,7 +210,7 @@ function date_timezone_element_value_callback($element, $input = FALSE, &$form_s
     $return = $input;
   }
   elseif (!empty($element['#default_value'])) {
-    $return = $element['#default_value'];
+    $return = array('timezone' => $element['#default_value']);
   }
   return $return;
 }

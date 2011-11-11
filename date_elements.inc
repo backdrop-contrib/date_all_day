@@ -72,23 +72,6 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     $timezone = $timezone['timezone'];
   }
 
-  // Convert UTC dates to their local values in DATETIME format,
-  // and adjust the default values as specified in the field settings.
-
-  // It would seem to make sense to do this conversion when the data
-  // is loaded instead of when the form is created, but the loaded
-  // field data is cached and we can't cache dates that have been converted
-  // to the timezone of an individual user, so we cache the UTC values
-  // instead and do our conversion to local dates in the form and
-  // in the formatters.
-  $process = date_process_values($field, $instance);
-  foreach ($process as $processed) {
-    if (!isset($items[$delta][$processed])) {
-      $items[$delta][$processed] = '';
-    }
-    $date = date_local_date($form, $form_state, $delta, $items[$delta], $timezone, $field, $instance, $processed);
-    $items[$delta][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
-  }
   $element += array(
     '#type' => 'date_combo',
     '#theme_wrappers' => array('date_combo'),
@@ -213,6 +196,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   if (isset($element['#access']) && empty($element['#access'])) {
     return $element;
   }
+
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
@@ -233,6 +217,24 @@ function date_combo_element_process($element, &$form_state, $form) {
   $tz_field = 'timezone';
   $offset_field = 'offset';
   $offset_field2 = 'offset2';
+
+  // Convert UTC dates to their local values in DATETIME format,
+  // and adjust the default values as specified in the field settings.
+
+  // It would seem to make sense to do this conversion when the data
+  // is loaded instead of when the form is created, but the loaded
+  // field data is cached and we can't cache dates that have been converted
+  // to the timezone of an individual user, so we cache the UTC values
+  // instead and do our conversion to local dates in the form and
+  // in the formatters.
+  $process = date_process_values($field, $instance);
+  foreach ($process as $processed) {
+    if (!isset($element['#default_value'][$processed])) {
+      $element['#default_value'][$processed] = '';
+    }
+    $date = date_local_date($form, $form_state, $delta, $element['#default_value'], $element['#date_timezone'], $field, $instance, $processed);
+    $element['#default_value'][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+  }
 
   if ($field['settings']['todate'] != 'required'
   && !empty($element['#default_value'][$to_field])

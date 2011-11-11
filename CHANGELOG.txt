@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1178716 by das-peter, Use drupal_array_get_nested_value() in Date Repeat instead of trying to find it manually.
 - Issue #1178716 by das-peter and KarenS, Tweak the date repeat widget to identify empty input when used on nodes with translation. 
 - Issue #1178716 by das-peter and KarenS, Fix date repeat form values that are not arrays when hidden on a node that has translation.
 - Issue #1178176 by das-peter, Fix date_combo_value_callback to return NULL to avoid data lost on untranslatable dates used with Entity Translation.

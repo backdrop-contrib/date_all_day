@@ -358,11 +358,7 @@ function date_repeat_merge($form_values, $element) {
 function date_repeat_rrule_validate($element, &$form_state) {
   module_load_include('inc', 'date_api', 'date_api_ical');
 
-  $form_values = $form_state['values'];
-  $item = $form_values;
-  foreach ($element['#parents'] as $key) {
-    $item = $item[$key];
-  }
+  $item = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
   $item = date_repeat_merge($item, $element);
   if (!empty($item['UNTIL']['datetime']) && is_object($item['UNTIL']['datetime'])) {
     $item['UNTIL']['datetime']->setTime(23, 59, 59);

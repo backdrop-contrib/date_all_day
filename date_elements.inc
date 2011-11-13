@@ -202,8 +202,7 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
  */
 function date_combo_element_process($element, &$form_state, $form) {
 
-  // @TODO Are there other things besides #access to test to see if dates are hidden or disabled?
-  if (isset($element['#access']) && empty($element['#access'])) {
+  if (date_hidden_element($element)) {
     return $element;
   }
 
@@ -408,6 +407,11 @@ function date_element_empty($element, &$form_state) {
  * Don't try this if there were errors before reaching this point.
  */
 function date_combo_validate($element, &$form_state) {
+
+  if (date_hidden_element($element)) {
+    return;
+  }
+
   $form_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
   $form_input = drupal_array_get_nested_value($form_state['input'], $element['#field_parents']);
   $field_name = $element['#field_name'];

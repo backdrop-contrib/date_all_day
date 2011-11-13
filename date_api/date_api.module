@@ -750,6 +750,25 @@ class DateObject extends DateTime {
 }
 
 /**
+ * Helper function to see if date element has been hidden by FAPI
+ * to see if it needs to be processed or just pass the value through.
+ * This is needed since normal date processing explands the date element
+ * into parts and then re-constructs it, which is not needed and
+ * not desirable if the field is hidden.
+ */
+function date_hidden_element($element) {
+
+  // @TODO What else needs to be tested to see if dates are hidden or disabled?
+  if ((isset($element['#access']) && empty($element['#access']))
+    || !empty($element['#disabled'])
+    || !empty($element['#programmed'])
+    || in_array($element['#type'], array('hidden', 'value'))) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
  * Helper function for getting the format string for a date type.
  */
 function date_type_format($type) {

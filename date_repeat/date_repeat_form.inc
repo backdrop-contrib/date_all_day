@@ -35,8 +35,11 @@
  */
 function _date_repeat_rrule_process($element, &$form_state, $form) {
 
-  // The RRULE field is not visible to the user, needs no processing or validation.
-  if (isset($element['#access']) && empty($element['#access'])) {
+  // If the RRULE field is not visible to the user, needs no processing or validation.
+  // The Date field module is not adding this element to forms if the field is hidden,
+  // this test is just in case some other module attempts to do so.
+
+  if (date_hidden_element($element)) {
     return;
   }
 
@@ -362,9 +365,8 @@ function date_repeat_merge($form_values, $element) {
  */
 function date_repeat_rrule_validate($element, &$form_state) {
 
-  // The RRULE field is not visible to the user, needs no processing or validation.
-  if (isset($element['#access']) && empty($element['#access'])) {
-    return;
+  if (date_hidden_element($element)) {
+    return $element;
   }
 
   module_load_include('inc', 'date_api', 'date_api_ical');

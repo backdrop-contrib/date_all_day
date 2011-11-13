@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1179715, Create a helper function for testing hidden/disabled dates and test each date element and validator to skip processing in that case.
 - Issue #1179715, When hidden by #access=FALSE, repeating date fields were getting removed and not replaced.
 - Issue #1179715, By pass date repeat widget processing and validation when element is hidden from user.
 - Issue #1179715, Don't do timezone adjustments in the widget, wait for #process so we can skip it when the date field has been hidden by #access.

@@ -255,6 +255,10 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
 * Add popup attributes to $element.
 */
 function date_popup_element_process($element, $form_state, $form) {
+  if (date_hidden_element($element)) {
+    return $element;
+  }
+
   date_popup_add();
   module_load_include('inc', 'date_api', 'date_api_elements');
 
@@ -430,6 +434,11 @@ function date_popup_process_time_part(&$element) {
 *
 */
 function date_popup_validate($element, &$form_state) {
+
+  if (date_hidden_element($element)) {
+    return;
+  }
+
   if (is_string($element['#value'])) {
     return;
   }

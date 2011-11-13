@@ -61,7 +61,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
 
   // If the widget has been hidden by #access, the RRULE will still be in its
   // original string form here. Nothing to process.
-  if (is_string($element['#value']['rrule'])) {
+  if (date_hidden_element($element)) {
 
     // If this was a hidden repeating date, we lost all the repeating values in the widget processing.
     // Add them back here if that happened since we are skipping the re-creation of those values.

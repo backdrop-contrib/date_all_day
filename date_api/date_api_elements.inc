@@ -223,6 +223,11 @@ function date_timezone_element_value_callback($element, $input = FALSE, &$form_s
  *   the timezone form element
  */
 function date_timezone_element_process($element, $form_state, $form) {
+
+  if (date_hidden_element($element)) {
+    return $element;
+  }
+
   $element['#tree'] = TRUE;
   $label = theme('date_part_label_timezone', array('part_type' => 'select', 'element' => $element));
   $element['timezone'] = array(
@@ -250,6 +255,10 @@ function date_timezone_element_process($element, $form_state, $form) {
  *  Move the timezone value from the nested field back to the original field.
  */
 function date_timezone_validate($element, &$form_state) {
+  if (date_hidden_element($element)) {
+    return;
+  }
+
   form_set_value($element, $element['#value']['timezone'], $form_state);
 }
 
@@ -282,6 +291,10 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
  *
  */
 function date_text_element_process($element, $form_state, $form) {
+
+  if (date_hidden_element($element)) {
+    return $element;
+  }
 
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_text');
@@ -317,6 +330,11 @@ function date_text_element_process($element, $form_state, $form) {
  *
  */
 function date_text_validate($element, &$form_state) {
+
+  if (date_hidden_element($element)) {
+    return;
+  }
+
   if (is_string($element['#value'])) {
     return;
   }
@@ -406,6 +424,11 @@ function date_select_element_value_callback($element, $input = FALSE, &$form_sta
  *
  */
 function date_select_element_process($element, $form_state, $form) {
+
+  if (date_hidden_element($element)) {
+    return $element;
+  }
+
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
 
@@ -621,6 +644,10 @@ function date_parts_element($element, $date, $format) {
  *
  */
 function date_select_validate($element, &$form_state) {
+  if (date_hidden_element($element)) {
+    return;
+  }
+
   if (is_string($element['#value'])) {
     return;
   }

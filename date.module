@@ -147,6 +147,10 @@ function date_is_repeat_field($field, $instance = NULL) {
     $field = field_info_field($field);
   }
 
+  if (!isset($field['settings']['repeat'])) {
+    return FALSE;
+  }
+
   $value = $field['settings']['repeat'];
 
   // This might be either a field form or a real field.

@@ -16,8 +16,9 @@
  *   more collections of start/end dates.
  *
  * - The dates in this field are all converted from the UTC values stored
- *   in the database back to the local time before passing their values
- *   to FAPI.
+ *   in the database back to the local time. This is done in #process
+ *   to avoid making this change to dates that are not being processed,
+ *   like those hidden with #access.
  *
  * - If values are empty, the field settings rules are used to determine
  *   if the default_values should be empty, now, the same, or use strtotime.
@@ -48,12 +49,21 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   $element = $base;
   $field_name = $field['field_name'];
 
+  // @TODO Repeating dates should probably be made into their own field type and completely separated out.
+  // That will have to wait for a new branch since it may break other things, including other modules
+  // that have an expectation of what the date field types are.
+
   // Since repeating dates cannot use the default Add more button, we have to handle our own behaviors here.
   // Return only the first multiple value for repeating dates, then clean up the 'Add more' bits in #after_build.
+  // The repeating values will be re-generated when the repeat widget form is validated.
+  // At this point we can't tell if this form element is going to be hidden by #access, and we're going to
+  // lose all but the first value by doing this, so store the original values in case we need to replace them later.
   if (!empty($field['settings']['repeat'])) {
     if ($delta == 0) {
+      module_load_include('inc', 'date', 'date_repeat');
       $form['#after_build'] = array('date_repeat_after_build');
       $form_state['storage']['repeat_fields'][$field_name] = array_merge($form['#parents'], array($field_name));
+      $form_state['storage']['date_items'][$field_name][$langcode] = $items;
     }
     else {
       return;
@@ -93,26 +103,24 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       );
   }
 
-  // Add a date repeat form element, if needed.
-  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    module_load_include('inc', 'date', 'date_repeat');
-    _date_repeat_widget($element, $field, $instance, $items, $delta);
-    $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
-  }
-
   return $element;
 }
 
 /**
+ * Implements the form after_build().
+ *
  * Remove the 'Add more' elements from a repeating date form.
+ * It would be better to move this to the date_repeat.inc file,
+ * but it isn't always discovered there.
  */
 function date_repeat_after_build(&$element, &$form_state) {
   foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
+    // Remove unnecessary items in the form added by the Add more handling.
     $value = drupal_array_get_nested_value($element, $parents);
-    $lang = $value['#language'];
-    unset($value[$lang]['add_more'], $value[$lang]['#suffix'], $value[$lang]['#prefix'], $value[$lang][0]['_weight']);
-    $value[$lang]['#cardinality'] = 1;
-    $value[$lang]['#max_delta'] = 1;
+    $langcode = $value['#language'];
+    unset($value[$langcode]['add_more'], $value[$langcode]['#suffix'], $value[$langcode]['#prefix'], $value[$langcode][0]['_weight']);
+    $value[$langcode]['#cardinality'] = 1;
+    $value[$langcode]['#max_delta'] = 1;
     drupal_array_set_nested_value($element, $parents, $value);
   }
   return $element;
@@ -193,6 +201,8 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
  * Process an individual date element.
  */
 function date_combo_element_process($element, &$form_state, $form) {
+
+  // @TODO Are there other things besides #access to test to see if dates are hidden or disabled?
   if (isset($element['#access']) && empty($element['#access'])) {
     return $element;
   }
@@ -201,8 +211,18 @@ function date_combo_element_process($element, &$form_state, $form) {
   $delta = $element['#delta'];
   $bundle = $element['#bundle'];
   $entity_type = $element['#entity_type'];
+  $langcode = $element['#language'];
+
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
+
+  // Add a date repeat form element, if needed.
+  // We delayed until this point so we don't bother adding it to hidden fields.
+  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
+    module_load_include('inc', 'date', 'date_repeat');
+    _date_repeat_widget($element, $field, $instance, $element['#value'], $delta);
+    $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
+  }
 
   // Figure out how many items are in the form, including new ones added by ajax.
   $field_state = field_form_get_state($element['#field_parents'], $field_name, $element['#language'], $form_state);

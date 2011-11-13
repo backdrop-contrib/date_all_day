@@ -196,8 +196,8 @@ function date_year_range_validate(&$element, &$form_state) {
   $year_range = $year_range_submitted['years_back'] . ':' . $year_range_submitted['years_forward'];
   drupal_array_set_nested_value($form_state['values'], $element['#parents'], $year_range);
   if (!date_range_valid($year_range)) {
-    form_error($element['years_back'], t('Years back must be in the format -9, or an absolute year such as 1980.'));
-    form_error($element['years_forward'], t('Years forward must be in the format +9, or an absolute year such as 2030.'));
+    form_error($element['years_back'], t('Starting year must be in the format -9, or an absolute year such as 1980.'));
+    form_error($element['years_forward'], t('Ending year must be in the format +9, or an absolute year such as 2030.'));
   }
 }
 

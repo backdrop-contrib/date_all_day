@@ -77,20 +77,11 @@ function _date_repeat_widget_validate($element, &$form_state) {
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
 
-  $form_values = $form_state['values'];
-  $item = $form_values;
-  $input = $form_state['input'];
-
-  // $input might be empty when a node form is submitted that uses translations but has
-  // untranslated dates, or any time the field has been marked #access = FALSE or #disabled.
-  if (empty($input[$field_name])) {
-    return;
-  }
-
-  foreach ($element['#parents'] as $key) {
-    $item = $item[$key];
-    $input = $input[$key];
-  }
+  // Here 'values' returns an array of input values, which includes the original RRULE, as a string.
+  // and 'input' returns an array of the form elements created by the repeating date widget, with
+  // RRULE values as an array of the selected elements and their chosen values.
+  $item = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
+  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
 
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
 

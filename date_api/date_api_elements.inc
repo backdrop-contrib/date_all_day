@@ -339,7 +339,7 @@ function date_text_validate($element, &$form_state) {
     return;
   }
   $input_exists = NULL;
-  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
+  $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
 
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   $date = date_text_input_date($element, $input);
@@ -431,9 +431,6 @@ function date_select_element_process($element, $form_state, $form) {
 
   $date = NULL;
   $granularity = date_format_order($element['#date_format']);
-
-  $input_exists = NULL;
-  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
 
   if (is_array($element['#default_value'])) {
     $date = date_select_input_date($element, $element['#default_value']);
@@ -644,6 +641,7 @@ function date_parts_element($element, $date, $format) {
  *
  */
 function date_select_validate($element, &$form_state) {
+
   if (date_hidden_element($element)) {
     return;
   }
@@ -653,7 +651,7 @@ function date_select_validate($element, &$form_state) {
   }
 
   $input_exists = NULL;
-  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
+  $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $field_value) {
     if (substr($field_value, 0, 1) == '-') {

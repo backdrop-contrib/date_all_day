@@ -455,7 +455,7 @@ function date_popup_validate($element, &$form_state) {
   $label = t($label);
 
   $input_exists = NULL;
-  $input = drupal_array_get_nested_value($form_state['input'], $element['#parents'], $input_exists);
+  $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
 
   // If we have an all day flag on this date and the time is empty,
   // change the format to match the input value so we don't get validation errors.

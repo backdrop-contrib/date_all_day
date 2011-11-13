@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1179715, Switch drupal_array_get_nested_value() to use 'values' instead of 'input', where it makes sense, and simplify some of this code.
 - Issue #1179715, Create a helper function for testing hidden/disabled dates and test each date element and validator to skip processing in that case.
 - Issue #1179715, When hidden by #access=FALSE, repeating date fields were getting removed and not replaced.
 - Issue #1179715, By pass date repeat widget processing and validation when element is hidden from user.

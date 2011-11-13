@@ -40,7 +40,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   // this test is just in case some other module attempts to do so.
 
   if (date_hidden_element($element)) {
-    return;
+    return $element;
   }
 
   module_load_include('inc', 'date_api', 'date_api_ical');
@@ -366,7 +366,7 @@ function date_repeat_merge($form_values, $element) {
 function date_repeat_rrule_validate($element, &$form_state) {
 
   if (date_hidden_element($element)) {
-    return $element;
+    return;
   }
 
   module_load_include('inc', 'date_api', 'date_api_ical');

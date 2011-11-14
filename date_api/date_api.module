@@ -833,7 +833,12 @@ function date_month_names($required = FALSE) {
 function date_month_names_abbr($required = FALSE, $length = 3) {
   $month_names = array();
   foreach (date_month_names_untranslated() as $key => $month) {
-    $month_names[$key] = t(substr($month, 0, $length), array(), array('context' => 'month_abbr'));
+    if ($lenth == 3) {
+      $month_names[$key] = t(substr($month, 0, $length), array());
+    }
+    else {
+      $month_names[$key] = t(substr($month, 0, $length), array(), array('context' => 'month_abbr'));
+    }
   }
   $none = array('' => '');
   return !$required ? $none + $month_names : $month_names;
@@ -1259,7 +1264,7 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
         $datestring .= t($date->format('F'), array(), array('context' => 'Long month name', 'langcode' => $langcode));
         break;
       case 'M':
-        $datestring .= t($date->format('M'), array(), array('context' => 'month_abbr', 'langcode' => $langcode));
+        $datestring .= t($date->format('M'), array(), array('langcode' => $langcode));
         break;
       case 'A':
       case 'a':

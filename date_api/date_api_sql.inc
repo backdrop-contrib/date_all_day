@@ -133,7 +133,9 @@ class date_sql_handler {
           db_query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
           break;
         case 'sqlsrv':
-          db_query('TimeZone.setDefault(TimeZone.getTimeZone("GMT"))');
+          // Issue #1201342, This is the wrong way to set the timezone, this still needs to be fixed.
+          // In the meantime, commenting this out makes SQLSRV functional.
+          //db_query('TimeZone.setDefault(TimeZone.getTimeZone("GMT"))');
           break;
       }
       $already_set = TRUE;

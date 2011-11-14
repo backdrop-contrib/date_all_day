@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1201342 by colinlee and alexprv, Comment out SQLSVR timezone adjustment until it gets fixed properly.
 - Issue #1308274 by sneyerst, SQL Server DATEPART function cannot accept composed datetime formats.
 - Issue #1308266 by sneyerst, Fix arithmetic overflow in SQLSVR.
 - #1333104 by tim.plunkett, Check that $field['settings'] exists in date_is_repeat_field().

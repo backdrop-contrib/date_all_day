@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1308266 by sneyerst, Fix arithmetic overflow in SQLSVR.
 - #1333104 by tim.plunkett, Check that $field['settings'] exists in date_is_repeat_field().
 - Error message for years back and forward doesn't match new labels, should be Starting year and Ending year.
 - Issue #1179715, Switch drupal_array_get_nested_value() to use 'values' instead of 'input', where it makes sense, and simplify some of this code.

@@ -212,7 +212,7 @@ class date_sql_handler {
       case 'sqlsrv':
         switch ($this->date_type) {
           case DATE_UNIX:
-            $field = "DATEDIFF(s, '19700101 00:00:00:000', $field)";
+            $field = "DATEADD(s, $field, '19700101 00:00:00:000')";
             break;
           case DATE_ISO:
           case DATE_DATETIME:

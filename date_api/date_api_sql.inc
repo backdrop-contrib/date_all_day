@@ -442,7 +442,26 @@ class date_sql_handler {
           '\WW' => '', // Week number
           );
         $format = strtr($format, $replace);
-        return "DATEPART($format, $field)";
+        $formatters = explode(' ', $format);
+        $month_formatters = explode('-', $formatters[0]);
+        $output = '';
+        foreach($month_formatters as $formatter) {
+          $output .= "CAST(DATEPART($formatter, $field) as varchar)+";
+        }
+
+        if (isset($formatters[1])) {
+          $time_formatters = explode(':', $formatters[1]);
+          $output .= ' ';
+          foreach($time_formatters as $formatter) {
+            $output .= "CAST(DATEPART($formatter, $field) as varchar)+':'+";
+          }
+          $output = substr($output, 0, strlen($output)-5);
+        }
+        else {
+          $output = substr($output, 0, strlen($output)-1);
+        }
+
+        return $output;
     }
   }
 

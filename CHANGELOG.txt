@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1286570, Fix undefined index error caused by using a remember value without checking if it exists.
 - Issue #1337440 by phoenix, Fix syntax error in vcalendar tpl file.
 - Issue #1103032, Add plain date formatter and set it to be the default token formatter.
 - Issue #1177684 by tim.plunket, Fix typo in last commit.

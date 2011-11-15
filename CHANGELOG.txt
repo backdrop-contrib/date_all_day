@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1266144, End date same as start date default not being respected.
 - Issue #1239934 by casey, Fix javascript exception in date_year_range.js.
 - Issue #1310558, Don't show extra label on exposed date filter.
 - Fix bug in Date Popup that still uses the current date when the default date is empty.

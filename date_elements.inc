@@ -255,12 +255,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element['#default_value'][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
 
-  if ($field['settings']['todate'] != 'required'
-  && !empty($element['#default_value'][$to_field])
-  && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
-    unset($element['#default_value'][$to_field]);
-  }
-
   $from = $element['#default_value'][$from_field];
   $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];
   $date_is_all_day = date_is_all_day($from, $to);

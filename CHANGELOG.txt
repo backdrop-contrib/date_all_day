@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1084980 by jwilson3, Set default value for $granularity to be array in date_formatter_format.
 - Issue #1227350 by grendzy, Summary view should not be calling date_forbid().
 - Issue #1286570, Fix undefined index error caused by using a remember value without checking if it exists.
 - Issue #1337440 by phoenix, Fix syntax error in vcalendar tpl file.

@@ -545,7 +545,7 @@ function date_field_widget_error($element, $error, $form, &$form_state) {
 /**
  * Retrieve a date format string from formatter settings.
  */
-function date_formatter_format($formatter, $settings, $granularity = NULL, $langcode = NULL) {
+function date_formatter_format($formatter, $settings, $granularity = array(), $langcode = NULL) {
   $format_type = !empty($settings['format_type']) ? $settings['format_type'] : 'format_interval';
 
   switch ($formatter) {

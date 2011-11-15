@@ -833,7 +833,7 @@ function date_month_names($required = FALSE) {
 function date_month_names_abbr($required = FALSE, $length = 3) {
   $month_names = array();
   foreach (date_month_names_untranslated() as $key => $month) {
-    if ($lenth == 3) {
+    if ($length == 3) {
       $month_names[$key] = t(substr($month, 0, $length), array());
     }
     else {

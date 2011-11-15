@@ -19,7 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
-
+- Issue #1310558, Don't show extra label on exposed date filter.
 - Fix bug in Date Popup that still uses the current date when the default date is empty.
 - Issue #1335578 by aaronbauman, Make it possible to pass in +/- 1000 years to years back/forward.
 - Issue #1292516 by mcarbone, Fix Uninitialized string offset in Date Migrate.

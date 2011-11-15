@@ -280,7 +280,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
         $relative_label = t('Relative end date');
         break;
       default:
-        $label = t('Date value');
+        $label = '';
         $relative_label = t('Relative date');
         break;
     }

@@ -94,7 +94,6 @@ class DateObject extends DateTime {
    *   $format is recommended in order to use negative or large years, which php's parser fails on.
    */
   public function __construct($time = 'now', $tz = NULL, $format = NULL) {
-
     $this->timeOnly = FALSE;
     $this->dateOnly = FALSE;
 
@@ -1919,7 +1918,7 @@ function date_range_years($string, $date = NULL) {
 
   // Valid patterns would be -5:+5, 0:+1, 2008:2010.
   $plus_pattern = '@[\+|\-][0-9]{1,4}@';
-  $year_pattern = '@[0-9]{4}@';
+  $year_pattern = '@^[0-9]{4}@';
   if (!preg_match($year_pattern, $min_year, $matches)) {
     if (preg_match($plus_pattern, $min_year, $matches)) {
       $min_year = $this_year + $matches[0];

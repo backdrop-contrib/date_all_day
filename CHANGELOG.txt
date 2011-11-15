@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1335578 by aaronbauman, Make it possible to pass in +/- 1000 years to years back/forward.
 - Issue #1292516 by mcarbone, Fix Uninitialized string offset in Date Migrate.
 - Issue #1084980 by jwilson3, Set default value for $granularity to be array in date_formatter_format.
 - Issue #1227350 by grendzy, Summary view should not be calling date_forbid().

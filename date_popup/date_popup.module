@@ -297,7 +297,10 @@ function date_popup_process_date_part(&$element) {
   // we pass to the datepicker to use defaults it can accept (such as +0:+1)
   // date_range_string() adds the necessary +/- signs to the range string.
   $this_year = date_format(date_now(), 'Y');
-  $date = new DateObject($element['#value']['date'], $element['#date_timezone'], date_popup_date_format($element));
+  $date = '';
+  if (!empty($element['#value']['date'])) {
+    $date = new DateObject($element['#value']['date'], $element['#date_timezone'], date_popup_date_format($element));
+  }
   $range = date_range_years($element['#date_year_range'], $date);
   $year_range = date_range_string($range);
 

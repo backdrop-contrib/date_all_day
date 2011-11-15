@@ -164,9 +164,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * Inject a test for valid date range before the summary query.
    */
   function summary_query() {
-    if ($this->date_forbid()) {
-      return;
-    }
     $this->formula = $this->formula($this->real_field);
     $this->ensure_my_table();
     // Now that our table is secure, get our formula.

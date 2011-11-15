@@ -552,6 +552,9 @@ function date_formatter_format($formatter, $settings, $granularity = NULL, $lang
     case 'format_interval':
       return 'format_interval';
       break;
+    case 'date_plain':
+      return 'date_plain';
+      break;
     default:
       $format = system_date_format_locale($langcode, $format_type);
       if (empty($format)) {

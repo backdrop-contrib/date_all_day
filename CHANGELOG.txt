@@ -19,6 +19,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1103032, Add plain date formatter and set it to be the default token formatter.
 - Issue #1177684 by tim.plunket, Fix typo in last commit.
 - Issue #1177684, Wrong translation of short month name.
 - Issue #1201342 by colinlee and alexprv, Comment out SQLSVR timezone adjustment until it gets fixed properly.

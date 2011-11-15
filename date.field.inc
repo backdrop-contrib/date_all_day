@@ -28,6 +28,10 @@ function date_field_formatter_info() {
         'interval' => 2,
       ),
     ),
+    'date_plain' => array(
+      'label' => t('Plain'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+    ),
   );
   return $formatters;
 }
@@ -124,6 +128,21 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
   }
 
   switch ($display['type']) {
+    case 'date_plain':
+      foreach ($items as $delta => $item) {
+        if (!empty($entity->date_id) && !in_array($delta, $selected_deltas)) {
+          continue;
+        }
+        else {
+          if (empty($item['value2']) || $item['value'] == $item['value2']) {
+            $element[$delta] = array('#markup' => $item['value']);
+          }
+          else {
+            $element[$delta] = array('#markup' => t('!start-date to !end-date', array('!start-date' => $item['value'], '!end-date' => $item['value2'])));
+          }
+        }
+      }
+      break;
     case 'format_interval':
       foreach ($items as $delta => $item) {
         if (!empty($entity->date_id) && !in_array($delta, $selected_deltas)) {
@@ -202,18 +221,21 @@ function date_field_info() {
       'description' => t('Store a date in the database as a datetime field, recommended for complete dates and times that may need timezone conversion.'),
       'default_widget' => 'date_select',
       'default_formatter' => 'date_default',
+      'default_token_formatter' => 'date_plain',
       ) + $settings,
     'date' => array(
       'label' => 'Date (ISO format)',
       'description' => t('Store a date in the database as an ISO date, recommended for historical or partial dates.'),
       'default_widget' => 'date_select',
       'default_formatter' => 'date_default',
+      'default_token_formatter' => 'date_plain',
       ) + $settings,
     'datestamp' => array(
       'label' => 'Date (Unix timestamp)',
       'description' => t('Store a date in the database as a timestamp, deprecated format to support legacy data.'),
       'default_widget' => 'date_select',
       'default_formatter' => 'date_default',
+      'default_token_formatter' => 'date_plain',
       ) + $settings,
   );
 }

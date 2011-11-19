@@ -267,7 +267,7 @@ function template_preprocess_date_vcalendar(&$vars) {
       $events[$uid] = $event;
       $timezone = timezone_name_get(date_timezone_get($event['start']));
       if (!empty($timezone)) {
-        $events[$uid]['timezone'] = "TZID=$timezone:";
+        $events[$uid]['timezone'] = "TZID=$timezone;";
       }
       else {
         $events[$uid]['timezone'] = '';

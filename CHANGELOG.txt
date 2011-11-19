@@ -20,6 +20,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1052586 by jpsolero, Problem with Date API when using Calendar with argument set to "Week" granularity and "current date" default argument
 - Issue #1266144, End date same as start date default not being respected.
 - Issue #1239934 by casey, Fix javascript exception in date_year_range.js.
 - Issue #1310558, Don't show extra label on exposed date filter.

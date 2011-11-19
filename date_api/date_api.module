@@ -1677,7 +1677,7 @@ function date_limit_format($format, $granularity) {
         $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[Yy])';
         break;
       case 'day':
-        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[l|D|d|dS|j|jS]{1,2})';
+        $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[l|D|d|dS|j|jS|N|w|W|z]{1,2})';
         break;
       case 'month':
         $regex[] = '([\-/\.,:]?\s?(?<!\\\\)[FMmn])';

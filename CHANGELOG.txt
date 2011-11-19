@@ -12,6 +12,7 @@ is now controlled by a field setting.
 
 New Features/UX Changes/API Changes
 
+- Issue #1252952 by eosrei: Make "all day" checkbox configurable on a per field instance basis.
 - Issue #1266144 by arlinsandbulte: Clarify Default End Date Setting
 - Issue #1261478 by stevector and KarenS, Reconfigure the back/next buttons into item lists so Views ajax pager works right.
 - Issue #1262960, Add a new module to work with the Context module to set a condition based on the value of a date field.

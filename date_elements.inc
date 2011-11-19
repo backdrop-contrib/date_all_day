@@ -254,20 +254,21 @@ function date_combo_element_process($element, &$form_state, $form) {
     $date = date_local_date($form, $form_state, $delta, $element['#default_value'], $element['#date_timezone'], $field, $instance, $processed);
     $element['#default_value'][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
-
-  $from = $element['#default_value'][$from_field];
-  $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];
-  $date_is_all_day = date_is_all_day($from, $to);
-  $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
-  $element['all_day'] = array(
-    '#title' => t('All Day'),
-    '#type' => 'checkbox',
-    '#default_value' => $all_day,
-    '#weight' => -21,
-    '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text')),
-    '#prefix' => '<div class="date-float">',
-    '#suffix' => '</div>',
-  );
+  if ($instance['widget']['settings']['display_all_day']) {
+    $from = $element['#default_value'][$from_field];
+    $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];
+    $date_is_all_day = date_is_all_day($from, $to);
+    $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
+    $element['all_day'] = array(
+      '#title' => t('All Day'),
+      '#type' => 'checkbox',
+      '#default_value' => $all_day,
+      '#weight' => -21,
+      '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text')),
+      '#prefix' => '<div class="date-float">',
+      '#suffix' => '</div>',
+    );
+  }
   $all_day_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-all-day');
 
   // Unlimited fields using javascript Add more button end up with altered ids.

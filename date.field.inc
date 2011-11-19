@@ -247,6 +247,7 @@ function date_field_widget_info() {
   $settings = array(
     'settings' => array(
       'input_format' => date_default_format('date_select'),
+      'display_all_day' => 0,
       'input_format_custom' => '',
       'increment' => 15,
       'text_parts' => array(),

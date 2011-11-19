@@ -265,6 +265,14 @@ function _date_field_widget_settings_form($field, $instance) {
     '#default_value' => $settings['input_format'],
     '#options' => $options,
     '#description' => t('Control the order and format of the options users see.'),
+    '#weight' => 3,
+    '#fieldset' => 'date_format',
+  );
+  $form['display_all_day'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display all day checkbox'),
+    '#default_value' => $settings['display_all_day'],
+    '#description' => t('Determines whether to display the \'All Day\' checkbox.'),
     '#weight' => 4,
     '#fieldset' => 'date_format',
   );

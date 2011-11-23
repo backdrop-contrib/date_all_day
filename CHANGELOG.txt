@@ -21,6 +21,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1103032, Attempt to add setters to date entity metadata so Rules can use them.
 - Issue #1153766, Adapt metadata functions to the pattern in the current Entity code, add $info to the getters.
 - Issue #1278876 by basicmagic.net, Typo in date.css
 - Issue #752550 by Fonant, Week number gets printed twice

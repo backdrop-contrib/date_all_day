@@ -26,6 +26,8 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
         $this->date_handler->date_type = $field['type'];
         $this->original_table = $this->definition['table'];
       }
+      $this->date_handler->db_timezone = date_get_timezone_db($field['settings']['tz_handling']);
+      $this->date_handler->local_timezone = date_get_timezone($field['settings']['tz_handling']);
     }
     $this->date_handler->granularity = $this->options['granularity'];
     $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
@@ -184,11 +186,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     return $formula;
   }
 
-  function pre_query() {
-    // Setting the offset to avoid trying to use timezone adjustments for dates that don't need it.
-    $this->offset = in_array($this->date_handler->granularity, array('hour', 'minute', 'sec')) ? NULL : 0;
-  }
-
   /**
    * Inject a test for valid date range before the regular query.
    * Override the parent query to be able to control the $group.
@@ -229,7 +226,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     if (!empty($this->options['use_fromto'])) {
 
       // The simple case, match the field to the view range.
-      $field = $this->date_handler->sql_field($this->table_alias . '.' . $this->real_field, $this->offset);
+      $field = $this->date_handler->sql_field($this->table_alias . '.' . $this->real_field);
       $field = $this->date_handler->sql_format($format, $field);
       $this->query->add_where_expression($group, "$field >= $view_min_placeholder AND $field <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
 
@@ -246,9 +243,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
 
       $value_min = str_replace($this->original_table, $this->table_alias, $fromto[0]);
       $value_max = str_replace($this->original_table, $this->table_alias, $fromto[1]);
-      $field_min = $this->date_handler->sql_field($value_min, $this->offset);
+      $field_min = $this->date_handler->sql_field($value_min);
       $field_min = $this->date_handler->sql_format($format, $field_min);
-      $field_max = $this->date_handler->sql_field($value_max, $this->offset);
+      $field_max = $this->date_handler->sql_field($value_max);
       $field_max = $this->date_handler->sql_format($format, $field_max);
       $this->query->add_where_expression($group, "$field_max >= $view_min_placeholder AND $field_min <= $view_max_placeholder", array($view_min_placeholder => $view_min, $view_max_placeholder => $view_max));
     }

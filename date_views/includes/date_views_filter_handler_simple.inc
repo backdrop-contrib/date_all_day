@@ -316,11 +316,6 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       if (!isset($form_state['input'][$identifier][$prefix])) {
         $form_state['input'][$identifier][$prefix] = $this->value[$prefix];
       }
-      // Add relative value as non-editable.
-      $form[$relative_id] = array(
-        '#type' => 'value',
-        '#value' => $relative_value,
-      );
     }
     else {
       // UI when the date selector is on the views configuration screen.

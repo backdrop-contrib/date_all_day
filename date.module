@@ -771,6 +771,9 @@ function date_entity_metadata_field_getter($entity, array $options, $name, $enti
  */
 function date_entity_metadata_struct_getter($item, array $options, $name, $type, $info) {
   $value = trim($item[$name]);
+  if (empty($value)) {
+    return NULL;
+  }
   $timezone_db = !empty($item['timezone_db']) ? $item['timezone_db'] : 'UTC';
   $date = new DateObject($value, $timezone_db);
   return !empty($date) ? date_format_date($date, 'custom', 'U') : NULL;
@@ -838,6 +841,10 @@ function date_entity_metadata_field_setter(&$entity, $name, $value, $langcode, $
  * $name will either be field name or 'value' or 'value2'.
  */
 function date_entity_metadata_struct_setter(&$item, $name, $value, $langcode, $type, $info) {
+
+  if (empty($value)) {
+    return NULL;
+  }
 
   $field = field_info_field($info['field_name']);
   $field_name = $field['field_name'];

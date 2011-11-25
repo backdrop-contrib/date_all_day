@@ -268,15 +268,6 @@ function _date_field_widget_settings_form($field, $instance) {
     '#weight' => 3,
     '#fieldset' => 'date_format',
   );
-  $form['display_all_day'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Display all day checkbox'),
-    '#default_value' => $settings['display_all_day'],
-    '#description' => t('Determines whether to display the \'All Day\' checkbox.'),
-    '#weight' => 4,
-    '#fieldset' => 'date_format',
-  );
-
   // Only a limited set of formats is available for the Date Popup module
   if ($widget['type'] != 'date_popup') {
     $form['input_format']['#options']['custom'] = t('Custom format');
@@ -331,6 +322,20 @@ function _date_field_widget_settings_form($field, $instance) {
       '#type' => 'hidden',
       '#value' => $settings['increment'],
     );
+  }
+
+  $form['display_all_day'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display all day checkbox'),
+    '#default_value' => $settings['display_all_day'],
+    '#description' => t('Determines whether to display the \'All Day\' checkbox to the user.'),
+    '#weight' => 8,
+    '#fieldset' => 'date_format',
+  );
+  // Hide the option to use the all day checkbox for dates with no time.
+  if (!date_has_time($field['settings']['granularity'])) {
+    $form['display_all_day']['#type'] = 'hidden';
+    $form['display_all_day']['#value'] = 0;
   }
 
   $form['label_position'] = array(

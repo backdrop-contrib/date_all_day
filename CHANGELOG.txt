@@ -21,6 +21,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1335818 by joelpitter, Don't create a date for empty values in the date getters and setters.
 - Issue #1271726, Keep default_value out of exposed form so it won't show up in pager.
 - Issue #1017866, Fix miscellaneous problems where filter/argument incorrectly do timezone adjustment.
 - Issue #1103032, Attempt to add setters to date entity metadata so Rules can use them.

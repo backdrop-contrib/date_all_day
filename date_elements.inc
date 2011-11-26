@@ -150,13 +150,15 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
     if (empty($default_value) || $default_value == 'blank' || $delta > 0) {
       return NULL;
     }
+    elseif ($default_value == 'strtotime' && !empty($default_value_code)) {
+      $date = new DateObject($default_value_code, date_default_timezone());
+    }
     elseif ($part == 'value2' && $default_value == 'same') {
       if ($instance['settings']['default_value'] == 'blank' || empty($item['value'])) {
         return NULL;
       }
       else {
         $date = new DateObject($item['value'], $timezone, DATE_FORMAT_DATETIME);
-        $date->limitGranularity($field['settings']['granularity']);
       }
     }
     // Special case for 'now' when using dates with no timezone,
@@ -167,6 +169,8 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
     else {
       $date = date_now($timezone);
     }
+    $date->limitGranularity($field['settings']['granularity']);
+
   }
   else {
     $value = $item[$part];
@@ -190,9 +194,6 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
       return NULL;
     }
     date_timezone_set($date, timezone_open($timezone));
-  }
-  if (is_object($date) && empty($item[$part]) && $default_value == 'strtotime' && !empty($default_value_code)) {
-    date_modify($date, $default_value_code);
   }
   return $date;
 }

@@ -575,7 +575,12 @@ function date_formatter_format($formatter, $settings, $granularity = array(), $l
       break;
     default:
       $format = system_date_format_locale($langcode, $format_type);
-      if (empty($format)) {
+      // If locale enabled and $format_type inexistent in {date_format_locale}
+      // we receive (due to inconsistency of core api) an array of all (other)
+      // formats available for $langcode in locale table.
+      // However there's no guarantee that the key $format_type exists.
+      // See http://drupal.org/node/1302358.
+      if (!is_string($format)) {
         // If the configuration page at admin/config/regional/date-time was
         // never saved, the default core date format variables
         // ('date_format_short', 'date_format_medium', and 'date_format_long')

@@ -21,6 +21,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1302374 by miro_dietiker, Account for an inconsistency in core handling of non-existant date formats.
 - Issue #1344014 by James Sharpe, Get rid of 'Repeats every 0 days' description.
 - Issue #1302212, Change the way default dates using custom code are created.
 - Issue #1292898, Check for all day checkbox in the basic date element validation so empty time for newly added elements still passes validation.

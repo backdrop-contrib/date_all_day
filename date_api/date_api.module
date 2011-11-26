@@ -171,7 +171,6 @@ class DateObject extends DateTime {
     if (!$this->getTimezone() || !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
       $this->setTimezone(new DateTimeZone("UTC"));
     }
-
   }
 
   /**

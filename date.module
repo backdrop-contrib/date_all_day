@@ -189,6 +189,24 @@ function date_input_date($field, $instance, $element, $input) {
 }
 
 /**
+ * A helper function to check if the all day flag is set on the parent of an 
+ * element, and adjust the date_format accordingly so the missing time will 
+ * not cause validation errors.
+ */
+function date_all_day_value(&$element, $form_state) {
+  if (!empty($element['#date_all_day_id'])) {
+    $parents = $element['#parents'];
+    array_pop($parents);
+    $parent_element = drupal_array_get_nested_value($form_state['values'], $parents);
+    if (!empty($parent_element) && !empty($parent_element['all_day'])) {
+      $element['#date_format'] = date_part_format('date', $element['#date_format']);
+      return $parent_element['all_day'];
+    }
+  }
+  return FALSE;
+}
+
+/**
  * Implements hook_theme().
  */
 function date_theme() {

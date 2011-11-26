@@ -21,6 +21,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1292898, Check for all day checkbox in the basic date element validation so empty time for newly added elements still passes validation.
 - Issue #1252952 follow up, Move checkbox setting to the same spot where time is set, and don't show option on dates without time.
 - Issue #1335818 by joelpitter, Don't create a date for empty values in the date getters and setters.
 - Issue #1271726, Keep default_value out of exposed form so it won't show up in pager.

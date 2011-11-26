@@ -1065,8 +1065,10 @@ function date_format_patterns($strict = FALSE) {
     'Y' => '-?\d{1,6}',    'y' => '\d{2}',      'B' => '\d{3}',   'g' => '\d{1,2}',
     'G' => '\d{1,2}',  'e' => '\w*',        'I' => '\d',      'T' => '\w*',
     'U' => '\d*',      'z' => '[+-]?\d*',   'O' => '[+-]?\d{4}',
-    //Using S instead of w and 3 as well as 4 to pick up non-ASCII chars like German umlaute
-    'D' => '\S{3,4}',    'l' => '\S*', 'M' => '\S{3,4}', 'F' => '\S*',
+    //Using S instead of w and 3 as well as 4 to pick up non-ASCII chars like German umlaute.
+    // Per http://drupal.org/node/1101294, we may need as little as 2 and as many as 5 characters
+    // in some languages.
+    'D' => '\S{2,5}',    'l' => '\S*', 'M' => '\S{2,5}', 'F' => '\S*',
     'P' => '[+-]?\d{2}\:\d{2}',
     'O' => '[+-]\d{4}',
     'c' => '(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([+-]?\d{2}\:\d{2})',

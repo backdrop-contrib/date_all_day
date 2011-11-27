@@ -21,6 +21,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1122038, Make sure empty values are not passed to Views to be themed for repeating dates.
 - Issue #1101284 by pfournier, Expand regex for Month names to catch more possible variations.
 - Issue #1343406 by slashrsm, add back the caching of the views fields list.
 - Issue #1302374 by miro_dietiker, Account for an inconsistency in core handling of non-existant date formats.

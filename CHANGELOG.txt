@@ -23,6 +23,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1276622 by ArtistConk, Make sure Except date contains no default value.
 - Issue #1153766 by fago, More work on the entity property setters and getters.
 - Issue #1331214, Make sure Date Migrate properly handles empty date values.
 - Issue #1285224, Make sure Date Migrate works for importing repeating dates now that widgets have changed.

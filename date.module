@@ -189,8 +189,8 @@ function date_input_date($field, $instance, $element, $input) {
 }
 
 /**
- * A helper function to check if the all day flag is set on the parent of an 
- * element, and adjust the date_format accordingly so the missing time will 
+ * A helper function to check if the all day flag is set on the parent of an
+ * element, and adjust the date_format accordingly so the missing time will
  * not cause validation errors.
  */
 function date_all_day_value(&$element, $form_state) {
@@ -749,26 +749,25 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
     // Define a simple data structure containing both dates.
     $property['type'] = ($field['cardinality'] != 1) ? 'list<struct>' : 'struct';
     $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+    $property['setter callback'] = 'entity_metadata_field_verbatim_set';
     $property['property info'] = array(
       'value' => array(
         'type' => 'date',
         'label' => t('Start date'),
         'getter callback' => 'date_entity_metadata_struct_getter',
         'setter callback' => 'date_entity_metadata_struct_setter',
-        // The getter and setter callbacks for 'value' and 'value2' 
+        // The getter and setter callbacks for 'value' and 'value2'
         // will not provide the field name as $name, we'll add it to $info.
         'field_name' => $field['field_name'],
-        'bundle' => $instance['bundle'],
       ),
       'value2' => array(
         'type' => 'date',
         'label' => t('End date'),
         'getter callback' => 'date_entity_metadata_struct_getter',
         'setter callback' => 'date_entity_metadata_struct_setter',
-        // The getter and setter callbacks for 'value' and 'value2' 
+        // The getter and setter callbacks for 'value' and 'value2'
         // will not provide the field name as $name, we'll add it to $info.
         'field_name' => $field['field_name'],
-        'bundle' => $instance['bundle'],
       ),
       'duration' => array(
         'type' => 'duration',
@@ -776,10 +775,9 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
         'desription' => t('The duration of the time period given by the dates.'),
         'getter callback' => 'date_entity_metadata_duration_getter',
         // No setter callback for duration.
-        // The getter callback for duration will not provide the field name 
+        // The getter callback for duration will not provide the field name
         // as $name, we'll add it to $info.
         'field_name' => $field['field_name'],
-        'bundle' => $instance['bundle'],
       ),
     );
     unset($property['query callback']);
@@ -831,7 +829,6 @@ function date_entity_metadata_duration_getter($item, array $options, $name, $typ
  */
 function date_entity_metadata_field_setter(&$entity, $name, $value, $langcode, $entity_type, $info) {
   $field = field_info_field($name);
-
   if (!isset($langcode)) {
     // Try to figure out the default language used by the entity.
     // @todo: Update once http://drupal.org/node/1260640 has been fixed.
@@ -839,27 +836,12 @@ function date_entity_metadata_field_setter(&$entity, $name, $value, $langcode, $
   }
   $values = $field['cardinality'] == 1 ? array($value) : (array) $value;
 
-  // Get an array of the values this field holds, 'value', or 'value' and 'value2'.
-  $keys = date_process_values($field);
   $items = array();
-  if (isset($entity->{$name}[$langcode])) {
-    foreach ($entity->{$name}[$langcode] as $delta => $data) {
-      foreach($keys as $key) {
-        $value = $values[$delta][$key];
-
-        // Convert ISO or datetime values to strings, using the same method Entity uses.
-        // This is not exactly how Date API would do it, but not sure yet how Entity
-        // would work if it was changed.
-        $value = is_numeric($value) ? $value : strtotime($value, time());
-          
-        if (isset($value) && !empty($value)) {
-          date_entity_metadata_struct_setter($data, $key, $value, $langcode, 'struct', $info['property info'][$key]);
-        }
-        $items[$delta][$key] = $data[$key];
-      }
-    }
+  foreach ($values as $delta => $value) {
+    // Make use of the struct setter to convert the date back to a timestamp.
+    $info['field_name'] = $name;
+    date_entity_metadata_struct_setter($items[$delta], 'value', $value, $langcode, 'struct', $info);
   }
-
   $entity->{$name}[$langcode] = $items;
   // Empty the static field language cache, so the field system picks up any
   // possible new languages.
@@ -867,31 +849,31 @@ function date_entity_metadata_field_setter(&$entity, $name, $value, $langcode, $
 }
 
 /**
- * Callback for setting an individual field value.
+ * Callback for setting an individual field value if a to-date may be there too.
  * Based on entity_property_verbatim_set().
- * The value passed in will always be a unix timestamp ??
- * Convert it to the right value based on the type of date field.
- * $name will either be field name or 'value' or 'value2'.
+ *
+ * The passed in unix timestamp (UTC) is converted to the right value and
+ * format dependent on the field.
+ *
+ * $name is either 'value' or 'value2'.
  */
 function date_entity_metadata_struct_setter(&$item, $name, $value, $langcode, $type, $info) {
 
-  if (empty($value)) {
-    return NULL;
+  if (!isset($value)) {
+    $item[$name] = NULL;
   }
+  else {
+    $field = field_info_field($info['field_name']);
+    $format = date_type_format($field['type']);
+    $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
 
-  $field = field_info_field($info['field_name']);
-  $field_name = $field['field_name'];
-  $instance = field_info_field($info['field_name'], $info['bundle']);
-  $format = date_type_format($field['type']);
-  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
-  
-  $date = new DateObject($value, 'UTC');
-  if ($timezone_db != 'UTC') {
-    date_timezone_set($date, timezone_open($timezone_db));
+    $date = new DateObject($value, 'UTC');
+    if ($timezone_db != 'UTC') {
+      date_timezone_set($date, timezone_open($timezone_db));
+    }
+    $item[$name] = $date->format($format);
   }
-  $item[$name] = $date->format($format);
 }
-
 
 /**
  * Determine if a Start/End date combination qualify as 'All day'.

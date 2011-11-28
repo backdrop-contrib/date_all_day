@@ -95,7 +95,18 @@ class DateMigrateFieldHandler extends MigrateFieldHandler {
         }
       }
 
-      // Work from a timestamp
+      // Missing data? Create an empty value and return;
+      // Don't try to turn the empty value into a bogus
+      // timestamp for 'now'.
+      if (empty($from)) {
+        $return[$language][$delta]['value'] = NULL;
+        if (!empty($field_info['settings']['todate'])) {
+          $return[$language][$delta]['value2'] = NULL;
+        }
+        return $return;
+      }
+
+      // If we have a value, work from a timestamp
       $from = MigrationBase::timestamp($from);
       if ($to) {
         $to = MigrationBase::timestamp($to);

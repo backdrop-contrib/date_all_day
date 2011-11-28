@@ -662,17 +662,15 @@ class DateObject extends DateTime {
   /**
    * Compute difference between two days using a given measure.
    *
-   * @param mixed $date1
-   *   the starting date
-   * @param mixed $date2
-   *   the ending date
+   * @param DateObject $date2_in
+   *   The stop date
    * @param string $measure
    *   'years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'
-   * @param string $type
-   *   the type of dates provided:
-   *   DATE_OBJECT, DATE_DATETIME, DATE_ISO, DATE_UNIX, DATE_ARRAY
+   * @param boolean $absolute
+   *   Indicate whether the absolute value of the difference should be returned
+   *   or if the sign should be retained. Default: TRUE
    */
-  public function difference($date2_in, $measure = 'seconds') {
+  public function difference($date2_in, $measure = 'seconds', $absolute = TRUE) {
     // Create cloned objects or original dates will be impacted by
     // the date_modify() operations done in this code.
     $date1 = clone($this);
@@ -682,7 +680,7 @@ class DateObject extends DateTime {
       if ($diff == 0 ) {
         return 0;
       }
-      elseif ($diff < 0) {
+      elseif ($diff < 0 && $absolute) {
         // Make sure $date1 is the smaller date.
         $temp = $date2;
         $date2 = $date1;

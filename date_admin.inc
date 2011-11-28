@@ -561,17 +561,3 @@ function date_timezone_handling_options() {
     );
 }
 
-/**
- * Get an example date and make sure the difference between
- * month and day and 12 and 24 hours will be clear.
- */
-function date_example_date() {
-  $now = date_now();
-  if (date_format($now, 'm') == date_format($now, 'd')) {
-    date_modify($now, '+1 day');
-  }
-  if (date_format($now, 'H') == date_format($now, 'h')) {
-    date_modify($now, '+12 hours');
-  }
-  return $now;
-}

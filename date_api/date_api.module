@@ -2028,6 +2028,9 @@ function date_format_type_options() {
  */
 function date_example_date() {
   $now = date_now();
+  if (date_format($now, 'M') == date_format($now, 'F')) {
+    date_modify($now, '+1 month');
+  }
   if (date_format($now, 'm') == date_format($now, 'd')) {
     date_modify($now, '+1 day');
   }

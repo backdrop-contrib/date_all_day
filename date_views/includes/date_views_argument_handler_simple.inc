@@ -75,6 +75,8 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $options['default_argument_type'] = array('default' => 'date');
     $options['add_delta'] = array('default' => '');
     $options['use_fromto'] = array('default' => '');
+    $options['summary']['contains'] += array('summary_format' => array('default' => ''));
+    $options['summary']['contains'] += array('summary_format_custom' => array('default' => ''));
     return $options;
   }
 
@@ -83,6 +85,44 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
+
+    // Add an option to control the format of the summary.
+    $options = array(
+      '' => t('Default format'),
+      'custom' => t('Custom format'),
+    );
+    $example_month = date_format_date(date_example_date(), 'custom', $this->date_handler->views_formats('month', 'display'));
+    $example_day = date_format_date(date_example_date(), 'custom', $this->date_handler->views_formats('day', 'display'));
+
+    $form['summary']['summary_format'] = array(
+      '#type' => 'select',
+      '#title' => t('Summary date format options'),
+      '#default_value' => $this->options['summary']['summary_format'],
+      '#options' => $options,
+      '#description' => t('The date format used on summary views for this argument. The default format is based on the granularity of the filter, i.e. month: @example_month, day: @example_day.', array('@example_month' => $example_month, '@example_day' => $example_day)),
+      '#fieldset' => 'no_argument',
+      '#attributes' => array('class' => array('dependent-options')),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="options[default_action]"]' => array('value' => 'summary')
+        ),
+      ),
+    );
+
+    $form['summary']['summary_format_custom'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Custom summary date format'),
+      '#default_value' => $this->options['summary']['summary_format_custom'],
+      '#description' => t("A custom format for the summary date format. Define a php date format string like 'm-d-Y H:i' (see <a href=\"@link\">http://php.net/date</a> for more details).", array('@link' => 'http://php.net/date')),
+      '#fieldset' => 'no_argument',
+      '#attributes' => array('class' => array('dependent-options')),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="options[summary][summary_format]"]' => array('value' => 'custom')
+        ),
+      ),
+    );
+
     $options = $this->date_handler->date_parts();
     unset($options['second'], $options['minute']);
     $options += array('week' => t('Week', array(), array('context' => 'datetime')));
@@ -139,7 +179,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     elseif (empty($value)) {
       return $this->options['wildcard_substitution'];
     }
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
+    $format = !empty($this->options['summary']['summary_format']) && !empty($this->options['summary']['summary_format_custom']) ? $this->options['summary']['summary_format_custom'] : $this->date_handler->views_formats($this->options['granularity'], 'display');
     $range = $this->date_handler->arg_range($value);
     return date_format_date($range[0], 'custom', $format);
   }

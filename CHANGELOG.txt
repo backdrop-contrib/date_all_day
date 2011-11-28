@@ -12,6 +12,7 @@ is now controlled by a field setting.
 
 New Features/UX Changes/API Changes
 
+- Issue #1238660, Add custom format option for the date format used in summary arguments.
 - Issue #1038482 by somanyfish, iCal import failing due to colon instead of semi-colon
 - Issue #1252952 by eosrei: Make "all day" checkbox configurable on a per field instance basis.
 - Issue #1266144 by arlinsandbulte: Clarify Default End Date Setting

@@ -125,7 +125,7 @@ class DateMigrateFieldHandler extends MigrateFieldHandler {
       }
 
       // Handle repeats, coming in as RRULEs. Many field instances may be created.
-      if ($instance['widget']['type'] == 'date_text_repeat' && $rrule) {
+      if (!empty($field_info['settings']['repeat']) && $rrule) {
         include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date') . '/date_repeat.inc');
         include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
         $item = array('value' => $from, 'value2' => $to, 'timezone' => $timezone);

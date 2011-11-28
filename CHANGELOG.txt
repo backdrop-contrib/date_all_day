@@ -23,6 +23,7 @@ New Features/UX Changes/API Changes
 
 Bugfixes
 
+- Issue #1285224, Make sure Date Migrate works for importing repeating dates now that widgets have changed.
 - Issue #1162290, Make sure date for example formats avoids confusing short and long month names.
 - Re-organize handling of custom date formats.
 - Issue #1122038, Make sure empty values are not passed to Views to be themed for repeating dates.

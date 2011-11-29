@@ -49,6 +49,12 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   $element = $base;
   $field_name = $field['field_name'];
 
+  // If this is a new entity, populate the field with the right default values.
+  // This happens early so even fields later hidden with #access get those values.
+  if (empty($items)) {
+    $items = date_default_value($field, $instance, $langcode);
+  }
+
   // @TODO Repeating dates should probably be made into their own field type and completely separated out.
   // That will have to wait for a new branch since it may break other things, including other modules
   // that have an expectation of what the date field types are.
@@ -130,15 +136,58 @@ function date_repeat_after_build(&$element, &$form_state) {
  * Create local date object.
  *
  * Create a date object set to local time from the field and
- * widget settings and item values, using field settings to
- * determine what to do with empty values.
+ * widget settings and item values. Default values for new entities 
+ * are set by the default value callback, so don't need to be accounted for here.
  */
-function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $instance, $part = 'value') {
-  if (!empty($form['nid']['#value'])) {
-    $default_value = '';
-    $default_value_code = '';
+function date_local_date($item, $timezone, $field, $instance, $part = 'value') {
+
+  $value = $item[$part];
+
+  // @TODO Figure out how to replace date_fuzzy_datetime() function.
+  // Special case for ISO dates to create a valid date object for formatting.
+  // Is this still needed?
+  /*
+  if ($field['type'] == DATE_ISO) {
+    $value = date_fuzzy_datetime($value);
   }
-  elseif ($part == 'value') {
+  else {
+    $db_timezone = date_get_timezone_db($field['settings']['tz_handling']);
+    $value = date_convert($value, $field['type'], DATE_DATETIME, $db_timezone);
+  }
+  */
+
+  $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']));
+  $date->limitGranularity($field['settings']['granularity']);
+  if (empty($date)) {
+    return NULL;
+  }
+  date_timezone_set($date, timezone_open($timezone));
+
+  return $date;
+}
+
+/**
+ * The callback for setting a default value for an empty date field.
+ */
+function date_default_value($field, $instance, $langcode) {
+  $item = array();
+  $date = date_default_value_part($item, $field, $instance, $langcode, 'value');
+  $item[0]['value'] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+  if (!empty($field['settings']['todate'])) {
+    $date = date_default_value_part($item, $field, $instance, $langcode, 'value2');
+    $item[0]['value2'] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+  }
+  return $item;
+}
+
+/**
+ * Helper function for the date default value callback to set
+ * either 'value' or 'value2' to its default value.
+ */
+function date_default_value_part($item, $field, $instance, $langcode, $part = 'value') {
+  $timezone = date_get_timezone($field['settings']['tz_handling']);
+  $date = NULL;
+  if ($part == 'value') {
     $default_value = $instance['settings']['default_value'];
     $default_value_code = $instance['settings']['default_value_code'];
   }
@@ -146,55 +195,29 @@ function date_local_date($form, $form_state, $delta, $item, $timezone, $field, $
     $default_value = $instance['settings']['default_value2'];
     $default_value_code = $instance['settings']['default_value_code2'];
   }
-  if (empty($item) || empty($item[$part])) {
-    if (empty($default_value) || $default_value == 'blank' || $delta > 0) {
+  if (empty($default_value) || $default_value == 'blank') {
+    return NULL;
+  }
+  elseif ($default_value == 'strtotime' && !empty($default_value_code)) {
+    $date = new DateObject($default_value_code, date_default_timezone());
+  }
+  elseif ($part == 'value2' && $default_value == 'same') {
+    if ($instance['settings']['default_value'] == 'blank' || empty($item[0]['value'])) {
       return NULL;
     }
-    elseif ($default_value == 'strtotime' && !empty($default_value_code)) {
-      $date = new DateObject($default_value_code, date_default_timezone());
-    }
-    elseif ($part == 'value2' && $default_value == 'same') {
-      if ($instance['settings']['default_value'] == 'blank' || empty($item['value'])) {
-        return NULL;
-      }
-      else {
-        $date = new DateObject($item['value'], $timezone, DATE_FORMAT_DATETIME);
-      }
-    }
-    // Special case for 'now' when using dates with no timezone,
-    // make sure 'now' isn't adjusted to UTC value of 'now' .
-    elseif ($field['settings']['tz_handling'] == 'none') {
-      $date = date_now();
-    }
     else {
-      $date = date_now($timezone);
+      $date = new DateObject($item[0]['value'], $timezone, DATE_FORMAT_DATETIME);
     }
-    $date->limitGranularity($field['settings']['granularity']);
-
+  }
+  // Special case for 'now' when using dates with no timezone,
+  // make sure 'now' isn't adjusted to UTC value of 'now' .
+  elseif ($field['settings']['tz_handling'] == 'none') {
+    $date = date_now();
   }
   else {
-    $value = $item[$part];
-
-    // @TODO Figure out how to replace date_fuzzy_datetime() function.
-    // Special case for ISO dates to create a valid date object for formatting.
-    // Is this still needed?
-    /*
-    if ($field['type'] == DATE_ISO) {
-      $value = date_fuzzy_datetime($value);
-    }
-    else {
-      $db_timezone = date_get_timezone_db($field['settings']['tz_handling']);
-      $value = date_convert($value, $field['type'], DATE_DATETIME, $db_timezone);
-    }
-    */
-
-    $date = new DateObject($value, date_get_timezone_db($field['settings']['tz_handling']));
-    $date->limitGranularity($field['settings']['granularity']);
-    if (empty($date)) {
-      return NULL;
-    }
-    date_timezone_set($date, timezone_open($timezone));
+    $date = date_now($timezone);
   }
+  $date->limitGranularity($field['settings']['granularity']);
   return $date;
 }
 
@@ -252,7 +275,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     if (!isset($element['#default_value'][$processed])) {
       $element['#default_value'][$processed] = '';
     }
-    $date = date_local_date($form, $form_state, $delta, $element['#default_value'], $element['#date_timezone'], $field, $instance, $processed);
+    $date = date_local_date($element['#default_value'], $element['#date_timezone'], $field, $instance, $processed);
     $element['#default_value'][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
   if ($instance['widget']['settings']['display_all_day']) {

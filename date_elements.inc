@@ -51,8 +51,10 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
 
   // If this is a new entity, populate the field with the right default values.
   // This happens early so even fields later hidden with #access get those values.
+  $is_default = FALSE;
   if (empty($items)) {
     $items = date_default_value($field, $instance, $langcode);
+    $is_default = TRUE;
   }
 
   // @TODO Repeating dates should probably be made into their own field type and completely separated out.
@@ -95,6 +97,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
     '#element_validate' => array('date_combo_validate', 'date_widget_validate'),
+    '#date_is_default' => $is_default,
   );
 
   if ($field['settings']['tz_handling'] == 'date') {
@@ -235,6 +238,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   $bundle = $element['#bundle'];
   $entity_type = $element['#entity_type'];
   $langcode = $element['#language'];
+  $date_is_default = $element['#date_is_default'];
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
@@ -278,6 +282,15 @@ function date_combo_element_process($element, &$form_state, $form) {
     $date = date_local_date($element['#default_value'], $element['#date_timezone'], $field, $instance, $processed);
     $element['#default_value'][$processed] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
   }
+
+  // Blank out the end date for optional end dates that match the start date,
+  // except when this is a new node that has default values that should be honored.
+  if (!$date_is_default && $field['settings']['todate'] != 'required'
+  && !empty($element['#default_value'][$to_field])
+  && $element['#default_value'][$to_field] == $element['#default_value'][$from_field]) {
+    unset($element['#default_value'][$to_field]);
+  }
+
   if ($instance['widget']['settings']['display_all_day']) {
     $from = $element['#default_value'][$from_field];
     $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Remove date_get_nested_elements() function. Not being used and I don't want other code to start expecting it.
 - Issue #1266144, The end date should get set to blank if it is optional and matches the start date, but only if it is not populated by default values.
 - Issue #1349510, Make sure default values get populated before processing so they still get set on hidden fields.
 

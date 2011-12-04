@@ -7,6 +7,7 @@ Version 7.x-2.x-dev
 
 New Features
 
+- Issue #1357362, Remove Date Browser, use Date Pager instead.
 - Issue #1354606, Make sure COUNT option without UNTIL date can be handled correctly by repeating date computations.
 
 Bugfixes

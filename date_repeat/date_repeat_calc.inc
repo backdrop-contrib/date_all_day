@@ -52,15 +52,27 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
 
   // Create a date object for the start and end dates.
   $start_date = new DateObject($start, $timezone);
-  $end_date = new DateObject($end, $timezone);
   $modify_time = ' ' . $start_date->format('g:ia');
 
   // If the rule has an UNTIL, see if that is earlier than the end date.
   if (!empty($rrule['UNTIL'])) {
+    $end_date = new DateObject($end, $timezone);
     $until_date = date_ical_date($rrule['UNTIL'], $timezone);
     if (date_format($until_date, 'U') < date_format($end_date, 'U')) {
       $end_date = $until_date;
     }
+  }
+  // The only valid option for an empty end date is when we have a count.
+  elseif (empty($end)) {
+    if (!empty($rrule['COUNT'])) {
+      $end_date = NULL;
+    }
+    else {
+      return array();
+    }
+  }
+  else {
+    $end_date = new DateObject($end, $timezone);
   }
 
   // Get an integer value for the interval, if none given, '1' is implied.
@@ -406,7 +418,7 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
     return FALSE;
   }
   $formatted = date_format($current_day, DATE_FORMAT_DATETIME);
-  if ($formatted > date_format($end_date, DATE_FORMAT_DATETIME)) {
+  if (!empty($end_date) && $formatted > date_format($end_date, DATE_FORMAT_DATETIME)) {
     return FALSE;
   }
   if ($formatted < date_format($start_date, DATE_FORMAT_DATETIME)) {
@@ -460,7 +472,7 @@ function date_repeat_add_dates(&$days, $current_day, $start_date, $end_date, $ex
  */
 function date_repeat_is_finished($current_day, $days, $count, $end_date) {
   if (($count && sizeof($days) >= $count)
-  || date_format($current_day, 'U') > date_format($end_date, 'U')) {
+  || (!empty($end_date) && date_format($current_day, 'U') > date_format($end_date, 'U'))) {
     return TRUE;
   }
   else {

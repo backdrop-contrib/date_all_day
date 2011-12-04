@@ -176,8 +176,15 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
 
   if (!empty($rrule_values['UNTIL']['datetime'])) {
     $end = date_ical_date($rrule_values['UNTIL'], $timezone);
+    $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
   }
-  $end_datetime = date_format($end, DATE_FORMAT_DATETIME);
+  elseif (!empty($rrule_values['COUNT'])) {
+    $end_datetime = NULL;
+  }
+  else {
+    // No UNTIL and no COUNT?
+    return array();
+  }
 
   // Split the RRULE into RRULE, EXDATE, and RDATE parts.
   $parts = date_repeat_split_rrule($rrule);

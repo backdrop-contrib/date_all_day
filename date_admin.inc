@@ -42,7 +42,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#type' => 'textfield',
     '#title' => t('Multiple values:'),
     '#size' => 5,
-    '#field_prefix' => theme('advanced_help_topic', 'date_api', 'date-display') . $prefix,
+    '#field_prefix' => $prefix,
     '#field_suffix' => $suffix,
     '#default_value' => $settings['multiple_number'],
     '#weight' => 2,

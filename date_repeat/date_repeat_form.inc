@@ -418,7 +418,7 @@ function theme_date_repeat_rrule($vars) {
   $fieldset = array(
     '#title' => t('Repeat'),
     '#value' => '',
-    '#description' => theme('advanced_help_topic', 'date_api', 'date-repeat-form') . t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.'),
+    '#description' => t('Choose a frequency and period to repeat this date. If nothing is selected, the date will not repeat.'),
     '#attributes' => array('class' => $class),
     '#children' => $element['#children'],
   );

@@ -17,6 +17,7 @@ New Features
 
 Bugfixes
 
+- Date Migrate tests needed some fixes to conform to latest code.
 - Issue #1353790, Hide missing index notice if the value in the Date Popup does not match the expected value, it will still get trapped as a validation error.
 - Issue #1353790, Make sure Date Popup properly translates the default value if it includes month or day names.
 - Issue #1217796, Make sure that All Day formatting works correctly even if the All Day label is empty.

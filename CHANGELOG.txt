@@ -12,6 +12,7 @@ New Features
 
 Bugfixes
 
+- Issue #1353790, Make sure Date Popup properly translates the default value if it includes month or day names.
 - Issue #1217796, Make sure that All Day formatting works correctly even if the All Day label is empty.
 - The repeat description was lost by a recent change to the theme that sent the element through the theme twice.
 - Remove date_get_nested_elements() function. Not being used and I don't want other code to start expecting it.

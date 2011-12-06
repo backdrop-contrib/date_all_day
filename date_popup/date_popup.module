@@ -244,8 +244,8 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
   elseif (!empty($element['#default_value'])) {
     $date = date_default_date($element);
   }
-  $return['date'] = date_is_date($date) && !$date->timeOnly ? $date->format(date_popup_date_format($element)) : '';
-  $return['time'] = date_is_date($date) && $has_time ? $date->format(date_popup_time_format($element)) : '';
+  $return['date'] = date_is_date($date) && !$date->timeOnly ? date_format_date($date, 'custom', date_popup_date_format($element)) : '';
+  $return['time'] = date_is_date($date) && $has_time ? date_format_date($date, 'custom', date_popup_time_format($element)) : '';
   return $return;
 
 }

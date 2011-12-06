@@ -5,6 +5,11 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+Notes:
+The Date Browser has been removed. Please use the Date Pager instead. If you have existing views using the Date
+Browser the navigation will just disappear from them. If you add a Date Pager to the view you should get it back.
+Then delete the Date Browser attachment from the view, since it doesn't do anything any more.
+
 New Features
 
 - Issue #1357362, Remove Date Browser, use Date Pager instead.

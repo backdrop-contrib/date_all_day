@@ -12,6 +12,7 @@ New Features
 
 Bugfixes
 
+- Issue #1217796, Make sure that All Day formatting works correctly even if the All Day label is empty.
 - The repeat description was lost by a recent change to the theme that sent the element through the theme twice.
 - Remove date_get_nested_elements() function. Not being used and I don't want other code to start expecting it.
 - Issue #1266144, The end date should get set to blank if it is optional and matches the start date, but only if it is not populated by default values.

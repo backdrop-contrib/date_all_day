@@ -53,6 +53,9 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   // Create a date object for the start and end dates.
   $start_date = new DateObject($start, $timezone);
   $modify_time = ' ' . $start_date->format('g:ia');
+  $modify_hour = intval($start_date->format('g'));
+  $modify_minute = intval($start_date->format('i'));
+  $modify_second = intval($start_date->format('s'));
 
   // If the rule has an UNTIL, see if that is earlier than the end date.
   if (!empty($rrule['UNTIL'])) {
@@ -259,9 +262,11 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
         $month = date_format($current_day, 'n');
         if ($rrule['FREQ'] == 'MONTHLY') {
           date_date_set($current_day, $year, $month, 1);
+          date_time_set($modify_hour, $modify_minute, $modify_second);
         }
         else {
           date_date_set($current_day, $year, 1, 1);
+          date_time_set($modify_hour, $modify_minute, $modify_second);
         }
         // Jump to the next period.
         date_modify($current_day, '+' . $jump . $modify_time);

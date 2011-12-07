@@ -146,6 +146,12 @@ function date_local_date($item, $timezone, $field, $instance, $part = 'value') {
 
   $value = $item[$part];
 
+  // If the value is empty, don't try to create a date object because it will
+  // end up being the current day.
+  if (empty($value)) {
+    return NULL;
+  }
+
   // @TODO Figure out how to replace date_fuzzy_datetime() function.
   // Special case for ISO dates to create a valid date object for formatting.
   // Is this still needed?

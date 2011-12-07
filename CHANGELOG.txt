@@ -18,6 +18,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1363460, Make sure widget dates do not end up with the current date when they should be empty.
 - Issue #1353488, Attempt to fix problem using date_date_set() in PHP 5.3.6+.
 - Date Migrate tests needed some fixes to conform to latest code.
 - Issue #1353790, Hide missing index notice if the value in the Date Popup does not match the expected value, it will still get trapped as a validation error.

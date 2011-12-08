@@ -471,17 +471,6 @@ function date_process_values($field) {
 }
 
 /**
- * Implement hook_help().
- */
-function date_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#date':
-      return '<p>' . t('Complete documentation for the Date and Date API modules is available at <a href="@link">http://drupal.org/node/92460</a>.', array('@link' => 'http://drupal.org/node/92460')) . '</p>';
-      break;
-  }
-}
-
-/**
  * Implements hook_form_FORM_ID_alter().
  */
 function date_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {

@@ -42,6 +42,17 @@ define('DATE_REGEX_ICAL_DATETIME', '/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})
  */
 
 /**
+ * Implement hook_help().
+ */
+function date_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#date':
+      return '<p>' . t('Complete documentation for the Date and Date API modules is available at <a href="@link">http://drupal.org/node/92460</a>.', array('@link' => 'http://drupal.org/node/262062')) . '</p>';
+      break;
+  }
+}
+
+/**
  * Extend PHP DateTime class with granularity handling, merge functionality and
  * slightly more flexible initialization parameters.
  *

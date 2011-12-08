@@ -571,6 +571,7 @@ function date_ical_parse_location($field, $data) {
  *    a timezone-adjusted date object
  */
 function date_ical_date($ical_date, $to_tz = FALSE) {
+
   // If the ical date has no timezone, must assume it is stateless
   // so treat it as a local date.
   if (empty($ical_date['datetime'])) {
@@ -582,7 +583,11 @@ function date_ical_date($ical_date, $to_tz = FALSE) {
   else {
     $from_tz = $ical_date['tz'];
   }
+  if (strlen($ical_date['datetime']) < 11) {
+    $ical_date['datetime'] .= ' 00:00:00';
+  }
   $date = new DateObject($ical_date['datetime'], new DateTimeZone($from_tz));
+
   if ($to_tz && $ical_date['tz'] != '' && $to_tz != $ical_date['tz']) {
     date_timezone_set($date, timezone_open($to_tz));
   }
@@ -714,7 +719,7 @@ function date_api_ical_build_rrule($form_values) {
     foreach ($form_values['EXDATE'] as $value) {
       if (!empty($value['datetime'])) {
         $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
-        $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) : '';
+        $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) . 'Z': '';
         if (!empty($ex_date)) {
           $ex_dates[] = $ex_date;
         }
@@ -734,7 +739,7 @@ function date_api_ical_build_rrule($form_values) {
     $ex_dates = array();
     foreach ($form_values['RDATE'] as $value) {
       $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
-      $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) : '';
+      $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) . 'Z': '';
       if (!empty($ex_date)) {
         $ex_dates[] = $ex_date;
       }

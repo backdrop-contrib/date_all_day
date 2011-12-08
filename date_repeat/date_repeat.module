@@ -272,7 +272,9 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
   if ($exceptions) {
     $values = array();
     foreach ($exceptions as $exception) {
-      $values[] = date_format_date(date_ical_date($exception), 'custom', $format);
+      $except = date_ical_date($exception, 'UTC');
+      date_timezone_set($except, date_default_timezone_object());
+      $values[] = date_format_date($except, 'custom', $format);
     }
     $description['!except'] = trim(t('!repeats_every_interval except !except_dates', array('!repeats_every_interval ' => '', '!except_dates' => implode(', ', $values))));
   }
@@ -283,7 +285,9 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
   if ($additions) {
     $values = array();
     foreach ($additions as $addition) {
-      $values[] = date_format_date(date_ical_date($addition), 'custom', $format);
+      $add = date_ical_date($addition, 'UTC');
+      date_timezone_set($add, date_default_timezone_object());
+      $values[] = date_format_date($add, 'custom', $format);
     }
     $description['!additional'] = trim(t('Also includes !additional_dates.', array('!additional_dates' => implode(', ', $values))));
   }

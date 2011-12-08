@@ -53,9 +53,6 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
   // Create a date object for the start and end dates.
   $start_date = new DateObject($start, $timezone);
   $modify_time = ' ' . $start_date->format('g:ia');
-  $modify_hour = intval($start_date->format('g'));
-  $modify_minute = intval($start_date->format('i'));
-  $modify_second = intval($start_date->format('s'));
 
   // If the rule has an UNTIL, see if that is earlier than the end date.
   if (!empty($rrule['UNTIL'])) {
@@ -142,7 +139,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
       while (!$period_finished) {
         foreach ($rrule['BYMONTHDAY'] as $monthday) {
           $day = $direction_days[$monthday];
-          $current_day = date_repeat_set_month_day($current_day, NULL, $day['direction_count'], $day['direction'], $timezone);
+          $current_day = date_repeat_set_month_day($current_day, NULL, $day['direction_count'], $day['direction'], $timezone, $modify_time);
           date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions, $rrule);
           if ($finished = date_repeat_is_finished($current_day, $days, $count, $end_date)) {
             $period_finished = TRUE;
@@ -154,7 +151,7 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
             $period_finished = TRUE;
           }
           // Back up to first of month and jump.
-          $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone);
+          $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone, $modify_time);
           date_modify($current_day, '+'. $jump . $modify_time);
         }
         // If it's yearly, break out of the loop at the
@@ -165,14 +162,14 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
           }
           else {
             // Back up to first of month and jump.
-            $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone);
+            $current_day = date_repeat_set_month_day($current_day, NULL, 1, '+', $timezone, $modify_time);
             date_modify($current_day, '+1 month' . $modify_time);
           }
         }
       }
       if ($rrule['FREQ'] == 'YEARLY') {
         // Back up to first of year and jump.
-        $current_day = date_repeat_set_year_day($current_day, NULL, 1, '+', $timezone);
+        $current_day = date_repeat_set_year_day($current_day, NULL, 1, '+', $timezone, $modify_time);
         date_modify($current_day, '+'. $jump . $modify_time);
       }
       $finished = date_repeat_is_finished($current_day, $days, $count, $end_date);
@@ -247,10 +244,10 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
         foreach ($direction_days as $day) {
           // Find the BYDAY date in the current month.
           if ($rrule['FREQ'] == 'MONTHLY') {
-            $current_day = date_repeat_set_month_day($current_day, $day['day'], $day['direction_count'], $day['direction'], $timezone);
+            $current_day = date_repeat_set_month_day($current_day, $day['day'], $day['direction_count'], $day['direction'], $timezone, $modify_time);
           }
           else {
-            $current_day = date_repeat_set_year_day($current_day, $day['day'], $day['direction_count'], $day['direction'], $timezone);
+            $current_day = date_repeat_set_year_day($current_day, $day['day'], $day['direction_count'], $day['direction'], $timezone, $modify_time);
           }
           date_repeat_add_dates($days, $current_day, $start_date, $end_date, $exceptions, $rrule);
         }
@@ -262,11 +259,11 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
         $month = date_format($current_day, 'n');
         if ($rrule['FREQ'] == 'MONTHLY') {
           date_date_set($current_day, $year, $month, 1);
-          date_time_set($modify_hour, $modify_minute, $modify_second);
+          //date_time_set($current_day, $modify_hour, $modify_minute, $modify_second);
         }
         else {
           date_date_set($current_day, $year, 1, 1);
-          date_time_set($modify_hour, $modify_minute, $modify_second);
+          //date_time_set($current_day, $modify_hour, $modify_minute, $modify_second);
         }
         // Jump to the next period.
         date_modify($current_day, '+' . $jump . $modify_time);
@@ -494,7 +491,7 @@ function date_repeat_is_finished($current_day, $days, $count, $end_date) {
  *   If $day is empty, will set to the number of days from the
  *   beginning or end of the month.
  */
-function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+', $timezone = 'UTC') {
+function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+', $timezone = 'UTC', $modify_time) {
   if (is_object($date_in)) {
     $current_month = date_format($date_in, 'n');
 
@@ -508,23 +505,23 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
     $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the month.
-      date_modify($date, '+1 month');
+      date_modify($date, '+1 month' . $modify_time);
     }
     else {
       // For positive search, back up one day to get outside the
       // current month, so we can catch the first of the month.
-      date_modify($date, '-1 day');
+      date_modify($date, '-1 day' . $modify_time);
     }
 
     if (empty($day)) {
-      date_modify($date, $direction . $count . ' days');
+      date_modify($date, $direction . $count . ' days' . $modify_time);
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
       $step = $count <= 5 ? $order[$direction . $count] : $count;
-      date_modify($date, $step . ' ' . $day);
+      date_modify($date, $step . ' ' . $day . $modify_time);
     }
 
     // If that takes us outside the current month, don't go there.
@@ -544,7 +541,7 @@ function date_repeat_set_month_day($date_in, $day, $count = 1, $direction = '+',
  *   If $day is empty, will set to the number of days from the
  *   beginning or end of the year.
  */
-function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', $timezone = 'UTC') {
+function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', $timezone = 'UTC', $modify_time) {
   if (is_object($date_in)) {
     $current_year = date_format($date_in, 'Y');
 
@@ -555,22 +552,22 @@ function date_repeat_set_year_day($date_in, $day, $count = 1, $direction = '+', 
     $date = new DateObject($datetime, $timezone);
     if ($direction == '-') {
       // For negative search, start from the end of the year.
-      date_modify($date, '+1 year');
+      date_modify($date, '+1 year' . $modify_time);
     }
     else {
       // For positive search, back up one day to get outside the
       // current year, so we can catch the first of the year.
-      date_modify($date, '-1 day');
+      date_modify($date, '-1 day' . $modify_time);
     }
     if (empty($day)) {
-      date_modify($date, $direction . $count . ' days');
+      date_modify($date, $direction . $count . ' days' . $modify_time);
     }
     else {
       // Use the English text for order, like First Sunday
       // instead of +1 Sunday to overcome PHP5 bug, (see #369020).
       $order = date_order();
       $step = $count <= 5 ? $order[$direction . $count] : $count;
-      date_modify($date, $step . ' ' . $day);
+      date_modify($date, $step . ' ' . $day . $modify_time);
     }
 
     // If that takes us outside the current year, don't go there.

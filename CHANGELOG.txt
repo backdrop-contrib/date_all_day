@@ -19,6 +19,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1353488, Some repeating date calculations using PHP 5.3.6+ were not computing correctly.
 - Issue #1364026, Fix link to documentation, also move help to Date API module.
 - Issue #1276270, Fix fatal error when using repeat date on user.
 - Issue #1362758, Add empty file for the date_plugin_display_attachment.inc file that was removed, to avoid fatal errors if it is missing on a site that formerly used it.

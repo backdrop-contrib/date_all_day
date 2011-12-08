@@ -259,11 +259,9 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
         $month = date_format($current_day, 'n');
         if ($rrule['FREQ'] == 'MONTHLY') {
           date_date_set($current_day, $year, $month, 1);
-          //date_time_set($current_day, $modify_hour, $modify_minute, $modify_second);
         }
         else {
           date_date_set($current_day, $year, 1, 1);
-          //date_time_set($current_day, $modify_hour, $modify_minute, $modify_second);
         }
         // Jump to the next period.
         date_modify($current_day, '+' . $jump . $modify_time);

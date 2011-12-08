@@ -100,6 +100,19 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     '#date_is_default' => $is_default,
   );
 
+  $element['#title'] = $instance['label'];
+
+  if (!empty($field['settings']['repeat'])) {
+    $element['show_repeat_settings'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Repeat'),
+      '#weight' => $instance['widget']['weight'] + .3,
+      '#prefix' => '<div class="date-clear">',
+      '#suffix' => '</div>',
+      '#default_value' => isset($items[$delta]['rrule']) && !empty($items[$delta]['rrule']) ? 1 : 0,
+    );
+  }
+
   if ($field['settings']['tz_handling'] == 'date') {
     $element['timezone'] = array(
       '#type' => 'date_timezone',

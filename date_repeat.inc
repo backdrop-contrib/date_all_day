@@ -99,10 +99,27 @@ function _date_repeat_widget_validate($element, &$form_state) {
   // Require the UNTIL date for now.
   // The RRULE has already been created by this point, so go back
   // to the posted values to see if this was filled out.
-  $error_field = implode('][', $element['#parents']) . '][rrule][UNTIL][datetime][date';
-  if (!empty($item['rrule']) && empty($rrule_values['UNTIL']['datetime'])) {
-    form_set_error($error_field, t('The UNTIL value is required for repeating dates.'));
+  $error_field_base = implode('][', $element['#parents']);
+  $error_field_until =  $error_field_base . '][rrule][until_child][datetime][';
+  if (!empty($item['rrule']) && $rrule_values['range_of_repeat'] === 'UNTIL' && empty($rrule_values['UNTIL']['datetime'])) {
+    switch ($instance['widget']['type']) {
+      case 'date_text':
+      case 'date_popup':
+        form_set_error($error_field_until . 'date', t("Missing value in 'Range of repeat'. (UNTIL).", array(), array('context' => 'Date repeat')));
+        break;
+      case 'date_select':
+        form_set_error($error_field_until . 'year', t("Missing value in 'Range of repeat': Year (UNTIL)", array(), array('context' => 'Date repeat')));
+        form_set_error($error_field_until . 'month', t("Missing value in 'Range of repeat': Month (UNTIL)", array(), array('context' => 'Date repeat')));
+        form_set_error($error_field_until . 'day', t("Missing value in 'Range of repeat': Day (UNTIL)", array(), array('context' => 'Date repeat')));
+        break;
+    }
   }
+
+  $error_field_count = $error_field_base . '][rrule][count_child';
+  if (!empty($item['rrule']) && $rrule_values['range_of_repeat'] === 'COUNT' && empty($rrule_values['COUNT'])) {
+    form_set_error($error_field_count, t("Missing value in 'Range of repeat'. (COUNT).", array(), array('context' => 'Date repeat')));
+  }
+
   if (form_get_errors()) {
     return;
   }

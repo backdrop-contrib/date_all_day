@@ -104,6 +104,52 @@ span.date-display-end {
   float: none;
 }
 
+.date-repeat-radios {
+  margin-bottom: 1em;
+}
+
+.date-repeat-radios input[type=radio] {
+  float: left;
+  margin: 0.75em 0.75em 0 0;
+}
+
+.date-repeat-radios .form-wrapper {
+  float: left;
+}
+
+.date-repeat-radios .form-type-checkboxes .form-type-checkbox {
+  width: 15%;
+  float: left;
+  margin: 0;
+}
+
+.date-repeat-radios .date-repeat-radios-item {
+  margin-bottom: 1em;
+}
+
+.weekly .form-type-checkboxes .form-type-checkbox {
+  float: left;
+  margin-right: 10px;
+}
+
+.range-of-repeat .form-radios > div {
+  margin-top: 0.5em;
+}
+
+.range-of-repeat .count input[type=text] {
+  margin: 0 0.5em;
+}
+
+.range-of-repeat .until .form-wrapper {
+  margin: 0 0.5em;
+}
+
+.range-of-repeat .until .form-type-date-select,
+.range-of-repeat .until .form-type-date-popup,
+.range-of-repeat .until .form-type-date-text {
+  border: none;
+}
+
 .date-views-filter-wrapper {
   min-width: 250px;
 }

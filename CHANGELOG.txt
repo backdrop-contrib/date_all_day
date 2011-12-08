@@ -12,6 +12,7 @@ Then delete the Date Browser attachment from the view, since it doesn't do anyth
 
 New Features/Major Changes
 
+- Issue #1354606 by temaruk, Rework the repeating date UI to make it more user-friendly.
 - Issue #1362654, Remove Advanced Help integration, it needs a total rewrite.
 - Issue #1357362, Remove Date Browser, use Date Pager instead.
 - Issue #1354606, Make sure COUNT option without UNTIL date can be handled correctly by repeating date computations.

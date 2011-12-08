@@ -390,11 +390,14 @@ function _date_field_widget_settings_form($field, $instance) {
   }
   if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
     $form['repeat_collapsed'] = array(
-      '#type' => 'radios',
-      '#default_value' => $settings['repeat_collapsed'],
-      '#options' => array(0 => t('Expanded'), 1 => t('Collapsed')),
-      '#title' => t('Repeat display'),
-      '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive."),
+      '#type' => 'value',
+      '#default_value' => 1,
+      '#options' => array(
+        0 => t('Expanded', array(), array('context' => 'Date repeat')),
+        1 => t('Collapsed', array(), array('context' => 'Date repeat'))
+      ),
+      '#title' => t('Repeat display', array(), array('context' => 'Date repeat')),
+      '#description' => t("Should the repeat options form start out expanded or collapsed? Set to 'Collapsed' to make those options less obtrusive.", array(), array('context' => 'Date repeat')),
       '#fieldset' => 'date_format',
       );
   }

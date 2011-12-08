@@ -52,6 +52,10 @@ function _date_repeat_calc($rrule, $start, $end, $exceptions, $timezone, $additi
 
   // Create a date object for the start and end dates.
   $start_date = new DateObject($start, $timezone);
+
+  // Versions of PHP greater than PHP 5.3.5 require that we set an explicit time when
+  // using date_modify() or the time may not match the original value. Adding this
+  // modifier gives us the same results in both older and newer versions of PHP.
   $modify_time = ' ' . $start_date->format('g:ia');
 
   // If the rule has an UNTIL, see if that is earlier than the end date.

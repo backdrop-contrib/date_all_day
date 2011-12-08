@@ -19,6 +19,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1276270, Fix fatal error when using repeat date on user.
 - Issue #1362758, Add empty file for the date_plugin_display_attachment.inc file that was removed, to avoid fatal errors if it is missing on a site that formerly used it.
 - Issue #1363460, Make sure widget dates do not end up with the current date when they should be empty.
 - Issue #1353488, Attempt to fix problem using date_date_set() in PHP 5.3.6+.

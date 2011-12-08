@@ -872,6 +872,15 @@ function date_repeat_rrule_validate($element, &$form_state) {
     return;
   }
 
+  // Clean the buttons off of the form. Needed to avoid errors when
+  // the date is used on a user object, which then passes the form
+  // through form_state_values_clean().
+  foreach ($form_state['buttons'] as $delta => $item) {
+    if (!empty($item['#ajax']['callback']) && in_array($item['#ajax']['callback'], array('date_repeat_add_exception_callback', 'date_repeat_add_addition_callback'))) {
+      unset($form_state['buttons'][$delta]);
+    }
+  }
+
   module_load_include('inc', 'date_api', 'date_api_ical');
 
   $item = drupal_array_get_nested_value($form_state['values'], $element['#parents']);

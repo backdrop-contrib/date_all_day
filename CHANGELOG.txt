@@ -19,6 +19,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1352486 by d.novikov, Rework date SQL formatting for Microsoft SQL.
 - Issue #1266536, Keep timezone adjustments from altering the values for repeating date EXCEPTIONS and ADDITIONS.
 - Issue #1353488, Some repeating date calculations using PHP 5.3.6+ were not computing correctly.
 - Issue #1364026, Fix link to documentation, also move help to Date API module.

@@ -133,6 +133,18 @@ span.date-display-end {
   margin-right: 10px;
 }
 
+.date-repeat-input.byday-count label,
+.date-repeat-input.byday-count select,
+.date-clear.bymonthday label,
+.date-clear.bymonthday select {
+  display: inline;
+}
+
+.date-repeat-input.byday-day label,
+.date-clear.bymonthday .field-suffix {
+  font-weight: bold;
+}
+
 .range-of-repeat .form-radios > div {
   margin-top: 0.5em;
 }

@@ -278,19 +278,22 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#tree' => TRUE,
   );
 
+  list($bymonthday_title, $bymonthday_suffix) = explode('@bymonthday', t('On day @bymonthday of', array(), array('context' => 'Date repeat')));
   $MONTHLY_on_day_BYMONTHDAY_of_BYMONTH['BYMONTHDAY'] = array(
     '#type' => 'select',
-    '#title' => t('On day', array(), array('context' => 'Date repeat')),
+    '#title' => $bymonthday_title,
     '#default_value' => !empty($rrule['BYMONTHDAY']) && $rrule['FREQ'] === 'MONTHLY' ? $rrule['BYMONTHDAY'] : '',
     '#options' => drupal_map_assoc(range(1, 31)) + drupal_map_assoc(range(-1, -31)),
     '#multiple' => FALSE,
     '#prefix' => '<div class="date-clear bymonthday">',
     '#suffix' => '</div>',
+    '#field_suffix' => $bymonthday_suffix,
   );
 
   $MONTHLY_on_day_BYMONTHDAY_of_BYMONTH['BYMONTH'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('of', array(), array('context' => 'Date repeat')),
+    '#title' => t('Bymonth', array(), array('context' => 'Date repeat')),
+    '#title_display' => 'invisible',
     '#default_value' => !empty($rrule['BYMONTH']) && $rrule['FREQ'] === 'MONTHLY' && $MONTHLY_day_month_default === 'BYMONTHDAY_BYMONTH' ? $rrule['BYMONTH'] : array(),
     '#options' => date_month_names_abbr(TRUE),
     '#attributes' => array('class' => array('container-inline')),
@@ -311,9 +314,10 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     $MONTHLY_BYDAY_DAY = substr($rrule['BYDAY'][0], -2);;
   }
 
+  list($byday_count_title, $byday_day_title) = explode('@byday', t('On the @byday of', array(), array('context' => 'Date repeat')));
   $MONTHLY_on_the_BYDAY_of_BYMONTH['BYDAY_COUNT'] = array(
     '#type' => 'select',
-    '#title' => t('On the', array(), array('context' => 'Date repeat')),
+    '#title' => $byday_count_title,
     '#default_value' => !empty($MONTHLY_BYDAY_COUNT) ? $MONTHLY_BYDAY_COUNT : '',
     '#options' => date_order_translated(),
     '#multiple' => FALSE,
@@ -323,7 +327,8 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
 
   $MONTHLY_on_the_BYDAY_of_BYMONTH['BYDAY_DAY'] = array(
     '#type' => 'select',
-    '#title' => '&nbsp;', // for vertically aligning this select with BYDAY_COUNT (would be much uglier via CSS)
+    '#title' => $byday_day_title,
+    '#title_display' => 'after',
     '#default_value' => !empty($MONTHLY_BYDAY_DAY) ? $MONTHLY_BYDAY_DAY : '',
     '#options' => date_repeat_dow_day_options(TRUE),
     '#multiple' => FALSE,
@@ -333,7 +338,8 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
 
   $MONTHLY_on_the_BYDAY_of_BYMONTH['BYMONTH'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('of', array(), array('context' => 'Date repeat')),
+    '#title' => t('Bymonth', array(), array('context' => 'Date repeat')),
+    '#title_display' => 'invisible',
     '#default_value' => !empty($rrule['BYMONTH']) && $rrule['FREQ'] === 'MONTHLY' && $MONTHLY_day_month_default === 'BYDAY_BYMONTH' ? $rrule['BYMONTH'] : array(),
     '#options' => date_month_names_abbr(TRUE),
     '#attributes' => array('class' => array('container-inline')),
@@ -376,19 +382,22 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#tree' => TRUE,
   );
 
+  list($bymonthday_title, $bymonthday_suffix) = explode('@bymonthday', t('On day @bymonthday of', array(), array('context' => 'Date repeat')));
   $YEARLY_on_day_BYMONTHDAY_of_BYMONTH['BYMONTHDAY'] = array(
     '#type' => 'select',
-    '#title' => t('On day', array(), array('context' => 'Date repeat')),
+    '#title' => $bymonthday_title,
     '#default_value' => !empty($rrule['BYMONTHDAY']) && $rrule['FREQ'] === 'YEARLY' ? $rrule['BYMONTHDAY'] : '',
     '#options' => drupal_map_assoc(range(1, 31)) + drupal_map_assoc(range(-1, -31)),
     '#multiple' => FALSE,
     '#prefix' => '<div class="date-clear bymonthday">',
     '#suffix' => '</div>',
+    '#field_suffix' => $bymonthday_suffix,
   );
 
   $YEARLY_on_day_BYMONTHDAY_of_BYMONTH['BYMONTH'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('of', array(), array('context' => 'Date repeat')),
+    '#title' => t('Bymonth', array(), array('context' => 'Date repeat')),
+    '#title_display' => 'invisible',
     '#default_value' => !empty($rrule['BYMONTH']) && $rrule['FREQ'] === 'YEARLY' && $YEARLY_day_month_default === 'BYMONTHDAY_BYMONTH' ? $rrule['BYMONTH'] : array(),
     '#options' => date_month_names_abbr(TRUE),
     '#attributes' => array('class' => array('container-inline')),
@@ -409,9 +418,10 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     $YEARLY_BYDAY_DAY = substr($rrule['BYDAY'][0], -2);;
   }
 
+  list($byday_count_title, $byday_day_title) = explode('@byday', t('On the @byday of', array(), array('context' => 'Date repeat')));
   $YEARLY_on_the_BYDAY_of_BYMONTH['BYDAY_COUNT'] = array(
     '#type' => 'select',
-    '#title' => t('On the', array(), array('context' => 'Date repeat')),
+    '#title' => $byday_count_title,
     '#default_value' => !empty($YEARLY_BYDAY_COUNT) ? $YEARLY_BYDAY_COUNT : '',
     '#options' => date_order_translated(),
     '#multiple' => FALSE,
@@ -421,7 +431,8 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
 
   $YEARLY_on_the_BYDAY_of_BYMONTH['BYDAY_DAY'] = array(
     '#type' => 'select',
-    '#title' => '&nbsp;', // for vertically aligning this select with BYDAY_COUNT (would be much uglier via CSS)
+    '#title' => $byday_day_title,
+    '#title_display' => 'after',
     '#default_value' => !empty($YEARLY_BYDAY_DAY) ? $YEARLY_BYDAY_DAY : '',
     '#options' => date_repeat_dow_day_options(TRUE),
     '#multiple' => FALSE,
@@ -431,7 +442,8 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
 
   $YEARLY_on_the_BYDAY_of_BYMONTH['BYMONTH'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('of', array(), array('context' => 'Date repeat')),
+    '#title' => t('Bymonth', array(), array('context' => 'Date repeat')),
+    '#title_display' => 'invisible',
     '#default_value' => !empty($rrule['BYMONTH']) && $rrule['FREQ'] === 'YEARLY' && $YEARLY_day_month_default === 'BYDAY_BYMONTH' ? $rrule['BYMONTH'] : array(),
     '#options' => date_month_names_abbr(TRUE),
     '#attributes' => array('class' => array('container-inline')),

@@ -145,6 +145,14 @@ function _date_repeat_widget_validate($element, &$form_state) {
         $item[$key] = '';
       }
     }
+
+    // We only collect a date for UNTIL, but we need it to be inclusive,
+    // so force it to a full datetime element at the last possible second of the day.
+    if (!empty($rrule_values['UNTIL'])) {
+      $rrule_values['UNTIL']['datetime'] .= ' 23:59:59';
+      $rrule_values['UNTIL']['granularity'] = serialize(drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute', 'second')));
+      $rrule_values['UNTIL']['all_day'] = 0;
+    }
     $value = date_repeat_build_dates($rrule, $rrule_values, $field, $item);
     // Unset the delta value of the parents.
     array_pop($element['#parents']);
@@ -160,6 +168,7 @@ function _date_repeat_widget_validate($element, &$form_state) {
  * whichever is missing will be created when needed.
  */
 function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $item) {
+
   include_once(DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc');
   $field_name = $field['field_name'];
 

@@ -12,6 +12,7 @@ Then delete the Date Browser attachment from the view, since it doesn't do anyth
 
 New Features/Major Changes
 
+- Issue #1267046, The UNTIL date was not getting included in repeating results. This should now be fixed, but is an API change of sorts for anyone who worked around it by setting it ahead.
 - Issue #1354606 by temaruk, Rework the repeating date UI to make it more user-friendly.
 - Issue #1362654, Remove Advanced Help integration, it needs a total rewrite.
 - Issue #1357362, Remove Date Browser, use Date Pager instead.

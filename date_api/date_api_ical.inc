@@ -347,6 +347,7 @@ function date_ical_parse($icaldatafolded = array()) {
  *   It will take more work to figure how to support that.
  */
 function date_ical_parse_date($field, $data) {
+
   $items = array('datetime' => '', 'all_day' => '', 'tz' => '');
   if (empty($data)) {
     return $items;
@@ -693,7 +694,17 @@ function date_api_ical_build_rrule($form_values) {
   // The input date values may already have been converted to a date
   // object on a previous pass, so check for that.
   if (array_key_exists('UNTIL', $form_values) && array_key_exists('datetime', $form_values['UNTIL']) && !empty($form_values['UNTIL']['datetime'])) {
-    $until = !is_object($form_values['UNTIL']['datetime']) ? date_ical_date($form_values['UNTIL'], 'UTC') : $form_values['UNTIL']['datetime'];
+    // We only collect a date for UNTIL, but we need it to be inclusive,
+    // so force it to a full datetime element at the last possible second of the day.
+    if (!is_object($form_values['UNTIL']['datetime'])) {
+      $form_values['UNTIL']['datetime'] .= ' 23:59:59';
+      $form_values['UNTIL']['granularity'] = serialize(drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute', 'second')));
+      $form_values['UNTIL']['all_day'] = 0;
+      $until = date_ical_date($form_values['UNTIL'], 'UTC');
+    }
+    else {
+      $until = $form_values['UNTIL']['datetime'];
+    }
     $RRULE .= ';UNTIL=' . date_format($until, DATE_FORMAT_ICAL) . 'Z';
   }
   // Our form doesn't allow a value for COUNT, but it may be needed by

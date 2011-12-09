@@ -142,6 +142,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#title_display' => 'invisible',
     '#default_value' => (!empty($rrule['INTERVAL']) ? $rrule['INTERVAL'] : 1),
     '#element_validate' => array('element_validate_integer_positive'),
+    '#attributes' => array('placeholder' => array('#')),
     '#size' => 3,
     '#maxlength' => 3,
     '#prefix' => '<div class="date-clear">',
@@ -156,6 +157,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#title' => t('Repeats', array(), array('context' => 'Date repeat')),
     '#default_value' => (!empty($rrule['INTERVAL']) ? $rrule['INTERVAL'] : 1),
     '#element_validate' => array('element_validate_integer_positive'),
+    '#attributes' => array('placeholder' => array('#')),
     '#size' => 3,
     '#maxlength' => 3,
     '#prefix' => '<div class="date-clear">',
@@ -171,6 +173,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#title' => t('Repeats', array(), array('context' => 'Date repeat')),
     '#default_value' => (!empty($rrule['INTERVAL']) ? $rrule['INTERVAL'] : 1),
     '#element_validate' => array('element_validate_integer_positive'),
+    '#attributes' => array('placeholder' => array('#')),
     '#size' => 3,
     '#maxlength' => 3,
     '#prefix' => '<div class="date-clear">',
@@ -185,6 +188,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#title' => t('Repeats', array(), array('context' => 'Date repeat')),
     '#default_value' => (!empty($rrule['INTERVAL']) ? $rrule['INTERVAL'] : 1),
     '#element_validate' => array('element_validate_integer_positive'),
+    '#attributes' => array('placeholder' => array('#')),
     '#size' => 3,
     '#maxlength' => 3,
     '#prefix' => '<div class="date-clear">',
@@ -466,6 +470,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#title' => t('Count', array(), array('context' => 'Date repeat')),
     '#default_value' => $COUNT,
     '#element_validate' => array('element_validate_integer_positive'),
+    '#attributes' => array('placeholder' => array('#')),
     '#prefix' => $prefix,
     '#suffix' => $suffix,
     '#size' => 10,
@@ -475,7 +480,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
   $until_form_element = array(
     '#type' => 'container',
     '#tree' => TRUE,
-    '#prefix' => t('On', array(), array('context' => 'Date repeat')),
+    '#prefix' => '<div class="date-prefix-inline">' . t('On', array(), array('context' => 'Date repeat')) . '</div>',
     'datetime' => array(
       '#type' => $element['#date_repeat_widget'],
       '#title' => t('Until', array(), array('context' => 'Date repeat')),
@@ -518,7 +523,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     'until_child' => $until_form_element,
     '#div_classes' => array(
       'container-inline count',
-      'container-inline until',
+      "until widget-{$element['#date_repeat_widget']} label-{$element['#date_label_position']}",
     ),
   );
 

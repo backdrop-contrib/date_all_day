@@ -26,8 +26,7 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     ));
     $this->drupalLogin($this->privileged_user);
 
-    //variable_set('date_format_long', 'D, m/d/Y - H:i');
-    variable_set('date_format_long', 'Y-m-d H:i');
+    variable_set('date_format_short', 'Y-m-d H:i');
   }
 
   public function testDateRepeatForm() {
@@ -37,166 +36,157 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
     $this->assertText('The content type Date has been added.', 'Content type added.');
 
-    // Daily tests
-    // Creates select list date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_select');
+    // Testing options.
+    $widget_options = array(
+      'date_select' => 'select',
+      'date_text' => 'text',
+      'date_popup' => 'popup');
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_1');
-    $this->verifyDateForm($form_edit);
+    foreach ($widget_options as $widget => $options) {
+      // Daily tests
+      // Creates date field stored as a datetime.
+      $this->createDateField($type = 'datetime', $widget);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_2');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_1');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_3');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_2');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_4');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_3');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_1', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_4');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_2', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_1', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_3', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_2', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'daily_4', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_3', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $this->deleteDateField();
+      $form_edit = $this->dateForm($options, 'daily_4', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    // Weekly tests
-    // Creates select list date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_select');
+      $form_edit = $this->dateForm($options, 'daily_1', FALSE, 'exclude');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_1');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_1', FALSE, 'include');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_2');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'daily_1', FALSE, 'exclude_include');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_3');
-    $this->verifyDateForm($form_edit);
+      // Weekly tests
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_4');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_1');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_1', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_2');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_2', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_3');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_3', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_4');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'weekly_4', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_1', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $this->deleteDateField();
+      $form_edit = $this->dateForm($options, 'weekly_2', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    // Monthly tests
-    // Creates select list date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_select');
+      $form_edit = $this->dateForm($options, 'weekly_3', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_1');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'weekly_4', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_2');
-    $this->verifyDateForm($form_edit);
+      // Monthly tests
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_3');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_1');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_4');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_2');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_5');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_3');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_6');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_4');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_1', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_5');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_2', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_6');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_3', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_1', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_4', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_2', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_5', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_3', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'monthly_6', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'monthly_4', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $this->deleteDateField();
+      $form_edit = $this->dateForm($options, 'monthly_5', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    // Yearly tests
-    // Creates select list date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_select');
+      $form_edit = $this->dateForm($options, 'monthly_6', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_1');
-    $this->verifyDateForm($form_edit);
+      // Yearly tests
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_2');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_1');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_3');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_2');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_4');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_3');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_5');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_4');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_6');
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_5');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_1', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_6');
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_2', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_1', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_3', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_2', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_4', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_3', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_5', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_4', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $form_edit = $this->dateForm($options = 'select', 'yearly_6', TRUE);
-    $this->verifyDateForm($form_edit);
+      $form_edit = $this->dateForm($options, 'yearly_5', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    $this->deleteDateField();
+      $form_edit = $this->dateForm($options, 'yearly_6', TRUE);
+      $this->verifyDateForm($form_edit);
 
-    /*// Creates text date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_text');
-    $form_edit = $this->dateForm($options = 'text', 'daily_1');
-    $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a date field using the date_text widget.');
-    $this->verifyDateForm($form_edit);
-    $this->deleteDateField();
-
-    // Creates popup date field stored as a date with default settings.
-    $this->createDateField($type = 'datetime', $widget = 'date_popup');
-    $form_edit = $this->dateForm($options = 'popup', 'daily_1');
-    $this->assertText('Thu, 10/07/2010 - 10:30', 'Found the correct date for a date field using the date_popup widget.');
-    $this->verifyDateForm($form_edit);
-    $this->deleteDateField();*/
+      $this->deleteDateField();
+    }
   }
 
-  function dateForm($options, $test_id = NULL, $is_count = FALSE) {
+  function dateForm($options, $test_id = NULL, $is_count = FALSE, $exclude_include = NULL) {
     // Tests that date field functions properly.
     $edit = array();
     $edit['title'] = $this->randomName(8);
@@ -211,10 +201,10 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
         $edit['field_test[und][0][value][minute]'] = '30';
         break;
       case 'text':
-        $edit['field_test[und][0][value][date]'] = '10-07-2010 10:30';
+        $edit['field_test[und][0][value][date]'] = '2010-10-07 10:30';
         break;
       case 'popup':
-        $edit['field_test[und][0][value][date]'] = '10-07-2010';
+        $edit['field_test[und][0][value][date]'] = '2010-10-07';
         $edit['field_test[und][0][value][time]'] = '10:30';
         break;
     }
@@ -376,23 +366,62 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
           break;
       }
 
+      // Test COUNT or UNTIL (default)
       if ($is_count) {
         $edit['field_test[und][0][rrule][range_of_repeat]'] = 'COUNT';
         $edit['field_test[und][0][rrule][count_child]'] = $count;
       }
       else {
         $edit['field_test[und][0][rrule][range_of_repeat]'] = 'UNTIL';
-        switch ($options) {
-          case 'select':
-          $edit['field_test[und][0][rrule][until_child][datetime][year]'] = '2011';
-          $edit['field_test[und][0][rrule][until_child][datetime][month]'] = '10';
-          $edit['field_test[und][0][rrule][until_child][datetime][day]'] = '7';
-          break;
-        case 'text':
-        case 'popup':
-          $edit['field_test[und][0][rrule][until_child][datetime][date]'] = '10-07-2011';
-          break;
+        $date = array(
+          'year' => '2011',
+          'month' => '10',
+          'day' => '07'
+        );
+        $edit += $this->formatDateForRRULEInputs('field_test[und][0][rrule][until_child]', $options, $date);
+      }
+
+      // Test date exceptions and/or additions
+      if ($exclude_include !== NULL) {
+        $exclude_include_edit = array();
+        switch ($exclude_include) {
+          case 'exclude':
+            $exclude_include_edit['field_test[und][0][rrule][show_exceptions]'] = TRUE;
+            $date = array(
+              'year' => '2010',
+              'month' => '10',
+              'day' => '07'
+            );
+            $exclude_include_edit += $this->formatDateForRRULEInputs('field_test[und][0][rrule][exceptions][EXDATE][0]', $options, $date);
+            break;
+          case 'include':
+            $exclude_include_edit['field_test[und][0][rrule][show_additions]'] = TRUE;
+            $date = array(
+              'year' => '2013',
+              'month' => '10',
+              'day' => '07'
+            );
+            $exclude_include_edit += $this->formatDateForRRULEInputs('field_test[und][0][rrule][additions][RDATE][0]', $options, $date);
+            break;
+          case 'exclude_include':
+            $exclude_include_edit['field_test[und][0][rrule][show_exceptions]'] = TRUE;
+            $date = array(
+              'year' => '2010',
+              'month' => '10',
+              'day' => '07'
+            );
+            $exclude_include_edit += $this->formatDateForRRULEInputs('field_test[und][0][rrule][exceptions][EXDATE][0]', $options, $date);
+
+            $exclude_include_edit['field_test[und][0][rrule][show_additions]'] = TRUE;
+            $date = array(
+              'year' => '2013',
+              'month' => '10',
+              'day' => '07'
+            );
+            $exclude_include_edit += $this->formatDateForRRULEInputs('field_test[und][0][rrule][additions][RDATE][0]', $options, $date);
+            break;
         }
+        $edit += $exclude_include_edit;
       }
     }
 
@@ -461,5 +490,24 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     $this->clickLink('delete');
     $this->drupalPost(NULL, NULL, t('Delete'));
     $this->assertText(t('The field Test has been deleted from the Date content type.'), t('Removed date field.'));
+  }
+
+  function formatDateForRRULEInputs($form_field_name, $date_widget_type, $date) {
+    $return = array();
+
+    switch ($date_widget_type) {
+      case 'select':
+        $return["{$form_field_name}[datetime][year]"] = $date['year'];
+        $return["{$form_field_name}[datetime][month]"] = $date['month'];
+        $return["{$form_field_name}[datetime][day]"] = ltrim($date['day'], '0');
+        break;
+      case 'text':
+      case 'popup':
+        //$return["{$field_name}[datetime][date]"] = '2011-10-07';
+        $return["{$form_field_name}[datetime][date]"] = "{$date['year']}-{$date['month']}-{$date['day']}";
+        break;
+    }
+
+    return $return;
   }
 }

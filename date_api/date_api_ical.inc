@@ -143,7 +143,8 @@ function date_ical_parse($icaldatafolded = array()) {
     // The regex is to ensure that wrapped QUOTED-PRINTABLE data
     // is kept intact.
     if (!preg_match('/([A-Z]+)[:;](.*)/', $line, $out)) {
-      $line = array_pop($icaldata) . ($line);
+      // Trim up to 1 leading space from wrapped line per iCalendar standard.
+      $line = array_pop($icaldata) . (ltrim(substr($line, 0, 1)) . substr($line, 1));
     }
     $icaldata[] = $line;
   }

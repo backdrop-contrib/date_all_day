@@ -161,7 +161,6 @@ function date_tools_change_type_form_submit($form, &$form_state) {
   $sql = 'REPLACE INTO {'. $table .'} ('. implode(', ', $old_columns) .') '.
     ' SELECT '. implode(', ', $new_columns) .' FROM {'. $temp_table .'}';
   db_query($sql);
-  //dsm($sql);
   db_query("DROP TABLE {". $temp_table ."}");
 
   drupal_set_message(t('The field @field_name has been changed from @old_type to @new_type.', array(

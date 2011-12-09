@@ -20,6 +20,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1292152 by pfrenssen, Remove debug functions.
 - Issue #1338976 by Josh Benner, Adjust iCal unwrap to allow for leading spaces, per standard.
 - Issue #1352486 by d.novikov, Rework date SQL formatting for Microsoft SQL.
 - Issue #1266536, Keep timezone adjustments from altering the values for repeating date EXCEPTIONS and ADDITIONS.

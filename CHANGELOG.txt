@@ -10,9 +10,12 @@ The Date Browser has been removed. Please use the Date Pager instead. If you hav
 Browser the navigation will just disappear from them. If you add a Date Pager to the view you should get it back.
 Then delete the Date Browser attachment from the view, since it doesn't do anything any more.
 
+The UNTIL date was not getting included in repeating results and that is now fixed. This is an API change of sorts 
+for anyone who worked around the issue by setting it ahead.
+
 New Features/Major Changes
 
-- Issue #1267046, The UNTIL date was not getting included in repeating results. This should now be fixed, but is an API change of sorts for anyone who worked around it by setting it ahead.
+- Issue #1267046, Include the UNTIL date in repeating results..
 - Issue #1354606 by temaruk, Rework the repeating date UI to make it more user-friendly.
 - Issue #1362654, Remove Advanced Help integration, it needs a total rewrite.
 - Issue #1357362, Remove Date Browser, use Date Pager instead.

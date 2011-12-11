@@ -543,7 +543,7 @@ function date_parts_element($element, $date, $format) {
         if ($all_day_id != '') {
           $sub_element[$field]['#states'] = array(
             'visible' => array(
-              '#' . $all_day_id => array('checked' => FALSE),
+              'input[name="' . $all_day_id . '"]' => array('checked' => FALSE),
             ));
         }
         break;
@@ -556,7 +556,7 @@ function date_parts_element($element, $date, $format) {
         if ($all_day_id != '') {
           $sub_element[$field]['#states'] = array(
             'visible' => array(
-              '#' . $all_day_id => array('checked' => FALSE),
+              'input[name="' . $all_day_id . '"]' => array('checked' => FALSE),
             ));
         }
         break;
@@ -569,7 +569,7 @@ function date_parts_element($element, $date, $format) {
         if ($all_day_id != '') {
           $sub_element[$field]['#states'] = array(
             'visible' => array(
-              '#' . $all_day_id => array('checked' => FALSE),
+              'input[name="' . $all_day_id . '"]' => array('checked' => FALSE),
             ));
         }
         break;
@@ -627,7 +627,7 @@ function date_parts_element($element, $date, $format) {
     if ($all_day_id != '') {
       $sub_element['ampm']['#states'] = array(
         'visible' => array(
-          '#' . $all_day_id => array('checked' => FALSE),
+          'input[name="' . $all_day_id . '"]' => array('checked' => FALSE),
         ));
     }
     if ($element['#date_label_position'] == 'within') {

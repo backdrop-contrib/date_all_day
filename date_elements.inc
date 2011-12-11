@@ -325,7 +325,10 @@ function date_combo_element_process($element, &$form_state, $form) {
       '#suffix' => '</div>',
     );
   }
-  $all_day_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-all-day');
+
+  $parents = $element['#array_parents'];
+  $first_parent = array_shift($parents);
+  $all_day_id = $first_parent . '[' . implode('][', $parents) . '][all_day]';;
 
   // Unlimited fields using javascript Add more button end up with altered ids.
   // Even on ajax-created items, the newest form element will have the original id.
@@ -337,11 +340,6 @@ function date_combo_element_process($element, &$form_state, $form) {
    && $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED
    && $items_count > 0 && $delta < $items_count;
 
-  // Adjust the id for ajax 'add more' items.
-  if ($ajax_field) {
-    $all_day_id .= '--' . ($items_count - $delta + 1);
-  }
-
   $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
   $element['show_todate'] = array(
     '#title' => t('Show End Date'),
@@ -352,12 +350,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#prefix' => '<div class="date-float">',
     '#suffix' => '</div>',
   );
-  $show_id = str_replace('_', '-', 'edit-' . implode('-', $element['#array_parents']) . '-show-todate');
-
-  // Adjust the id for ajax 'add more' items.
-  if ($ajax_field) {
-    $show_id .= '--' . ($items_count - $delta + 1);
-  }
+  $show_id = $first_parent . '[' . implode('][', $parents) . '][show_todate]';
 
   $element[$from_field] = array(
     '#field'         => $field,
@@ -415,7 +408,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     if ($field['settings']['todate'] == 'optional') {
       $element[$to_field]['#states'] = array(
         'visible' => array(
-          '#' . $show_id => array('checked' => TRUE),
+          'input[name="' . $show_id . '"]' => array('checked' => TRUE),
       ));
     }
   }

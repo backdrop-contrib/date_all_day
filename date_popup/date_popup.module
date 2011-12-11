@@ -415,7 +415,7 @@ function date_popup_process_time_part(&$element) {
   if ($all_day_id != '') {
     $sub_element['#states'] = array(
       'visible' => array(
-        '#' . $all_day_id => array('checked' => FALSE),
+        'input[name="' . $all_day_id . '"]' => array('checked' => FALSE),
       ));
   }
 

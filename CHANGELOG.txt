@@ -20,6 +20,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #952446 and #1031690, Select dates with only year and month were not working.
 - Issue #1292152 by pfrenssen, Remove debug functions.
 - Issue #1338976 by Josh Benner, Adjust iCal unwrap to allow for leading spaces, per standard.
 - Issue #1352486 by d.novikov, Rework date SQL formatting for Microsoft SQL.

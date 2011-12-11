@@ -660,6 +660,7 @@ function date_select_validate($element, &$form_state) {
 
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
+
   // Strip field labels out of the results.
   foreach ($element['#value'] as $field => $field_value) {
     if (substr($field_value, 0, 1) == '-') {
@@ -729,6 +730,12 @@ function date_select_input_date($element, $input) {
     }
   }
   unset($input['ampm']);
+
+  // Make the input match the granularity.
+  foreach (date_nongranularity($granularity) as $part) {
+    unset($input[$part]);
+  }
+
   $date = new DateObject($input, $element['#date_timezone']);
   if (is_object($date)) {
     $date->limitGranularity($granularity);

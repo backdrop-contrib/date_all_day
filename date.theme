@@ -79,7 +79,6 @@ function theme_date_display_combination($vars) {
   list($id) = entity_extract_ids($entity_type, $entity);
   if (!in_array($id, $repeating_ids) && module_exists('date_repeat')
   && !empty($item['rrule']) && $options['show_repeat_rule'] == 'show') {
-    module_load_include('inc', 'date', 'date_repeat');
     $repeat_vars = array(
       'field' => $field,
       'item' => $item,
@@ -300,25 +299,6 @@ function theme_date_display_interval($vars) {
     'interval' => $options['interval'],
   );
   return '<span class="date-display-interval"' . drupal_attributes($attributes) . '>' .theme('date_time_ago', $time_ago_vars) . '</span>';
-}
-
-/**
- * Theme the human-readable description for a Date Repeat rule.
- *
- * TODO -
- * add in ways to store the description in the date so it isn't regenerated
- * over and over and find a way to allow description to be shown or hidden.
- */
-function theme_date_repeat_display($vars) {
-  $field = $vars['field'];
-  $item = $vars['item'];
-  $entity = !empty($vars['node']) ? $vars['node'] : NULL;
-  $output = '';
-  if (!empty($item['rrule'])) {
-    $output = date_repeat_rrule_description($item['rrule']);
-    $output = '<div>' . $output . '</div>';
-  }
-  return $output;
 }
 
 /**

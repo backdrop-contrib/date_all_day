@@ -176,7 +176,7 @@ function date_all_day_field($field, $instance, $date1, $date2 = NULL) {
  *
  * This hook lets us make changes to the date_combo element.
  */
-function date_all_day_date_combo_process_alter(&$element, $context) {
+function date_all_day_date_combo_process_alter(&$element, &$form_state, $context) {
 
   $field = $context['field'];
   $instance = $context['instance'];

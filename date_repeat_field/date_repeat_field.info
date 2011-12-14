@@ -1,0 +1,8 @@
+name = Date Repeat Field
+description = Creates the option of Repeating date fields and manages Date fields that use the Date Repeat API.
+dependencies[] = date_api
+dependencies[] = date
+dependencies[] = date_repeat
+package = Date/Time
+core = 7.x
+files[] = date_repeat_field.module

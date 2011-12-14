@@ -18,7 +18,7 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
    */
   public function setUp() {
     // Load the date_repeat module.
-    parent::setUp('field', 'field_ui', 'date_api', 'date_repeat', 'date', 'date_popup');
+    parent::setUp('field', 'field_ui', 'date_api', 'date_repeat', 'date', 'date_popup', 'date_repeat_field');
 
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(

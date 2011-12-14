@@ -68,7 +68,6 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   // lose all but the first value by doing this, so store the original values in case we need to replace them later.
   if (!empty($field['settings']['repeat'])) {
     if ($delta == 0) {
-      module_load_include('inc', 'date', 'date_repeat');
       $form['#after_build'] = array('date_repeat_after_build');
       $form_state['storage']['repeat_fields'][$field_name] = array_merge($form['#parents'], array($field_name));
       $form_state['storage']['date_items'][$field_name][$langcode] = $items;
@@ -125,26 +124,6 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
       );
   }
 
-  return $element;
-}
-
-/**
- * Implements the form after_build().
- *
- * Remove the 'Add more' elements from a repeating date form.
- * It would be better to move this to the date_repeat.inc file,
- * but it isn't always discovered there.
- */
-function date_repeat_after_build(&$element, &$form_state) {
-  foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
-    // Remove unnecessary items in the form added by the Add more handling.
-    $value = drupal_array_get_nested_value($element, $parents);
-    $langcode = $value['#language'];
-    unset($value[$langcode]['add_more'], $value[$langcode]['#suffix'], $value[$langcode]['#prefix'], $value[$langcode][0]['_weight']);
-    $value[$langcode]['#cardinality'] = 1;
-    $value[$langcode]['#max_delta'] = 1;
-    drupal_array_set_nested_value($element, $parents, $value);
-  }
   return $element;
 }
 
@@ -261,14 +240,6 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
-
-  // Add a date repeat form element, if needed.
-  // We delayed until this point so we don't bother adding it to hidden fields.
-  if (module_exists('date_repeat') && date_is_repeat_field($field, $instance)) {
-    module_load_include('inc', 'date', 'date_repeat');
-    _date_repeat_widget($element, $field, $instance, $element['#value'], $delta);
-    $element['rrule']['#weight'] = $instance['widget']['weight'] + .4;
-  }
 
   // Figure out how many items are in the form, including new ones added by ajax.
   $field_state = field_form_get_state($element['#field_parents'], $field_name, $element['#language'], $form_state);
@@ -406,9 +377,10 @@ function date_combo_element_process($element, &$form_state, $form) {
 
   $context = array(
    'field' => $field,
-   'instance' => $instance
+   'instance' => $instance,
+   'form' => $form,
   );
-  drupal_alter('date_combo_process', $element, $context);
+  drupal_alter('date_combo_process', $element, $form_state, $context);
 
   return $element;
 }
@@ -648,9 +620,8 @@ function date_combo_validate($element, &$form_state) {
  */
 function date_widget_validate($element, &$form_state) {
   $field = field_widget_field($element, $form_state);
-  if (module_exists('date_repeat') && $field['settings']['repeat']) {
-    module_load_include('inc', 'date', 'date_repeat');
-    return _date_repeat_widget_validate($element, $form_state);
+  if (module_exists('date_repeat_field') && $field['settings']['repeat']) {
+    return date_repeat_widget_validate($element, $form_state);
   }
 }
 

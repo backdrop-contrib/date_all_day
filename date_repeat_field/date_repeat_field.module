@@ -191,21 +191,47 @@ function date_is_repeat_field($field, $instance = NULL) {
 }
 
 /**
- * Implements the form after_build().
- *
- * Remove the 'Add more' elements from a repeating date form.
+ * Implementation of hook_field_widget_form_WIDGET_TYPE_form_alter().
  */
-function date_repeat_after_build(&$element, &$form_state) {
-  foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
-    // Remove unnecessary items in the form added by the Add more handling.
-    $value = drupal_array_get_nested_value($element, $parents);
-    $langcode = $value['#language'];
-    unset($value[$langcode]['add_more'], $value[$langcode]['#suffix'], $value[$langcode]['#prefix'], $value[$langcode][0]['_weight']);
-    $value[$langcode]['#cardinality'] = 1;
-    $value[$langcode]['#max_delta'] = 1;
-    drupal_array_set_nested_value($element, $parents, $value);
+function date_repeat_field_field_widget_form_date_text_form_alter(&$element, &$form_state, $context) {
+  date_repeat_field_widget_form_alter($element, $form_state, $context);
+}
+
+/**
+ * Implementation of hook_field_widget_form_WIDGET_TYPE_form_alter().
+ */
+function date_repeat_field_field_widget_form_date_select_form_alter(&$element, &$form_state, $context) {
+  date_repeat_field_widget_form_alter($element, $form_state, $context);
+}
+
+/**
+ * Implementation of hook_field_widget_form_WIDGET_TYPE_form_alter().
+ */
+function date_repeat_field_field_widget_form_date_popup_form_alter(&$element, &$form_state, $context) {
+  date_repeat_field_widget_form_alter($element, $form_state, $context);
+}
+
+/**
+ * Helper function to handle all implementations of 
+ * hook_field_widget_form_WIDGET_TYPE_form_alter().
+ */
+function date_repeat_field_widget_form_alter(&$element, &$form_state, $context) {
+  $field = $context['field'];
+  $instance = $context['instance'];
+  $items = $context['items'];
+  $delta = $context['delta'];
+
+  if (!empty($field['settings']['repeat'])) {
+    $element['#element_validate'][] = 'date_repeat_widget_validate';
+    $element['show_repeat_settings'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Repeat'),
+      '#weight' => $instance['widget']['weight'] + .3,
+      '#prefix' => '<div class="date-clear">',
+      '#suffix' => '</div>',
+      '#default_value' => isset($items[$delta]['rrule']) && !empty($items[$delta]['rrule']) ? 1 : 0,
+    );
   }
-  return $element;
 }
 
 /**
@@ -215,6 +241,12 @@ function date_repeat_after_build(&$element, &$form_state) {
  * Lots more work needed here.
  */
 function date_repeat_widget_validate($element, &$form_state) {
+
+  $field = field_widget_field($element, $form_state);
+  if (empty($field['settings']['repeat'])) {
+    return;
+  }
+
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $langcode = $element['#language'];
@@ -233,8 +265,6 @@ function date_repeat_widget_validate($element, &$form_state) {
   }
 
   module_load_include('inc', 'date_repeat', 'date_repeat_form');
-  $field_name = $element['#field_name'];
-  $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
 
   // Here 'values' returns an array of input values, which includes the original RRULE, as a string.
@@ -319,6 +349,24 @@ function date_repeat_widget_validate($element, &$form_state) {
     // Set the new delta values for this item to the array of values returned by the repeat rule.
     form_set_value($element, $value, $form_state);
   }
+}
+
+/**
+ * Implements the form after_build().
+ *
+ * Remove the 'Add more' elements from a repeating date form.
+ */
+function date_repeat_after_build(&$element, &$form_state) {
+  foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
+    // Remove unnecessary items in the form added by the Add more handling.
+    $value = drupal_array_get_nested_value($element, $parents);
+    $langcode = $value['#language'];
+    unset($value[$langcode]['add_more'], $value[$langcode]['#suffix'], $value[$langcode]['#prefix'], $value[$langcode][0]['_weight']);
+    $value[$langcode]['#cardinality'] = 1;
+    $value[$langcode]['#max_delta'] = 1;
+    drupal_array_set_nested_value($element, $parents, $value);
+  }
+  return $element;
 }
 
 /**
@@ -410,7 +458,6 @@ function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $i
   }
   return $value;
 }
-
 
 /**
  * Implements hook_date_combo_process_alter().

@@ -27,9 +27,6 @@
  *   defined by the date module. If the timezone is date-specific, a
  *   timezone selector is added to the first combo element.
  *
- * - If repeating dates are defined, a form to create a repeat rule is
- *   added to the field element.
- *
  * - The date combo element creates two individual date elements, one each
  *   for the start and end field, using the appropriate individual Date API
  *   date elements, like selects, textfields, or popups.
@@ -46,6 +43,7 @@
  *
  */
 function date_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+
   $element = $base;
   $field_name = $field['field_name'];
 
@@ -95,22 +93,11 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     '#weight' => $delta,
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     '#date_timezone' => $timezone,
-    '#element_validate' => array('date_combo_validate', 'date_widget_validate'),
+    '#element_validate' => array('date_combo_validate'),
     '#date_is_default' => $is_default,
   );
 
   $element['#title'] = $instance['label'];
-
-  if (!empty($field['settings']['repeat'])) {
-    $element['show_repeat_settings'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Repeat'),
-      '#weight' => $instance['widget']['weight'] + .3,
-      '#prefix' => '<div class="date-clear">',
-      '#suffix' => '</div>',
-      '#default_value' => isset($items[$delta]['rrule']) && !empty($items[$delta]['rrule']) ? 1 : 0,
-    );
-  }
 
   if ($field['settings']['tz_handling'] == 'date') {
     $element['timezone'] = array(
@@ -612,16 +599,6 @@ function date_combo_validate($element, &$form_state) {
     else {
       form_set_error($error_field, t('There are errors in @field_name:', array('@field_name' => $instance['label'])) . theme('item_list', array('items' => $errors)));
     }
-  }
-}
-
-/**
- * Handle widget processing.
- */
-function date_widget_validate($element, &$form_state) {
-  $field = field_widget_field($element, $form_state);
-  if (module_exists('date_repeat_field') && $field['settings']['repeat']) {
-    return date_repeat_widget_validate($element, $form_state);
   }
 }
 

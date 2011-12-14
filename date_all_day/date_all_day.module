@@ -216,6 +216,19 @@ function date_all_day_date_combo_process_alter(&$element, $context) {
 
 
 /**
+ * Implements hook_date_text_process_alter().
+ *
+ * This hook lets us make changes to the date_select widget.
+ */
+function date_all_day_date_text_process_alter(&$element) {
+  $all_day_id = !empty($element['#date_all_day_id']) ? $element['#date_all_day_id'] : '';
+  if ($all_day_id != '') {
+    // All Day handling on text dates works only if the user leaves the time out of the input value.
+    // There is no element to hide or show.
+  }
+}
+
+/**
  * Implements hook_date_select_process_alter().
  *
  * This hook lets us make changes to the date_select widget.
@@ -259,7 +272,19 @@ function date_all_day_date_popup_process_alter(&$element) {
  * This hook lets us alter the element or the form_state before the rest
  * of the date_select validation gets fired.
  */
-function date_all_day_date_select_pre_validate_alter(&$element, &$form_state, $context) {
+function date_all_day_date_text_pre_validate_alter(&$element, &$form_state, &$input) {
+  // Let Date module massage the format for all day values so they will pass validation.
+  // The All day flag, if used, actually exists on the parent element.
+  date_all_day_value($element, $form_state);
+}
+
+/**
+ * Implements hook_date_select_pre_validate_alter().
+ *
+ * This hook lets us alter the element or the form_state before the rest
+ * of the date_select validation gets fired.
+ */
+function date_all_day_date_select_pre_validate_alter(&$element, &$form_state, &$input) {
   // Let Date module massage the format for all day values so they will pass validation.
   // The All day flag, if used, actually exists on the parent element.
   date_all_day_value($element, $form_state);
@@ -271,7 +296,7 @@ function date_all_day_date_select_pre_validate_alter(&$element, &$form_state, $c
  * This hook lets us alter the element or the form_state before the rest
  * of the date_popup validation gets fired.
  */
-function date_all_day_date_popup_pre_validate_alter(&$element, &$form_state, $context) {
+function date_all_day_date_popup_pre_validate_alter(&$element, &$form_state, &$input) {
   // Let Date module massage the format for all day values so they will pass validation.
   // The All day flag, if used, actually exists on the parent element.
   date_all_day_value($element, $form_state);

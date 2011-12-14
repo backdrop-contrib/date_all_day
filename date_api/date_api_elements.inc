@@ -345,10 +345,7 @@ function date_text_validate($element, &$form_state) {
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
 
-  $context = array(
-    'input' => $input,
-  );
-  drupal_alter('date_text_pre_validate', $element, $form_state, $context);
+  drupal_alter('date_text_pre_validate', $element, $form_state, $input);
 
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   $date = date_text_input_date($element, $input);
@@ -646,10 +643,7 @@ function date_select_validate($element, &$form_state) {
     }
   }
 
-  $context = array(
-    'input' => $input,
-  );
-  drupal_alter('date_select_pre_validate', $element, $form_state, $context);
+  drupal_alter('date_select_pre_validate', $element, $form_state, $input);
 
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');
   if (isset($input['ampm'])) {

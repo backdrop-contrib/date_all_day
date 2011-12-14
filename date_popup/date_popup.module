@@ -449,10 +449,7 @@ function date_popup_validate($element, &$form_state) {
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
 
-  $context = array(
-    'input' => $input,
-  );
-  drupal_alter('date_popup_pre_validate', $element, $form_state, $context);
+  drupal_alter('date_popup_pre_validate', $element, $form_state, $input);
 
   $granularity = date_format_order($element['#date_format']);
   $date_granularity = date_popup_date_granularity($element);

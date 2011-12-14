@@ -27,6 +27,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Fix Date text placeholder to display a formatted date instead of a format. Follow up to Date repeat UI changes.
 - Issue #1248520 by fearlsgroove, Use attribute selector on all day and end day checkboxes.
 - Issue #952446 and #1031690, Select dates with only year and month were not working.
 - Issue #1292152 by pfrenssen, Remove debug functions.

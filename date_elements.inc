@@ -152,7 +152,7 @@ function date_repeat_after_build(&$element, &$form_state) {
  * Create local date object.
  *
  * Create a date object set to local time from the field and
- * widget settings and item values. Default values for new entities 
+ * widget settings and item values. Default values for new entities
  * are set by the default value callback, so don't need to be accounted for here.
  */
 function date_local_date($item, $timezone, $field, $instance, $part = 'value') {
@@ -310,36 +310,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     unset($element['#default_value'][$to_field]);
   }
 
-  if ($instance['widget']['settings']['display_all_day']) {
-    $from = $element['#default_value'][$from_field];
-    $to = !empty($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : $element['#default_value'][$from_field];
-    $date_is_all_day = date_is_all_day($from, $to);
-    $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
-    $element['all_day'] = array(
-      '#title' => t('All Day'),
-      '#type' => 'checkbox',
-      '#default_value' => $all_day,
-      '#weight' => -21,
-      '#access' => date_has_time($field['settings']['granularity']) && !in_array($instance['widget']['type'], array('date_text')),
-      '#prefix' => '<div class="date-float">',
-      '#suffix' => '</div>',
-    );
-  }
-
-  $parents = $element['#array_parents'];
-  $first_parent = array_shift($parents);
-  $all_day_id = $first_parent . '[' . implode('][', $parents) . '][all_day]';;
-
-  // Unlimited fields using javascript Add more button end up with altered ids.
-  // Even on ajax-created items, the newest form element will have the original id.
-  // If the form won't pass validation, the multiple values will get re-displayed, but this time NOT using ajax.
-  // !empty($form_state['triggering_element']['#ajax']['callback'] tells us if this item is being added by ajax.
-  $ajax_field = !empty($form_state['triggering_element']['#ajax'])
-   && !empty($form_state['triggering_element']['#ajax']['callback'])
-   && $form_state['triggering_element']['#ajax']['callback'] == 'field_add_more_js'
-   && $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED
-   && $items_count > 0 && $delta < $items_count;
-
   $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
   $element['show_todate'] = array(
     '#title' => t('Show End Date'),
@@ -350,6 +320,9 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#prefix' => '<div class="date-float">',
     '#suffix' => '</div>',
   );
+
+  $parents = $element['#array_parents'];
+  $first_parent = array_shift($parents);
   $show_id = $first_parent . '[' . implode('][', $parents) . '][show_todate]';
 
   $element[$from_field] = array(
@@ -365,7 +338,6 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_increment'   => $instance['widget']['settings']['increment'],
     '#date_year_range'  => $instance['widget']['settings']['year_range'],
     '#date_label_position' => $instance['widget']['settings']['label_position'],
-    '#date_all_day_id'  => $all_day_id,
     );
 
   $description =  !empty($instance['description']) ? t($instance['description']) : '';
@@ -431,6 +403,13 @@ function date_combo_element_process($element, &$form_state, $form) {
   else {
     $element[$from_field]['#date_title'] = $instance['label'];
   }
+
+  $context = array(
+   'field' => $field,
+   'instance' => $instance
+  );
+  drupal_alter('date_combo_process', $element, $context);
+
   return $element;
 }
 
@@ -472,6 +451,14 @@ function date_combo_validate($element, &$form_state) {
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);
+
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'item' => $item,
+  );
+
+  drupal_alter('date_combo_pre_validate', $element, $form_state, $context);
 
   $from_field = 'value';
   $to_field = 'value2';
@@ -526,19 +513,6 @@ function date_combo_validate($element, &$form_state) {
   if ($field['settings']['todate'] == 'optional' && empty($item['show_todate'])) {
     $item[$to_field] = $item[$from_field];
     $posted[$to_field] = $posted[$from_field];
-  }
-
-  // If the user chose the option to make this field an all day field,
-  // we'll need to adjust the time.
-  $all_day = FALSE;
-  if (!empty($item['all_day'])) {
-    $all_day = TRUE;
-    // If we have an all day flag on this date and the time is empty,
-    // change the format to match the input value so we don't get validation errors.
-    $element[$from_field]['#date_format'] = date_part_format('date', $element[$from_field]['#date_format']);
-    if (!empty($field['settings']['todate'])) {
-      $element[$to_field]['#date_format'] = date_part_format('date', $element[$to_field]['#date_format']);
-    }
   }
 
   if ($empty) {
@@ -614,11 +588,14 @@ function date_combo_validate($element, &$form_state) {
       // or UNIX instead of the DATETIME format used in element processing.
       $item[$tz_field] = $timezone;
 
-      // If this is an 'All day' value, set the time to midnight.
-      if ($all_day) {
-        $from_date->setTime(0, 0, 0);
-        $to_date->setTime(0, 0, 0);
-      }
+      // Update the context for changes in the $item, and allow other modules to
+      // alter the computed local dates.
+      $context['item'] = $item;
+      // We can only pass two additional values to drupal_alter, so $element
+      // needs to be included in $context.
+      $context['element'] = $element;
+      drupal_alter('date_combo_validate_date_start', $from_date, $form_state, $context);
+      drupal_alter('date_combo_validate_date_end', $to_date, $form_state, $context);
 
       $item[$offset_field] = date_offset_get($from_date);
 

@@ -35,6 +35,7 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     $edit['type'] = 'date';
     $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
     $this->assertText('The content type Date has been added.', 'Content type added.');
+    $display_all_day = FALSE;
 
     // Testing options.
     $widget_options = array(
@@ -45,7 +46,7 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     foreach ($widget_options as $widget => $options) {
       // Daily tests
       // Creates date field stored as a datetime.
-      $this->createDateField($type = 'datetime', $widget);
+      $this->createDateField($type = 'datetime', $widget, $display_all_day);
 
       $form_edit = $this->dateForm($options, 'daily_1');
       $this->verifyDateForm($form_edit);
@@ -446,7 +447,7 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
     $this->assertRaw(t('Date %title has been deleted.', array('%title' => $title)), t('Deleted Date content.'));
   }
 
-  function createDateField($type, $widget) {
+  function createDateField($type, $widget, $display_all_day = FALSE) {
     $edit = array();
     $edit['fields[_add_new_field][label]'] = 'Test';
     $edit['fields[_add_new_field][field_name]'] = 'test';
@@ -467,7 +468,10 @@ class DateRepeatFormTestCase extends DrupalWebTestCase {
       $instance_edit['instance[widget][settings][year_range][years_forward]'] = '+5';
       break;
     }
-    $instance_edit['instance[widget][settings][display_all_day]'] = TRUE;
+
+    if ($display_all_day) {
+      $instance_edit['instance[widget][settings][display_all_day]'] = TRUE;
+    }
 
     // First step : 'Add new field' on the 'Manage fields' page.
     $this->drupalPost('admin/structure/types/manage/date/fields', $edit, t('Save'));

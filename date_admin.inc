@@ -324,20 +324,6 @@ function _date_field_widget_settings_form($field, $instance) {
     );
   }
 
-  $form['display_all_day'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Display all day checkbox'),
-    '#default_value' => $settings['display_all_day'],
-    '#description' => t('Determines whether to display the \'All Day\' checkbox to the user.'),
-    '#weight' => 8,
-    '#fieldset' => 'date_format',
-  );
-  // Hide the option to use the all day checkbox for dates with no time.
-  if (!date_has_time($field['settings']['granularity'])) {
-    $form['display_all_day']['#type'] = 'hidden';
-    $form['display_all_day']['#value'] = 0;
-  }
-
   $form['label_position'] = array(
     '#type' => 'value',
     '#value' => $settings['label_position'],
@@ -401,6 +387,13 @@ function _date_field_widget_settings_form($field, $instance) {
       '#fieldset' => 'date_format',
       );
   }
+
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+  );
+  drupal_alter('date_field_settings_form', $form, $context);
+
   return $form;
 }
 

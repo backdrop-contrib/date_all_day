@@ -189,24 +189,6 @@ function date_input_date($field, $instance, $element, $input) {
 }
 
 /**
- * A helper function to check if the all day flag is set on the parent of an
- * element, and adjust the date_format accordingly so the missing time will
- * not cause validation errors.
- */
-function date_all_day_value(&$element, $form_state) {
-  if (!empty($element['#date_all_day_id'])) {
-    $parents = $element['#parents'];
-    array_pop($parents);
-    $parent_element = drupal_array_get_nested_value($form_state['values'], $parents);
-    if (!empty($parent_element) && !empty($parent_element['all_day'])) {
-      $element['#date_format'] = date_part_format('date', $element['#date_format']);
-      return $parent_element['all_day'];
-    }
-  }
-  return FALSE;
-}
-
-/**
  * Implements hook_theme().
  */
 function date_theme() {
@@ -221,20 +203,6 @@ function date_theme() {
     'date_combo' => $base + array('render element' => 'element'),
     'date_text_parts' => $base + array('render element' => 'element'),
     'date' => $base + array('render element' => 'element'),
-    'date_all_day' => $base + array(
-      'variables' => array(
-        'field' => NULL,
-        'instance' => NULL,
-        'which' => NULL,
-        'date1' => NULL,
-        'date2' => NULL,
-        'format' => NULL,
-        'entity_type' => NULL,
-        'entity' => NULL,
-        'view' => NULL
-      )
-    ),
-    'date_all_day_label' => $base + array('variables' => array()),
     'date_display_single' => $base + array('variables' => array(
         'date' => NULL,
         'timezone' => NULL,
@@ -416,36 +384,20 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
   if (empty($dates['value2'])) {
     $dates['value2'] = $dates['value'];
   }
-  $date1 = $dates['value']['local']['object'];
-  $date2 = $dates['value2']['local']['object'];
-  $is_all_day = date_field_all_day($field, $instance, $date1, $date2);
 
-  $all_day1 = '';
-  $all_day2 = '';
-  if ($format != 'format_interval' && $is_all_day) {
-    $all_day1 = theme('date_all_day', array(
-      'field' => $field,
-      'instance' => $instance,
-      'which' => 'date1',
-      'date1' => $date1,
-      'date2' => $date2,
-      'format' => $format,
-      'entity_type' => $entity_type,
-      'entity' => $entity));
-    $all_day2 = theme('date_all_day', array(
-      'field' => $field,
-      'instance' => $instance,
-      'which' => 'date2',
-      'date1' => $date1,
-      'date2' => $date2,
-      'format' => $format,
-      'entity_type' => $entity_type,
-      'entity' => $entity));
-    $dates['value']['formatted_time'] = theme('date_all_day_label');
-    $dates['value2']['formatted_time'] = theme('date_all_day_label');
-    $dates['value']['formatted'] = $all_day1;
-    $dates['value2']['formatted'] = $all_day2;
-  }
+  // Allow other modules to alter the date values.
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'format' => $format,
+    'entity_type' => $entity_type,
+    'entity' => $entity,
+    'langcode' => $langcode,
+    'item' => $item,
+    'display' => $display,
+  );
+  drupal_alter('date_formatter_dates', $dates, $context);
+
   $dates['format'] = $format;
   return $dates;
 }
@@ -860,29 +812,4 @@ function date_entity_metadata_struct_setter(&$item, $name, $value, $langcode, $t
     }
     $item[$name] = $date->format($format);
   }
-}
-
-/**
- * Determine if a Start/End date combination qualify as 'All day'.
- *
- * @param array $field, the field definition for this date field.
- * @param object $date1, a date/time object for the 'Start' date.
- * @param object $date2, a date/time object for the 'End' date.
- * @return TRUE or FALSE.
- */
-function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
-  if (empty($date1) || !is_object($date1)) {
-    return FALSE;
-  }
-  elseif (!date_has_time($field['settings']['granularity'])) {
-    return TRUE;
-  }
-  if (empty($date2)) {
-    $date2 = $date1;
-  }
-
-  $granularity = date_granularity_precision($field['settings']['granularity']);
-  $increment = isset($instance['widget']['settings']['increment']) ? $instance['widget']['settings']['increment'] : 1;
-  return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date2, DATE_FORMAT_DATETIME), $granularity, $increment);
-
 }

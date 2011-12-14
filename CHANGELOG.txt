@@ -13,8 +13,12 @@ Then delete the Date Browser attachment from the view, since it doesn't do anyth
 The UNTIL date was not getting included in repeating results and that is now fixed. This is an API change of sorts 
 for anyone who worked around the issue by setting it ahead.
 
+The All Day checkbox and All Day themes were moved into a separate module, using new hooks added to the date
+processing. This module should serve as an example of how other modules can inject functionality into date fields.
+
 New Features/Major Changes
 
+- Issue #874322, The All Day functionality has been moved into a separate module and hooks were added to make it easier for other modules to inject steps into date processing.
 - Issue #1267046, Include the UNTIL date in repeating results..
 - Issue #1354606 by temaruk, Rework the repeating date UI to make it more user-friendly.
 - Issue #1362654, Remove Advanced Help integration, it needs a total rewrite.

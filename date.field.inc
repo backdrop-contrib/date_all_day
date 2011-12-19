@@ -14,7 +14,6 @@ function date_field_formatter_info() {
       'field types' => array('date', 'datestamp', 'datetime'),
       'settings' => array(
         'format_type' => 'long',
-        'show_repeat_rule' => 'show',
         'multiple_number' => '',
         'multiple_from' => '',
         'multiple_to' => '',
@@ -45,10 +44,19 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
   module_load_include('inc', 'date', 'date_admin');
   switch ($formatter) {
     case 'format_interval':
-      return date_interval_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+      $form = date_interval_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
     default:
-      return date_default_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+      $form = date_default_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
   }
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'view_mode' => $view_mode,
+  );
+  drupal_alter('date_field_formatter_settings_form', $form, $form_state, $context);
+
+  return $form;
+
 }
 
 /**
@@ -60,10 +68,19 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
   module_load_include('inc', 'date', 'date_admin');
   switch ($formatter) {
     case 'format_interval':
-      return date_interval_formatter_settings_summary($field, $instance, $view_mode);
+      $summary = date_interval_formatter_settings_summary($field, $instance, $view_mode);
     default:
-      return date_default_formatter_settings_summary($field, $instance, $view_mode);
+      $summary = date_default_formatter_settings_summary($field, $instance, $view_mode);
   }
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'view_mode' => $view_mode,
+  );
+  drupal_alter('date_field_formatter_settings_summary', $summary, $context);
+
+  return implode('<br />', $summary);
+
 }
 
 /**
@@ -203,7 +220,6 @@ function date_field_info() {
   $settings = array(
     'settings' => array(
       'todate' => '',
-      'repeat' => 0,
       'granularity' => drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute')),
       'tz_handling' => 'site',
       'timezone_db' => 'UTC',
@@ -255,7 +271,6 @@ function date_field_widget_info() {
       'text_parts' => array(),
       'year_range' => '-3:+3',
       'label_position' => 'above',
-      'repeat_collapsed' => 0,
     ),
     'behaviors' => array(
       'multiple values' => FIELD_BEHAVIOR_DEFAULT,

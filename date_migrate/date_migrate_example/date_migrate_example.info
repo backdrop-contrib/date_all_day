@@ -1,6 +1,7 @@
 core = "7.x"
 dependencies[] = "date"
 dependencies[] = "date_repeat"
+dependencies[] = "date_repeat_field"
 dependencies[] = "date_migrate"
 dependencies[] = "features"
 dependencies[] = "migrate"

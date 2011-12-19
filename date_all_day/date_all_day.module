@@ -389,12 +389,12 @@ function date_all_day_field_widget_info_alter(&$info) {
 }
 
 /**
- * Implements hook_date_field_settings_form_alter().
+ * Implements hook_date_field_widget_settings_form_alter().
  *
  * This hook lets us alter the field settings form by adding a place
  * to set the value added above.
  */
-function date_all_day_date_field_settings_form_alter(&$form, $context) {
+function date_all_day_date_field_widget_settings_form_alter(&$form, $context) {
 
   $field = $context['field'];
   $instance = $context['instance'];

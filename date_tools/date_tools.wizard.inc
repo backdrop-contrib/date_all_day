@@ -54,7 +54,7 @@ function date_tools_wizard_form() {
     '#default_value' => 0,
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#title' => t('Show repeating date options'),
-    '#access' => module_exists('date_repeat'),
+    '#access' => module_exists('date_repeat_field'),
     );
   $form['field']['advanced'] = array(
     '#type' => 'fieldset',

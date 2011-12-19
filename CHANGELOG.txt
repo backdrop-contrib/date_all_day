@@ -33,6 +33,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1370876, Make sure new Date All Day code does not try to set the popup values if Date Popup is disabled.
 - Issue #874322, Add back the date_field_all_day() function to avoid breaking other modules that are using it.
 - Fix Date text placeholder to display a formatted date instead of a format. Follow up to Date repeat UI changes.
 - Issue #1248520 by fearlsgroove, Use attribute selector on all day and end day checkboxes.

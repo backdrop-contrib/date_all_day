@@ -383,9 +383,11 @@ function date_all_day_field_widget_info_alter(&$info) {
   $info['date_text']['settings'] += array(
     'display_all_day' => 0,
   );
-  $info['date_popup']['settings'] += array(
-    'display_all_day' => 0,
-  );
+  if (module_exists('date_popup')) {
+    $info['date_popup']['settings'] += array(
+      'display_all_day' => 0,
+    );
+  }
 }
 
 /**

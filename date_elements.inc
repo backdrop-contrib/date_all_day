@@ -174,6 +174,7 @@ function date_default_value($field, $instance, $langcode) {
  */
 function date_default_value_part($item, $field, $instance, $langcode, $part = 'value') {
   $timezone = date_get_timezone($field['settings']['tz_handling']);
+  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
   $date = NULL;
   if ($part == 'value') {
     $default_value = $instance['settings']['default_value'];
@@ -205,6 +206,8 @@ function date_default_value_part($item, $field, $instance, $langcode, $part = 'v
   else {
     $date = date_now($timezone);
   }
+  // The default value needs to be in the database timezone.
+  date_timezone_set($date, timezone_open($timezone_db));
   $date->limitGranularity($field['settings']['granularity']);
   return $date;
 }

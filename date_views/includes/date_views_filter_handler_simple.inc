@@ -193,7 +193,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#type' => 'date_year_range',
       '#default_value' => $this->options['year_range'],
     );
-    
+
     if (!empty($this->definition['field_name'])) {
       $field = field_info_field($this->definition['field_name']);
     }
@@ -274,7 +274,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
    */
   function date_parts_form($form_state, $prefix, $source, $which, $operator_values, $identifier, $relative_id) {
     module_load_include('inc', 'date_api', 'date_api_elements');
-    switch($prefix) {
+    switch ($prefix) {
       case 'min':
         $label = t('Start date');
         $relative_label = t('Relative start date');
@@ -303,7 +303,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       $default_date = $this->date_default_value($prefix);
       $id = 'edit-' . str_replace('_', '-', $this->field) . '-' . $prefix;
       $form[$prefix] = array(
-        '#title' => $label,
+        '#title' => check_plain($label),
         '#type' => $type,
         '#size' => 20,
         '#default_value' => !empty($this->value[$prefix]) ? $this->value[$prefix] : $default_date,
@@ -331,7 +331,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
         '#attributes' => array('class' => array('date-views-filter-fieldset')),
       );
       $form[$prefix . '_group'][$prefix . '_choose_input_type'] = array(
-        '#title' => $label,
+        '#title' => check_plain($label),
         '#type' => 'select',
         '#options' => array('date' => t('Select a date'), 'relative' => ('Enter a relative date')),
         '#attributes' => array('class' => array($prefix . '-choose-input-type')),
@@ -356,7 +356,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       );
       $form[$prefix . '_group'][$relative_id] = array(
         '#type' => 'textfield',
-        '#title' => $relative_label,
+        '#title' => check_plain($relative_label),
         '#default_value' => $relative_value,
         '#description' => t("Relative dates are computed when the view is displayed. Examples: now, now +1 day, 12AM today, Monday next week. <a href=\"@relative_format\">More examples of relative date formats in the PHP documentation</a>.", array('@relative_format' => 'http://www.php.net/manual/en/datetime.formats.relative.php')),
         '#states' => array(
@@ -434,7 +434,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       }
     }
     // Flatten the form structure for views, so the values can be saved.
-    foreach(array('value', 'min', 'max') as $key) {
+    foreach (array('value', 'min', 'max') as $key) {
       $options['value'][$key] = $options['value'][$key . '_group'][$key];
     }
   }

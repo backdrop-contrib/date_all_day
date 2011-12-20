@@ -103,7 +103,7 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
   $formatter = $display['type'];
   $format_types = date_format_type_options();
   $summary = array();
-  switch($formatter) {
+  switch ($formatter) {
     case 'date_plain':
       $format = t('Plain');
       break;
@@ -407,7 +407,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
   $options = date_granularity_names();
   $checkbox_year = array(
     '#type' => 'checkbox',
-    '#title' => $options['year'],
+    '#title' => check_plain($options['year']),
     '#value' => 'year',
     '#return_value' => 'year',
     '#disabled' => TRUE,

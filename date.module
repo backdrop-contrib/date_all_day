@@ -416,7 +416,7 @@ function date_format_type_format($format_type, $langcode = NULL) {
         $default = 'D, m/d/Y - H:i';
         break;
     }
-    $format = variable_get('date_format_'. $format_type, $default);
+    $format = variable_get('date_format_' . $format_type, $default);
   }
   return $format;
 }

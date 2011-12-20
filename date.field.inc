@@ -497,11 +497,11 @@ function date_content_migrate_instance_alter(&$instance_value, $field_value) {
 
 function date_old_formatter_get_settings($field_name, $type_name, $context) {
   $options = array();
-  $value = 'date:'. $type_name .':'. $context .':'. $field_name;
-  $options['show_repeat_rule'] = variable_get($value .'_show_repeat_rule', 'show');
-  $options['multiple_number'] = variable_get($value .'_multiple_number', '');
-  $options['multiple_from'] = variable_get($value .'_multiple_from', '');
-  $options['multiple_to'] = variable_get($value .'_multiple_to', '');
-  $options['fromto'] = variable_get($value .'_fromto', 'both');
+  $value = 'date:' . $type_name . ':' . $context . ':' . $field_name;
+  $options['show_repeat_rule'] = variable_get($value . '_show_repeat_rule', 'show');
+  $options['multiple_number'] = variable_get($value . '_multiple_number', '');
+  $options['multiple_from'] = variable_get($value . '_multiple_from', '');
+  $options['multiple_to'] = variable_get($value . '_multiple_to', '');
+  $options['fromto'] = variable_get($value . '_fromto', 'both');
   return $options;
 }

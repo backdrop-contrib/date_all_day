@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Test for using date fields with Migrate module.
+ */
 
 /**
  * Test date migration.

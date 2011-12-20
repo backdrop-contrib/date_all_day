@@ -55,7 +55,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       if ($granularity == 'week') {
         $now = date_now();
         $week = date_week(date_format($now, 'Y-m-d'));
-        return date_format($now, 'Y') .'-W'. $week;
+        return date_format($now, 'Y') . '-W' . $week;
       }
       else {
         return date($this->arg_format, REQUEST_TIME);

@@ -227,7 +227,7 @@ function date_field_info() {
     'instance_settings' => array(
       'default_value' => 'now',
       'default_value_code' => '',
-      'default_value2' => 'blank',
+      'default_value2' => 'same',
       'default_value_code2' => '',
     ),
     // Integrate with the Entity Metadata module.

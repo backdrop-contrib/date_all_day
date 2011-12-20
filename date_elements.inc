@@ -310,6 +310,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     case 'date_select':
       $element[$from_field]['#type'] = 'date_select';
       $element[$from_field]['#theme_wrappers'] = array('date_select');
+      $element['#attached']['js'][] = drupal_get_path('module', 'date') . '/date.js';
       break;
     case 'date_popup':
       $element[$from_field]['#type'] = 'date_popup';
@@ -333,7 +334,9 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$to_field]['#required'] = FALSE;
     $element[$to_field]['#weight'] += .2;
     $element[$to_field]['#prefix'] = '';
-    $description .= ' ' . t("Empty 'End date' values will use the 'Start date' values.");
+    // Users with JS enabled will never see initially blank values for the end
+    // date (see Drupal.date.EndDateHandler()), so hide the message for them.
+    $description .= '<span class="js-hide"> ' . t("Empty 'End date' values will use the 'Start date' values.") . '</span>';
     $element['#fieldset_description'] = $description;
     if ($field['settings']['todate'] == 'optional') {
       $element[$to_field]['#states'] = array(

@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+Sheesh. Fix syntax error in api.date.php.
+
 ======================
 Version 7.x-2.0-rc1
 ======================

@@ -163,7 +163,6 @@ function date_all_day_date_combo_validate_date_start_alter(&$date, &$form_state,
  *  'item' - the $item array.
  *  'element' - the $element array.
  */
- */
 function date_all_day_date_combo_validate_date_end_alter(&$date, &$form_state, $context) {
 
    // If this is an 'All day' value, set the time to midnight.

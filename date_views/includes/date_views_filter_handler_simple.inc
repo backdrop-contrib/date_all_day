@@ -179,15 +179,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
 
   function extra_options_form(&$form, &$form_state) {
     parent::extra_options_form($form, $form_state);
-     $form['add_delta'] = array(
-      '#type' => 'radios',
-      '#title' => t('Add multiple value identifier'),
-      '#default_value' => $this->options['add_delta'],
-      '#options' => array('' => t('No'), 'yes' => t('Yes')),
-      '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
-      );
-
-     $form['form_type'] = array(
+    $form['form_type'] = array(
       '#type' => 'radios',
       '#title' => t('Date selection form element'),
       '#default_value' => $this->options['form_type'],
@@ -200,6 +192,19 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $form['year_range'] = array(
       '#type' => 'date_year_range',
       '#default_value' => $this->options['year_range'],
+    );
+    
+    if (!empty($this->definition['field_name'])) {
+      $field = field_info_field($this->definition['field_name']);
+    }
+    $form['add_delta'] = array(
+      '#type' => 'radios',
+      '#title' => t('Add multiple value identifier'),
+      '#default_value' => $this->options['add_delta'],
+      '#options' => array('' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
+      // Only let mere mortals tweak this setting for multi-value fields
+      '#access' => $field['cardinality'] != 1,
     );
   }
 

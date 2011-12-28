@@ -284,13 +284,17 @@ function date_views_form_views_ui_edit_form_alter(&$form, &$form_state) {
  * The instanceof function makes this work for any handler that was derived
  * from 'views_handler_filter_date' or 'views_handler_argument_date',
  * which includes core date fields like the node updated field.
+ *
+ * The test for $handler->min_date tells us that this is an argument that
+ * not only is derived from the views date handler but also has been processed
+ * by the Date Views filter or argument code.
 */
 function date_views_handler_is_date($handler, $type = 'argument') {
   switch ($type) {
     case 'filter':
-      return $handler instanceof views_handler_filter_date;
+      return $handler instanceof views_handler_filter_date && !empty($handler->min_date);
     case 'argument':
-      return $handler instanceof views_handler_argument_date;
+      return $handler instanceof views_handler_argument_date && !empty($handler->min_date);
   }
   return FALSE;
 }

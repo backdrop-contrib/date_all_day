@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Our test for whether this is a Date argument or filter needs to include a check that the field was actually processed by Date Views. Some dates are not.
 - Issue #1379172 by deviantpixel, Note that the Date Repeat form uses a function that was re-named in 7.8.
 - Store the locale format in a static cache to avoid re-computing it dozens of times on calendar views.
 - Sheesh. Fix syntax error in api.date.php.

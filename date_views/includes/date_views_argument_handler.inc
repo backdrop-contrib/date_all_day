@@ -71,6 +71,11 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
   }
 
   function options_validate(&$form, &$form_state) {
+
+    // Views will whine if we don't have something for the these values even though we removed the option for summaries.
+    $form_state['values']['options']['summary']['format'] = 'none';
+    $form_state['values']['options']['summary']['options']['none'] = array();
+
     // It is very important to call the parent function here:
     parent::options_validate($form, $form_state);
 

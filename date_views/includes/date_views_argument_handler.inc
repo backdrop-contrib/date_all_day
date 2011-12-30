@@ -101,7 +101,9 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     if (!empty($this->options['date_fields'])) {
       $output = array();
       foreach ($this->options['date_fields'] as $field) {
-        $output[] = $fields['name'][$field]['label'];
+        if (array_key_exists($field, $fields['name'])) {
+          $output[] = $fields['name'][$field]['label'];
+        }
       }
       return implode('<br />' . $this->options['date_method'] . ' ', $output);
     }

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- The new option to hide the add_delta for simple fields needs to be adjusted to work right where there is no field.
 - Tweak the all day formula to check for 59:59 even for items that use increments, to help fix problems when the calendar creates all day values.
 - Our test for whether this is a Date argument or filter needs to include a check that the field was actually processed by Date Views. Some dates are not.
 - Revert the change to 7.8. It breaks the modules page.

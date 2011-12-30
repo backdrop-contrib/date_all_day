@@ -148,8 +148,10 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       '#description' => t("If selected the view will check if any value starting with the 'Start' date and ending with the 'End' date matches the view criteria. Otherwise the view will be limited to the specifically selected fields. Comparing to the whole Start/End range is the recommended setting when using this filter in a Calendar. When using the Start/End option, it is not necessary to add both the Start and End fields to the filter, either one will do."),
     );
 
+    $access = TRUE;
     if (!empty($this->definition['field_name'])) {
       $field = field_info_field($this->definition['field_name']);
+      $access = $field['cardinality'] != 1;
     }
     $form['add_delta'] = array(
       '#type' => 'radios',
@@ -158,7 +160,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       '#options' => array('' => t('No'), 'yes' => t('Yes')),
       '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
       // Only let mere mortals tweak this setting for multi-value fields
-      '#access' => $field['cardinality'] != 1,
+      '#access' => $access,
     );
 
   }

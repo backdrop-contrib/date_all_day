@@ -626,6 +626,7 @@ function date_repeat_field_date_field_formatter_settings_form_alter(&$form, &$fo
   $view_mode = $context['view_mode'];
   $display = $instance['display'][$view_mode];
   $formatter = $display['type'];
+  $settings = $display['settings'];
   if ($formatter == 'date_default') {
     $form['show_repeat_rule'] = array(
       '#title' => t('Repeat rule:'),

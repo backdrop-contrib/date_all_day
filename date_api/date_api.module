@@ -1382,7 +1382,6 @@ function date_default_timezone($check_user = TRUE) {
  *   Identify the default timezone for a user, if available, otherwise the site.
  */
 function date_default_timezone_object($check_user = TRUE) {
-  $timezone = date_default_timezone($check_user);
   return timezone_open(date_default_timezone($check_user));
 }
 

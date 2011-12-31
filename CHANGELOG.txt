@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1388586 by Moloc, Don't use check_plain() on system messages with links.
 - Issue #1302052 by benjifisher, penguin25, and helmo, Fix linespace ending problems in ical files.
 - Issue #1357216, The Date Views field list was including the Date Views filter itself, creating errors about missing node.date_filter values.
 - Issue #1259870, Reinstate the test for a missing date argument for the pager.

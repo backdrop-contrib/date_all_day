@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * $alarm
  *   An array with the following information about each alarm:
@@ -31,7 +30,7 @@ if (!empty($alarm['duration'])):
 endif;
 if ($alarm['action'] == 'EMAIL'):
   print "ATTENDEE:MAILTO:" . $alarm['email'] . "\r\n";
-  print "SUMMARY:" . $alarm['summary'] . "\n";
+  print "SUMMARY:" . $alarm['summary'] . "\r\n";
 endif;
 print "DESCRIPTION:" . $alarm['description']  . "\r\n";
 print "END:VALARM\r\n";

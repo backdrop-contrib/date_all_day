@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Follow up to Issue #1302052 by benjifisher, More clean up of ical line endings.
 - Issue #1388174 by travist, Remove redundant use of date_default_timezone().
 - Issue #1388586 by Moloc, Don't use check_plain() on system messages with links.
 - Issue #1302052 by benjifisher, penguin25, and helmo, Fix linespace ending problems in ical files.

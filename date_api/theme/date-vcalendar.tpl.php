@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * $calname
  *   The name of the calendar.
@@ -21,7 +20,7 @@ if (!empty($calname)) {
   print "X-WR-CALNAME;VALUE=TEXT:$calname\r\n";
 }
 print "PRODID:-//Drupal iCal API//EN\r\n";
-// Note that theme('date_event') already has the right line endings and needs no more.
+// Note that theme('date_vevent') already has the right line endings and needs no more.
 foreach($events as $event):
   print theme('date_vevent', $event);
 endforeach;

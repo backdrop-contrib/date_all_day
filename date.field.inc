@@ -302,13 +302,23 @@ function date_field_widget_info() {
  */
 function date_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
   foreach ($entities as $id => $entity) {
-    foreach ($items[$id] as $delta => $item) {
+    foreach ($items[$id] as $delta => &$item) {
       // If the file does not exist, mark the entire item as empty.
-      $timezone = isset($item['timezone']) ? $item['timezone'] : '';
       if (is_array($item)) {
-        $items[$id][$delta]['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-        $items[$id][$delta]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
-        $items[$id][$delta]['date_type'] = $field['type'];
+        $timezone = isset($item['timezone']) ? $item['timezone'] : '';
+        $item['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
+        $item['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+        $item['date_type'] = $field['type'];
+        foreach (date_process_values($field) as $processed) {
+          if (!empty($item[$processed])) {
+            $date = new DateObject($item[$processed], $item['timezone_db'], date_type_format($field['type']));
+            $date->limitGranularity($field['settings']['granularity']);
+            $item['db'][$processed] = $date;
+          }
+        }
+        if (empty($item['db']['value2'])) {
+          $item['db']['value2'] = $item['db']['value'];
+        }
       }
     }
   }

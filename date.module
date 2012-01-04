@@ -189,7 +189,6 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
   $format = date_formatter_format($formatter, $settings, $granularity, $langcode);
   $timezone = isset($item['timezone']) ? $item['timezone'] : '';
   $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
-  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
   $process = date_process_values($field);
   foreach ($process as $processed) {
     if (empty($item[$processed])) {
@@ -197,12 +196,9 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
     }
     else {
       // create a date object with a gmt timezone from the database value
-      $value = $item[$processed];
-      $db_format = date_type_format($field['type']);
-      $date = new DateObject($value, $timezone_db, $db_format);
-      $date->limitGranularity($field['settings']['granularity']);
-
       $dates[$processed] = array();
+
+      $date = $item['db'][$processed];
       $dates[$processed]['db']['object'] = $date;
       $dates[$processed]['db']['datetime'] = date_format($date, DATE_FORMAT_DATETIME);
 

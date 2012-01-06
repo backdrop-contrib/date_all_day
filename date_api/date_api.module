@@ -2008,7 +2008,6 @@ function date_api_form_system_regional_settings_alter(&$form, $form_state, $form
     '#description'   => t('IMPORTANT! If checked, First day of week MUST be set to Monday'),
   );
   $form['#validate'][] = 'date_api_form_system_settings_validate';
-  $form = system_settings_form($form);
 }
 
 /**

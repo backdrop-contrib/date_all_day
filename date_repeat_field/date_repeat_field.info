@@ -6,6 +6,3 @@ dependencies[] = date_repeat
 stylesheets[all][] = date_repeat_field.css
 package = Date/Time
 core = 7.x
-files[] = date_repeat_field.module
-
-

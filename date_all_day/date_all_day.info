@@ -4,4 +4,3 @@ dependencies[] = date_api
 dependencies[] = date
 package = Date/Time
 core = 7.x
-files[] = date_all_day.module

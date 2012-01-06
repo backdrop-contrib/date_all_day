@@ -4,5 +4,4 @@ dependencies[] = date
 package = Date/Time
 core = 7.x
 configure = admin/structure/date
-files[] = date_tools.module
 files[] = tests/date_tools.test

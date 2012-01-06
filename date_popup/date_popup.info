@@ -6,10 +6,3 @@ core = 7.x
 configure = admin/config/content/date_popup
 
 stylesheets[all][] = themes/datepicker.1.7.css
-
-files[] = date_popup.module
-files[] = date_popup.install
-files[] = date_popup.js
-files[] = themes/calendar.css
-files[] = themes/datepicker.css
-files[] = themes/timeentry.css

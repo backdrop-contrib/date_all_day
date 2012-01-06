@@ -562,7 +562,7 @@ function date_repeat_field_date_field_settings_form_alter(&$form, $context) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter() for field_ui_field_edit_form().
  */
 function date_repeat_field_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   $field = $form['#field'];

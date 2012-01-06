@@ -276,9 +276,9 @@ function date_views_field_views_data_alter(&$result, $field, $module) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter() for views_ui_edit_form().
  */
-function date_views_form_views_ui_edit_form_alter(&$form, &$form_state) {
+function date_views_form_views_ui_edit_form_alter(&$form, &$form_state, $form_id) {
   // This CSS is needed for the configuration form provided by the Date filter
   // (date_views_filter_handler_simple), but we have to add it here so that
   // it's already on the edit form the first time a Date filter is being added

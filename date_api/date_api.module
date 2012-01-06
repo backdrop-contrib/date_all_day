@@ -1996,11 +1996,12 @@ function date_api_database_info($field) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_FORM_ID_alter() for system_regional_settings().
  *
- * Add a form element to configure whether or not week numbers are ISO-8601 (default: FALSE == US/UK/AUS norm).
+ * Add a form element to configure whether or not week numbers are ISO-8601, the
+ * default is FALSE (US/UK/AUS norm).
  */
-function date_api_form_system_regional_settings_alter(&$form, $form_state, $form_id = 'system_date_time_settings') {
+function date_api_form_system_regional_settings_alter(&$form, &$form_state, $form_id) {
   $form['locale']['date_api_use_iso8601'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Use ISO-8601 week numbers'),

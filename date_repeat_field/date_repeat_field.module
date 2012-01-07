@@ -122,7 +122,7 @@ function date_repeat_field_show($entity_type = 'node', $entity = NULL) {
   $fields = field_info_instances($entity_type, $bundle);
   foreach ($fields as $field_name => $data) {
     $field = field_info_field($field_name);
-    if (in_array($field['type'], array('date', 'datestamp', 'datetime'))) {
+    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && date_is_repeat_field($field)) {
       return user_access('view date repeats');
     }
   }
@@ -143,7 +143,7 @@ function date_repeat_field_page($entity_type = 'node', $entity = NULL) {
   $fields = field_info_instances($entity_type, $bundle);
   foreach ($fields as $field_name => $data) {
     $field = field_info_field($field_name);
-    if (in_array($field['type'], array('date', 'datestamp', 'datetime'))) {
+    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && date_is_repeat_field($field)) {
       $field = field_view_field($entity_type, $entity, $field_name, 'full');
       $output .= drupal_render($field);
     }

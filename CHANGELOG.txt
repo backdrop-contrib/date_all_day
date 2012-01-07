@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1397126 follow-up by arlinsandbulte, Fix broken tests.
 - Issue #1397158, The default value for the end date was using the wrong timezone setting.
 - Issue #1392128 by kidrobot and tim.plunkett, Don't show repeat tab unless the date is repeating.
 - Issue #1397126, Add Date API section to administration menu and consolidate Date Popup and Date Tools settings there.

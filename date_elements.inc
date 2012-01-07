@@ -195,7 +195,8 @@ function date_default_value_part($item, $field, $instance, $langcode, $part = 'v
       return NULL;
     }
     else {
-      $date = new DateObject($item[0]['value'], $timezone, DATE_FORMAT_DATETIME);
+      // The date stored in 'value' has already been switched to the db timezone.
+      $date = new DateObject($item[0]['value'], $timezone_db, DATE_FORMAT_DATETIME);
     }
   }
   // Special case for 'now' when using dates with no timezone,

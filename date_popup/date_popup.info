@@ -3,6 +3,6 @@ description = Enables jquery popup calendars and time entry widgets for selectin
 dependencies[] = date_api
 package = Date/Time
 core = 7.x
-configure = admin/config/content/date_popup
+configure = admin/config/date/date_popup
 
 stylesheets[all][] = themes/datepicker.1.7.css

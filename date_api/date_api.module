@@ -53,6 +53,26 @@ function date_help($path, $arg) {
 }
 
 /**
+ * Implements hook_menu().
+ *
+ * Creates a 'Date API' section on the administration page for Date
+ * modules to use for their configuration and settings.
+ */
+function date_api_menu() {
+  $items['admin/config/date'] = array(
+    'title' => 'Date API',
+    'description' => 'Settings for modules the use the Date API.',
+    'position' => 'left',
+    'weight' => -10,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer group'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  return $items;
+}
+
+/**
  * Extend PHP DateTime class with granularity handling, merge functionality and
  * slightly more flexible initialization parameters.
  *

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1397126, Add Date API section to administration menu and consolidate Date Popup and Date Tools settings there.
 - Issue #1358790 by tim.plunkett, Store date objects in field_load to speed up processing.
 - Follow up to Issue #1302052 by benjifisher, More clean up of ical line endings.
 - Issue #1388174 by travist, Remove redundant use of date_default_timezone().

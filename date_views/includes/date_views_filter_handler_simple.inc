@@ -204,7 +204,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       '#options' => array('' => t('No'), 'yes' => t('Yes')),
       '#description' => t('Add an identifier to the view to show which multiple value date fields meet the filter criteria. Note: This option may introduce duplicate values into the view. Required when using multiple value fields in a Calendar or any time you want the node view of multiple value dates to display only the values that match the view filters.'),
       // Only let mere mortals tweak this setting for multi-value fields
-      '#access' => !empty($field) ? $field['cardinality'] != 1 : 1,
+      '#access' => !empty($field) ? $field['cardinality'] != 1 : 0,
     );
   }
 

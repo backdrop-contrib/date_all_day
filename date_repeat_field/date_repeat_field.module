@@ -190,6 +190,18 @@ function date_is_repeat_field($field, $instance = NULL) {
   }
 }
 
+/*
+ * Implements hook_date_field_insert_alter().
+ *
+ * We can't use hook_devel_generate() because we need custom handling for
+ * repeating date fields. So we wait until the entity is saved, then
+ * intervene here to fix it.
+ */
+function date_repeat_field_date_field_insert_alter(&$items, $context) {
+  module_load_include('inc', 'date_repeat_field', 'date_repeat_field.devel_generate');
+  date_repeat_field_date_field_insert($items, $context);
+}
+
 /**
  * Implements hook_field_widget_form_alter().
  */

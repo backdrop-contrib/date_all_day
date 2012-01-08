@@ -1,7 +1,12 @@
 <?php
+
 /**
  * @file
  * Install, update and uninstall functions for the Date module.
+ */
+
+/**
+ * Implements hook_field_schema().
  */
 function date_field_schema($field) {
   $db_columns = array();
@@ -37,7 +42,7 @@ function date_field_schema($field) {
       break;
   }
 
-  // If a second date is needed for 'End date', just make a copy of the first one.
+  // If a second date is needed for 'End date', make a copy of the first one.
   if (!empty($field['settings']['todate'])) {
     $db_columns['value2'] = $db_columns['value'];
 
@@ -45,7 +50,7 @@ function date_field_schema($field) {
     // We modify them our own way in views data.
     $db_columns['value2']['views'] = FALSE;
   }
-  // timezone and offset columns are used only if date-specific dates are chosen.
+  // Timezone and offset columns are used only if date-specific dates are used.
   if (isset($field['settings']['tz_handling']) && $field['settings']['tz_handling'] == 'date') {
     $db_columns['timezone'] = array(
       'type' => 'varchar',
@@ -60,7 +65,9 @@ function date_field_schema($field) {
       'sortable' => TRUE,
       'views' => FALSE,
     );
-    if (!empty($field['settings']['todate'])) $db_columns['offset2'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
+    if (!empty($field['settings']['todate'])) {
+      $db_columns['offset2'] = array('type' => 'int', 'not null' => FALSE, 'sortable' => TRUE, 'views' => FALSE);
+    }
   }
   if (isset($field['settings']['repeat']) && $field['settings']['repeat'] == 1) {
     $db_columns['rrule'] = array(
@@ -73,6 +80,9 @@ function date_field_schema($field) {
   return array('columns' => $db_columns);
 }
 
+/**
+ * Implements hook_update_last_removed().
+ */
 function date_update_last_removed() {
   return 6005;
 }
@@ -134,7 +144,7 @@ function date_update_7001() {
 }
 
 /**
- * Add a notification that there is a new Date All Day module, and enable it.
+ * Add a notification about the new Date All Day module, and enable it.
  */
 function date_update_7002() {
   drupal_set_message(t("The <em>All Day</em> functionality has been moved into a separate module. This new module provides the option to add an <em>All Day</em> checkbox to toggle time on and off for date fields. It also contains the theme that displays the <em>All Day</em> text on fields that have no time. For consistency with prior code, it has been automatically enabled. If you don't want the <em>All Day</em> functionality you can disable this module."));
@@ -142,9 +152,11 @@ function date_update_7002() {
 }
 
 /**
- * Add a notification that there is a new Date Repeat Field module, and enable it.
+ * Adds a notification about the new Date Repeat Field module, and enable it.
  */
 function date_update_7003() {
   drupal_set_message(t("The <em>Date Repeat</em> integration for Date fields is being moved into a separate module. For consistency with prior code, it has been automatically enabled if the Date Repeat API module is enabled. If you don't use <em>Date Repeat</em> functionality in your fields, you can disable this module."));
-  if (module_exists('date_repeat')) module_enable(array('date_repeat_field'));
+  if (module_exists('date_repeat')) {
+    module_enable(array('date_repeat_field'));
+  }
 }

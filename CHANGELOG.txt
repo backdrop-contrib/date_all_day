@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1397822, Fix 'Undefined index: field' error on line 207 of date_views_filter_handler_simple.inc.
 - Issue #1396536, Repeating fields weren't getting created with Devel Generate because of the change in widgets. Add new hooks so Date Repeat Field can add the repeats.
 - Issue #1397126 follow-up by arlinsandbulte, Fix broken tests.
 - Issue #1397158, The default value for the end date was using the wrong timezone setting.

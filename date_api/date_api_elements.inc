@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Date API elements themes and validation.
@@ -20,7 +21,7 @@
  *
  * The date_select element will create a collection of form elements, with a
  * separate select or textfield for each date part. The whole collection will
- * get re-formatted back into a date value of the requested type during validation.
+ * get reformatted back to a date value of the requested type during validation.
  *
  * The date_text element will create a textfield that can contain a whole
  * date or any part of a date as text. The user input value will be re-formatted
@@ -174,7 +175,7 @@ function date_year_range_element_process($element, $form_state, $form) {
 /**
  * Element value callback for the date_year_range form element.
  */
-function date_year_range_element_value_callback($element, $input = FALSE, &$form_state) {
+function date_year_range_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   // Convert the element's default value from a string to an array (to match
   // what we will get from the two textfields when the form is submitted).
   if ($input === FALSE) {
@@ -204,7 +205,7 @@ function date_year_range_validate(&$element, &$form_state) {
 /**
  * Element value callback for date_timezone element.
  */
-function date_timezone_element_value_callback($element, $input = FALSE, &$form_state) {
+function date_timezone_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   $return = '';
   if ($input !== FALSE) {
     $return = $input;
@@ -216,14 +217,15 @@ function date_timezone_element_value_callback($element, $input = FALSE, &$form_s
 }
 
 /**
- * Create a timezone form element.
+ * Creates a timezone form element.
  *
  * @param array $element
+ *   The timezone form element.
+ *
  * @return array
  *   the timezone form element
  */
 function date_timezone_element_process($element, $form_state, $form) {
-
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -265,7 +267,7 @@ function date_timezone_validate($element, &$form_state) {
 /**
  * Element value callback for date_text element.
  */
-function date_text_element_value_callback($element, $input = FALSE, &$form_state) {
+function date_text_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   $return = array('date' => '');
   $date = NULL;
   if ($input !== FALSE) {
@@ -291,7 +293,6 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
  *
  */
 function date_text_element_process($element, $form_state, $form) {
-
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -308,7 +309,7 @@ function date_text_element_process($element, $form_state, $form) {
 
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
-  //$element['date']['#required'] = $element['#required'];
+  // $element['date']['#required'] = $element['#required'];
   $element['date']['#theme'] = 'date_textfield_element';
   if (isset($element['#element_validate'])) {
     array_push($element['#element_validate'], 'date_text_validate');
@@ -334,7 +335,6 @@ function date_text_element_process($element, $form_state, $form) {
  *
  */
 function date_text_validate($element, &$form_state) {
-
   if (date_hidden_element($element)) {
     return;
   }
@@ -398,7 +398,7 @@ function date_text_input_date($element, $input) {
 /**
  * Element value callback for date_select element.
  */
-function date_select_element_value_callback($element, $input = FALSE, &$form_state) {
+function date_select_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   $return = array('year' => '', 'month' => '', 'day' => '', 'hour' => '', 'minute' => '', 'second' => '');
   $date = NULL;
   if ($input !== FALSE) {
@@ -430,7 +430,6 @@ function date_select_element_value_callback($element, $input = FALSE, &$form_sta
  *
  */
 function date_select_element_process($element, $form_state, $form) {
-
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -474,7 +473,7 @@ function date_select_element_process($element, $form_state, $form) {
 }
 
 /**
- * Create form elements for one or more date parts.
+ * Creates form elements for one or more date parts.
  *
  * Get the order of date elements from the provided format.
  * If the format order omits any date parts in the granularity, alter the
@@ -483,11 +482,14 @@ function date_select_element_process($element, $form_state, $form) {
  * elements and create a sub-form for each part.
  *
  * @param array $element
+ *   The date element.
  * @param object $date
- * @param array $granularity
+ *   The date object.
  * @param string $format
+ *   A date format string.
+ *
  * @return array
- *   the form array for the submitted date parts
+ *   The form array for the submitted date parts.
  */
 function date_parts_element($element, $date, $format) {
   $granularity = date_format_order($format);
@@ -616,15 +618,13 @@ function date_parts_element($element, $date, $format) {
 }
 
 /**
- *  Validation function for date selector.
+ * Validation function for date selector.
  *
  * When used as a Views widget, the validation step always gets triggered,
  * even with no form submission. Before form submission $element['#value']
  * contains a string, after submission it contains an array.
- *
  */
 function date_select_validate($element, &$form_state) {
-
   if (date_hidden_element($element)) {
     return;
   }

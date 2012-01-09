@@ -7,14 +7,17 @@
 abstract class DateFieldBasic extends DrupalWebTestCase {
   protected $privileged_user;
 
+  /**
+   * @todo.
+   */
   protected function setUp() {
     // Load the date_api module.
     parent::setUp('field', 'field_ui', 'date_api', 'date', 'date_popup', 'date_tools');
 
     // Create and log in our privileged user.
-    $this->privileged_user = $this->drupalCreateUser(array(
-      'administer content types', 'administer nodes', 'bypass node access', 'administer date tools'
-    ));
+    $this->privileged_user = $this->drupalCreateUser(
+      array('administer content types', 'administer nodes', 'bypass node access', 'administer date tools')
+    );
     $this->drupalLogin($this->privileged_user);
 
     variable_set('date_popup_timepicker', 'none');
@@ -33,8 +36,10 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
   }
 
   /**
-   * Create a date field from an array of settings values.
-   * All values have defaults, only need to specify values that need to be different.
+   * Creates a date field from an array of settings values.
+   *
+   * All values have defaults, only need to specify values that need to be
+   * different.
    */
   protected function createDateField($values = array()) {
     extract($values);
@@ -86,9 +91,9 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
         // Increment for minutes and seconds, can be 1, 5, 10, 15, or 30.
         'settings' => array(
           'increment' => $increment,
-          // The number of years to go back and forward in drop-down year selectors.
+          // The number of years to go back and forward in drop-down year
+          // selectors.
           'year_range' => $year_range,
-
           'input_format' => $input_format,
           'input_format_custom' => $input_format_custom,
           'text_parts' => $text_parts,
@@ -100,7 +105,7 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
       'settings' => array(
         'default_value' => $default_value,
         'default_value2' => $default_value2,
-      )
+      ),
     );
 
     $instance['display'] = array(
@@ -137,7 +142,6 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
     $field = field_create_field($field);
     $instance = field_create_instance($instance);
 
-    //_field_info_collate_fields(TRUE);
     field_info_cache_clear(TRUE);
     field_cache_clear(TRUE);
 
@@ -147,6 +151,9 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
 
   }
 
+  /**
+   * @todo.
+   */
   protected function deleteDateField($label, $bundle = 'story', $bundle_name = 'Story') {
     $this->drupalGet("admin/structure/types/manage/$bundle/fields");
     $this->clickLink('delete');
@@ -157,6 +164,10 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
 }
 
 class DateFieldTestCase extends DateFieldBasic {
+
+  /**
+   * @todo.
+   */
   public static function getInfo() {
     return array(
       'name' => 'Date Field',
@@ -165,6 +176,9 @@ class DateFieldTestCase extends DateFieldBasic {
     );
   }
 
+  /**
+   * @todo.
+   */
   public function testField() {
     // Create a date fields with simple values.
     foreach (array('date', 'datestamp', 'datetime') as $field_type) {
@@ -185,6 +199,9 @@ class DateFieldTestCase extends DateFieldBasic {
     }
   }
 
+  /**
+   * @todo.
+   */
   public function dateForm($field_name, $field_type, $widget_type, $todate = TRUE) {
     // Tests that date field functions properly.
     $edit = array();

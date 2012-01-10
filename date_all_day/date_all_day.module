@@ -184,7 +184,7 @@ function date_all_day_date_combo_process_alter(&$element, &$form_state, $context
   // Add the all_day checkbox to the combo element.
   if (!empty($instance['widget']['settings']['display_all_day'])) {
 
-    $parents = $element['#array_parents'];
+    $parents = $element['#parents'];
     $first_parent = array_shift($parents);
     $all_day_id = $first_parent . '[' . implode('][', $parents) . '][all_day]';;
     foreach (array('value', 'value2') as $key) {

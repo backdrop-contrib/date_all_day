@@ -283,7 +283,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#suffix' => '</div>',
   );
 
-  $parents = $element['#array_parents'];
+  $parents = $element['#parents'];
   $first_parent = array_shift($parents);
   $show_id = $first_parent . '[' . implode('][', $parents) . '][show_todate]';
 

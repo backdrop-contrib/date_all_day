@@ -301,23 +301,28 @@ function date_field_widget_info() {
  * Implements hook_field_load().
  */
 function date_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
+  $db_format = date_type_format($field['type']);
+  $process = date_process_values($field);
   foreach ($entities as $id => $entity) {
     foreach ($items[$id] as $delta => &$item) {
       // If the file does not exist, mark the entire item as empty.
       if (is_array($item)) {
         $timezone = isset($item['timezone']) ? $item['timezone'] : '';
         $item['timezone'] = date_get_timezone($field['settings']['tz_handling'], $timezone);
-        $item['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+        $item['timezone_db'] = $timezone_db;
         $item['date_type'] = $field['type'];
-        foreach (date_process_values($field) as $processed) {
-          if (!empty($item[$processed])) {
-            $date = new DateObject($item[$processed], $item['timezone_db'], date_type_format($field['type']));
-            $date->limitGranularity($field['settings']['granularity']);
-            $item['db'][$processed] = $date;
+        if (!empty($field['settings']['cache_enabled']) && ($delta < $field['settings']['cache_count'] || $field['settings']['cache_count'] == 0)) {
+          foreach ($process as $processed) {
+            if (!empty($item[$processed])) {
+              $date = new DateObject($item[$processed], $item['timezone_db'], $db_format);
+              $date->limitGranularity($field['settings']['granularity']);
+              $item['db'][$processed] = $date;
+            }
           }
-        }
-        if (empty($item['db']['value2'])) {
-          $item['db']['value2'] = $item['db']['value'];
+          if (!empty($item['db']['value']) && empty($item['db']['value2'])) {
+            $item['db']['value2'] = $item['db']['value'];
+          }
         }
       }
     }

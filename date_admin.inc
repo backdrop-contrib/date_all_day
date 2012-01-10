@@ -460,7 +460,25 @@ function _date_field_settings_form($field, $instance, $has_data) {
   $form['timezone_db'] = array(
     '#type' => 'hidden',
     '#value' => date_get_timezone_db($tz_handling),
-    );
+  );
+
+  $form['cache_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Cache the date field values'),
+    '#default_value' => !empty($settings['cache_enabled']),
+  );
+  $form['cache_count'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of values to cache for each date field'),
+    '#default_value' => (isset($settings['cache_count'])) ? $settings['cache_count'] : 4,
+    '#description' => t("Applies to multiple value or repeating fields. If set to '0', an unlimited number of field values will be cached."),
+    '#size' => 3,
+    '#states' => array(
+      'visible' => array(
+        'input[name="field[settings][cache_enabled]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
 
   $context = array(
     'field' => $field,
@@ -485,7 +503,7 @@ function date_field_settings_validate(&$form, &$form_state) {
     form_set_value($form['timezone_db'], date_get_timezone_db($field['settings']['tz_handling']), $form_state);
   }
   if ($field['settings']['tz_handling'] != 'none' && !in_array('hour', array_filter($field['settings']['granularity']))) {
-    form_set_error('field][settings][tz_handling', t('Dates without hours granularity must not use any timezone handling.'));
+    form_set_error('field[settings][tz_handling]', t('Dates without hours granularity must not use any timezone handling.'));
   }
   // Extract the correct 'todate' value out of the two end date checkboxes.
   if ($field['settings']['enddate_get']) {
@@ -501,6 +519,15 @@ function date_field_settings_validate(&$form, &$form_state) {
   }
   // Don't save the pseudo values created in the UI.
   unset($field['settings']['enddate_get'], $field['settings']['enddate_required']);
+
+  if (!empty($field['settings']['cache_enabled'])) {
+    if (!is_numeric($field['settings']['cache_count'])) {
+      $form_set_error('field[settings][cache_count]', t('The number of cache values must be a number.'));
+    }
+    elseif ($field['settings']['cache_count'] < 0) {
+      $form_set_error('field[settings][cache_count]', t('The number of cache values must be a number 0 or greater.'));
+    }
+  }
 }
 
 /**

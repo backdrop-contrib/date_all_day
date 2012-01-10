@@ -57,6 +57,8 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
     $default_value = !empty($default_value) ? $default_value : 'now';
     $default_value2 = !empty($default_value2) ? $default_value2 : 'blank';
     $default_format = !empty($default_format) ? $default_format : 'long';
+    $cache_enabled = !empty($cache_enabled);
+    $cache_count = !empty($cache_count) ? $cache_count : 4;
 
     $field = array(
       'field_name' => $field_name,
@@ -68,7 +70,9 @@ abstract class DateFieldBasic extends DrupalWebTestCase {
         'timezone_db' => date_get_timezone_db($tz_handling),
         'repeat' => $repeat,
         'todate' => $todate,
-        ),
+        'cache_enabled' => $cache_enabled,
+        'cache_count' => $cache_count,
+      ),
     );
     $instance = array(
       'entity_type' => $entity_type,

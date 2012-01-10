@@ -526,9 +526,11 @@ function date_repeat_field_field_info_alter(&$info) {
  */
 function date_repeat_field_field_formatter_info_alter(&$info) {
 
-  $info['date_default']['settings'] += array(
-    'show_repeat_rule' => 'show',
-  );
+  if (isset($info['date_default'])) {
+    $info['date_default']['settings'] += array(
+      'show_repeat_rule' => 'show',
+    );
+  }
 }
 
 /**

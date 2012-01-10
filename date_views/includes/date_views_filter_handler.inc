@@ -87,7 +87,7 @@ class date_views_filter_handler extends date_views_filter_handler_simple {
   function extra_options_form(&$form, &$form_state) {
     parent::extra_options_form($form, $form_state);
 
-    $fields = date_views_fields($this->view->base_table);
+    $fields = date_views_fields($this->base_table);
     $options = array();
     foreach ($fields['name'] as $name => $field) {
       $options[$name] = $field['label'];
@@ -160,7 +160,7 @@ class date_views_filter_handler extends date_views_filter_handler_simple {
   }
 
   function get_query_fields() {
-    $fields = date_views_fields($this->view->base_table);
+    $fields = date_views_fields($this->base_table);
     $fields = $fields['name'];
     $this->query_fields = array();
     foreach ((array) $this->options['date_fields'] as $delta => $name) {

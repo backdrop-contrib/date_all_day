@@ -23,6 +23,11 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $this->form_submitted = FALSE;
     $this->date_handler->granularity = isset($options['granularity']) ? $options['granularity'] : 'day';
     $this->format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+
+    // Identify the base table for this field.
+    // It will be used to call for the right query field options.
+    $this->base_table = $this->table;
+
   }
 
   // Set default values for the date filter.

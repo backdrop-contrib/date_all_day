@@ -34,6 +34,11 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');
     // $this->arg_format is the format the parent date handler will use to create a default argument.
     $this->arg_format = $this->format();
+
+    // Identify the base table for this field.
+    // It will be used to call for the right query field options.
+    $this->base_table = $this->table;
+
   }
 
   function format() {
@@ -291,7 +296,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       // Get the Start/End values for this field. Retrieve using the original table name.
       // Swap the current table name (adjusted for relationships) into the query.
       // @TODO We may be able to use Views substitutions here, investigate that later.
-      $fields = date_views_fields($this->view->base_table);
+      $fields = date_views_fields($this->base_table);
       $fields = $fields['name'];
       $fromto = $fields[$this->original_table . '.' . $this->real_field]['fromto'];
 

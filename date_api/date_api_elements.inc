@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_element_info().
+ * Implements hook_element_info().
  *
  * Parameters for date form elements, designed to have sane defaults so any
  * or all can be omitted.

@@ -159,7 +159,7 @@ function date_popup_theme() {
 }
 
 /**
-* Implement hook_element_info().
+* Implements hook_element_info().
 *
 * Set the #type to date_popup and fill the element #default_value with
 * a date adjusted to the proper local timezone in datetime format (YYYY-MM-DD HH:MM:SS).
@@ -655,8 +655,8 @@ function theme_date_popup($vars) {
 }
 
 /**
-* Implement hook_menu().
-*/
+ * Implements hook_menu().
+ */
 function date_popup_menu() {
   $items = array();
   // TODO Fix this later.

@@ -43,7 +43,7 @@ function date_all_day_theme() {
 }
 
 /**
- * Implementation of hook_date_formatter_dates_alter().
+ * Implements hook_date_formatter_dates_alter().
  *
  * This allows us to alter the $dates array created
  * by date_formatter_process.

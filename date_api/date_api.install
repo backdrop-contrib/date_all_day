@@ -86,7 +86,7 @@ function date_api_requirements($phase) {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function date_api_install() {
   // Ensure translations don't break at install time
@@ -104,7 +104,7 @@ function date_api_install() {
 }
 
 /**
- * Implementation of hook_enable().
+ * Implements hook_enable().
  */
 function date_api_enable() {
   date_api_set_variables();
@@ -112,7 +112,7 @@ function date_api_enable() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function date_api_uninstall() {
   cache_clear_all('date_timezone_identifiers_list', 'cache');

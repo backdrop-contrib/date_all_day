@@ -13,7 +13,7 @@
  */
 
 /**
- * Implementation of hook_date_context_date_condition_alter().
+ * Implements hook_date_context_date_condition_alter().
  */
 function date_context_context_node_condition_alter($node, $op) {
   if ($plugin = context_get_plugin('condition', 'date_context_date_condition')) {
@@ -22,7 +22,7 @@ function date_context_context_node_condition_alter($node, $op) {
 }
 
 /**
- * Implementation of hook_context_plugins()
+ * Implements hook_context_plugins()
  */
 function date_context_context_plugins() {
   $plugins = array();
@@ -36,7 +36,7 @@ function date_context_context_plugins() {
 }
 
 /**
- * Implementation of hook_context_registry()
+ * Implements hook_context_registry()
  */
 
 function date_context_context_registry() {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function date_tools_help($section, $arg) {
   switch ($section) {

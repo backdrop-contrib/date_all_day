@@ -14,7 +14,7 @@
  *
  */
 /**
- * Implement hook_element_info().
+ * Implements hook_element_info().
  */
 function date_repeat_element_info() {
   $type['date_repeat_rrule'] = array(

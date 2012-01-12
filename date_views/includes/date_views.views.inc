@@ -28,7 +28,7 @@
  *   date argument default to set a starting point for the view.
  */
 /**
- * Implementation of hook_views_plugins
+ * Implements hook_views_plugins
  */
 function date_views_views_plugins() {
   $path = drupal_get_path('module', 'date_views');
@@ -83,7 +83,7 @@ function date_views_views_plugins() {
 }
 
 /**
- * Implementation of hook_views_data()
+ * Implements hook_views_data()
  */
 function date_views_views_data() {
   $data = array();

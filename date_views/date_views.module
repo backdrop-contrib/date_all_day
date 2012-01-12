@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Implement hook_views_api().
+ * Implements hook_views_api().
  *
  * This one is used as the base to reduce errors when updating.
  */
@@ -46,15 +47,14 @@ function date_views_views_fetch_fields($base, $type) {
 }
 
 /**
- * Implement hook_date_api_tables().
+ * Implements hook_date_api_tables().
  */
 function date_views_date_views_tables() {
   return array('node', 'comments', 'users', 'files');
 }
 
 /**
- * Implement hook_date_views_fields().
- * on behalf of core fields.
+ * Implements hook_date_views_fields().
  *
  * All modules that create custom fields that use the
  * 'views_handler_field_date' handler can provide

@@ -46,7 +46,7 @@ function date_repeat_theme() {
 /**
  * Helper function for FREQ options.
  */
-function FREQ_options() {
+function date_repeat_freq_options() {
   return array(
     'DAILY' => t('Daily', array(), array('context' => 'datetime_singular')),
     'WEEKLY' => t('Weekly', array(), array('context' => 'datetime_singular')),
@@ -55,7 +55,7 @@ function FREQ_options() {
   );
 }
 
-function INTERVAL_options() {
+function date_repeat_interval_options() {
   $options = range(0, 366);
   unset($options[0]);
 
@@ -211,7 +211,7 @@ function date_repeat_rrule_description($rrule, $format = 'D M d Y') {
     '!additional' => '',
     '!week_starts_on' => '',
     );
-  $interval = INTERVAL_options();
+  $interval = date_repeat_interval_options();
   switch ($rrule['FREQ']) {
     case 'WEEKLY':
       $description['!interval'] = format_plural($rrule['INTERVAL'], 'every week', 'every @count weeks') . ' ';

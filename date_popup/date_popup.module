@@ -555,7 +555,7 @@ function date_popup_format_to_popup($format) {
   if (empty($format)) {
     $format = 'Y-m-d';
   }
-  $replace = datepicker_format_replacements();
+  $replace = date_popup_datepicker_format_replacements();
   return strtr($format, $replace);
 }
 
@@ -572,7 +572,7 @@ function date_popup_format_to_popup_time($format, $timepicker = NULL) {
     $format = 'H:i';
   }
   $format = str_replace(array('/', '-', ' .', ',', 'F', 'M', 'l', 'z', 'w', 'W', 'd', 'j', 'm', 'n', 'y', 'Y'), '', $format);
-  $format = strtr($format, timepicker_format_replacements($timepicker));
+  $format = strtr($format, date_popup_timepicker_format_replacements($timepicker));
   return $format;
 }
 
@@ -585,7 +585,7 @@ function date_popup_format_to_popup_time($format, $timepicker = NULL) {
 *   a normal date format string, like Y-m-d
 */
 function date_popup_popup_to_format($format) {
-  $replace = array_flip(datepicker_format_replacements());
+  $replace = array_flip(date_popup_datepicker_format_replacements());
   return strtr($format, $replace);
 }
 
@@ -601,7 +601,7 @@ function date_popup_popup_to_format($format) {
  * @return
  *   A map of replacements.
  */
-function timepicker_format_replacements($timepicker = 'default') {
+function date_popup_timepicker_format_replacements($timepicker = 'default') {
   switch ($timepicker) {
     case 'wvega':
       return array(
@@ -618,7 +618,7 @@ function timepicker_format_replacements($timepicker = 'default') {
 /**
 * The format replacement patterns for the new datepicker.
 */
-function datepicker_format_replacements() {
+function date_popup_datepicker_format_replacements() {
   return array(
   'd' => 'dd',
   'j' => 'd',

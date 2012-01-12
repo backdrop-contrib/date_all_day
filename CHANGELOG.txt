@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1402236 by timplunkett, All functions should be prefixed with your module name to avoid name clashes
 - Issue #1402238 by timplumkett, Remove references to CCK
 - Issue #1011624, Filters and arguments were not always using the right base table to select field options, causing 'column missing' errors.
 - Issue #1397822, Fix 'Undefined index: field' error on line 207 of date_views_filter_handler_simple.inc.

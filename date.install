@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Installation code for CCK date module.
+ * Install, update and uninstall functions for the Date module.
  */
 function date_field_schema($field) {
   $db_columns = array();
@@ -41,7 +41,7 @@ function date_field_schema($field) {
   if (!empty($field['settings']['todate'])) {
     $db_columns['value2'] = $db_columns['value'];
 
-    // We don't want CCK to create additional columns, just the first.
+    // We don't want Field API to create additional columns, just the first.
     // We modify them our own way in views data.
     $db_columns['value2']['views'] = FALSE;
   }

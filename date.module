@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Defines date/time field types for the Content Construction Kit (CCK).
+ * Defines date/time field types.
  */
 
 module_load_include('theme', 'date', 'date');

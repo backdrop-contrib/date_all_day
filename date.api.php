@@ -387,7 +387,7 @@ function hook_date_field_formatter_settings_form_alter(&$form, &$form_state, $co
       '#title' => t('Repeat rule:'),
       '#type' => 'select',
       '#options' => array(
-        'show' => t('Display repeat rule'),
+        'show' => t('Show repeat rule'),
         'hide' => t('Hide repeat rule')),
       '#default_value' => $settings['show_repeat_rule'],
       '#access' => $field['settings']['repeat'],
@@ -417,12 +417,12 @@ function hook_date_field_formatter_settings_summary_alter(&$summary, $context) {
   $display = $instance['display'][$view_mode];
   $formatter = $display['type'];
   $settings = $display['settings'];
-  if (array_key_exists('show_repeat_rule', $settings) && !empty($field['settings']['repeat'])) {
-    if (!empty($settings['show_repeat_rule'])) {
+  if (isset($settings['show_repeat_rule']) && !empty($field['settings']['repeat'])) {
+    if ($settings['show_repeat_rule'] == 'show') {
       $summary[] = t('Show repeat rule');
     }
     else {
-      $summary[] = t('Do not show repeat rule');
+      $summary[] = t('Hide repeat rule');
     }
   }
 }

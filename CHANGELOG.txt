@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1096000, Custom date formats not working right.
 - Issue #1405364, Format interval settings were getting overridden by missing break.
 - Issue #1387890, Make sure disabled fields are shown and retain their original values.
 - Issue #1402232 by timplunkett, Switch 'Implementation of' to 'Implements'

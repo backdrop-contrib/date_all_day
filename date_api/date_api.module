@@ -1530,21 +1530,11 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
   if (empty($date)) {
     return '';
   }
-  switch ($type) {
-    case 'small':
-    case 'short':
-      $format = variable_get('date_format_short', 'm/d/Y - H:i');
-      break;
-    case 'large':
-    case 'long':
-      $format = variable_get('date_format_long', 'l, F j, Y - H:i');
-      break;
-    case 'custom':
-      $format = $format;
-      break;
-    case 'medium':
-    default:
-      $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
+  if ($type != 'custom') {
+    $format = variable_get('date_format_' . $type);
+  }
+  if (empty($format)) {
+    $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
   }
   $format = date_limit_format($format, $date->granularity);
   $max = strlen($format);

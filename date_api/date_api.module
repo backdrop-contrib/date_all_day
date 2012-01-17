@@ -1533,7 +1533,7 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
   if ($type != 'custom') {
     $format = variable_get('date_format_' . $type);
   }
-  if (empty($format)) {
+  if ($type != 'custom' && empty($format)) {
     $format = variable_get('date_format_medium', 'D, m/d/Y - H:i');
   }
   $format = date_limit_format($format, $date->granularity);

@@ -46,8 +46,10 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
   switch ($formatter) {
     case 'format_interval':
       $form = date_interval_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+      break;
     default:
       $form = date_default_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+      break;
   }
   $context = array(
     'field' => $field,
@@ -55,7 +57,6 @@ function date_field_formatter_settings_form($field, $instance, $view_mode, $form
     'view_mode' => $view_mode,
   );
   drupal_alter('date_field_formatter_settings_form', $form, $form_state, $context);
-
   return $form;
 }
 

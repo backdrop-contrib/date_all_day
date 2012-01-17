@@ -95,6 +95,9 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     '#date_timezone' => $timezone,
     '#element_validate' => array('date_combo_validate'),
     '#date_is_default' => $is_default,
+
+    // Store the original values, for use with disabled and hidden fields.
+    '#date_items' => isset($items[$delta]) ? $items[$delta] : '',
   );
 
   $element['#title'] = $instance['label'];
@@ -397,15 +400,20 @@ function date_element_empty($element, &$form_state) {
  */
 function date_combo_validate($element, &$form_state) {
 
-  if (date_hidden_element($element)) {
+  // Disabled and hidden elements won't have any input and don't need validation,
+  // we just need to re-save the original values, from before they were processed into
+  // widget arrays and timezone-adjusted.
+  if (date_hidden_element($element) || !empty($element['#disabled'])) {
+    form_set_value($element, $element['#date_items'], $form_state);
     return;
   }
 
-  $form_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
-  $form_input = drupal_array_get_nested_value($form_state['input'], $element['#field_parents']);
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $langcode = $element['#language'];
+
+  $form_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
+  $form_input = drupal_array_get_nested_value($form_state['input'], $element['#field_parents']);
 
   // If the whole field is empty and that's OK, stop now.
   if (empty($form_input[$field_name]) && !$element['#required']) {

@@ -928,7 +928,6 @@ class DateObject extends DateTime {
 function date_hidden_element($element) {
   // @TODO What else needs to be tested to see if dates are hidden or disabled?
   if ((isset($element['#access']) && empty($element['#access']))
-    || !empty($element['#disabled'])
     || !empty($element['#programmed'])
     || in_array($element['#type'], array('hidden', 'value'))) {
     return TRUE;

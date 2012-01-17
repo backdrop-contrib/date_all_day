@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1387890, Make sure disabled fields are shown and retain their original values.
 - Issue #1402232 by timplunkett, Switch 'Implementation of' to 'Implements'
 - Issue #1402236 by timplunkett, All functions should be prefixed with your module name to avoid name clashes
 - Issue #1402238 by timplumkett, Remove references to CCK

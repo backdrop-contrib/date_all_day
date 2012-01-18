@@ -196,12 +196,13 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
     '#field_prefix' => $prefix,
     '#field_suffix' => $suffix,
   );
-
+  $options = date_repeat_dow_day_options_abbr(TRUE, 1);
+  $options = date_repeat_dow_day_options_ordered($options);
   $element['weekly']['BYDAY'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Repeat on', array(), array('context' => 'Date repeat')),
     '#default_value' => !empty($rrule['BYDAY']) && $rrule['FREQ'] === 'WEEKLY' ? $rrule['BYDAY'] : array(),
-    '#options' => date_repeat_dow_day_options_abbr(TRUE, 1),
+    '#options' => $options,
     '#attributes' => array('class' => array('container-inline byday')),
     '#multiple' => TRUE,
     '#prefix' => '<div class="date-clear">',

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1386012, Order weekdays in Date Repeat form to match the site first day of week settings.
 - Issue #1376476 by pbfleetwood, Add commas to default formatting of week and day headers.
 - Issue #1408430, Views pagination with exposed, unset, filters, results in invalid default values. Treat them as empty input.
 - Issue #1408996, Exposed Date Popup widget with time not correctly initialized.

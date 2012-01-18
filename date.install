@@ -99,7 +99,7 @@ function date_update_7000() {
         if (in_array($instance['widget']['type'], array('date_popup'))) {
           $changed = FALSE;
           foreach ($instance['display'] as $context => $display) {
-            if ($display['type'] != 'date_default' && $display['type'] != 'date_interval') {
+            if ($display['type'] != 'date_default' && $display['type'] != 'date_interval' && $display['type'] != 'hidden') {
               $instance['display'][$context]['type'] = 'date_default';
               $instance['display'][$context]['settings']['format_type'] = str_replace('date_', '', $display['type']);
               $changed = TRUE;

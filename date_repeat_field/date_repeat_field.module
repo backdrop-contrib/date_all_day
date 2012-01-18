@@ -202,6 +202,20 @@ function date_repeat_field_date_field_insert_alter(&$items, $context) {
   date_repeat_field_date_field_insert($items, $context);
 }
 
+/*
+ * Implements hook_date_field_update_alter().
+ */
+function date_repeat_field_date_field_update_alter(&$items, $context) {
+
+  // If you have a repeating date field on a user and don't check the box to repeat it,
+  // we end up with $items[0]['rrule'] = array('additions' => '', 'exceptions' => ''));
+  // This will clean it up by getting rid of those bogus values.
+  // @TODO Figure out where that's coming from. It doesn't happen on nodes.
+  if (!empty($items[0]['rrule']) && is_array($items[0]['rrule'])) {
+    $items[0]['rrule'] = NULL;
+  }
+}
+
 /**
  * Implements hook_field_widget_form_alter().
  */
@@ -268,13 +282,15 @@ function date_repeat_field_widget_validate($element, &$form_state) {
   $rrule_values = date_repeat_merge($input['rrule'], $element['rrule']);
 
   // If no repeat information was set, treat this as a normal, non-repeating value.
-  if ($rrule_values['FREQ'] == 'NONE') {
+  if ($rrule_values['FREQ'] == 'NONE' || empty($input['show_repeat_settings'])) {
     $item['rrule'] = NULL;
+    form_set_value($element, $item, $form_state);
+    return;
   }
 
   // If no start date was set, clean up the form and return.
   if (empty($item['value'])) {
-    form_set_value($element, array($item), $form_state);
+    form_set_value($element, NULL, $form_state);
     return;
   }
 
@@ -467,7 +483,7 @@ function date_repeat_field_date_combo_process_alter(&$element, &$form_state, $co
   // Add a date repeat form element, if needed.
   // We delayed until this point so we don't bother adding it to hidden fields.
   if (date_is_repeat_field($field, $instance)) {
-    
+
     $item = $element['#value'];
     $element['rrule'] = array(
       '#type' => 'date_repeat_rrule',

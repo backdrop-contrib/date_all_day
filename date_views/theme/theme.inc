@@ -176,12 +176,12 @@ function theme_date_nav_title($params) {
       $date_arg = $date_info->year . '-' . date_pad($date_info->month);
       break;
     case 'day':
-      $format = !empty($format) ? $format : (empty($date_info->mini) ? 'l, F j Y' : 'l, F j');
+      $format = !empty($format) ? $format : (empty($date_info->mini) ? 'l, F j, Y' : 'l, F j');
       $title = date_format_date($date_info->min_date, 'custom', $format);
       $date_arg = $date_info->year . '-' . date_pad($date_info->month) . '-' . date_pad($date_info->day);
       break;
     case 'week':
-      $format = !empty($format) ? $format : (empty($date_info->mini) ? 'F j Y' : 'F j');
+      $format = !empty($format) ? $format : (empty($date_info->mini) ? 'F j, Y' : 'F j');
       $title = t('Week of @date', array('@date' => date_format_date($date_info->min_date, 'custom', $format)));
       $date_arg = $date_info->year . '-W' . date_pad($date_info->week);
       break;

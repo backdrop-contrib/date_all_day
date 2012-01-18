@@ -234,15 +234,19 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
   $has_time = date_has_time($granularity);
   $date = NULL;
   $return = $has_time ? array('date' => '', 'time' => '') : array('date' => '');
-  // Empty text widgets in exposed filters return an empty $input value 
-  // that does not meet the !== FALSE test.
-  if ($input != FALSE) {
+
+  // Normal input from submitting the form element.
+  // Check is_array() to skip the string input values created by Views pagers.
+  // Those string values, if present, should be interpreted as empty input.
+  if ($input !== FALSE && is_array($input)) {
     $return = $input;
     $date = date_popup_input_date($element, $input);
   }
+  // No input? Try the default value.
   elseif (!empty($element['#default_value'])) {
     $date = date_default_date($element);
   }
+
   $return['date'] = date_is_date($date) && !$date->timeOnly ? date_format_date($date, 'custom', date_popup_date_format($element)) : '';
   $return['time'] = date_is_date($date) && $has_time ? date_format_date($date, 'custom', date_popup_time_format($element)) : '';
   return $return;

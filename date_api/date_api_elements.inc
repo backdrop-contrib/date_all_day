@@ -270,12 +270,15 @@ function date_timezone_validate($element, &$form_state) {
 function date_text_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   $return = array('date' => '');
   $date = NULL;
-  // Empty text widgets in exposed filters return an empty $input value 
-  // that does not meet the !== FALSE test.
-  if ($input != FALSE) {
+
+  // Normal input from submitting the form element.
+  // Check is_array() to skip the string input values created by Views pagers.
+  // Those string values, if present, should be interpreted as empty input.
+  if ($input != FALSE && is_array($input)) {
     $return = $input;
     $date = date_text_input_date($element, $input);
   }
+  // No input? Try the default value.
   elseif (!empty($element['#default_value'])) {
     $date = date_default_date($element);
   }

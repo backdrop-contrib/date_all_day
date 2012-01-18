@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1408430, Views pagination with exposed, unset, filters, results in invalid default values. Treat them as empty input.
 - Issue #1408996, Exposed Date Popup widget with time not correctly initialized.
 - Issue #1271726, Text widgets in exposed filters used with pagers produce unexpected results.
 - Issue #1096000, Custom date formats not working right.

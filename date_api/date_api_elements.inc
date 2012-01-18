@@ -270,7 +270,9 @@ function date_timezone_validate($element, &$form_state) {
 function date_text_element_value_callback($element, $input = FALSE, &$form_state = array()) {
   $return = array('date' => '');
   $date = NULL;
-  if ($input !== FALSE) {
+  // Empty text widgets in exposed filters return an empty $input value 
+  // that does not meet the !== FALSE test.
+  if ($input != FALSE) {
     $return = $input;
     $date = date_text_input_date($element, $input);
   }

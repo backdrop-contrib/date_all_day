@@ -234,9 +234,8 @@ function date_popup_element_value_callback($element, $input = FALSE, &$form_stat
   $has_time = date_has_time($granularity);
   $date = NULL;
   $return = $has_time ? array('date' => '', 'time' => '') : array('date' => '');
-  // For some reason I cannot fathom empty Popup widgets in exposed filters return
-  // an empty $input value that does not meet the !== FALSE test while text
-  // and select widgets do. So adjusting the test.
+  // Empty text widgets in exposed filters return an empty $input value 
+  // that does not meet the !== FALSE test.
   if ($input != FALSE) {
     $return = $input;
     $date = date_popup_input_date($element, $input);

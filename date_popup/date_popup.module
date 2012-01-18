@@ -380,7 +380,7 @@ function date_popup_process_time_part(&$element) {
       // The first value in the dropdown list should be the same as the element
       // default_value, but it needs to be in JS format (i.e. milliseconds since
       // the epoch).
-      $start_time = new DateObject($element['#default_value']);
+      $start_time = new DateObject($element['#default_value'], $element['#date_timezone'], $element['#date_format']);
       date_increment_round($start_time, $element['#date_increment']);
       $start_time = $start_time->format(DATE_FORMAT_UNIX) * 1000;
       $settings = array(

@@ -88,7 +88,7 @@ function date_api_install() {
   // Ensure translations don't break at install time.
   $t = get_t();
 
-  // date_api_set_variables can install date_timezone and date_php4. The
+  // date_api_set_variables can install date_timezone. The
   // date_timezone_install() function does a module_enable('date_api'). This
   // means that date_api_enable() can be called before date_api_install()
   // finishes! So the date_api schema needs to be installed before this line!

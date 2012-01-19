@@ -165,12 +165,14 @@ class date_sql_handler {
   /**
    * Return timezone offset for the date being processed.
    */
-  function get_offset() {
+  function get_offset($comp_date = NULL) {
     if (!empty($this->db_timezone) && !empty($this->local_timezone)) {
       if ($this->db_timezone != $this->local_timezone) {
-        $date = date_now($this->db_timezone);
-        $date->setTimezone(timezone_open($this->local_timezone));
-        return date_offset_get($date);
+        if (empty($comp_date)) {
+          $comp_date = date_now($this->db_timezone);
+        }
+        $comp_date->setTimezone(timezone_open($this->local_timezone));
+        return date_offset_get($comp_date);
       }
     }
     return 0;
@@ -189,7 +191,7 @@ class date_sql_handler {
    * @return string
    *   An appropriate SQL string for the db type and field type.
    */
-  function sql_field($field, $offset = NULL) {
+  function sql_field($field, $offset = NULL, $comp_date = NULL) {
     if (strtoupper($field) == 'NOW') {
       // NOW() will be in UTC since that is what we set the db timezone to.
       $this->local_timezone = 'UTC';
@@ -246,7 +248,7 @@ class date_sql_handler {
       break;
     }
     // Adjust the resulting value to the right timezone/offset.
-    return $this->sql_tz($field, $offset);
+    return $this->sql_tz($field, $offset, $comp_date);
   }
 
   /**
@@ -329,7 +331,7 @@ class date_sql_handler {
    *   If set, no timezone conversion will be done and the
    *   offset will be used.
    */
-  function sql_tz($field, $offset = NULL) {
+  function sql_tz($field, $offset = NULL, $comp_date = NULL) {
     // If the timezones are values they need to be quoted, but
     // if they are field names they do not.
     $db_zone   = !empty($this->db_timezone_field) ? $this->db_timezone_field : "'{$this->db_timezone}'";
@@ -349,7 +351,7 @@ class date_sql_handler {
         return $this->sql_offset($field, $this->offset_field);
       }
       else {
-        return $this->sql_offset($field, $this->get_offset());
+        return $this->sql_offset($field, $this->get_offset($comp_date));
       }
     }
     // Otherwise make a database timezone adjustment to the field.

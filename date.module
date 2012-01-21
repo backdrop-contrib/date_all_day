@@ -400,7 +400,7 @@ function date_formatter_format($formatter, $settings, $granularity = array(), $l
       return 'date_plain';
       break;
     default:
-      return date_format_type_format($format_type, $langcode);
+      $format = date_format_type_format($format_type, $langcode);
       break;
   }
 

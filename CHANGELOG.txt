@@ -15,6 +15,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1411038 by jhodgdon: Fixed Date formatting is not obeying granularity.
 - Issue #1359464, Make sure that default values on hidden elements have the same construct as loaded values to avoid errors.
 - Issue #1399744 by tim.plunkett, Rework the way filter groups are used to be sure the Date filter group does not clobber the Views filter group.
 - Issue #1411862, Move the date_views_fields() function into date_view.module to be sure it is always available.

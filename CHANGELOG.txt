@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1359464, Make sure that default values on hidden elements have the same construct as loaded values to avoid errors.
 - Issue #1399744 by tim.plunkett, Rework the way filter groups are used to be sure the Date filter group does not clobber the Views filter group.
 - Issue #1411862, Move the date_views_fields() function into date_view.module to be sure it is always available.
 - Issue #1380350, Rework SQL query handling to pass in a comparison date for computing offsets to better handle dates affected by DST adjustments.

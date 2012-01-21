@@ -162,11 +162,21 @@ function date_local_date($item, $timezone, $field, $instance, $part = 'value') {
  */
 function date_default_value($field, $instance, $langcode) {
   $item = array();
+  $db_format = date_type_format($field['type']);
   $date = date_default_value_part($item, $field, $instance, $langcode, 'value');
-  $item[0]['value'] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+  $item[0]['value'] = is_object($date) ? date_format($date, $db_format) : '';
   if (!empty($field['settings']['todate'])) {
     $date = date_default_value_part($item, $field, $instance, $langcode, 'value2');
-    $item[0]['value2'] = is_object($date) ? date_format($date, DATE_FORMAT_DATETIME) : '';
+    $item[0]['value2'] = is_object($date) ? date_format($date, $db_format) : '';
+  }
+
+  // Make sure the default value has the same construct as a loaded field value
+  // to avoid errors if the default value is used on a hidden element.
+  $item[0]['timezone'] = date_get_timezone($field['settings']['tz_handling']);
+  $item[0]['timezone_db'] = date_get_timezone_db($field['settings']['tz_handling']);
+  $item[0]['date_type'] = $field['type'];
+  if (empty($item[0]['value2'])) {
+    $item[0]['value2'] = $item[0]['value'];
   }
   return $item;
 }

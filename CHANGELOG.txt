@@ -5,6 +5,12 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+New Features/Major Changes
+
+- Issue #1358790 by tim.plunkett and redndahead, Store date objects in field_load to speed up processing, with a field setting option to control it.
+
+Bugfixes
+
 - Issue #1359464, Make sure that default values on hidden elements have the same construct as loaded values to avoid errors.
 - Issue #1399744 by tim.plunkett, Rework the way filter groups are used to be sure the Date filter group does not clobber the Views filter group.
 - Issue #1411862, Move the date_views_fields() function into date_view.module to be sure it is always available.
@@ -29,7 +35,6 @@ Version 7.x-2.x-dev
 - Issue #1397158, The default value for the end date was using the wrong timezone setting.
 - Issue #1392128 by kidrobot and tim.plunkett, Don't show repeat tab unless the date is repeating.
 - Issue #1397126, Add Date API section to administration menu and consolidate Date Popup and Date Tools settings there.
-- Issue #1358790 by tim.plunkett, Store date objects in field_load to speed up processing.
 - Follow up to Issue #1302052 by benjifisher, More clean up of ical line endings.
 - Issue #1388174 by travist, Remove redundant use of date_default_timezone().
 - Issue #1388586 by Moloc, Don't use check_plain() on system messages with links.

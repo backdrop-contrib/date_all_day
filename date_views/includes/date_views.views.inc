@@ -140,27 +140,6 @@ function date_views_views_data_alter(&$data) {
 }
 
 /**
- *  Identify all potential date/timestamp fields and cache the data.
- */
-function date_views_fields($base = 'node', $reset = FALSE) {
-  static $fields = array();
-  $empty = array('name' => array(), 'alias' => array());
-  module_load_include('inc', 'date_views', 'includes/date_views_fields');
-
-  if (empty($fields[$base]) || $reset) {
-    $cid = 'date_views_fields_' . $base;
-    if (!$reset && $cached = cache_get($cid, 'cache_views')) {
-      $fields[$base] = $cached->data;
-    }
-    else {
-      $fields[$base] = _date_views_fields($base);
-    }
-  }
-  // Make sure that empty values will be arrays in he expected format.
-  return !empty($fields) && !empty($fields[$base]) ? $fields[$base] : $empty;
-}
-
-/**
  * Central function for setting up the right timezone values
  * in the SQL date handler.
  *

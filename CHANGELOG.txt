@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1411862, Move the date_views_fields() function into date_view.module to be sure it is always available.
 - Issue #1380350, Rework SQL query handling to pass in a comparison date for computing offsets to better handle dates affected by DST adjustments.
 - Issue #1359464, Temporary fix for broken handling of repeating dates on users with a TODO to figure out where it's coming from.
 - Issue #1404494 by byrond, Make sure hidden formatters don't get switched to date_default in update hook.

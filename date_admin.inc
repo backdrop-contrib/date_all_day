@@ -487,15 +487,18 @@ function _date_field_settings_form($field, $instance, $has_data) {
 
   $form['cache_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Cache the date field values'),
+    '#title' => t('Cache dates'),
+    '#description' => t('Date objects can be created and cached as date fields are loaded rather than when they are displayed to improve performance.'),
     '#default_value' => !empty($settings['cache_enabled']),
+    '#weight' => 10,
   );
   $form['cache_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Number of values to cache for each date field'),
+    '#title' => t('Maximum dates per field'),
     '#default_value' => (isset($settings['cache_count'])) ? $settings['cache_count'] : 4,
-    '#description' => t("Applies to multiple value or repeating fields. If set to '0', an unlimited number of field values will be cached."),
+    '#description' => t("If set to '0', all date values on every entity will be cached. Note that caching every date on fields that may have a large number of multiple or repeating values may create a significant performance penalty when the cache is cleared. The suggested setting for multiple value and repeating fields is no more than 4 values per field."),
     '#size' => 3,
+    '#weight' => 11,
     '#states' => array(
       'visible' => array(
         'input[name="field[settings][cache_enabled]"]' => array('checked' => TRUE),

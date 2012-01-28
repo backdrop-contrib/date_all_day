@@ -450,14 +450,6 @@ function date_combo_validate($element, &$form_state) {
   $offset_field = 'offset';
   $offset_field2 = 'offset2';
 
-  // Unfortunately, due to the fact that much of the processing is already
-  // done by the time we get here, it is not possible highlight the field
-  // with an error, we just try to explain which element is creating the
-  // problem in the error message.
-  //$parent = $element['#parents'];
-  //$error_field = array_pop($parent);
-  //$errors = array();
-
   // Check for empty 'Start date', which could either be an empty
   // value or an array of empty values, depending on the widget.
   $empty = TRUE;

@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1408014 by dasjo, We no longer need the $error_element value to display errors properly.
+
 ======================
 Version 7.x-2.0-rc2
 ======================

@@ -117,25 +117,24 @@ function theme_date_all_day($vars) {
     $date2 = $date1;
   }
 
+  $suffix = '';
   if (!date_has_time($field['settings']['granularity'])) {
     $format = date_limit_format($format, array('year', 'month', 'day'));
-    return date_format_date($$which, 'custom', $format);
-  }
-
-  $format_granularity = date_format_order($format);
-  $format_has_time = FALSE;
-  if (in_array('hour', $format_granularity)) {
-    $format_has_time = TRUE;
-  }
-  $all_day = date_all_day_field($field, $instance, $date1, $date2);
-
-  if ($all_day && $format_has_time) {
-    $format = date_limit_format($format, array('year', 'month', 'day'));
-    return trim(date_format_date($$which, 'custom', $format) .' '. theme('date_all_day_label'));
   }
   else {
-    return date_format_date($$which, 'custom', $format);
+    $format_granularity = date_format_order($format);
+    $format_has_time = FALSE;
+    if (in_array('hour', $format_granularity)) {
+      $format_has_time = TRUE;
+    }
+    $all_day = date_all_day_field($field, $instance, $date1, $date2);
+    if ($all_day && $format_has_time) {
+      $format = date_limit_format($format, array('year', 'month', 'day'));
+      $suffix = ' ' . theme('date_all_day_label');
+    }
   }
+
+  return trim(date_format_date($$which, 'custom', $format) . $suffix);
 
 }
 

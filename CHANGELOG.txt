@@ -4,7 +4,7 @@ Date Module 7.x
 ===================
 Version 7.x-2.x-dev
 ===================
-
+- Issue #1017216 by tim.plunkett, arlinsandbulte: Added custom date format without time shows 'all day'.
 - Issue #1408014 by dasjo, We no longer need the $error_element value to display errors properly.
 
 ======================

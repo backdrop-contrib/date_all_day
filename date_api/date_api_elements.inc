@@ -326,7 +326,7 @@ function date_text_element_process($element, $form_state, $form) {
     $element['date']['#value'] = $element['date']['#default_value'];
   }
 
-  drupal_alter('date_text_process', $element);
+  drupal_alter('date_text_process', $element, $form_state, $form);
 
   return $element;
 }

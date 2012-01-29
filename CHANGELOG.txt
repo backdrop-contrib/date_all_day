@@ -5,10 +5,6 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
-- Issue #1209026, When date validation fails, Date Popup value is getting cleared.
-- Issue #1017216 by tim.plunkett, arlinsandbulte: Added custom date format without time shows 'all day'.
-- Issue #1408014 by dasjo, We no longer need the $error_element value to display errors properly.
-
 ======================
 Version 7.x-2.0-rc2
 ======================
@@ -19,6 +15,9 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1209026, When date validation fails, Date Popup value is getting cleared.
+- Issue #1017216 by tim.plunkett, arlinsandbulte: Added custom date format without time shows 'all day'.
+- Issue #1408014 by dasjo, We no longer need the $error_element value to display errors properly.
 - Issue #554546 by master-of-magic: Fix Timezone list translation
 - Issue #1411038 by jhodgdon: Fixed Date formatting is not obeying granularity.
 - Issue #1359464, Make sure that default values on hidden elements have the same construct as loaded values to avoid errors.

@@ -61,6 +61,7 @@ function _date_repeat_rrule_process($element, &$form_state, $form) {
 
   $parts = date_repeat_split_rrule($rrule);
   $rrule = $parts[0];
+  
   $exceptions = $parts[1];
   $additions = $parts[2];
   $timezone = !empty($element['#date_timezone']) ? $element['#date_timezone'] : date_default_timezone();

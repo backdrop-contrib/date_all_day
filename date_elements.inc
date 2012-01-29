@@ -50,7 +50,10 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   // If this is a new entity, populate the field with the right default values.
   // This happens early so even fields later hidden with #access get those values.
   $is_default = FALSE;
-  if (empty($items)) {
+  $entity_type = $instance['entity_type'];
+  $info = entity_get_info($entity_type);
+  $id = $info['entity keys']['id'];
+  if (empty($form[$id]['#value'])) {
     $items = date_default_value($field, $instance, $langcode);
     $is_default = TRUE;
   }

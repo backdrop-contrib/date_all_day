@@ -207,6 +207,11 @@ function date_repeat_field_date_field_insert_alter(&$items, $context) {
  */
 function date_repeat_field_date_field_update_alter(&$items, $context) {
 
+  // If an RRULE with a frequency of NONE made it this far, unset it.
+  if (!empty($items[0]['rrule']) && strpos($items[0]['rrule'], 'FREQ=NONE')) {
+    //$items[0]['rrule'] = NULL;
+  }
+
   // If you have a repeating date field on a user and don't check the box to repeat it,
   // we end up with $items[0]['rrule'] = array('additions' => '', 'exceptions' => ''));
   // This will clean it up by getting rid of those bogus values.
@@ -225,6 +230,7 @@ function date_repeat_field_field_widget_form_alter(&$element, &$form_state, $con
   $instance = $context['instance'];
   $items = $context['items'];
   $delta = $context['delta'];
+
   if (in_array($field['type'], array('date', 'datetime', 'datestamp'))) {
     if (!empty($field['settings']['repeat'])) {
       $element['#element_validate'][] = 'date_repeat_field_widget_validate';
@@ -247,7 +253,6 @@ function date_repeat_field_field_widget_form_alter(&$element, &$form_state, $con
  * Lots more work needed here.
  */
 function date_repeat_field_widget_validate($element, &$form_state) {
-
   $field = field_widget_field($element, $form_state);
   if (empty($field['settings']['repeat'])) {
     return;

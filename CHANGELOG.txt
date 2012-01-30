@@ -15,6 +15,8 @@ New Features/Major Changes
 
 Bugfixes
 
+- Alter date field test to test with a complete end date instead of using empty elements.
+- Fix broken logic in repeat additions.
 - Issue #1419106 by hanoii: Added more info to hook_date_text_process_alter().
 - Issue #1209026, When date validation fails, Date Popup value is getting cleared.
 - Issue #1017216 by tim.plunkett, arlinsandbulte: Added custom date format without time shows 'all day'.

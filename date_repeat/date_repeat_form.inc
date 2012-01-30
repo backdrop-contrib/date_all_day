@@ -867,7 +867,8 @@ function date_repeat_merge($form_values, $element) {
     foreach ($form_values['RDATE'] as $delta => $value) {
       if (is_array($value['datetime'])) {
         $rdate_element['#date_format'] = !empty($element['#date_format']) ? date_limit_format($element['#date_format'], array('year', 'month', 'day')) : 'Y-m-d';
-        $form_values['RDATE'][$delta]['datetime'] = $function($rdate_element, $form_values['RDATE'][$delta]['datetime']);
+        $date = $function($rdate_element, $form_values['RDATE'][$delta]['datetime']);
+        $form_values['RDATE'][$delta]['datetime'] = is_object($date) ? $date->format(DATE_FORMAT_DATETIME) : '';
       }
     }
   }

@@ -208,7 +208,7 @@ function date_repeat_field_date_field_insert_alter(&$items, $context) {
   // We can't use hook_devel_generate() because we need custom handling for
   // repeating date fields. So we wait until the entity is inserted, then
   // intervene here to fix it.
-  if (!empty($entity->devel_generate) || !empty($field['settings']['repeat'])) {
+  if (!empty($entity->devel_generate) && !empty($field['settings']['repeat'])) {
     module_load_include('inc', 'date_repeat_field', 'date_repeat_field.devel_generate');
     date_repeat_field_date_field_insert($items, $context);
   }

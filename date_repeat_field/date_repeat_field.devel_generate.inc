@@ -18,6 +18,10 @@ function date_repeat_field_date_field_insert(&$items, $context) {
   $langcode = $context['langcode'];
 
   // The first value was already created by the regular Devel Generate code.
+  // Skipping doing anything if there is no value for this field.
+  if (empty($items)) {
+    return;
+  }
   $item = $items[0];
 
   // Unset any previous dates past the first one.

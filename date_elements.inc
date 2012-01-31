@@ -504,39 +504,6 @@ function date_combo_validate($element, &$form_state) {
   // because otherwise we'll show errors on the nested elements
   // more than once.
   elseif (!form_get_errors()) {
-    // Check todate input for blank values and substitute in fromdate
-    // values where needed, then re-compute the todate with those values.
-    if (!empty($field['settings']['todate'])) {
-      $merged_date = array();
-      $to_date_empty = TRUE;
-      foreach ($posted[$to_field] as $part => $value) {
-        $to_date_empty = $to_date_empty && empty($value) && !is_numeric($value);
-        $merged_date[$part] = empty($value)  && !is_numeric($value) ? $posted[$from_field][$part] : $value;
-        if ($part == 'ampm' && $merged_date['ampm'] == 'pm' && $merged_date['hour'] < 12) {
-          $merged_date['hour'] += 12;
-        }
-        elseif ($part == 'ampm' && $merged_date['ampm'] == 'am' && $merged_date['hour'] == 12) {
-          $merged_date['hour'] -= 12;
-        }
-      }
-
-      // If all date values were empty and a date is required, throw
-      // an error on the first element. We don't want to create
-      // duplicate messages on every date part, so the error will
-      // only go on the first.
-      if ($to_date_empty && $field['settings']['todate'] == 'required') {
-        $errors[] = t('Some value must be entered in the End date.');
-      }
-
-      $element[$to_field]['#value'] = $merged_date;
-
-      // Call the right function to turn this altered user input into
-      // a new value for the todate.
-      $item[$to_field] = $merged_date;
-    }
-    else {
-      $item[$to_field] = $item[$from_field];
-    }
 
     $timezone = !empty($item[$tz_field]) ? $item[$tz_field] : $element['#date_timezone'];
     $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
@@ -545,7 +512,7 @@ function date_combo_validate($element, &$form_state) {
 
     if (!empty($field['settings']['todate'])) {
       $element[$to_field]['#date_timezone'] = $timezone;
-      $to_date = date_input_date($field, $instance, $element[$to_field], $merged_date);
+      $to_date = date_input_date($field, $instance, $element[$to_field], $posted[$to_field]);
     }
     else {
       $to_date = $from_date;

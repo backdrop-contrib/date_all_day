@@ -15,6 +15,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1417872, Remove code to compute missing date parts from empty values now that the new validation prevents that from working.
 - Issue #1417872, Make sure empty year field is validated in the same way other date parts are validated.
 - Alter date field test to test with a complete end date instead of using empty elements.
 - Fix broken logic in repeat additions.

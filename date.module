@@ -725,3 +725,4 @@ function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
   $increment = isset($instance['widget']['settings']['increment']) ? $instance['widget']['settings']['increment'] : 1;
   return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date2, DATE_FORMAT_DATETIME), $granularity, $increment);
 }
+

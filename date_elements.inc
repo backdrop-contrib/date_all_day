@@ -601,3 +601,42 @@ function date_input_format($element, $field, $instance) {
   }
   return variable_get('date_format_short', 'm/d/Y - H:i');
 }
+
+
+/**
+ * Implements hook_date_select_pre_validate_alter().
+ */
+function date_date_select_pre_validate_alter(&$element, &$form_state, &$input) {
+  date_empty_end_date($element, $form_state, $input);
+}
+
+/**
+ * Implements hook_date_text_pre_validate_alter().
+ */
+function date_date_text_pre_validate_alter(&$element, &$form_state, &$input) {
+  date_empty_end_date($element, $form_state, $input);
+}
+
+/**
+ * Implements hook_date_popup_pre_validate_alter().
+ */
+function date_date_popup_pre_validate_alter(&$element, &$form_state, &$input) {
+  date_empty_end_date($element, $form_state, $input);
+}
+
+/**
+ * Helper function to clear out end date when not being used.
+ */
+function date_empty_end_date(&$element, &$form_state, &$input) {
+  // If this is the end date and the option to show an end date has not been selected,
+  // empty the end date to surpress validation errors and stop further processing.
+  $parents = $element['#parents'];
+  $parent = array_pop($parents);
+  if ($parent == 'value2') {
+    $parent_values = drupal_array_get_nested_value($form_state['values'], $parents);
+    if (isset($parent_values['show_todate']) && $parent_values['show_todate'] != 1) {
+      $input = array();
+      form_set_value($element, NULL, $form_state);
+    }
+  }
+}

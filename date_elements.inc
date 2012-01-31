@@ -46,14 +46,29 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
 
   $element = $base;
   $field_name = $field['field_name'];
+  $entity_type = $instance['entity_type'];
 
   // If this is a new entity, populate the field with the right default values.
   // This happens early so even fields later hidden with #access get those values.
+
+  // @TODO Every entity seems to have its own pattern for how to retrieve the
+  // entity associatiated with our date fields. This pattern works for users
+  // and nodes and now has the exception needed for fields in field collections.
+  // No other entity types have been tested.
   $is_default = FALSE;
-  $entity_type = $instance['entity_type'];
+  switch ($entity_type) {
+    case 'field_collection_item':
+      // For Field Collections, we need to check the parent entity, not the collection entity.
+      $entity_type = $form['#entity_type'];
+      break;
+    default:
+      break;
+  }
+
   $info = entity_get_info($entity_type);
   $id = $info['entity keys']['id'];
-  if (empty($form[$id]['#value'])) {
+  $entity = array_key_exists($entity_type, $form_state) ? $form_state[$entity_type] : NULL;
+  if (empty($entity->$id)) {
     $items = date_default_value($field, $instance, $langcode);
     $is_default = TRUE;
   }

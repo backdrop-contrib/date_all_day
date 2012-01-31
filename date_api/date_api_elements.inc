@@ -663,22 +663,24 @@ function date_select_validate($element, &$form_state) {
   $date = date_select_input_date($element, $input);
 
   // If the field has errors, display them.
-  // If something was input but there is no date, the date is invalid.
-  // If the field is empty and required, set error message and return.
   $error_field = implode('][', $element['#parents']);
+  $entered = array_values(array_filter($input));
   if (empty($date) || !empty($date->errors)) {
+    // The input created a date but it has errors.
     if (is_object($date) && !empty($date->errors)) {
       $message = t('The value input for field %field is invalid:', array('%field' => $label));
       $message .= '<br />' . implode('<br />', $date->errors);
       form_set_error($error_field, $message);
       return;
     }
-    if ($element['#required']) {
+    // Nothing was entered but the date is required.
+    elseif (empty($entered) && $element['#required']) {
       $message = t('A valid date is required for %title.', array('%title' => $label));
       form_set_error($error_field, $message);
       return;
     }
-    if (!empty($input['year'])) {
+    // Something was input but it wasn't enough to create a valid date.
+    elseif (!empty($entered)) {
       $message = t('The value input for field %field is invalid.', array('%field' => $label));
       form_set_error($error_field, $message);
       return;
@@ -692,7 +694,10 @@ function date_select_validate($element, &$form_state) {
  * Helper function for creating a date object out of user input.
  */
 function date_select_input_date($element, $input) {
-  if (empty($input) || !is_array($input) || !array_key_exists('year', $input) || empty($input['year'])) {
+
+  // Was anything entered? If not, we have no date.
+  $entered = array_values(array_filter($input));
+  if (empty($entered) || !is_array($input)) {
     return NULL;
   }
   $granularity = date_format_order($element['#date_format']);

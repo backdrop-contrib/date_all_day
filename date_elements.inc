@@ -354,7 +354,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     $element[$from_field]['#title']  = ''; // The title is in the fieldset.
     $element[$to_field] = $element[$from_field];
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
-    $element[$to_field]['#required'] = FALSE;
+    $element[$to_field]['#required'] = ($element[$from_field]['#required'] && $field['settings']['todate'] == 'required');
     $element[$to_field]['#weight'] += .2;
     $element[$to_field]['#prefix'] = '';
     // Users with JS enabled will never see initially blank values for the end

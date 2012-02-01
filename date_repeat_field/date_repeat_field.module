@@ -382,7 +382,6 @@ function date_repeat_field_widget_validate($element, &$form_state) {
  * Remove the 'Add more' elements from a repeating date form.
  */
 function date_repeat_after_build(&$element, &$form_state) {
-
   foreach ($form_state['storage']['repeat_fields'] as $field_name => $parents) {
     // Remove unnecessary items in the form added by the Add more handling.
     $value = drupal_array_get_nested_value($element, $parents);

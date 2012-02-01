@@ -726,3 +726,22 @@ function date_field_all_day($field, $instance, $date1, $date2 = NULL) {
   return date_is_all_day(date_format($date1, DATE_FORMAT_DATETIME), date_format($date2, DATE_FORMAT_DATETIME), $granularity, $increment);
 }
 
+
+/**
+ * Implements hook_field_widget_properties_alter().
+ *
+ * Alters the widget properties of a field instance before it gets displayed.
+ * Used here to flag new entities so we can later tell if they need default values.
+ */
+function date_field_widget_properties_alter(&$widget, $context) {
+  if (in_array($widget['type'], array('date_select', 'date_text', 'date_popup'))) {
+    $entity_type = $context['entity_type'];
+    $entity = $context['entity'];
+    $info = entity_get_info($entity_type);
+    $id = $info['entity keys']['id'];
+    $widget['is_new']= FALSE;
+    if (empty($entity->$id)) {
+      $widget['is_new'] = TRUE;
+    }
+  }
+}

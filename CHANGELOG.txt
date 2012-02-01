@@ -15,6 +15,7 @@ New Features/Major Changes
 
 Bugfixes
 
+- Issue #1423598, Found a way to flag items that are new so we know when to add default values.
 - Made some fixes to find and test the right entities when checking whether to use default values. More work is needed.
 - Issue #1422600, Make sure end date cannot cause validation errors when show end date checkbox is not checked.
 - Issue #1417872, Remove code to compute missing date parts from empty values now that the new validation prevents that from working.

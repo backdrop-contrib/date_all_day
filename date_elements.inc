@@ -58,8 +58,9 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   $is_default = FALSE;
   switch ($entity_type) {
     case 'field_collection_item':
-      // For Field Collections, we need to check the parent entity, not the collection entity.
-      $entity_type = $form['#entity_type'];
+      // For Field Collections displayed in subforms, we need to check the parent 
+      // entity, not the collection entity.
+      $entity_type = array_key_exists('#entity_type', $form) ? $form['#entity_type'] : $entity_type;
       break;
     default:
       break;

@@ -144,7 +144,7 @@ function date_default_date($element) {
 /**
  * Process callback which creates a date_year_range form element.
  */
-function date_year_range_element_process($element, $form_state, $form) {
+function date_year_range_element_process($element, &$form_state, $form) {
   // Year range is stored in the -3:+3 format, but collected as two separate
   // textfields.
   $element['years_back'] = array(
@@ -168,6 +168,11 @@ function date_year_range_element_process($element, $form_state, $form) {
 
   $element['#tree'] = TRUE;
   $element['#attached']['js'][] = drupal_get_path('module', 'date_api') . '/date_year_range.js';
+
+  $context = array(
+   'form' => $form,
+  );
+  drupal_alter('date_year_range_process', $element, $form_state, $context);
 
   return $element;
 }
@@ -225,7 +230,7 @@ function date_timezone_element_value_callback($element, $input = FALSE, &$form_s
  * @return array
  *   the timezone form element
  */
-function date_timezone_element_process($element, $form_state, $form) {
+function date_timezone_element_process($element, &$form_state, $form) {
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -248,6 +253,12 @@ function date_timezone_element_process($element, $form_state, $form) {
   else {
     $element['#element_validate'] = array('date_timezone_validate');
   }
+
+  $context = array(
+   'form' => $form,
+  );
+  drupal_alter('date_timezone_process', $element, $form_state, $context);
+
   return $element;
 }
 
@@ -297,7 +308,7 @@ function date_text_element_value_callback($element, $input = FALSE, &$form_state
  * The display of each part comes from #date_format.
  *
  */
-function date_text_element_process($element, $form_state, $form) {
+function date_text_element_process($element, &$form_state, $form) {
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -326,7 +337,10 @@ function date_text_element_process($element, $form_state, $form) {
     $element['date']['#value'] = $element['date']['#default_value'];
   }
 
-  drupal_alter('date_text_process', $element, $form_state, $form);
+  $context = array(
+   'form' => $form,
+  );
+  drupal_alter('date_text_process', $element, $form_state, $context);
 
   return $element;
 }
@@ -434,7 +448,7 @@ function date_select_element_value_callback($element, $input = FALSE, &$form_sta
  * The display of each part comes from ['#date_settings']['format'].
  *
  */
-function date_select_element_process($element, $form_state, $form) {
+function date_select_element_process($element, &$form_state, $form) {
   if (date_hidden_element($element)) {
     return $element;
   }
@@ -472,7 +486,10 @@ function date_select_element_process($element, $form_state, $form) {
     $element['#element_validate'] = array('date_select_validate');
   }
 
-  drupal_alter('date_select_process', $element);
+  $context = array(
+   'form' => $form,
+  );
+  drupal_alter('date_select_process', $element, $form_state, $context);
 
   return $element;
 }

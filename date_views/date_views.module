@@ -325,3 +325,25 @@ function date_views_handler_is_date($handler, $type = 'argument') {
   }
   return FALSE;
 }
+
+/**
+ * Validation hook for exposed filters that use the select widget.
+ * This is to ensure the the user completes all parts of the date
+ * not just some parts. Only needed for the select widget.
+ */
+function date_views_select_validate(&$form, &$form_state) {
+  $granularity = date_format_order($form['value']['#date_format']);
+  $filled = array();
+  $value = drupal_array_get_nested_value($form_state['input'], $form['#parents']);
+  foreach ($granularity as $part) {
+    if (!empty($value['value'][$part])) {
+      $filled[] = $part;
+    }
+  }
+  if (!empty($filled) && count($filled) != count($granularity)) {
+    $unfilled = array_diff($granularity, $filled);
+    foreach ($unfilled as $part) {
+      form_error($form['value'][$part], t('Please choose a @part.', array('@part' => $part)), $form_state);
+    }
+  }
+}

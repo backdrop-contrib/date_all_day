@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1394248, Make sure all date parts are selected when using an exposed select filter.
 - Issue #1425774 by sgabe, Fix error in exposed filter, array_filter() -- first argument should be an array in date_select_input_date().
 - Issue #1432992 by bart.hanssens, Fix typo in php documentation.
 - Issue #323852 by tim.plunkett and arlinsandbulte, Dropdowns shouldn't include a blank option when required.

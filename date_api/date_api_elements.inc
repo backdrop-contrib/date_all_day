@@ -523,14 +523,13 @@ function date_parts_element($element, $date, $format) {
   $count = 0;
   $increment = min(intval($element['#date_increment']), 1);
 
+  // Allow empty value as option if date is not required or there is no date.
+  $part_required = (bool) $element['#required'] && is_object($date);
   foreach ($granularity as $field) {
-    // Allow empty value as option if date is not required
-    // or if empty value was provided as a starting point.
-    $part_required = ($element['#required'] && is_object($date)) ? TRUE : FALSE;
     $part_type = in_array($field, $element['#date_text_parts']) ? 'textfield' : 'select';
     $sub_element[$field] = array(
       '#weight' => $order[$field],
-      '#required' => $element['#required'],
+      '#required' => $part_required,
       '#attributes' => array('class' => isset($element['#attributes']['class']) ? $element['#attributes']['class'] += array('date-' . $field) : array('date-' . $field)),
       );
     switch ($field) {
@@ -623,8 +622,10 @@ function date_parts_element($element, $date, $format) {
   if (($hours_format == 'g' || $hours_format == 'h') && date_has_time($granularity)) {
     $sub_element['ampm'] = array(
       '#type' => 'select',
+      '#theme' => 'date_select_element',
       '#default_value' => is_object($date) ? (date_format($date, 'G') >= 12 ? 'pm' : 'am') : '',
-      '#options' => drupal_map_assoc(date_ampm()),
+      '#options' => drupal_map_assoc(date_ampm($part_required)),
+      '#required' => $part_required,
       '#weight' => 8,
       '#attributes' => array('class' => array('date-ampm')),
     );

@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Adjust Date Tools to work with changes to use Views templates to create calendars.
+- Issue #1398584 by dhalbert and , Make sure groupby times is initialized.
 - Issue #1394248, Make sure all date parts are selected when using an exposed select filter.
 - Issue #1425774 by sgabe, Fix error in exposed filter, array_filter() -- first argument should be an array in date_select_input_date().
 - Issue #1432992 by bart.hanssens, Fix typo in php documentation.

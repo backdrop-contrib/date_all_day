@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1432992 by bart.hanssens, Fix typo in php documentation.
 - Issue #323852 by tim.plunkett and arlinsandbulte, Dropdowns shouldn't include a blank option when required.
 - Issue #323852, Validation was broken for unlimited value select widgets with required dates, they were incorrectly getting their end dates cleared out.
 - Issue #1424656 by tim.plunkett, Unify signature and alters of #process callbacks.

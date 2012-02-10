@@ -661,7 +661,7 @@ function date_repeat_field_date_field_widget_settings_form_alter(&$form, $contex
 }
 
 /**
- * Implements hook_date_field_foraatter_settings_form_alter().
+ * Implements hook_date_field_foramatter_settings_form_alter().
  *
  * This hook lets us alter the field formatter settings form.
  */
@@ -688,7 +688,7 @@ function date_repeat_field_date_field_formatter_settings_form_alter(&$form, &$fo
 }
 
 /**
- * Implements hook_date_field_foraatter_settings_summary_alter().
+ * Implements hook_date_field_foramatter_settings_summary_alter().
  *
  * This hook lets us alter the field formatter settings summary.
  */

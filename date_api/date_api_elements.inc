@@ -714,9 +714,14 @@ function date_select_validate($element, &$form_state) {
 function date_select_input_date($element, $input) {
 
   // Was anything entered? If not, we have no date.
-  $entered = array_values(array_filter($input));
-  if (empty($entered) || !is_array($input)) {
+  if (!is_array($input)) {
     return NULL;
+  }
+  else {
+    $entered = array_values(array_filter($input));
+    if (empty($entered)) {
+      return NULL;
+    }
   }
   $granularity = date_format_order($element['#date_format']);
   if (isset($input['ampm'])) {

@@ -291,7 +291,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     unset($element['#default_value'][$to_field]);
   }
 
-  $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]);
+  $show_todate = !empty($form_state['values']['show_todate']) || !empty($element['#default_value'][$to_field]) || $instance['required'];
   $element['show_todate'] = array(
     '#title' => t('Show End Date'),
     '#type' => 'checkbox',

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #323852, Validation was broken for unlimited value select widgets with required dates, they were incorrectly getting their end dates cleared out.
 - Issue #1424656 by tim.plunkett, Unify signature and alters of #process callbacks.
 - Issue #1408014 by dasjo, We no longer need the $error_element value to display errors properly, second follow-up.
 - Issue #1299030 by Vincent B: Ensure that 'To Date' is properly marked when required.

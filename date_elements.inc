@@ -350,9 +350,11 @@ function date_combo_element_process($element, &$form_state, $form) {
   // is the 'Start' and which is the 'End' .
 
   if (!empty($field['settings']['todate'])) {
-    // Add class to allow date parts to float together on the same line.
-    $element[$from_field]['#title']  = ''; // The title is in the fieldset.
+    $element[$from_field]['#title'] = '';
     $element[$to_field] = $element[$from_field];
+    $element[$to_field]['#title'] = t('to:');
+    $element[$from_field]['#wrapper_attributes']['class'][] = 'start-date-wrapper';
+    $element[$to_field]['#wrapper_attributes']['class'][] = 'end-date-wrapper';
     $element[$to_field]['#default_value'] = isset($element['#default_value'][$to_field]) ? $element['#default_value'][$to_field] : '';
     $element[$to_field]['#required'] = ($element[$from_field]['#required'] && $field['settings']['todate'] == 'required');
     $element[$to_field]['#weight'] += .2;

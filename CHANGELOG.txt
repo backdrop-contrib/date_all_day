@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1250626 by Gábor Hojtsy, B-Prod, hefox: Added start date and end date labels.
 - Issue #1253482, Make sure $argument->is_default gets reset by the Date pager when altering results.
 - Adjust Date Tools to work with changes to use Views templates to create calendars.
 - Issue #1398584 by dhalbert and , Make sure groupby times is initialized.

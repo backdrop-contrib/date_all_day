@@ -5,6 +5,10 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+======================
+Version 7.x-2.0
+======================
+
 - Issue #1437242 by zerbash, Remove extraneous leading slashes in module_load_include().
 - Issue #1436722 by hefox: Fixed Undefined variable $form_set_error() used as function.
 - Issue #1250626 by Gábor Hojtsy, B-Prod, hefox: Added start date and end date labels.

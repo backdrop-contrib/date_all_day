@@ -6,8 +6,8 @@
  */
 
 module_load_include('theme', 'date', 'date');
-module_load_include('inc', 'date', '/date.field');
-module_load_include('inc', 'date', '/date_elements');
+module_load_include('inc', 'date', 'date.field');
+module_load_include('inc', 'date', 'date_elements');
 
 /**
  * Helper function to figure out the bundle name for an entity.

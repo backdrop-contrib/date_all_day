@@ -72,7 +72,7 @@ function date_views_fields($base = 'node', $reset = FALSE) {
  * Map extra Views tables to the entity that holds its date fields,
  * needed for Views tables other than the primary tables identified in entity_info().
  */
-function date_views_date_views_entities() {
+function date_views_date_views_extra_tables() {
   return array(
     'node_revision' => 'node',
   );
@@ -94,7 +94,7 @@ function date_views_base_tables() {
     }
 
     // Then we let other modules tell us about other tables that hold date fields.
-    $base_tables += module_invoke_all('date_views_entities');
+    $base_tables += module_invoke_all('date_views_extra_tables');
   }
 
   return $base_tables;

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Add a helper function to map entity types to Views base tables to make it easier to know what type of entity is being used on a view.
 - Add status information to Date help screen, hide the non-working change tab on the Date Tools screen, and remove some code that goes to the calendar module from Date Tools.
 
 ======================

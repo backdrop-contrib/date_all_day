@@ -347,3 +347,20 @@ function date_views_select_validate(&$form, &$form_state) {
     }
   }
 }
+
+/**
+ * Map entity types to the Views base table they use,
+ * to make it easier to infer the entity type from a base table.
+ */
+function date_views_base_tables() {
+  $base_tables = &drupal_static(__FILE__, array());
+
+  if (empty($base_tables)) {
+    // Map the base tables to entity types.
+    $entity_info = entity_get_info();
+    foreach ($entity_info as $entity_type => $info) {
+      $base_tables[$entity_type] = $info['base table'];
+    }
+  }
+  return $base_tables;
+}

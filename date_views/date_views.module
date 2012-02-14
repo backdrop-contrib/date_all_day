@@ -68,10 +68,36 @@ function date_views_fields($base = 'node', $reset = FALSE) {
 }
 
 /**
- * Implements hook_date_api_tables().
+ * Implements hook_date_views_entities().
+ * Map extra Views tables to the entity that holds its date fields,
+ * needed for Views tables other than the primary tables identified in entity_info().
  */
-function date_views_date_views_tables() {
-  return array('node', 'comments', 'users', 'file_managed');
+function date_views_date_views_entities() {
+  return array(
+    'node_revision' => 'node',
+  );
+}
+
+/**
+ * Helper function to map entity types to the Views base table they use,
+ * to make it easier to infer the entity type from a base table.
+ */
+function date_views_base_tables() {
+  $base_tables = &drupal_static(__FILE__, array());
+
+  if (empty($base_tables)) {
+
+    // First we get the base tables we can learn about from entity_info.
+    $entity_info = entity_get_info();
+    foreach ($entity_info as $entity_type => $info) {
+      $base_tables[$info['base table']] = $entity_type;
+    }
+
+    // Then we let other modules tell us about other tables that hold date fields.
+    $base_tables += module_invoke_all('date_views_entities');
+  }
+
+  return $base_tables;
 }
 
 /**
@@ -106,12 +132,9 @@ function date_views_date_views_fields($field) {
     case 'users.login':
     case 'node.created':
     case 'node.changed':
-    case 'node_revisions.timestamp':
+    case 'node_revision.timestamp':
     case 'file_managed.timestamp':
-    case 'node_counter.timestamp':
-    case 'accesslog.timestamp':
-    case 'comments.timestamp':
-    case 'node_comment_statistics.last_comment_timestamp':
+    case 'comment.timestamp':
       return $values;
   }
 }
@@ -346,21 +369,4 @@ function date_views_select_validate(&$form, &$form_state) {
       form_error($form['value'][$part], t('Please choose a @part.', array('@part' => $part)), $form_state);
     }
   }
-}
-
-/**
- * Map entity types to the Views base table they use,
- * to make it easier to infer the entity type from a base table.
- */
-function date_views_base_tables() {
-  $base_tables = &drupal_static(__FILE__, array());
-
-  if (empty($base_tables)) {
-    // Map the base tables to entity types.
-    $entity_info = entity_get_info();
-    foreach ($entity_info as $entity_type => $info) {
-      $base_tables[$entity_type] = $info['base table'];
-    }
-  }
-  return $base_tables;
 }

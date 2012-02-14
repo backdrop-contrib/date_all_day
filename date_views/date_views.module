@@ -71,7 +71,7 @@ function date_views_fields($base = 'node', $reset = FALSE) {
  * Implements hook_date_api_tables().
  */
 function date_views_date_views_tables() {
-  return array('node', 'comments', 'users', 'files');
+  return array('node', 'comments', 'users', 'file_managed');
 }
 
 /**
@@ -107,7 +107,7 @@ function date_views_date_views_fields($field) {
     case 'node.created':
     case 'node.changed':
     case 'node_revisions.timestamp':
-    case 'files.timestamp':
+    case 'file_managed.timestamp':
     case 'node_counter.timestamp':
     case 'accesslog.timestamp':
     case 'comments.timestamp':

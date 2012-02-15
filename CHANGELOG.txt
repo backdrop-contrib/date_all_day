@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Remove date_field_get_sql_handler() function which isn't being used anywhere.
 - Rework the Date Views hooks that queue up the right fields and base tables so they work better across all types of entities.
 - Fix the hooks for file tables, it is file_managed, not files.
 - Add a helper function to map entity types to Views base tables to make it easier to know what type of entity is being used on a view.

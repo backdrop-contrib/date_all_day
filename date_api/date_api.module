@@ -2457,9 +2457,9 @@ function date_range_string($years) {
 /**
  * Temporary helper to re-create equivalent of content_database_info().
  */
-function date_api_database_info($field) {
+function date_api_database_info($field, $revision = FIELD_LOAD_CURRENT) {
   return array(
-    'columns' => $field['storage']['details']['sql'][FIELD_LOAD_CURRENT],
+    'columns' => $field['storage']['details']['sql'][$revision],
     'table' => _field_sql_storage_tablename($field),
   );
 }

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Additional handling is needed so that revisions are handled correctly in Views.
 - Remove date_field_get_sql_handler() function which isn't being used anywhere.
 - Rework the Date Views hooks that queue up the right fields and base tables so they work better across all types of entities.
 - Fix the hooks for file tables, it is file_managed, not files.

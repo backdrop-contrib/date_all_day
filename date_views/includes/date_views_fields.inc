@@ -30,7 +30,6 @@ function _date_views_fields($base = 'node') {
   // Iterate over all the fields that Views knows about.
   $fields = array();
   foreach ((array) $all_fields as $alias => $val) {
-
     // Set up some default values.
     $granularity = array('year', 'month', 'day', 'hour', 'minute');
     $tz_handling = 'site';
@@ -86,7 +85,8 @@ function _date_views_fields($base = 'node') {
           continue;
       }
 
-      $db_info = date_api_database_info($field);
+      $revision = in_array($base, array('node_revision')) ? FIELD_LOAD_REVISION : FIELD_LOAD_CURRENT;
+      $db_info = date_api_database_info($field, $revision);
       $name = $table_name . "." . $field_name;
       $granularity = !empty($field['granularity']) ? $field['granularity'] : array('year', 'month', 'day', 'hour', 'minute');
 
@@ -97,7 +97,7 @@ function _date_views_fields($base = 'node') {
 
       if (isset($field['settings']['tz_handling'])) {
         $tz_handling = $field['settings']['tz_handling'];
-        $db_info = date_api_database_info($field);
+        $db_info = date_api_database_info($field, $revision);
         if ($tz_handling == 'date') {
           $offset_field = $table_name . '.' . $db_info['columns'][$table_name]['offset'];
         }

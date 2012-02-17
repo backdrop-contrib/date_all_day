@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1346424, The calendar title got left out of the latest ical template changes.
 - Additional handling is needed so that revisions are handled correctly in Views.
 - Remove date_field_get_sql_handler() function which isn't being used anywhere.
 - Rework the Date Views hooks that queue up the right fields and base tables so they work better across all types of entities.

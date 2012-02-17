@@ -25,8 +25,8 @@ endif;
 print "BEGIN:VCALENDAR\r\n";
 print "VERSION:2.0\r\n";
 print "METHOD:$method\r\n";
-if (!empty($calname)):
-  print "X-WR-CALNAME;VALUE=TEXT:$calname\r\n";
+if (!empty($title)):
+  print "X-WR-CALNAME;VALUE=TEXT:$title\r\n";
 endif;
 print "PRODID:-//Drupal iCal API//EN\r\n";
 // Note that theme('date_vevent') already has the right line endings.

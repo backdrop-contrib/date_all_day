@@ -10,6 +10,7 @@
  *   - $event['summary']: The name of the event.
  *   - $event['start']: The formatted start date of the event.
  *   - $event['end']: The formatted end date of the event.
+ *   - $event['all_day'] - whether the item is an all day event.
  *   - $event['rrule']: The RRULE of the event, if any.
  *   - $event['timezone']: The formatted timezone name of the event, if any.
  *   - $event['url']: The url for the event.
@@ -34,9 +35,17 @@ print "BEGIN:VEVENT\r\n";
 print "UID:" . $event['uid'] . "\r\n";
 print "SUMMARY:" . $event['summary'] . "\r\n";
 print "DTSTAMP:" . $current_date . "Z\r\n";
-print "DTSTART:" . $event['start'] . "Z\r\n";
+if ($event['all_day']):
+  print "DTSTART;VALUE=DATE:" . $event['start'] . "\r\n";
+else:
+  print "DTSTART:" . $event['start'] . "Z\r\n";
+endif;
 if (!empty($event['end'])):
-  print "DTEND:" . $event['end'] . "Z\r\n";
+  if (!empty($event['all_day'])):
+    print "DTEND;VALUE=DATE:" . $event['end'] . "\r\n";
+  else:
+    print "DTEND:" . $event['end'] . "Z\r\n";
+  endif;
 endif;
 if (!empty($event['rrule'])):
   print $event['rrule'] . "\r\n";

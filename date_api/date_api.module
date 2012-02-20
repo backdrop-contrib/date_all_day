@@ -2247,9 +2247,6 @@ function date_api_theme($existing, $type, $theme, $path) {
   );
   return array(
     'date_nav_title' => $base + array('variables' => array('granularity' => NULL, 'view' => NULL, 'link' => NULL, 'format' => NULL)),
-    'date_vcalendar' => $base + array('variables' => array('events' => NULL, 'calname' => NULL)),
-    'date_vevent' => $base + array('variables' => array('event' => NULL)),
-    'date_valarm' => $base + array('variables' => array('alarm' => NULL)),
     'date_timezone' => $base + array('render element' => 'element'),
     'date_select' => $base + array('render element' => 'element'),
     'date_text' => $base + array('render element' => 'element'),

@@ -7,3 +7,4 @@ dependencies[] = date
 dependencies[] = context
 
 files[] = date_context.module
+files[] = plugins/date_context_date_condition.inc

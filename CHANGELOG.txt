@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1447372 by yched, Memory friendlier version of date_repeat_field_bundles().
 - Issue #1284170 by benjifisher, Lots of cleanup of the iCal export and its template to be sure all day items are exported correctly.
 - Issue #1346424, The calendar title got left out of the latest ical template changes.
 - Additional handling is needed so that revisions are handled correctly in Views.

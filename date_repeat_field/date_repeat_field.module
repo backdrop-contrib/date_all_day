@@ -156,12 +156,10 @@ function date_repeat_field_page($entity_type = 'node', $entity = NULL) {
  */
 function date_repeat_field_bundles() {
   $values = array();
-  $items = field_info_instances();
-  foreach ($items as $entity_type => $bundles) {
-    foreach ($bundles as $bundle => $widgets) {
-      foreach ($widgets as $field_name => $widget) {
-        $field = field_info_field($field_name);
-        if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
+  foreach (field_info_fields() as $field_name => $field) {
+    if (in_array($field['type'], array('date', 'datestamp', 'datetime')) && $field['settings']['repeat']) {
+      foreach ($field['bundles'] as $entity_type => $bundles) {
+        foreach ($bundles as $bundle) {
           $values[$entity_type][$bundle][] = $field_name;
         }
       }

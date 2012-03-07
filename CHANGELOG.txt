@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1452408 by reglogge: Fixed Trailing dots are removed from date formats even if they are needed for the format.
 - Issue #1285260 by Steven Jones: Fixed 'Starting from' display option.
 - Issue #1467244 by bluetegu: Fixed Recurring Sunday errors.
 - Issue #1442718, Empty default values were getting populated by the code that tried to fix default values on hidden fields.

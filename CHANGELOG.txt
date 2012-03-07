@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1285260 by Steven Jones: Fixed 'Starting from' display option.
 - Issue #1467244 by bluetegu: Fixed Recurring Sunday errors.
 - Issue #1442718, Empty default values were getting populated by the code that tried to fix default values on hidden fields.
 - Make sure date_handler->placeholders gets initialized even for queries that don't execute so the pager won't throw an exception if the value is missing.

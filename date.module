@@ -33,14 +33,8 @@ function date_get_entity_bundle($entity_type, $entity) {
  * Gets the default date format for the given field widget.
  */
 function date_default_format($type) {
-  if (stristr($type, 'date_popup') && module_exists('date_popup')) {
-    $formats = date_popup_formats();
-    $default_format = array_shift($formats);
-  }
-  else {
-    // Example input formats must show all possible date parts, so add seconds.
-    $default_format = str_replace('i', 'i:s', variable_get('date_format_short', 'm/d/Y - H:i'));
-  }
+  // Example input formats must show all possible date parts, so add seconds.
+  $default_format = str_replace('i', 'i:s', variable_get('date_format_short', 'm/d/Y - H:i'));
   return $default_format;
 }
 

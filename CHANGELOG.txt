@@ -5,6 +5,9 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Move pager css around. Some code in Calendar and Date API belongs in Date Views.
+- Fix Date Popup default format which was ending up using 24 hour time no matter what format was used for short format.
+- Remove outdated _repeat widget name from Date Tools.
 - Date Tools is defaulting to creating a calendar even if Calendar module is not enabled.
 - Issue #1472148 by arlinsandbulte: wvega jQuery time-picker doesn't show scrollbar.
 - Issue #1392128 by kidrobot, tim.plunkett, willvincent: Fixed Repeats tab shows on nodes with non-repeating dates.

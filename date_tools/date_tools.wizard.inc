@@ -105,7 +105,7 @@ function date_tools_wizard_form() {
   );
   $form['calendar'] = array(
     '#type' => 'select',
-    '#default_value' => 1,
+    '#default_value' => module_exists('calendar'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#title' => t('Create a calendar for this date field'),
     '#access' => module_exists('calendar'),

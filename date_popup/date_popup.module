@@ -398,6 +398,7 @@ function date_popup_process_time_part(&$element) {
         'timeFormat' => $format,
         'interval' => $element['#date_increment'],
         'startTime' => $start_time,
+        'scrollbar' => TRUE,
       );
       break;
     default:

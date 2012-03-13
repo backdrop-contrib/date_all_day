@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1472148 by arlinsandbulte: wvega jQuery time-picker doesn't show scrollbar.
 - Issue #1392128 by kidrobot, tim.plunkett, willvincent: Fixed Repeats tab shows on nodes with non-repeating dates.
 - Issue #1452882 by coredumperror: Fixed Date Migrate Example doesn't deregister it's migration when disabled.
 - Issue #1452408 by reglogge: Fixed Trailing dots are removed from date formats even if they are needed for the format.

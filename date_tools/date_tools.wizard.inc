@@ -115,7 +115,6 @@ function date_tools_wizard_form() {
     '#type' => 'submit',
     '#value' => t('Save'),
   );
-
   return $form;
 }
 
@@ -169,10 +168,6 @@ function date_tools_wizard_build($form_values) {
 
   $field_name = 'field_' . $field_name;
   $base_table = 'node';
-
-  if (!empty($repeat)) {
-    $widget_type .= '_repeat';
-  }
 
   // Create a node type if it doesn't already exist.
   // This makes it possible to add additional date fields to

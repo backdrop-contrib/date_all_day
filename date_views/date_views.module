@@ -370,7 +370,7 @@ function date_views_handler_is_date($handler, $type = 'argument') {
  * not just some parts. Only needed for the select widget.
  */
 function date_views_select_validate(&$form, &$form_state) {
-  $granularity = date_format_order($form['value']['#date_format']);
+  $granularity = (!empty($form['min']['#date_format'])) ? date_format_order($form['min']['#date_format']) : date_format_order($form['value']['#date_format']);
   $filled = array();
   $value = drupal_array_get_nested_value($form_state['input'], $form['#parents']);
   foreach ($granularity as $part) {

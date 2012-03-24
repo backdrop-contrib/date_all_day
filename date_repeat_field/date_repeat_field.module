@@ -124,7 +124,6 @@ function date_repeat_field_show($entity_type = 'node', $entity = NULL) {
         && array_key_exists($entity_type, $field['bundles'])
         && in_array($bundle, $field['bundles'][$entity_type])
         && date_is_repeat_field($field)) {
-      dsm('ALLOW');
       return user_access('view date repeats');
     }
   }

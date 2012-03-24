@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1472966, Get rid of notice that appears for entities without repeats.
 - Move pager css around. Some code in Calendar and Date API belongs in Date Views.
 - Fix Date Popup default format which was ending up using 24 hour time no matter what format was used for short format.
 - Remove outdated _repeat widget name from Date Tools.

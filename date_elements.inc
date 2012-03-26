@@ -55,8 +55,13 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   // if $items is empty, because it might have been set that way on purpose.
   // @see date_field_widget_properties_alter() where we flagged if this is a new entity.
 
+  // We check !isset($items[$delta]['value']) because entity translation may create
+  // a new translation entity for an existing entity and we don't want to clobber
+  // values that were already set in that case.
+  // @see http://drupal.org/node/1478848.
+
   $is_default = FALSE;
-  if (!empty($instance['widget']['is_new'])) {
+  if (!empty($instance['widget']['is_new']) && !isset($items[$delta]['value'])) {
     $items = date_default_value($field, $instance, $langcode);
     $is_default = TRUE;
   }

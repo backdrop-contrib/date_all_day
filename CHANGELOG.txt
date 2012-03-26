@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1459668, Add back Remove date_field_get_sql_handler() function temporarily since Signup module is still using it. Mark it deprecated.
 - Issue #1478296, Display longer abbreviations for day names in date repeat widget so they can be translated.
 - Issue #1488662 by martin.heidegger, Make error message more easily translatable.
 - Issue #1478848 by onelittleant, Don't set default values on new translation entities.

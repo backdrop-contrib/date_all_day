@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1488662 by martin.heidegger, Make error message more easily translatable.
 - Issue #1478848 by onelittleant, Don't set default values on new translation entities.
 - Issue #1360672, Fix limit format code to remove leftover non-ascii text as well as leftover ascii text.
 - Issue #1464280 by geerlingguy Georgique and dealancer: Fix notice when using exposed between filter.

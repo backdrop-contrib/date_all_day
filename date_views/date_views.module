@@ -381,7 +381,26 @@ function date_views_select_validate(&$form, &$form_state) {
   if (!empty($filled) && count($filled) != count($granularity)) {
     $unfilled = array_diff($granularity, $filled);
     foreach ($unfilled as $part) {
-      form_error($form['value'][$part], t('Please choose a @part.', array('@part' => $part)), $form_state);
+      switch ($part) {
+        case 'year':
+          form_error($form['value'][$part], t('Please choose a year.'), $form_state);
+          break;
+        case 'month':
+          form_error($form['value'][$part], t('Please choose a month.'), $form_state);
+          break;
+        case 'day':
+          form_error($form['value'][$part], t('Please choose a day.'), $form_state);
+          break;
+        case 'hour':
+          form_error($form['value'][$part], t('Please choose an hour.'), $form_state);
+          break;
+        case 'minute':
+          form_error($form['value'][$part], t('Please choose a minute.'), $form_state);
+          break;
+        case 'second':
+          form_error($form['value'][$part], t('Please choose a second.'), $form_state);
+          break;
+      }
     }
   }
 }

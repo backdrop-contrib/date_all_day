@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1360672, Fix limit format code to remove leftover non-ascii text as well as leftover ascii text.
 - Issue #1464280 by geerlingguy Georgique and dealancer: Fix notice when using exposed between filter.
 - Issue #1484640 by onelittleant, Some entities may not have base tables.
 - Issue #1472966, Get rid of notice that appears for entities without repeats.

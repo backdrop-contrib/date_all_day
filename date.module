@@ -262,6 +262,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
       }
     }
   }
+
   if (empty($dates['value2'])) {
     $dates['value2'] = $dates['value'];
   }

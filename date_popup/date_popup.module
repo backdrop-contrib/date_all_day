@@ -272,7 +272,7 @@ function date_popup_element_process($element, &$form_state, $form) {
   $element['#tree'] = TRUE;
   $element['#theme_wrappers'] = array('date_popup');
 
-  if (isset($element['#ajax'])) {
+  if (!empty($element['#ajax'])) {
     $element['#ajax'] += array(
       'trigger_as' => array('name' =>$element['#name']),
       'event' => 'change',

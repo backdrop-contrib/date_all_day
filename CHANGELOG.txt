@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1473592 by zabelc, Make sure migrated date with missing end date still gets imported correctly.
 - Issue #1442718 by jastraat and bones, Make sure show end date checkbox does not display when end date is empty.
 - Issue #1504556, Fix invalid access permission name in Date API configuration menu.
 - Issue #1484458, Vega timepicker code was incorrectly computing the default date because of the wrong format for the value passed to it.

@@ -5,7 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
-- Issue #1037174 by delancer, More work to allow ajax to work on other widgets.
+- Issue #1509012, Fix fatal error when viewing repeat tab.
+- Issue #1037174 by dealancer, More work to allow ajax to work on other widgets.
 - Issue #1473592 by zabelc, Make sure migrated date with missing end date still gets imported correctly.
 - Issue #1442718 by jastraat and bones, Make sure show end date checkbox does not display when end date is empty.
 - Issue #1504556, Fix invalid access permission name in Date API configuration menu.

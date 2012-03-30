@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1509434 by casey, Add timezone info in hook_field_presave() instead of hook_field_insert() and hook_field_update().
 - Issue #1509012, Fix fatal error when viewing repeat tab.
 - Issue #1037174 by dealancer, More work to allow ajax to work on other widgets.
 - Issue #1473592 by zabelc, Make sure migrated date with missing end date still gets imported correctly.

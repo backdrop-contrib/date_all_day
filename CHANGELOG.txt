@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1469038, Add some clarity to the BYDAY description options and make sure a valid value is selected.
 - Issue #1405364 by snufkin, Add display options to format_interval to match Views interval options.
 - Issue #1266688 by linclark, Add microdata support to Date metadata.
 - Issue #1509434 by casey, Add timezone info in hook_field_presave() instead of hook_field_insert() and hook_field_update().

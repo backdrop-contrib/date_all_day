@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1469020, Make sure page not found is working right for dates outside the specified range.
 - Issue #1111626, Fix some problems caused by passing in a date string with an offset.
 - Issue #1477860, Avoid undefined index errors in date_views_select_validate().
 - Issue #1469038, Add some clarity to the BYDAY description options and make sure a valid value is selected.

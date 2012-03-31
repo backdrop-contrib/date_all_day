@@ -327,7 +327,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     // See if we're outside the allowed date range for our argument.
     if (date_format($this->min_date, 'Y') < $this->limit[0] || date_format($this->max_date, 'Y') > $this->limit[1]) {
       $this->forbid = TRUE;
-      $this->query->add_where_expression($group, "0=1", array());
+      $this->view->build_info['fail'] = TRUE;
       return TRUE;
     }
     return FALSE;

@@ -162,6 +162,7 @@ class date_views_plugin_pager extends views_plugin_pager {
         // The pager value might move us into a forbidden range, so test it.
         if ($this->date_forbid($argument)) {
           $this->view->build_info['fail'] = TRUE;
+          return;
         }
 
         if (empty($this->view->date_info)) $this->view->date_info = new stdClass();

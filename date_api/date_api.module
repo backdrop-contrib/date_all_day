@@ -1662,7 +1662,7 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
  *
  * @see format_interval()
  */
-function date_format_interval($date, $granularity = 2) {
+function date_format_interval($date, $granularity = 2, $display_ago = TRUE) {
   // If no date is sent, then return nothing.
   if (empty($date)) {
     return NULL;
@@ -1670,7 +1670,8 @@ function date_format_interval($date, $granularity = 2) {
 
   $interval = REQUEST_TIME - $date->format('U');
   if ($interval > 0) {
-    return t('!time ago', array('!time' => format_interval($interval, $granularity)));
+    return $display_ago ? t('!time ago', array('!time' => format_interval($interval, $granularity))) :
+      t('!time', array('!time' => format_interval($interval, $granularity)));
   }
   else {
     return format_interval(abs($interval), $granularity);

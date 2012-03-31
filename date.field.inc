@@ -26,6 +26,7 @@ function date_field_formatter_info() {
       'field types' => array('date', 'datestamp', 'datetime'),
       'settings' => array(
         'interval' => 2,
+        'interval_display' => 'time ago',
       ),
     ),
     'date_plain' => array(
@@ -70,8 +71,10 @@ function date_field_formatter_settings_summary($field, $instance, $view_mode) {
   switch ($formatter) {
     case 'format_interval':
       $summary = date_interval_formatter_settings_summary($field, $instance, $view_mode);
+      break;
     default:
       $summary = date_default_formatter_settings_summary($field, $instance, $view_mode);
+      break;
   }
   $context = array(
     'field' => $field,

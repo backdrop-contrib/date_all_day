@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1405364 by snufkin, Add display options to format_interval to match Views interval options.
 - Issue #1266688 by linclark, Add microdata support to Date metadata.
 - Issue #1509434 by casey, Add timezone info in hook_field_presave() instead of hook_field_insert() and hook_field_update().
 - Issue #1509012, Fix fatal error when viewing repeat tab.

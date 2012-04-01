@@ -154,7 +154,6 @@ function template_preprocess_date_views_pager(&$vars) {
   $nav_title = theme('date_nav_title', $params);
   $vars['nav_title'] = $nav_title;
   $vars['mini'] = !empty($date_info->mini);
-  dsm($vars);
 }
 
 /**

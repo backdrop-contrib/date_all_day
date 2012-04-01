@@ -5,6 +5,10 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+======================
+Version 7.x-2.3
+======================
+
 - Issue #1444804, Remove html placeholder on text widget.
 - Issue #1286230, Clean up date pager documentation, it contains deprecated information.
 - Issue #1469020, Make sure page not found is working right for dates outside the specified range.

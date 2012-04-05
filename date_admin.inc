@@ -14,12 +14,15 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
   $formatter = $display['type'];
   $form = array();
 
+  // Wrap the description in with a paragraph tag to avoid odd background
+  // effects caused by the embedded link when the formatter is displayed
+  // in an overlay in Views using the Chrome browser.
   $form['format_type'] = array(
     '#title' => t('Choose how users view dates and times:'),
     '#type' => 'select',
     '#options' => date_format_type_options(),
     '#default_value' => $settings['format_type'],
-    '#description' => t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))),
+    '#description' => '<p>' . t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))) . '</p>',
     '#weight' => 0,
   );
 

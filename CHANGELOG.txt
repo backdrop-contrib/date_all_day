@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Wrap the formatter description with an embedded link in a paragraph to avoid odd background effects with the formatter is displayed in an overlay in Views using Chrome.
+
 ======================
 Version 7.x-2.3
 ======================

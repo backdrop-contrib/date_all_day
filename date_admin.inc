@@ -14,9 +14,6 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
   $formatter = $display['type'];
   $form = array();
 
-  // Wrap the description in with a paragraph tag to avoid odd background
-  // effects caused by the embedded link when the formatter is displayed
-  // in an overlay in Views using the Chrome browser.
   $form['format_type'] = array(
     '#title' => t('Choose how users view dates and times:'),
     '#type' => 'select',

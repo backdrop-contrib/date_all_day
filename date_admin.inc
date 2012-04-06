@@ -22,7 +22,7 @@ function date_default_formatter_settings_form($field, $instance, $view_mode, $fo
     '#type' => 'select',
     '#options' => date_format_type_options(),
     '#default_value' => $settings['format_type'],
-    '#description' => '<p>' . t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))) . '</p>',
+    '#description' => t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))),
     '#weight' => 0,
   );
 

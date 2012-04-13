@@ -273,6 +273,9 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     // If requested, add the delta field to the view so we can later find the value that matched our query.
     if (!empty($this->options['add_delta']) && (substr($this->real_field, -6) == '_value' || substr($this->real_field, -7) == '_value2')) {
       $this->query->add_field($this->table_alias, 'delta');
+      $real_field_name = str_replace(array('_value', '_value2'), '', $this->real_field);
+      $this->query->add_field($this->table_alias, 'entity_id', 'date_id_' . $real_field_name);
+      $this->query->add_field($this->table_alias, 'delta', 'date_delta_' . $real_field_name);
     }
 
     $format = $this->date_handler->granularity == 'week' ? DATE_FORMAT_DATETIME : $this->sql_format;

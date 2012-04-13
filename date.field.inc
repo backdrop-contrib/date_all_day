@@ -134,6 +134,10 @@ function date_field_formatter_view($entity_type, $entity, $field, $instance, $la
       $variables['rdf_mapping'] = $rdf_mapping = $entity->rdf_mapping[$field['field_name']];
     }
   }
+
+  // Give other modules a chance to prepare the entity before formatting it.
+  drupal_alter('date_formatter_pre_view', $entity, $variables);
+
   // See if we are only supposed to display a selected
   // item from multiple value date fields.
   $selected_deltas = array();

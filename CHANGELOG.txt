@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1531904, Make sure that multiple value dates that have the delta set only display the selected value.
 - Revert Issue #1266688 by fago, This change broke Entity token support.
 
 ======================

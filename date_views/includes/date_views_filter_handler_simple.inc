@@ -63,6 +63,10 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     if (!empty($default_option)) {
       str_replace('now', 'today', $default_option);
       $date = date_create($default_option, date_default_timezone_object());
+      $test = 'next month first day';
+      if (empty($date)) {
+        $time = strtotime($default_option, REQUEST_TIME);
+      }
       $default_date = !empty($date) ? $date->format($this->format) : '';
 
       // The format for our filter is in ISO format, but the widget will need it in datetime format.
@@ -119,6 +123,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     list($table_name, $field_name) = explode('.', $field);
     if (!empty($this->options['add_delta']) && (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2')) {
       $this->query->add_field($table_name, 'delta');
+      $real_field_name = str_replace(array('_value', '_value2'), '', $this->real_field);
+      $this->query->add_field($table_name, 'entity_id', 'date_id_' . $real_field_name);
+      $this->query->add_field($table_name, 'delta', 'date_delta_' . $real_field_name);
     }
 
     $min_value = $this->get_filter_value('min', $this->value['min']);
@@ -146,6 +153,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     list($table_name, $field_name) = explode('.', $field);
     if (!empty($this->options['add_delta']) && (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2')) {
       $this->query->add_field($table_name, 'delta');
+      $real_field_name = str_replace(array('_value', '_value2'), '', $this->real_field);
+      $this->query->add_field($table_name, 'entity_id', 'date_id_' . $real_field_name);
+      $this->query->add_field($table_name, 'delta', 'date_delta_' . $real_field_name);
     }
 
     $value = $this->get_filter_value('value', $this->value['value']);

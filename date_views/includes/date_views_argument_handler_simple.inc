@@ -57,17 +57,23 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
    * formatted appropriately for this argument.
    */
   function get_default_argument($raw = FALSE) {
+    $is_default = FALSE;
+
     if (!$raw && $this->options['default_argument_type'] == 'date') {
       $granularity = $this->options['granularity'];
       if ($granularity == 'week') {
         $now = date_now();
         $week = date_week(date_format($now, 'Y-m-d'));
-        return date_format($now, 'Y') . '-W' . $week;
+        $value = date_format($now, 'Y') . '-W' . $week;
       }
       else {
-        return date($this->arg_format, REQUEST_TIME);
+        $value = date($this->arg_format, REQUEST_TIME);
       }
+      drupal_alter('date_default_argument', $this, $value);
+
+      return $value;
     }
+
     // Let the parent argument handle options like node created date.
     return parent::get_default_argument($raw);
   }

@@ -5,6 +5,10 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+======================
+Version 7.x-2.4
+======================
+
 - Issue #1534342 by bass, Make name of clean pager option easier to translate.
 - Add a hook to alter the default date for a Date argument.
 - Issue #1531904, Make sure that multiple value dates that have the delta set only display the selected value.

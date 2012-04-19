@@ -416,7 +416,8 @@ function date_views_select_validate(&$form, &$form_state) {
  * which multiple value to display. If so, set the date_id in the entity.
  */
 function date_views_date_formatter_pre_view_alter(&$entity, &$variables) {
-  if (!empty($entity->view)) {
+  // Some views have no row index.
+  if (!empty($entity->view) && isset($entity->view->row_index)) {
     $field = $variables['field'];
     $date_id = 'date_id_' . $field['field_name'];
     $date_delta = 'date_delta_' . $field['field_name'];

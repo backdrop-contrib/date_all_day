@@ -6,6 +6,12 @@ Version 7.x-2.x-dev
 ===================
 
 ======================
+Version 7.x-2.5
+======================
+
+- Fix nasty errors on views that have no row indexes, like the frontage view.
+
+======================
 Version 7.x-2.4
 ======================
 

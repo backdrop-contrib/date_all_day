@@ -712,9 +712,12 @@ function date_api_ical_build_rrule($form_values) {
     // We only collect a date for UNTIL, but we need it to be inclusive, so
     // force it to a full datetime element at the last second of the day.
     if (!is_object($form_values['UNTIL']['datetime'])) {
-      $form_values['UNTIL']['datetime'] .= ' 23:59:59';
-      $form_values['UNTIL']['granularity'] = serialize(drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute', 'second')));
-      $form_values['UNTIL']['all_day'] = 0;
+      // If this is a date without time, give it time.
+      if (strlen($form_values['UNTIL']['datetime']) < 11) {
+        $form_values['UNTIL']['datetime'] .= ' 23:59:59';
+        $form_values['UNTIL']['granularity'] = serialize(drupal_map_assoc(array('year', 'month', 'day', 'hour', 'minute', 'second')));
+        $form_values['UNTIL']['all_day'] = FALSE;
+      }
       $until = date_ical_date($form_values['UNTIL'], 'UTC');
     }
     else {
@@ -745,7 +748,7 @@ function date_api_ical_build_rrule($form_values) {
     foreach ($form_values['EXDATE'] as $value) {
       if (!empty($value['datetime'])) {
         $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
-        $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) . 'Z': '';
+        $ex_date = !empty($date) ? date_format($date, DATE_FORMAT_ICAL) . 'Z': '';
         if (!empty($ex_date)) {
           $ex_dates[] = $ex_date;
         }
@@ -765,7 +768,7 @@ function date_api_ical_build_rrule($form_values) {
     $ex_dates = array();
     foreach ($form_values['RDATE'] as $value) {
       $date = !is_object($value['datetime']) ? date_ical_date($value, 'UTC') : $value['datetime'];
-      $ex_date = !empty($date) ? $date->format(DATE_FORMAT_ICAL) . 'Z': '';
+      $ex_date = !empty($date) ? date_format($date, DATE_FORMAT_ICAL) . 'Z': '';
       if (!empty($ex_date)) {
         $ex_dates[] = $ex_date;
       }

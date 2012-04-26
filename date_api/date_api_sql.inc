@@ -645,7 +645,7 @@ class date_sql_handler {
    *   SQL for the where clause for this operation.
    */
   function sql_where_extract($part, $field, $operator, $value, $adjustment = NULL) {
-    if ($this->local_timezone != $this->db_timezone) {
+    if (empty($adjustment) && $this->local_timezone != $this->db_timezone) {
       $field = $this->sql_field($field);
     }
     else {
@@ -671,7 +671,7 @@ class date_sql_handler {
    *   SQL for the where clause for this operation.
    */
   function sql_where_format($format, $field, $operator, $value, $adjustment = NULL) {
-    if ($this->local_timezone != $this->db_timezone) {
+    if (empty($adjustment) && $this->local_timezone != $this->db_timezone) {
       $field = $this->sql_field($field);
     }
     else {

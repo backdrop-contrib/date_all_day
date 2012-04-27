@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #606658 by johnmunro and KarenS, Make sure ical import processes multi-day all-day events correctly.
 - Issue #1408216 follow up, Need to be sure that NULL is the default state for the sql functions.
 - Issue #1540410, Update the Date Tools calendar creation wizard to use the new calendar path.
 

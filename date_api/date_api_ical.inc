@@ -215,15 +215,31 @@ function date_ical_parse($icaldatafolded = array()) {
             // even when you are working with only a portion of the VEVENT
             // array, like in Feed API parsers.
             $subgroup['all_day'] = FALSE;
-            if (!empty($subgroup['DTSTART']) && (!empty($subgroup['DTSTART']['all_day']) ||
-              (empty($subgroup['DTEND']) && empty($subgroup['RRULE']) && empty($subgroup['RRULE']['COUNT'])))) {
-              // Many programs output DTEND for an all day event as the
-              // following day, reset this to the same day for internal use.
-              $subgroup['all_day'] = TRUE;
+
+            // iCal spec states 'The "DTEND" property for a "VEVENT" calendar
+            // component specifies the non-inclusive end of the event'. Adjust
+            // multi-day events to remove the extra day because the Date code
+            // assumes the end date is inclusive.
+            if (!empty($subgroup['DTEND']) && (!empty($subgroup['DTEND']['all_day']))) {
+              // Make the end date one day earlier.
+              $date = date_make_date($subgroup['DTEND']['datetime'] . ' 00:00:00', $subgroup['DTEND']['tz']);
+              date_modify($date, '-1 day');
+              $subgroup['DTEND']['datetime'] = date_format($date,  'Y-m-d');
+            }
+            // If a start datetime is defined AND there is no definition for
+            // the end datetime THEN make the end datetime equal the start
+            // datetime and if it is an all day event define the entire event
+            // as a single all day event.
+            if (!empty($subgroup['DTSTART']) &&
+               (empty($subgroup['DTEND']) && empty($subgroup['RRULE']) && empty($subgroup['RRULE']['COUNT']))) {
               $subgroup['DTEND'] = $subgroup['DTSTART'];
             }
             // Add this element to the parent as an array under the component
             // name.
+            if (!empty($subgroup['DTSTART']['all_day'])) {
+              $subgroup['all_day'] = TRUE;
+            }
+            // Add this element to the parent as an array under the
             prev($subgroups);
             $parent = &$subgroups[key($subgroups)];
 

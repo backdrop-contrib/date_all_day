@@ -222,7 +222,7 @@ function date_ical_parse($icaldatafolded = array()) {
             // assumes the end date is inclusive.
             if (!empty($subgroup['DTEND']) && (!empty($subgroup['DTEND']['all_day']))) {
               // Make the end date one day earlier.
-              $date = date_make_date($subgroup['DTEND']['datetime'] . ' 00:00:00', $subgroup['DTEND']['tz']);
+              $date = new DateObject ($subgroup['DTEND']['datetime'] . ' 00:00:00', $subgroup['DTEND']['tz']);
               date_modify($date, '-1 day');
               $subgroup['DTEND']['datetime'] = date_format($date,  'Y-m-d');
             }

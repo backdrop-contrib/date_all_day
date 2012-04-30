@@ -307,6 +307,7 @@ function date_ical_parse($icaldatafolded = array()) {
           $parse_result = date_ical_parse_rrule($field, $data);
           break;
 
+        case 'STATUS':
         case 'SUMMARY':
         case 'DESCRIPTION':
           $parse_result = date_ical_parse_text($field, $data);

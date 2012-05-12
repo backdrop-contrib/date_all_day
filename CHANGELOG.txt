@@ -4,6 +4,8 @@ Date Module 7.x
 ===================
 Version 7.x-2.x-dev
 ===================
+
+- Issue #1289270 by pdrake: Fixed date arguments and filters do not work with relationships.
 - Issue #895760 by Reinette: Added RFC2447 option 'STATUS' to date_api_ical().inc.
 - Issue #606658 by johnmunro and KarenS, Make sure ical import processes multi-day all-day events correctly.
 - Issue #1408216 follow up, Need to be sure that NULL is the default state for the sql functions.

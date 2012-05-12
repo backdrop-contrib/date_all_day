@@ -161,7 +161,7 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
         $this->table = $field['table_name'];
         $this->original_table = $field['table_name'];
         if ($field['table_name'] != $this->table || !empty($this->relationship)) {
-          $this->table = $this->query->queue_table($field['table_name'], $this->relationship);
+          $this->table = $this->query->ensure_table($field['table_name'], $this->relationship);
         }
         // $this->table_alias gets set when the first field is processed if otherwise empty.
         // For subsequent fields, we need to be sure it is emptied again.

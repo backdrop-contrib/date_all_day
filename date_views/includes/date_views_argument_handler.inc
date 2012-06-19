@@ -150,6 +150,9 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
     $this->query->set_where_group($this->options['date_method'], $this->options['date_group']);
     $this->granularity = $this->date_handler->arg_granularity($this->argument);
     $format = $this->date_handler->views_formats($this->granularity, 'sql');
+
+    $this->placeholders = array();
+
     if (!empty($this->query_fields)) {
       // Use set_where_group() with the selected date_method
       // of 'AND' or 'OR' to create the where clause.
@@ -169,6 +172,8 @@ class date_views_argument_handler extends date_views_argument_handler_simple {
           $this->table_alias = NULL;
         }
         parent::query($group_by);
+
+        $this->placeholders = array_merge($this->placeholders, $this->date_handler->placeholders);
       }
     }
   }

@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1541740 by hass, Make Date requirements more easily translatable.
 - Issue #1543524 by iamEAP, Add update hook to remove the D6 date_timezone field from users.
 - Issue #1603640 by bevan, Don't return anything for empty date interval.
 - Issue #1235508, Make sure that ISO strings with '00' in the month and/or day don't create dates for the previous month and day.

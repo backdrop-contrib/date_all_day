@@ -237,3 +237,13 @@ function date_api_update_7000() {
     db_drop_table('d6_date_format_locale');
   }
 }
+
+
+/**
+ * Drop D6 timezone_name field on {users} after upgrading to D7.
+ */
+function date_api_update_7001() {
+  if (db_field_exists('users', 'timezone_name')) {
+    db_drop_field('users', 'timezone_name');
+  }
+}

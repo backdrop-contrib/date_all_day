@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1605158 by covenantd, Be sure value2 is initiated in Date Context handler.
 - Issue #1355256 by barraponto develCuy and KarenS, set default value for date text widget increment to 1, and update existing fields.
 - Issue #1561306 by Cyberwolf, Date pager replacement was not working correctly when used with multiple dates.
 - Issue #1541740 by hass, Make Date requirements more easily translatable.

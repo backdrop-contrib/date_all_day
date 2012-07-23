@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1432702, Fix some miscellaneous problems with date example dates and formats.
 - Issue #1512464 by Liam Moreland, Allow for undefined formatter in Date upgrade handling.
 - Issue #1659638 by bojanz, Hide install message if Drupal is not installed (i.e. in install profiles).
 - Issue #1605158 by covenantd, Be sure value2 is initiated in Date Context handler.

@@ -353,7 +353,7 @@ function date_popup_process_date_part(&$element) {
   );
   $sub_element['#value'] = $sub_element['#default_value'];
   // TODO, figure out exactly when we want this description. In many places it is not desired.
-  $sub_element['#description'] = ' '. t('E.g., @date', array('@date' => date_format_date(date_now(), 'custom', date_popup_date_format($element))));
+  $sub_element['#description'] = ' '. t('E.g., @date', array('@date' => date_format_date(date_example_date(), 'custom', date_popup_date_format($element))));
 
   return $sub_element;
 }

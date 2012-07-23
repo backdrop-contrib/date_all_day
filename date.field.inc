@@ -273,7 +273,7 @@ function date_field_widget_info() {
     'settings' => array(
       'input_format' => date_default_format('date_select'),
       'input_format_custom' => '',
-      'increment' => 1,
+      'increment' => 15,
       'text_parts' => array(),
       'year_range' => '-3:+3',
       'label_position' => 'above',

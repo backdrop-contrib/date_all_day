@@ -598,12 +598,12 @@ class DateObject extends DateTime {
           break;
         case 'F':
           $array_month_long = array_flip(date_month_names());
-          $final_date['month'] = array_key_exists($value, $array_month_long) ? $array_month_long[$value] : '';
+          $final_date['month'] = array_key_exists($value, $array_month_long) ? $array_month_long[$value] : -1;
           $this->addGranularity('month');
           break;
         case 'M':
           $array_month = array_flip(date_month_names_abbr());
-          $final_date['month'] = array_key_exists($value, $array_month) ? $array_month[$value] : '';
+          $final_date['month'] = array_key_exists($value, $array_month) ? $array_month[$value] : -1;
           $this->addGranularity('month');
           break;
         case 'Y':

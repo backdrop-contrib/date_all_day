@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Issue #1423364 by catmat, Add file and path to hook_context_plugins().
 - Issue #1713248, Remove incorrect use of date_popup() function in previous commit.
 - Issue #1143680 by kristiaanvandeneynde, Make Date Popup widget able to accept custom settings.
 - Issue #1596546 by applicity_sam, Make sure incorrect month name creates validation error.

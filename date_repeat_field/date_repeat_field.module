@@ -626,6 +626,17 @@ function date_repeat_field_form_field_ui_field_edit_form_alter(&$form, &$form_st
     $form['field']['cardinality']['#disabled'] = TRUE;
     $form['field']['cardinality']['#value'] = FIELD_CARDINALITY_UNLIMITED;
   }
+  // Repeating dates need unlimited values, confirm that in element_validate.
+  $form['field']['#element_validate'] = array('date_repeat_field_set_cardinality');
+}
+
+/**
+ * Ensure the cardinality gets updated if the option to make a date repeating is checked.
+ */
+function date_repeat_field_set_cardinality($element, &$form_state) {
+  if (!empty($form_state['values']['field']['settings']['repeat'])) {
+    form_set_value($element['cardinality'], FIELD_CARDINALITY_UNLIMITED, $form_state);
+  }
 }
 
 /**

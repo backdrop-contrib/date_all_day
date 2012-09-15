@@ -5,6 +5,8 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Small fix needed to ensure cardinality gets set correctly if repeat option is changed in the UI.
+
 ======================
 Version 7.x-2.6
 ======================

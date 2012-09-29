@@ -5,6 +5,7 @@ Date Module 7.x
 Version 7.x-2.x-dev
 ===================
 
+- Code cleanup, remove #prev values that were never used in repeat functionality.
 - Small fix needed to ensure cardinality gets set correctly if repeat option is changed in the UI.
 
 ======================

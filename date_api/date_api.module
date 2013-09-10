@@ -276,18 +276,17 @@ class DateObject extends DateTime {
         $this->setGranularityFromTime($time, $tz);
       }
     }
-    // If this tz was given as just an offset or the timezone
-    // was invalid, we need to do some tweaking.
+
+    // If we haven't got a valid timezone name yet, we need to set one or
+    // we will get undefined index errors.
+    // This can happen if $time had an offset or no timezone.
     if (!$this->getTimezone() || !preg_match('/[a-zA-Z]/', $this->getTimezone()->getName())) {
 
-      // If the timezone name is an offset and the original
-      // $tz has a name, use it. This happens if you pass in
-      // a date string with an offset along with a specific timezone name.
-      if (!preg_match('/[a-zA-Z]/', $this->getTimezone()->getName()) && preg_match('/[a-zA-Z]/', $tz->getName())) {
+      // If the original $tz has a name, use it.
+      if (preg_match('/[a-zA-Z]/', $tz->getName())) {
         $this->setTimezone($tz);
       }
-      // If we get this far, we have no information about the timezone name,
-      // but we will get undefined index errors without any name.
+      // We have no information about the timezone so must fallback to a default.
       else {
         $this->setTimezone(new DateTimeZone("UTC"));
         $this->errors['timezone'] = t('No valid timezone name was provided.');

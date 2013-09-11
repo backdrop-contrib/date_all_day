@@ -18,7 +18,7 @@ Timepicker
 ================================================================================
 
 There are three ways to let users select time in the Date Popup widgets.
-You can choose between them by going to admin/config/content/date_popup.
+You can choose between them by going to admin/config/date/date_popup.
 
 The options are:
 

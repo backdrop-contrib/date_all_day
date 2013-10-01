@@ -76,6 +76,8 @@ function date_theme() {
         'attributes' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
+        'microdata' => NULL,
+        'add_microdata' => NULL,
       ),
     ),
     'date_display_range' => $base + array(
@@ -93,6 +95,8 @@ function date_theme() {
         'attributes_end' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
+        'microdata' => NULL,
+        'add_microdata' => NULL,
     )),
     'date_display_combination' => $base + array(
       'variables' => array(
@@ -108,6 +112,8 @@ function date_theme() {
         'attributes' => array(),
         'rdf_mapping' => NULL,
         'add_rdf' => NULL,
+        'microdata' => NULL,
+        'add_microdata' => NULL,
       ),
     ),
     'date_display_interval' => $base + array(
@@ -541,6 +547,8 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
         // The getter and setter callbacks for 'value' and 'value2'
         // will not provide the field name as $name, we'll add it to $info.
         'field_name' => $field['field_name'],
+        // Alert Microdata module that this value can be exposed in microdata.
+        'microdata' => TRUE,
       ),
       'value2' => array(
         'type' => 'date',
@@ -550,6 +558,8 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
         // The getter and setter callbacks for 'value' and 'value2'
         // will not provide the field name as $name, we'll add it to $info.
         'field_name' => $field['field_name'],
+        // Alert Microdata module that this value can be exposed in microdata.
+        'microdata' => TRUE,
       ),
       'duration' => array(
         'type' => 'duration',
@@ -563,6 +573,11 @@ function date_entity_metadata_property_info_alter(&$info, $entity_type, $field, 
       ),
     );
     unset($property['query callback']);
+  }
+  else {
+    // If this doesn't have a todate, it is handled as a date rather than a
+    // struct. Enable microdata on the field itself rather than the properties.
+    $property['microdata'] = TRUE;
   }
 }
 

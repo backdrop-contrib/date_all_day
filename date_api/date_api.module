@@ -2099,6 +2099,17 @@ function date_part_format($part, $format) {
  *   The format string with all other elements removed.
  */
 function date_limit_format($format, $granularity) {
+  // Use the advanced drupal_static() pattern to improve performance.
+  static $drupal_static_fast;
+  if (!isset($drupal_static_fast)) {
+    $drupal_static_fast['formats'] = &drupal_static(__FUNCTION__);
+  }
+  $formats = &$drupal_static_fast['formats'];
+  $format_granularity_cid = $format .'|'. implode(',', $granularity);
+  if (isset($formats[$format_granularity_cid])) {
+    return $formats[$format_granularity_cid];
+  }
+
   // If punctuation has been escaped, remove the escaping. Done using strtr()
   // because it is easier than getting the escape character extracted using
   // preg_replace().
@@ -2172,6 +2183,9 @@ function date_limit_format($format, $granularity) {
   if (empty($test)) {
     $format = '';
   }
+
+  // Store the return value in the static array for performance.
+  $formats[$format_granularity_cid] = $format;
 
   return $format;
 }

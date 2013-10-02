@@ -320,7 +320,7 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#field'         => $field,
     '#instance'      => $instance,
     '#weight'        => $instance['widget']['weight'],
-    '#required'      => ($instance['required'] && $delta == 0) ? 1 : 0,
+    '#required'      => ($element['#required'] && $delta == 0) ? 1 : 0,
     '#default_value' => isset($element['#default_value'][$from_field]) ? $element['#default_value'][$from_field] : '',
     '#delta'         => $delta,
     '#date_timezone' => $element['#date_timezone'],

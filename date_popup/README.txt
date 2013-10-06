@@ -99,10 +99,10 @@ Example:
 
 $form['date'] = array(
   '#type' => 'date_popup',
-  '#default_value' => '2007-01-01 10:30:00,
+  '#default_value' => '2007-01-01 10:30:00',
   '#date_type' => DATE_DATETIME,
   '#date_timezone' => date_default_timezone(),
-  '#date_format' => 'm/d/Y - H:i',
+  '#date_format' => 'm-d-Y H:i',
   '#date_increment' => 1,
   '#date_year_range' => '-3:+3',
 );

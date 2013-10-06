@@ -42,6 +42,17 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     return $options;
   }
 
+  function operators() {
+    $operators = parent::operators();
+    $operators['contains'] = array(
+      'title' => t('Contains'),
+      'method' => 'op_contains',
+      'short' => t('contains'),
+      'values' => 1,
+    );
+    return $operators;
+  }
+
   /**
    * Helper function to find a default value.
    */
@@ -161,6 +172,29 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
     $placeholder = $this->placeholder();
     $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
     $this->query->add_where_expression($group, "$field $this->operator $placeholder", array($placeholder => $value));
+  }
+
+  function op_contains($field) {
+
+    // Add the delta field to the view so we can later find the value that matched our query.
+    list($table_name, $field_name) = explode('.', $field);
+    if (!empty($this->options['add_delta']) && (substr($field_name, -6) == '_value' || substr($field_name, -7) == '_value2')) {
+      $this->query->add_field($table_name, 'delta');
+    }
+
+    $value = $this->get_filter_value('value', $this->value['value']);
+    $comp_date = new DateObject($value, date_default_timezone(), $this->format);
+    $fields = date_views_fields($this->base_table);
+    $fields = $fields['name'];
+    $fromto = $fields[$field]['fromto'];
+    $field_min = $this->date_handler->sql_field($fromto[0], NULL, $comp_date);
+    $field_min = $this->date_handler->sql_format($this->format, $field_min);
+    $field_max = $this->date_handler->sql_field($fromto[1], NULL, $comp_date);
+    $field_max = $this->date_handler->sql_format($this->format, $field_max);
+    $placeholder_min = $this->placeholder();
+    $placeholder_max = $this->placeholder();
+    $group = !empty($this->options['date_group']) ? $this->options['date_group'] : $this->options['group'];
+    $this->query->add_where_expression($group, "$field_max >= $placeholder_min AND $field_min <= $placeholder_max", array($placeholder_min => $value, $placeholder_max => $value));
   }
 
   /**

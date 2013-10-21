@@ -950,6 +950,11 @@ class DateObject extends DateTime {
           if ($year_diff == 0) {
             return intval($item2 - $item1);
           }
+          elseif ($year_diff < 0) {
+            $item_diff = 0 - $item1;
+            $item_diff -= intval((abs($year_diff) - 1) * 12);
+            return $item_diff - (12 - $item2);
+          }
           else {
             $item_diff = 12 - $item1;
             $item_diff += intval(($year_diff - 1) * 12);
@@ -964,6 +969,14 @@ class DateObject extends DateTime {
           if ($year_diff == 0) {
             return intval($item2 - $item1);
           }
+          elseif ($year_diff < 0) {
+            $item_diff = 0 - $item1;
+            for ($i = 1; $i < abs($year_diff); $i++) {
+              date_modify($date1, '-1 year');
+              $item_diff -= date_days_in_year($date1);
+            }
+            return $item_diff - (date_days_in_year($date2) - $item2);
+          }
           else {
             $item_diff = date_days_in_year($date1) - $item1;
             for ($i = 1; $i < $year_diff; $i++) {
@@ -977,9 +990,12 @@ class DateObject extends DateTime {
         case 'weeks':
           $week_diff = date_format($date2, 'W') - date_format($date1, 'W');
           $year_diff = date_format($date2, 'o') - date_format($date1, 'o');
-          for ($i = 1; $i <= $year_diff; $i++) {
-            date_modify($date1, '+1 year');
-            $week_diff += date_iso_weeks_in_year($date1);
+
+          $sign = ($year_diff < 0) ? -1 : 1;
+
+          for ($i = 1; $i <= abs($year_diff); $i++) {
+            date_modify($date1, (($sign > 0) ? '+': '-').'1 year');
+            $week_diff += (date_iso_weeks_in_year($date1) * $sign);
           }
           return $week_diff;
       }

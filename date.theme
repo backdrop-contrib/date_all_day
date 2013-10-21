@@ -378,6 +378,10 @@ function theme_date_combo($variables) {
     '#attributes' => array(),
     '#children' => $element['#children'],
   );
+  // Add marker to required date fields.
+  if ($element['#required']) {
+    $fieldset['#title'] .= " " . theme('form_required_marker');
+  }
   return theme('fieldset', array('element' => $fieldset));
 }
 

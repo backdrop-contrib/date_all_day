@@ -363,8 +363,8 @@ function date_combo_element_process($element, &$form_state, $form) {
   // is the 'Start' and which is the 'End' .
 
   if (!empty($field['settings']['todate'])) {
-    $element[$from_field]['#title'] = '';
     $element[$to_field] = $element[$from_field];
+    $element[$from_field]['#title_display'] = 'none';
     $element[$to_field]['#title'] = t('to:');
     $element[$from_field]['#wrapper_attributes']['class'][] = 'start-date-wrapper';
     $element[$to_field]['#wrapper_attributes']['class'][] = 'end-date-wrapper';

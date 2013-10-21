@@ -350,7 +350,7 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       $type = 'date_text';
     }
 
-    $format = $this->date_handler->views_formats($this->options['granularity'], 'sql');
+    $format = $this->date_handler->views_formats($this->options['granularity'], 'display');
     $granularity = array_keys($this->date_handler->date_parts($this->options['granularity']));
     $relative_value = ($prefix == 'max' ? $this->options['default_to_date'] : $this->options['default_date']);
 

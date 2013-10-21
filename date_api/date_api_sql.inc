@@ -884,30 +884,30 @@ class date_sql_handler {
     }
     $formats = array('display', 'sql');
     // Start with the site long date format and add seconds to it.
-    $long = str_replace(':i', ':i:s', variable_get('date_format_long', 'l, F j, Y - H:i'));
+    $short = str_replace(':i', ':i:s', variable_get('date_format_short', 'l, F j, Y - H:i'));
     switch ($granularity) {
       case 'year':
         $formats['display'] = 'Y';
         $formats['sql'] = 'Y';
         break;
       case 'month':
-        $formats['display'] = date_limit_format($long, array('year', 'month'));
+        $formats['display'] = date_limit_format($short, array('year', 'month'));
         $formats['sql'] = 'Y-m';
         break;
       case 'day':
-        $formats['display'] = date_limit_format($long, array('year', 'month', 'day'));
+        $formats['display'] = date_limit_format($short, array('year', 'month', 'day'));
         $formats['sql'] = 'Y-m-d';
         break;
       case 'hour':
-        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour'));
+        $formats['display'] = date_limit_format($short, array('year', 'month', 'day', 'hour'));
         $formats['sql'] = 'Y-m-d\TH';
         break;
       case 'minute':
-        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour', 'minute'));
+        $formats['display'] = date_limit_format($short, array('year', 'month', 'day', 'hour', 'minute'));
         $formats['sql'] = 'Y-m-d\TH:i';
         break;
       case 'second':
-        $formats['display'] = date_limit_format($long, array('year', 'month', 'day', 'hour', 'minute', 'second'));
+        $formats['display'] = date_limit_format($short, array('year', 'month', 'day', 'hour', 'minute', 'second'));
         $formats['sql'] = 'Y-m-d\TH:i:s';
         break;
       case 'week':

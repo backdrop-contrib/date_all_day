@@ -458,8 +458,8 @@ class DateObject extends DateTime {
     $true = $this->hasGranularity() && (!$granularity || $flexible || $this->hasGranularity($granularity));
     if (!$true && $granularity) {
       foreach ((array) $granularity as $part) {
-        if (!$this->hasGranularity($part)) {
-          $this->errors[$part] = t("The @part is missing.", array('@part' => $part));
+        if (!$this->hasGranularity($part) && in_array($part, array('second', 'minute', 'hour', 'day', 'month', 'year'))) {
+          $this->errors[$part] = t("The $part is missing.");
         }
       }
     }

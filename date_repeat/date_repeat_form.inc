@@ -952,8 +952,8 @@ function theme_date_repeat_rrule($vars) {
     '#attributes' => array('class' => $class),
     '#markup' => $element['#children'],
     '#states' => array(
-      'visible' => array(
-        ":input[name=\"{$selector}\"]" => array('checked' => TRUE),
+      'invisible' => array(
+        ":input[name=\"{$selector}\"]" => array('checked' => FALSE),
       ),
     ),
     '#id' => $id,

@@ -1720,13 +1720,21 @@ function date_format_interval($date, $granularity = 2, $display_ago = TRUE) {
  *   (optional) Optionally force time to a specific timezone, defaults to user
  *   timezone, if set, otherwise site timezone. Defaults to NULL.
  *
+ * @param boolean $reset [optional]
+ *  Static cache reset
+ *
  * @return object
  *   The current time as a date object.
  */
-function date_now($timezone = NULL) {
-  return new DateObject('now', $timezone);
-}
+function date_now($timezone = NULL, $reset = FALSE) {
+  $now = &drupal_static(__FUNCTION__);
 
+  if (!isset($now) || $reset) {
+    $now = new DateObject('now', $timezone);
+  }
+
+  return $now;
+}
 /**
  * Determines if a timezone string is valid.
  *

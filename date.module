@@ -251,7 +251,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
         elseif ($format == 'format_calendar_day') {
            $dates[$processed]['calendar_day'] = date_format_calendar_day($date);
         }
-        elseif ($format == 'U') {
+        elseif ($format == 'U' || $format == 'r' || $format == 'c') {
           $dates[$processed]['formatted'] = date_format_date($date, 'custom', $format);
           $dates[$processed]['formatted_date'] = date_format_date($date, 'custom', $format);
           $dates[$processed]['formatted_time'] = '';

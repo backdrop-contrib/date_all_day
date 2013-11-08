@@ -115,8 +115,12 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
       $element_input['value'] = $this->get_filter_value('value', !empty($element_input['value']) ? $element_input['value'] : '');
       $element_input['min'] = $this->get_filter_value('min', !empty($element_input['min']) ? $element_input['min'] : '');
       $element_input['max'] = $this->get_filter_value('max', !empty($element_input['max']) ? $element_input['max'] : '');
-      unset($element_input['default_date']);
-      unset($element_input['default_to_date']);
+      if (is_array($element_input) && isset($element_input['default_date'])) {
+        unset($element_input['default_date']);
+      }
+      if (is_array($element_input) && isset($element_input['default_to_date'])) {
+        unset($element_input['default_to_date']);
+      }
 
       $input[$this->options['expose']['identifier']] = $element_input;
     }

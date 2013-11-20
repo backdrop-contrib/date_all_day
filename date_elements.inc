@@ -451,8 +451,8 @@ function date_combo_validate($element, &$form_state) {
     return;
   }
 
-  $item = drupal_array_get_nested_value($form_values, $element['#parents']);
-  $posted = drupal_array_get_nested_value($form_input, $element['#parents']);
+  $item = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
+  $posted = drupal_array_get_nested_value($form_state['input'], $element['#parents']);
 
   $field = field_widget_field($element, $form_state);
   $instance = field_widget_instance($element, $form_state);

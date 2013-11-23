@@ -453,6 +453,9 @@ function _date_field_settings_form($field, $instance, $has_data) {
   $tz_handling = $settings['tz_handling'];
 
   $description = t('Select the date attributes to collect and store.');
+  if ($has_data) {
+    $description .= ' ' . t('Changes to date attributes only effects new or updated content.');
+  }
   $options = date_granularity_names();
   $checkbox_year = array(
     '#type' => 'checkbox',
@@ -469,7 +472,6 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#options' => $options,
     '#attributes' => array('class' => array('container-inline')),
     '#description' => $description,
-    '#disabled' => $has_data,
     'year' => $checkbox_year,
   );
 
@@ -499,7 +501,6 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#default_value' => $tz_handling,
     '#options' => date_timezone_handling_options(),
     '#description' => $description,
-    '#disabled' => $has_data,
     '#attached' => array(
       'js' => array(drupal_get_path('module', 'date') . '/date_admin.js'),
     ),

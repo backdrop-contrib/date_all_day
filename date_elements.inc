@@ -331,7 +331,8 @@ function date_combo_element_process($element, &$form_state, $form) {
     '#date_label_position' => $instance['widget']['settings']['label_position'],
     );
 
-  $description =  !empty($instance['description']) ? t($instance['description']) : '';
+  $description =  !empty($element['#description']) ? t($element['#description']) : '';
+  unset($element['#description']);
 
   // Give this element the right type, using a Date API
   // or a Date Popup element type.

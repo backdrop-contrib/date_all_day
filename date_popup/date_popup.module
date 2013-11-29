@@ -87,7 +87,7 @@ function date_popup_library() {
       $path . '/jquery.timeentry.pack.js' => array(),
     ),
     'css' => array(
-      $path . '/themes/jquery.timeentry.css' => array('preprocess' => FALSE),
+      $path . '/themes/jquery.timeentry.css' => array(),
     ),
   );
   return $libraries;

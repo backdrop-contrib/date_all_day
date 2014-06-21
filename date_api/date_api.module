@@ -2357,26 +2357,38 @@ function date_get_timezone($handling, $timezone = '') {
 }
 
 /**
- * Function to figure out which db timezone applies to a date and select it.
+ * Function to figure out which db timezone applies to a date.
  *
  * @param string $handling
  *   The timezone handling.
  * @param string $timezone
- *   (optional) A timezone string. Defaults to an empty string.
+ *   (optional) When $handling is 'date', date_get_timezone_db() returns this
+ *   value.
  *
  * @return string
  *   The timezone string.
  */
-function date_get_timezone_db($handling, $timezone = '') {
+function date_get_timezone_db($handling, $timezone = NULL) {
   switch ($handling) {
-    case 'none':
-      $timezone = date_default_timezone();
-      break;
-    default:
+    case ('utc'):
+    case ('site'):
+    case ('user'):
+      // These handling modes all convert to UTC before storing in the DB.
       $timezone = 'UTC';
       break;
+    case ('date'):
+      if ($timezone == NULL) {
+        // This shouldn't happen, since it's meaning is undefined. But we need
+        // to fall back to *something* that's a legal timezone.
+        $timezone = date_default_timezone();
+      }
+      break;
+    case ('none'):
+    default:
+      $timezone = date_default_timezone();
+      break;
   }
-  return $timezone > '' ? $timezone : 'UTC';
+  return $timezone;
 }
 
 /**

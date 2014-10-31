@@ -425,8 +425,9 @@ function date_repeat_after_build(&$element, &$form_state) {
  * Pass in either the RRULE or the $form_values array for the RRULE,
  * whichever is missing will be created when needed.
  */
+// @codingStandardsIgnoreStart
 function date_repeat_build_dates($rrule = NULL, $rrule_values = NULL, $field, $item) {
-
+// @codingStandardsIgnoreEnd
   include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'date_api') . '/date_api_ical.inc';
   $field_name = $field['field_name'];
 

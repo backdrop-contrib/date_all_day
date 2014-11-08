@@ -150,7 +150,9 @@ function date_default_formatter_settings_summary($field, $instance, $view_mode) 
       'value' => t('Display Start date only'),
       'value2' => t('Display End date only'),
     );
-    $summary[] = $options[$settings['fromto']];
+    if (isset($options[$settings['fromto']])) {
+      $summary[] = $options[$settings['fromto']];
+    }
   }
 
   if (array_key_exists('multiple_number', $settings) && !empty($field['cardinality'])) {

@@ -69,29 +69,37 @@ function template_preprocess_date_views_pager(&$vars) {
   }
 
   if (empty($date_info->hide_nav)) {
-    $prev_date = clone($min_date);
-    date_modify($prev_date, '-1 ' . $granularity);
-    $next_date = clone($min_date);
-    date_modify($next_date, '+1 ' . $granularity);
-    $format = array('year' => 'Y', 'month' => 'Y-m', 'day' => 'Y-m-d');
-    switch ($granularity) {
-      case 'week':
-        $next_week = date_week(date_format($next_date, 'Y-m-d'));
-        $prev_week = date_week(date_format($prev_date, 'Y-m-d'));
-        $next_arg = date_format($next_date, 'o-\W') . date_pad($next_week);
-        $prev_arg = date_format($prev_date, 'o-\W') . date_pad($prev_week);
-        break;
+    $prev_date = $date_info->prev_date;
+    $next_date = $date_info->next_date;
 
-      default:
-        $next_arg = date_format($next_date, $format[$granularity]);
-        $prev_arg = date_format($prev_date, $format[$granularity]);
+    $format = array('year' => 'Y', 'month' => 'Y-m', 'day' => 'Y-m-d', 'hour' => 'Y-m-d\TH');
+    if (!empty($prev_date)) {
+      switch ($granularity) {
+        case 'week':
+          $prev_week = date_week(date_format($prev_date, 'Y-m-d'));
+          $prev_arg = date_format($prev_date, 'Y-\W') . date_pad($prev_week);
+          break;
+        default:
+          $prev_arg = date_format($prev_date, $format[$granularity]);
+      }
+      $prev_path = str_replace($date_info->date_arg, $prev_arg, $date_info->url);
+      $prev_args[$pos] = $prev_arg;
+      $vars['prev_url'] = date_pager_url($view, NULL, $prev_arg);
     }
-    $next_path = str_replace($date_info->date_arg, $next_arg, $date_info->url);
-    $prev_path = str_replace($date_info->date_arg, $prev_arg, $date_info->url);
-    $next_args[$pos] = $next_arg;
-    $prev_args[$pos] = $prev_arg;
-    $vars['next_url'] = date_pager_url($view, NULL, $next_arg);
-    $vars['prev_url'] = date_pager_url($view, NULL, $prev_arg);
+    if (!empty($next_date)) {
+      switch ($granularity) {
+        case 'week':
+          $next_week = date_week(date_format($next_date, 'Y-m-d'));
+          $next_arg = date_format($next_date, 'Y-\W') . date_pad($next_week);
+          break;
+        default:
+          $next_arg = date_format($next_date, $format[$granularity]);
+      }
+      $next_path = str_replace($date_info->date_arg, $next_arg, $date_info->url);
+      $next_args[$pos] = $next_arg;
+      $vars['next_url'] = date_pager_url($view, NULL, $next_arg);
+    }
+
     $vars['next_options'] = $vars['prev_options'] = array();
   }
   else {

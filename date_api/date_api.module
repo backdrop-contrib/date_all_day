@@ -1786,7 +1786,7 @@ function date_format_date($date, $type = 'medium', $format = '', $langcode = NUL
         break;
 
       case 'r':
-        $datestring .= date_format_date($date, 'custom', 'D, d M Y H:i:s O', $langcode);
+        $datestring .= date_format_date($date, 'custom', 'D, d M Y H:i:s O', 'en');
         break;
 
       default:

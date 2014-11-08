@@ -284,6 +284,13 @@ function date_repeat_field_field_widget_form_alter(&$element, &$form_state, $con
         '#suffix' => '</div>',
         '#default_value' => isset($items[$delta]['rrule']) && !empty($items[$delta]['rrule']) ? 1 : 0,
       );
+
+      // Make changes if instance is set to be rendered as a regular field.
+      if (!empty($instance['widget']['settings']['no_fieldset'])) {
+        $element['#title'] = check_plain($instance['label']);
+        $element['#description'] = field_filter_xss($instance['description']);
+        $element['#theme_wrappers'] = array('date_form_element');
+      }
     }
   }
 }

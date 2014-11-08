@@ -76,6 +76,7 @@ function date_theme() {
   );
   $themes = array(
     'date_combo' => $base + array('render element' => 'element'),
+    'date_form_element' => $base + array('render element' => 'element'),
     'date_text_parts' => $base + array('render element' => 'element'),
     'date' => $base + array('render element' => 'element'),
     'date_display_single' => $base + array(

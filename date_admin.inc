@@ -427,6 +427,13 @@ function _date_field_widget_settings_form($field, $instance) {
     }
   }
 
+  $form['advanced']['no_fieldset'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Render as a regular field'),
+    '#default_value' => !empty($settings['no_fieldset']),
+    '#description' => t('Whether to render this field as a regular field instead of a fieldset. The date field elements are wrapped in a fieldset by default, and may not display well without it.'),
+  );
+
   $context = array(
     'field' => $field,
     'instance' => $instance,

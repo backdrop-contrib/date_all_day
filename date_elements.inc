@@ -124,6 +124,12 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
     );
   }
 
+  // Make changes if instance is set to be rendered as a regular field.
+  if (!empty($instance['widget']['settings']['no_fieldset'])) {
+   $element['#title'] = check_plain($instance['label']);
+   $element['#theme_wrappers'] = ($field['cardinality'] == 1) ? array('date_form_element') : array();
+  }
+
   return $element;
 }
 
@@ -406,6 +412,14 @@ function date_combo_element_process($element, &$form_state, $form) {
   }
   else {
     $element[$from_field]['#date_title'] = t('@field_name', array('@field_name' => $instance['label']));
+  }
+
+  // Make changes if instance is set to be rendered as a regular field.
+  if (!empty($instance['widget']['settings']['no_fieldset'])) {
+    unset($element[$from_field]['#description']);
+    if (!empty($field['settings']['todate']) && isset($element['#description'])) {
+      $element['#description'] .= '<span class="js-hide"> '. t("Empty 'End date' values will use the 'Start date' values.") .'</span>';
+    }
   }
 
   $context = array(

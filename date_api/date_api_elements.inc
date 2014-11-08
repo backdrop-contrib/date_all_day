@@ -331,6 +331,13 @@ function date_text_element_process($element, &$form_state, $form) {
   )));
   $element['date']['#ajax'] = !empty($element['#ajax']) ? $element['#ajax'] : FALSE;
 
+  // Make changes if instance is set to be rendered as a regular field.
+  if (!empty($element['#instance']['widget']['settings']['no_fieldset']) && $element['#field']['cardinality'] == 1) {
+    $element['date']['#title'] = check_plain($element['#instance']['label']);
+    $element['date']['#title_display'] = $element['#title_display'];
+    $element['date']['#required'] = $element['#required'];
+  }
+
   // Keep the system from creating an error message for the sub-element.
   // We'll set our own message on the parent element.
   // $element['date']['#required'] = $element['#required'];

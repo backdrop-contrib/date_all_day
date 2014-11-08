@@ -377,7 +377,7 @@ function theme_date_combo($variables) {
     '#title' => field_filter_xss(t($element['#title'])) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => '',
     '#description' => !empty($element['#fieldset_description']) ? $element['#fieldset_description'] : '',
-    '#attributes' => array(),
+    '#attributes' => array('class' => array('date-combo')),
     '#children' => $element['#children'],
   );
   // Add marker to required date fields.
@@ -412,6 +412,37 @@ function theme_date_text_parts($variables) {
     $header = array(t('Date part'), t('Select list'), t('Text field'));
     return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($element);
   }
+}
+
+/**
+ * Render a date combo as a form element.
+ */
+function theme_date_form_element($variables) {
+  $element = &$variables['element'];
+
+  // Detect whether element is multiline.
+  $count = preg_match_all('`<(?:div|span)\b[^>]* class="[^"]*\b(?:date-no-float|date-clear)\b`', $element['#children'], $matches, PREG_OFFSET_CAPTURE);
+  $multiline = FALSE;
+  if ($count > 1) {
+    $multiline = TRUE;
+  }
+  elseif ($count) {
+    $before = substr($element['#children'], 0, $matches[0][0][1]);
+    if (preg_match('`<(?:div|span)\b[^>]* class="[^"]*\bdate-float\b`', $before)) {
+      $multiline = TRUE;
+    }
+  }
+
+  // Detect if there is more than one subfield.
+  $count = count(explode('<label', $element['#children'])) - 1;
+  if ($count == 1) {
+    $element['#title_display'] = 'none';
+  }
+
+  // Wrap children with a div and add an extra class if element is multiline.
+  $element['#children'] = '<div class="date-form-element-content'. ($multiline ? ' date-form-element-content-multiline' : '') .'">'. $element['#children'] .'</div>';
+
+  return theme('form_element', $variables);
 }
 
 /** @} End of addtogroup themeable */

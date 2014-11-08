@@ -371,6 +371,11 @@ function date_text_validate($element, &$form_state) {
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
 
+  // Trim extra spacing off user input of text fields.
+  if (isset($input['date'])) {
+    $input['date'] = trim($input['date']);
+  }
+
   drupal_alter('date_text_pre_validate', $element, $form_state, $input);
 
   $label = !empty($element['#date_title']) ? $element['#date_title'] : (!empty($element['#title']) ? $element['#title'] : '');

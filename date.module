@@ -43,6 +43,11 @@ function date_default_format($type) {
  * Wrapper function around each of the widget types for creating a date object.
  */
 function date_input_date($field, $instance, $element, $input) {
+  // Trim extra spacing off user input of text fields.
+  if (isset($input['date'])) {
+    $input['date'] = trim($input['date']);
+  }
+
   switch ($instance['widget']['type']) {
     case 'date_text':
       $function = 'date_text_input_date';

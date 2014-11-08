@@ -221,8 +221,10 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
   $settings = $display['settings'];
   $field_name = $field['field_name'];
   $format = date_formatter_format($formatter, $settings, $granularity, $langcode);
-  $timezone = isset($item['timezone']) ? $item['timezone'] : '';
-  $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
+  if(!isset($field['settings']['tz_handling']) || $field['settings']['tz_handling'] !== 'utc'){
+    $timezone = isset($item['timezone']) ? $item['timezone'] : '';
+    $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
+  }
   $timezone_db = date_get_timezone_db($field['settings']['tz_handling']);
   $db_format = date_type_format($field['type']);
   $process = date_process_values($field);

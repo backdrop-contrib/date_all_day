@@ -93,6 +93,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     $options = parent::option_definition();
     $options['year_range'] = array('default' => '-3:+3');
     $options['granularity'] = array('default' => 'month');
+    $options['granularity_reset'] = array('default' => FALSE);
     $options['default_argument_type']['default'] = 'date';
     $options['add_delta'] = array('default' => '');
     $options['use_fromto'] = array('default' => '');
@@ -146,20 +147,28 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       ),
     );
 
+    // Get default granularity options
     $options = $this->date_handler->date_parts();
-    unset($options['second'], $options['minute']);
+    // Add the 'week' option.
     $options += array(
       'week' => t('Week', array(), array(
         'context' => 'datetime',
       )),
     );
+
     $form['granularity'] = array(
       '#title' => t('Granularity'),
       '#type' => 'radios',
       '#options' => $options,
       '#default_value' => $this->options['granularity'],
-      '#multiple' => TRUE,
       '#description' => t("Select the type of date value to be used in defaults, summaries, and navigation. For example, a granularity of 'month' will set the default date to the current month, summarize by month in summary views, and link to the next and previous month when using date navigation."),
+    );
+
+    $form['granularity_reset'] = array(
+      '#title' => t('Use granularity from argument value'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->options['granularity_reset'],
+      '#description' => t("If the granularity of argument value is different from selected, use it from argument value."),
     );
 
     $form['year_range'] = array(
@@ -191,7 +200,6 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
       // Only let mere mortals tweak this setting for multi-value fields.
       '#access' => $access,
     );
-
   }
 
   /**
@@ -291,8 +299,7 @@ class date_views_argument_handler_simple extends views_handler_argument_date {
     // See if we need to reset granularity based on an argument value.
     // Make sure we don't try to reset to some bogus value if someone has
     // typed in an unexpected argument.
-    $granularity = $this->date_handler->arg_granularity($this->argument);
-    if (!empty($granularity)) {
+    if ($this->options['granularity_reset'] && $granularity = $this->date_handler->arg_granularity($this->argument)) {
       $this->date_handler->granularity = $granularity;
       $this->format = $this->date_handler->views_formats($this->date_handler->granularity, 'display');
       $this->sql_format = $this->date_handler->views_formats($this->date_handler->granularity, 'sql');

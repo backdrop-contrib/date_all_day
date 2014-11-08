@@ -452,6 +452,10 @@ function date_combo_validate($element, &$form_state) {
   $delta = $element['#delta'];
   $langcode = $element['#language'];
 
+  // Related issue: https://drupal.org/node/2279831.
+  if (!is_array($element['#field_parents'])) {
+    $element['#field_parents'] = array();
+  }
   $form_values = drupal_array_get_nested_value($form_state['values'], $element['#field_parents']);
   $form_input = drupal_array_get_nested_value($form_state['input'], $element['#field_parents']);
 

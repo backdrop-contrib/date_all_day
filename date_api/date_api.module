@@ -410,7 +410,7 @@ class DateObject extends DateTime {
    *   A single date part.
    */
   public function removeGranularity($g) {
-    if ($key = array_search($g, $this->granularity)) {
+    if (($key = array_search($g, $this->granularity)) !== FALSE) {
       unset($this->granularity[$key]);
     }
   }

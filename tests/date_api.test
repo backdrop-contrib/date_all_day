@@ -396,6 +396,28 @@ class DateAPITestCase extends DrupalWebTestCase {
     $date = new dateObject($input, $timezone, $format);
     $this->assertNotEqual(count($date->errors), 0, '23 abc 2012 should be an invalid date');
 
+    // Test Granularity.
+    $input = '2005-06-01 10:30:45';
+    $timezone = NULL;
+    $format = 'Y-m-d H:i:s';
+
+    $date = new dateObject($input, $timezone, $format);
+    $date->removeGranularity('hour');
+    $date->removeGranularity('second');
+    $date->removeGranularity('minute');
+
+    $value = $date->format($format);
+    $expected = '2005-06-01';
+    $this->assertEqual($expected, $value, "The date with removed granularity should be $expected, found $value.");
+
+    $date->addGranularity('hour');
+    $date->addGranularity('second');
+    $date->addGranularity('minute');
+
+    $value = $date->format($format);
+    $expected = '2005-06-01 10:30:45';
+
+    $this->assertEqual($expected, $value, "The date with added granularity should be $expected, found $value.");
   }
 
   /**

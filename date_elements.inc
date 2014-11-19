@@ -86,7 +86,7 @@ function date_field_widget_form(&$form, &$form_state, $field, $instance, $langco
   }
 
   module_load_include('inc', 'date_api', 'date_api_elements');
-  $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
+  $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[$delta]['timezone']) ? $items[$delta]['timezone'] : date_default_timezone());
 
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling

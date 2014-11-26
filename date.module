@@ -645,7 +645,7 @@ function date_entity_metadata_field_getter($entity, array $options, $name, $enti
 /**
  * Getter callback to return date values as datestamp in UTC.
  */
-function date_entity_metadata_struct_getter($item, $name) {
+function date_entity_metadata_struct_getter($item, array $options, $name, $type, $info) {
   $value = trim($item[$name]);
   if (empty($value)) {
     return NULL;

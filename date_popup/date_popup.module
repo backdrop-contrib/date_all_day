@@ -537,6 +537,11 @@ function date_popup_validate($element, &$form_state) {
 
   $input_exists = NULL;
   $input = drupal_array_get_nested_value($form_state['values'], $element['#parents'], $input_exists);
+  // If the date is a string, it is not considered valid and can cause problems
+  // later on, so just exit out now.
+  if (is_string($input)) {
+    return;
+  }
 
   drupal_alter('date_popup_pre_validate', $element, $form_state, $input);
 

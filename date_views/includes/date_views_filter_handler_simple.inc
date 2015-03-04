@@ -381,16 +381,9 @@ class date_views_filter_handler_simple extends views_handler_filter_date {
         $form[$prefix]['#dependency'] = array($source => $operator_values);
       }
       if (!isset($form_state['input'][$identifier][$prefix])) {
-        // Use hard-coded date characters and default date creation method as long field format is currently omitted.
-        $formats = array('year' => 'Y', 'month' => 'n', 'day' => 'j', 'hour' => 'H', 'minute' => 'i', 'second' => 's');
-        $default = date_default_date($form[$prefix] + array(
-            '#date_flexible' => FALSE,
-            '#date_increment' => 1,
-            '#date_timezone' => NULL,
-          )
-        );
+        // Ensure these exist.
         foreach ($granularity as $key) {
-          $form_state['input'][$identifier][$prefix][$key] = $default->format($formats[$key]);
+          $form_state['input'][$identifier][$prefix][$key] = NULL;
         }
       }
     }

@@ -362,6 +362,13 @@ function date_popup_process_date_part(&$element) {
   // we pass to the datepicker to use defaults it can accept (such as +0:+1)
   // date_range_string() adds the necessary +/- signs to the range string.
   $this_year = date_format(date_now(), 'Y');
+  // When used as a Views exposed filter widget, $element['#value'] contains an array instead an string.
+  // Fill the 'date' string in this case.
+  $mock = NULL;
+  $callback_values = date_popup_element_value_callback($element, FALSE, $mock);
+  if (!isset($element['#value']['date']) && isset($callback_values['date'])) {
+    $element['#value']['date'] = $callback_values['date'];
+  }
   $date = '';
   if (!empty($element['#value']['date'])) {
     $date = new DateObject($element['#value']['date'], $element['#date_timezone'], date_popup_date_format($element));
@@ -397,7 +404,7 @@ function date_popup_process_date_part(&$element) {
     '#type' => 'textfield',
     '#title' => theme('date_part_label_date', array('part_type' => 'date', 'element' => $element)),
     '#title_display' => $element['#date_label_position'] == 'above' ? 'before' : 'invisible',
-    '#default_value' => $element['#value']['date'],
+    '#default_value' => date_format_date($date, 'custom', date_popup_date_format($element)),
     '#id' => $id,
     '#input' => FALSE,
     '#size' => !empty($element['#size']) ? $element['#size'] : 20,
@@ -429,6 +436,14 @@ function date_popup_process_time_part(&$element) {
   $has_time = date_has_time($granularity);
   if (empty($has_time)) {
     return array();
+  }
+
+  // When used as a Views exposed filter widget, $element['#value'] contains an array instead an string.
+  // Fill the 'time' string in this case.
+  $mock = NULL;
+  $callback_values = date_popup_element_value_callback($element, FALSE, $mock);
+  if (!isset($element['#value']['time']) && isset($callback_values['time'])) {
+    $element['#value']['time'] = $callback_values['time'];
   }
 
   switch ($element['#timepicker']) {

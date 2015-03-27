@@ -120,7 +120,7 @@ span.date-display-end {
 }
 
 /* Add space between the date and time portions of the date_select widget. */
-.form-type-date-select .form-type-select[class$=hour] {
+.form-type-date-select .form-type-select[class*=hour] {
   margin-left: .75em; /* LTR */
 }
 

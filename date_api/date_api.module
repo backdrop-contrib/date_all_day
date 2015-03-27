@@ -2050,7 +2050,7 @@ function date_week_range($week, $year) {
 
   // Move forwards to the last day of the week.
   $max_date = clone($min_date);
-  date_modify($max_date, '+7 days');
+  date_modify($max_date, '+6 days');
 
   if (date_format($min_date, 'Y') != $year) {
     $min_date = new DateObject($year . '-01-01 00:00:00');
@@ -2084,7 +2084,7 @@ function date_iso_week_range($week, $year) {
 
   // Move forwards to the last day of the week.
   $max_date = clone($min_date);
-  date_modify($max_date, '+7 days');
+  date_modify($max_date, '+6 days');
   return array($min_date, $max_date);
 }
 

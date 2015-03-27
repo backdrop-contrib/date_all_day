@@ -575,12 +575,12 @@ function date_parts_element($element, $date, $format) {
     switch ($field) {
       case 'year':
         $range = date_range_years($element['#date_year_range'], $date);
-        $min_year = $range[0];
-        $max_year = $range[1];
+        $start_year = $range[0];
+        $end_year = $range[1];
 
         $sub_element[$field]['#default_value'] = is_object($date) ? $date->format('Y') : '';
         if ($part_type == 'select') {
-          $sub_element[$field]['#options'] = drupal_map_assoc(date_years($min_year, $max_year, $part_required));
+          $sub_element[$field]['#options'] = drupal_map_assoc(date_years($start_year, $end_year, $part_required));
         }
         break;
 

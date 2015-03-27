@@ -1318,10 +1318,10 @@ function date_week_days_ordered($weekdays) {
 /**
  * Constructs an array of years.
  *
- * @param int $min
- *   The minimum year in the array.
- * @param int $max
- *   The maximum year in the array.
+ * @param int $start
+ *   The start year in the array.
+ * @param int $end
+ *   The end year in the array.
  * @param bool $required
  *   (optional) If FALSE, the returned array will include a blank value.
  *   Defaults to FALSE.
@@ -1329,16 +1329,16 @@ function date_week_days_ordered($weekdays) {
  * @return array
  *   An array of years in the selected range.
  */
-function date_years($min = 0, $max = 0, $required = FALSE) {
+function date_years($start = 0, $end = 0, $required = FALSE) {
   // Ensure $min and $max are valid values.
-  if (empty($min)) {
-    $min = intval(date('Y', REQUEST_TIME) - 3);
+  if (empty($start)) {
+    $start = intval(date('Y', REQUEST_TIME) - 3);
   }
-  if (empty($max)) {
-    $max = intval(date('Y', REQUEST_TIME) + 3);
+  if (empty($end)) {
+    $end = intval(date('Y', REQUEST_TIME) + 3);
   }
   $none = array(0 => '');
-  return !$required ? $none + drupal_map_assoc(range($min, $max)) : drupal_map_assoc(range($min, $max));
+  return !$required ? $none + drupal_map_assoc(range($start, $end)) : drupal_map_assoc(range($start, $end));
 }
 
 /**
@@ -2599,12 +2599,12 @@ function date_order() {
  *   TRUE if the date range is valid, FALSE otherwise.
  */
 function date_range_valid($string) {
-  $matches = preg_match('@^(\-[0-9]+|[0-9]{4}):([\+|\-][0-9]+|[0-9]{4})$@', $string);
+  $matches = preg_match('@^([\+\-][0-9]+|[0-9]{4}):([\+\-][0-9]+|[0-9]{4})$@', $string);
   return $matches < 1 ? FALSE : TRUE;
 }
 
 /**
- * Splits a string like -3:+3 or 2001:2010 into an array of min and max years.
+ * Splits a string like -3:+3 or 2001:2010 into an array of start and end years.
  *
  * Center the range around the current year, if any, but expand it far
  * enough so it will pick up the year value in the field in case
@@ -2616,45 +2616,44 @@ function date_range_valid($string) {
  *   (optional) A date object. Defaults to NULL.
  *
  * @return array
- *   A numerically indexed array, containing a minimum and maximum year.
+ *   A numerically indexed array, containing a start and end year.
  */
 function date_range_years($string, $date = NULL) {
   $this_year = date_format(date_now(), 'Y');
-  list($min_year, $max_year) = explode(':', $string);
+  list($start_year, $end_year) = explode(':', $string);
 
   // Valid patterns would be -5:+5, 0:+1, 2008:2010.
-  $plus_pattern = '@[\+|\-][0-9]{1,4}@';
+  $plus_pattern = '@[\+\-][0-9]{1,4}@';
   $year_pattern = '@^[0-9]{4}@';
-  if (!preg_match($year_pattern, $min_year, $matches)) {
-    if (preg_match($plus_pattern, $min_year, $matches)) {
-      $min_year = $this_year + $matches[0];
+  if (!preg_match($year_pattern, $start_year, $matches)) {
+    if (preg_match($plus_pattern, $start_year, $matches)) {
+      $start_year = $this_year + $matches[0];
     }
     else {
-      $min_year = $this_year;
+      $start_year = $this_year;
     }
   }
-  if (!preg_match($year_pattern, $max_year, $matches)) {
-    if (preg_match($plus_pattern, $max_year, $matches)) {
-      $max_year = $this_year + $matches[0];
+  if (!preg_match($year_pattern, $end_year, $matches)) {
+    if (preg_match($plus_pattern, $end_year, $matches)) {
+      $end_year = $this_year + $matches[0];
     }
     else {
-      $max_year = $this_year;
+      $end_year = $this_year;
     }
-  }
-  // We expect the $min year to be less than the $max year.
-  // Some custom values for -99:+99 might not obey that.
-  if ($min_year > $max_year) {
-    $temp = $max_year;
-    $max_year = $min_year;
-    $min_year = $temp;
   }
   // If there is a current value, stretch the range to include it.
   $value_year = is_object($date) ? $date->format('Y') : '';
   if (!empty($value_year)) {
-    $min_year = min($value_year, $min_year);
-    $max_year = max($value_year, $max_year);
+    if ($start_year <= $end_year) {
+      $start_year = min($value_year, $start_year);
+      $end_year = max($value_year, $end_year);
+    }
+    else {
+      $start_year = max($value_year, $start_year);
+      $end_year = min($value_year, $end_year);
+    }
   }
-  return array($min_year, $max_year);
+  return array($start_year, $end_year);
 }
 
 /**

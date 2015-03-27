@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Views date pager skipping test.
+ * Views date pager test.
  */
 
-class ViewsPagerSkippingTestCase extends DrupalWebTestCase {
+class ViewsPagerTestCase extends DrupalWebTestCase {
   /**
    * Test info.
    */
@@ -70,6 +70,7 @@ class ViewsPagerSkippingTestCase extends DrupalWebTestCase {
     $handler->display->display_options['arguments']['date_argument']['field'] = 'date_argument';
     $handler->display->display_options['arguments']['date_argument']['default_action'] = 'default';
     $handler->display->display_options['arguments']['date_argument']['default_argument_type'] = 'date';
+    $handler->display->display_options['arguments']['date_argument']['summary']['format'] = 'default_summary';
     $handler->display->display_options['arguments']['date_argument']['granularity'] = 'hour';
     $handler->display->display_options['arguments']['date_argument']['date_fields'] = array(
       'node.created' => 'node.created',
@@ -81,6 +82,10 @@ class ViewsPagerSkippingTestCase extends DrupalWebTestCase {
     $handler->display->display_options['filters']['status']['value'] = 1;
     $handler->display->display_options['filters']['status']['group'] = 1;
     $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+
+    /* Display: Page */
+    $handler = $view->new_display('page', 'Page', 'page_1');
+    $handler->display->display_options['path'] = 'test_date_pager';
 
     $view->save();
   }
@@ -103,4 +108,22 @@ class ViewsPagerSkippingTestCase extends DrupalWebTestCase {
     $this->assertNoText('« Prev', 'Previous pager does not exist');
     $this->assertNoText('Next »', 'Next pager does not exist');
   }
+
+  /**
+   * Test the view page has no PHP warnings.
+   */
+  public function testPagerWarning() {
+    $this->drupalCreateNode(array('type' => 'blog'));
+    // Set pager to skip empty pages.
+    $edit = array(
+      'pager_options[skip_empty_pages]' => FALSE,
+    );
+    $this->drupalPost('admin/structure/views/nojs/display/test_date_pager/default/pager_options', $edit, t('Apply'));
+    // Save the view.
+    $this->drupalPost('admin/structure/views/view/test_date_pager/edit', array(), t('Save'));
+
+    // Visit view page. This will throw error, if any PHP warnings or errors.
+    $this->drupalGet('test_date_pager');
+  }
+
 }

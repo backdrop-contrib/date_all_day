@@ -280,9 +280,9 @@ class date_views_plugin_pager extends views_plugin_pager {
         }
         else {
           $this->view->date_info->prev_date = clone($argument->min_date);
-          date_modify($this->view->date_info->prev_date, '-1 ' . $granularity);
+          date_modify($this->view->date_info->prev_date, '-1 ' . $argument->date_handler->granularity);
           $this->view->date_info->next_date = clone($argument->max_date);
-          date_modify($this->view->date_info->next_date, '+1 ' . $granularity);
+          date_modify($this->view->date_info->next_date, '+1 ' . $argument->date_handler->granularity);
         }
         // Write the date_info properties that depend on the current value.
         $this->view->date_info->year = date_format($argument->min_date, 'Y');

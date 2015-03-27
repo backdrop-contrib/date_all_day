@@ -59,10 +59,10 @@ function date_help($path, $arg) {
       }
 
       if (module_exists('date_tools')) {
-        $output .= '<h3>Date Tools</h3>' . t('Dates and calendars can be complicated to set up. The !date_wizard makes it easy to create a simple date content type and with a date field. ', array('!date_wizard' => l(t('Date wizard'), 'admin/config/date/tools/date_wizard')));
+        $output .= '<h3>Date Tools</h3>' . t('Dates and calendars can be complicated to set up. The !date_wizard makes it easy to create a simple date content type and with a date field.', array('!date_wizard' => l(t('Date wizard'), 'admin/config/date/tools/date_wizard')));
       }
       else {
-        $output .= '<h3>Date Tools</h3>' . t('Dates and calendars can be complicated to set up. If you enable the Date Tools module, it provides a Date Wizard that makes it easy to create a simple date content type with a date field. ');
+        $output .= '<h3>Date Tools</h3>' . t('Dates and calendars can be complicated to set up. If you enable the Date Tools module, it provides a Date Wizard that makes it easy to create a simple date content type with a date field.');
       }
 
       $output .= '<h2>More Information</h2><p>' . t('Complete documentation for the Date and Date API modules is available at <a href="@link">http://drupal.org/node/92460</a>.', array('@link' => 'http://drupal.org/node/262062')) . '</p>';

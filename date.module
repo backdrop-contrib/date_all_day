@@ -226,7 +226,7 @@ function date_formatter_process($formatter, $entity_type, $entity, $field, $inst
   $settings = $display['settings'];
   $field_name = $field['field_name'];
   $format = date_formatter_format($formatter, $settings, $granularity, $langcode);
-  if(!isset($field['settings']['tz_handling']) || $field['settings']['tz_handling'] !== 'utc'){
+  if (!isset($field['settings']['tz_handling']) || $field['settings']['tz_handling'] !== 'utc') {
     $timezone = isset($item['timezone']) ? $item['timezone'] : '';
     $timezone = date_get_timezone($field['settings']['tz_handling'], $timezone);
   }

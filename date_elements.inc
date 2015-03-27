@@ -418,7 +418,7 @@ function date_combo_element_process($element, &$form_state, $form) {
   if (!empty($instance['widget']['settings']['no_fieldset'])) {
     unset($element[$from_field]['#description']);
     if (!empty($field['settings']['todate']) && isset($element['#description'])) {
-      $element['#description'] .= '<span class="js-hide"> '. t("Empty 'End date' values will use the 'Start date' values.") .'</span>';
+      $element['#description'] .= '<span class="js-hide"> ' . t("Empty 'End date' values will use the 'Start date' values.") . '</span>';
     }
   }
 

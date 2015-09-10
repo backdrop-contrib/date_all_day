@@ -341,7 +341,7 @@ function date_all_day_value(&$element, $form_state) {
   if (!empty($element['#date_all_day_id'])) {
     $parents = $element['#parents'];
     array_pop($parents);
-    $parent_element = drupal_array_get_nested_value($form_state['values'], $parents);
+    $parent_element = backdrop_array_get_nested_value($form_state['values'], $parents);
     if (!empty($parent_element) && !empty($parent_element['all_day'])) {
       $element['#date_format'] = date_part_format('date', $element['#date_format']);
       return $parent_element['all_day'];

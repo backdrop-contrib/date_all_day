@@ -3,4 +3,5 @@ description = Adds 'All Day' functionality to date fields, including an 'All Day
 dependencies[] = date_api
 dependencies[] = date
 package = Date/Time
-core = 7.x
+type = module
+backdrop = 1.x

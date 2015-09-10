@@ -1,5 +1,0 @@
-name = Date Migration
-description = Obsolete data migration module. Disable if no other modules depend on it.
-core = 7.x
-package = Date/Time
-hidden = TRUE

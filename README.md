@@ -1,4 +1,4 @@
-<h1>About Date-all-day for BackdropCMS</h1>
+<h1>About Date_all_day for BackdropCMS</h1>
 -------------------------
 
 This module is a port to Backdrop of one part of the Drupal contributed module 'Date'. 

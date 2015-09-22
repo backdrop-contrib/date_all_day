@@ -1,36 +1,40 @@
-<h1>About Date_all_day for BackdropCMS</h1>
--------------------------
+# Date All Day
 
-This module is a port to Backdrop of one part of the Drupal contributed module 'Date'. 
-
-It provides the option to add an 'All Day' checkbox to toggle time on 
-and off for date fields. It also contains the theme that displays the 'All Day' 
-text on fields that have no time. 
+The Date All Day project adds 'All Day' functionality to date fields,
+including an 'All Day' theme and 'All Day' checkboxes for the 
+Date select and Date popup widgets.
 
 Additionally, this module serves as an example of how other modules can inject 
 new functionality into date fields using various hooks provided by Date and by 
 the Field API.
 
-<h2>Status</h2>
-First stage of porting to Backdrop as a stand alone module
+This module is a port to Backdrop of one part of the Drupal project 'Date'. 
+
+## Installation
+
+- Install this module using the official Backdrop CMS instructions at
+  https://backdropcms.org/guide/modules.
+
+- No configuration is needed.
 
 
+## License
 
-<h2>License</h2>
-
-This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
+This project is GPL v2 software. See the LICENSE.txt file in this directory
+for complete text.
     
     
-<h2>Current Maintainers</h2>
+## Current Maintainer for Backdrop
 
-<h3>For Drupal:</h3>
-
-vijaycs85 - Vijayachandran Mani;  cafuego - Peter Lieverdink;  KarenS - Karen Stevenson;  arlinsandbulte - Arlin Sandbulte;  developer-x
+Graham Oliver (github.com/Graham-72/)
 
 
-<h3>Port to Backdrop:</h3>
-Graham Oliver github.com/Graham-72
+## Credits
 
-<h3>Acknowledgement</h3>
+### Drupal Maintainers
+- vijaycs85 - Vijayachandran Mani;
+- cafuego - Peter Lieverdink;  
+- KarenS - Karen Stevenson;  
+- arlinsandbulte - Arlin Sandbulte;  
+- developer-x
 
-This port to Backdrop would not, of course, be possible without all the work done by the developers and maintainers of the Drupal module.

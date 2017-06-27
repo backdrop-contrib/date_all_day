@@ -437,7 +437,7 @@ function date_all_day_date_field_widget_settings_form_alter(&$form, $context) {
   $form['display_all_day'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display all day checkbox'),
-    '#default_value' => $settings['display_all_day'],
+    '#default_value' => (isset($settings['display_all_day'])) ? $settings['display_all_day'] : 0,
     '#description' => t("Determines whether to display the 'All Day' checkbox to the user."),
     '#weight' => 8,
     '#fieldset' => 'date_format',

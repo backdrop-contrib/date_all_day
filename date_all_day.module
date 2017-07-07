@@ -28,6 +28,7 @@ function date_all_day_theme() {
         'which' => NULL,
         'date1' => NULL,
         'date2' => NULL,
+				'suffix' => NULL,
         'format' => NULL,
         'entity_type' => NULL,
         'entity' => NULL,
@@ -57,6 +58,8 @@ function date_all_day_date_formatter_dates_alter(&$dates, $context) {
   $entity = $context['entity'];
   $date1 = $dates['value']['local']['object'];
   $date2 = $dates['value2']['local']['object'];
+  $suffix1 = $context['instance']['widget']['settings']['all_day_suffix_1'];
+  $suffix2 = $context['instance']['widget']['settings']['all_day_suffix_2'];
 
   $is_all_day = date_all_day_field($field, $instance, $date1, $date2);
 
@@ -69,6 +72,7 @@ function date_all_day_date_formatter_dates_alter(&$dates, $context) {
       'which' => 'date1',
       'date1' => $date1,
       'date2' => $date2,
+      'suffix' => $suffix1,
       'format' => $format,
       'entity_type' => $entity_type,
       'entity' => $entity));
@@ -78,6 +82,7 @@ function date_all_day_date_formatter_dates_alter(&$dates, $context) {
       'which' => 'date2',
       'date1' => $date1,
       'date2' => $date2,
+      'suffix' => $suffix2,
       'format' => $format,
       'entity_type' => $entity_type,
       'entity' => $entity));
@@ -121,6 +126,7 @@ function theme_date_all_day($vars) {
   $which    = $vars['which'];
   $date1    = $vars['date1'];
   $date2    = $vars['date2'];
+  $suffix   = $vars['suffix'];
   $format   = $vars['format'];
   $entity   = $vars['entity'];
   $view     = !empty($vars['view']) ? $vars['view'] : NULL;
@@ -132,7 +138,9 @@ function theme_date_all_day($vars) {
     $date2 = $date1;
   }
 
-  $suffix = '';
+  // prepare the suffix if needed.
+  //strlen($suffix) > 0 ? $suffix = '<span class="date-display-suffix"> (' . $suffix . ')</span>' : '';
+
   if (!date_has_time($field['settings']['granularity'])) {
     $format = date_limit_format($format, array('year', 'month', 'day'));
   }
@@ -145,7 +153,6 @@ function theme_date_all_day($vars) {
     $all_day = date_all_day_field($field, $instance, $date1, $date2);
     if ($all_day && $format_has_time) {
       $format = date_limit_format($format, array('year', 'month', 'day'));
-      $suffix = ' ' . theme('date_all_day_label');
     }
   }
 
@@ -156,7 +163,7 @@ function theme_date_all_day($vars) {
  * Theme the way an 'all day' label will look.
  */
 function theme_date_all_day_label() {
-  return '(' . t('All day', array(), array('context' => 'datetime')) . ')';
+  return '(' . t('All day') . ')';
 }
 
 /**
@@ -219,11 +226,17 @@ function date_all_day_date_combo_process_alter(&$element, &$form_state, $context
     $to = !empty($element['#default_value']['value2']) ? $element['#default_value']['value2'] : $element['#default_value']['value'];
     $date_is_all_day = date_is_all_day($from, $to);
     $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
+
+    $suffix_1 = $element['value']['#instance']['widget']['settings']['all_day_suffix_1'];
+    $suffix_2 = $element['value']['#instance']['widget']['settings']['all_day_suffix_2'];
+
+
     $element['all_day'] = array(
       '#title' => t('All Day'),
+			'#description' => t('If checked, times will not be needed and a suffix will be added to each date.'),
       '#type' => 'checkbox',
       '#default_value' => $all_day,
-      '#weight' => -21,
+      '#weight' => -22,
       '#prefix' => '<div class="date-float">',
       '#suffix' => '</div>',
     );
@@ -437,11 +450,31 @@ function date_all_day_date_field_widget_settings_form_alter(&$form, $context) {
   $form['display_all_day'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display all day checkbox'),
-    '#default_value' => (isset($settings['display_all_day'])) ? $settings['display_all_day'] : 0,
-    '#description' => t("Determines whether to display the 'All Day' checkbox to the user."),
-    '#weight' => 8,
+    '#default_value' => $settings['display_all_day'],
+    '#description' => t("Determines whether to display the 'All Day' checkbox to a site editor."),
+    '#weight' => 7,
     '#fieldset' => 'date_format',
   );
+
+	$form['all_day_suffix_1'] = array(
+    '#type' => 'textfield',
+		'#maxlength' => 64,
+		'#title' => t('Default suffix for start date'),
+		'#default_value' => isset($settings['all_day_suffix_1']) ? $settings['all_day_suffix_1'] : 'all day',
+		'#description' => t('Change the default suffix added to the start date for this content type.'),
+		'#weight' => 8,
+		'#fieldset' => 'date_format',
+	);
+
+	$form['all_day_suffix_2'] = array(
+    '#type' => 'textfield',
+		'#maxlength' => 64,
+		'#title' => t('Default suffix for end date'),
+		'#default_value' => isset($settings['all_day_suffix_2']) ? $settings['all_day_suffix_2'] : 'inclusive',
+		'#description' => t('Change the default suffix added to the end date for this content type.'),
+		'#weight' => 8.1,
+		'#fieldset' => 'date_format',
+	);
 
   // Hide the option to use the all day checkbox for dates with no time.
   if (!date_has_time($field['settings']['granularity'])) {

@@ -58,8 +58,8 @@ function date_all_day_date_formatter_dates_alter(&$dates, $context) {
   $entity = $context['entity'];
   $date1 = $dates['value']['local']['object'];
   $date2 = $dates['value2']['local']['object'];
-  $suffix1 = $context['instance']['widget']['settings']['all_day_suffix_1'];
-  $suffix2 = $context['instance']['widget']['settings']['all_day_suffix_2'];
+  isset($instance['widget']['settings']['all_day_suffix_1']) ? $suffix1 = $instance['widget']['settings']['all_day_suffix_1'] : t('all day');
+  isset($instance['widget']['settings']['all_day_suffix_2']) ? $suffix2 = $instance['widget']['settings']['all_day_suffix_2'] : t('all day');
 
   $is_all_day = date_all_day_field($field, $instance, $date1, $date2);
 
@@ -139,7 +139,7 @@ function theme_date_all_day($vars) {
   }
 
   // prepare the suffix if needed.
-  //strlen($suffix) > 0 ? $suffix = '<span class="date-display-suffix"> (' . $suffix . ')</span>' : '';
+  strlen($suffix) > 0 ? $suffix = '<span class="date-display-suffix"> (' . $suffix . ')</span>' : '';
 
   if (!date_has_time($field['settings']['granularity'])) {
     $format = date_limit_format($format, array('year', 'month', 'day'));
@@ -226,10 +226,6 @@ function date_all_day_date_combo_process_alter(&$element, &$form_state, $context
     $to = !empty($element['#default_value']['value2']) ? $element['#default_value']['value2'] : $element['#default_value']['value'];
     $date_is_all_day = date_is_all_day($from, $to);
     $all_day = !empty($form_state['values']['all_day']) || $date_is_all_day;
-
-    $suffix_1 = $element['value']['#instance']['widget']['settings']['all_day_suffix_1'];
-    $suffix_2 = $element['value']['#instance']['widget']['settings']['all_day_suffix_2'];
-
 
     $element['all_day'] = array(
       '#title' => t('All Day'),
@@ -450,29 +446,29 @@ function date_all_day_date_field_widget_settings_form_alter(&$form, $context) {
   $form['display_all_day'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display all day checkbox'),
-    '#default_value' => $settings['display_all_day'],
+    '#default_value' => isset($settings['display_all_day']) ? $settings['display_all_day'] : 0,
     '#description' => t("Determines whether to display the 'All Day' checkbox to a site editor."),
-    '#weight' => 7,
+    '#weight' => 8,
     '#fieldset' => 'date_format',
   );
 
 	$form['all_day_suffix_1'] = array(
     '#type' => 'textfield',
 		'#maxlength' => 64,
-		'#title' => t('Default suffix for start date'),
-		'#default_value' => isset($settings['all_day_suffix_1']) ? $settings['all_day_suffix_1'] : 'all day',
-		'#description' => t('Change the default suffix added to the start date for this content type.'),
-		'#weight' => 8,
+		'#title' => t('Suffix for start date'),
+		'#default_value' => isset($settings['all_day_suffix_1']) ? $settings['all_day_suffix_1'] : t('all day'),
+		'#description' => t('Change the suffix added to the start date for this content type.'),
+		'#weight' => 8.1,
 		'#fieldset' => 'date_format',
 	);
 
 	$form['all_day_suffix_2'] = array(
     '#type' => 'textfield',
 		'#maxlength' => 64,
-		'#title' => t('Default suffix for end date'),
-		'#default_value' => isset($settings['all_day_suffix_2']) ? $settings['all_day_suffix_2'] : 'inclusive',
-		'#description' => t('Change the default suffix added to the end date for this content type.'),
-		'#weight' => 8.1,
+		'#title' => t('Suffix for end date'),
+		'#default_value' => isset($settings['all_day_suffix_2']) ? $settings['all_day_suffix_2'] : t('all day'),
+		'#description' => t('Change the suffix added to the end date for this content type.'),
+		'#weight' => 8.2,
 		'#fieldset' => 'date_format',
 	);
 

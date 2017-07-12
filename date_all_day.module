@@ -139,7 +139,7 @@ function theme_date_all_day($vars) {
   }
 
   // prepare the suffix if needed.
-  strlen($suffix) > 0 ? $suffix = '<span class="date-display-suffix"> (' . $suffix . ')</span>' : '';
+  strlen($suffix) > 0 ? $suffix = '<span class="date-display-suffix"> (' . t($suffix) . ')</span>' : '';
 
   if (!date_has_time($field['settings']['granularity'])) {
     $format = date_limit_format($format, array('year', 'month', 'day'));

@@ -460,6 +460,11 @@ function date_all_day_date_field_widget_settings_form_alter(&$form, $context) {
 		'#description' => t('Change the suffix added to the start date for this content type.'),
 		'#weight' => 8.1,
 		'#fieldset' => 'date_format',
+    '#states' => array(
+      'invisible' => array(
+        'input[name="instance[widget][settings][display_all_day]"]' => array('checked' => FALSE),
+      ),
+    ),
 	);
 
 	$form['all_day_suffix_2'] = array(

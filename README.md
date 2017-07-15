@@ -4,6 +4,11 @@ The Date All Day project adds 'All Day' functionality to date fields,
 including an 'All Day' theme and 'All Day' checkboxes for the 
 Date select and Date popup widgets.
 
+This latest release (1.x-2.2.1) adds the possibility of customising the
+suffix added to 'All Day' fields through additional configuration settings
+for the date field. These suffixes are now also given the class
+`date-display-suffix`.
+
 Additionally, this module serves as an example of how other modules can inject 
 new functionality into date fields using various hooks provided by Date and by 
 the Field API.
@@ -27,6 +32,8 @@ for complete text.
 ## Current Maintainer for Backdrop
 
 Graham Oliver (github.com/Graham-72/)
+with help from
+Olaf Grabienski (github.com/olafgrabienski/)
 
 
 ## Credits

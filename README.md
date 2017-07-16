@@ -28,9 +28,9 @@ complete text.
 
 ## Current Maintainer for Backdrop
 
-[Graham Oliver](github.com/Graham-72)
+[Graham Oliver](https://github.com/Graham-72)
 with help from
-[Olaf Grabienski](github.com/olafgrabienski)
+[Olaf Grabienski](https://github.com/olafgrabienski)
 
 ## Credits
 
